@@ -59,13 +59,21 @@ This Ant buildfile requires that you have included the following Ant library ext
       name="androidPlatform.relativePath"
       value="platforms/android-${androidPlatform.version}"
     />
-    <property
+    <!--property
       name="androidJar.filePath"
       location="${androidSDKHome.directoryPath}/${androidPlatform.relativePath}/android.jar"
+    /-->
+    <property
+      name="androidJar.filePath"
+      location="libs/android.jar"
     />
+    <!--property
+      name="googleMapsJar.filePath"
+      location="${androidSDKHome.directoryPath}/add-ons/google_apis-4/libs/maps.jar"
+    /-->
     <property
       name="googleMapsJar.filePath"
-      location="${androidSDKHome.directoryPath}/add-ons/google_apis-3/libs/maps.jar"
+      location="libs/maps.jar"
     />
     <property
       name="temporary.directoryPath"
@@ -148,6 +156,7 @@ This Ant buildfile requires that you have included the following Ant library ext
       <classpath refid="droid4me.classpath"/>
       <include name="*/**"/>
     </javac>
+    <mkdir dir="${distribution.directoryPath}"/>
     <jar
       basedir="${classes.directoryPath}"
       destfile="${droid4meJar.filePath}"
