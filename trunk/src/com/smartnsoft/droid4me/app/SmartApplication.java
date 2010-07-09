@@ -175,6 +175,9 @@ public abstract class SmartApplication
   {
   }
 
+  /**
+   * @return the log level trigger of the application
+   */
   protected int getLogLevel()
   {
     return Log.WARN;
