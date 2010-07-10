@@ -5,4 +5,8 @@
 
 In order to integrate the framework to your Android application, you need to download its .jar file, copy it into your Android project "libs" directory, and add it to the classpath.
 
-= First step =
+= First step: derive from SmartApplication =
+
+The very thing you should do when designing an application powered by droid4me is to declare an {{{android.app.Application}}} in your {{{AndroidManifest.xml}}} file (read http://developer.android.com/guide/topics/manifest/application-element.html to know how to achieve this). This class needs to derive from {{{com.smartnsoft.droid4me.app.SmartApplication}}}, which itself derives from {{{android.app.Application}}}.
+
+Once this is done, you need to implement the missing methods.
