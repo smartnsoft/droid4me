@@ -20,15 +20,17 @@ package com.smartnsoft.droid4me.app;
 
 import java.io.File;
 
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
-
+import android.app.Activity;
 import android.app.Application;
+import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * To be derived from when using the framework.
@@ -58,7 +60,19 @@ public abstract class SmartApplication
 
     protected final CharSequence otherProblemHint;
 
-    public I18N(CharSequence dialogBoxErrorTitle, CharSequence businessObjectAvailabilityProblemHint, CharSequence serviceProblemHint,
+    /**
+     * @param dialogBoxErrorTitle
+     *          the title that will be used when the framework displays an error dialog box
+     * @param businessObjectAvailabilityProblemHint
+     *          the body of the error dialog box when the business objects are not available on an {@link Activity}
+     * @param serviceProblemHint
+     *          the body of the error dialog box when a service is not available on an {@link Activity}
+     * @param connectivityProblemHint
+     *          the body of the error dialog box a connectivity issue occurs an {@link Activity}
+     * @param otherProblemHint
+     *          the body of the error dialog box when an unhandled problem occurs an {@link Activity}
+     */
+    protected I18N(CharSequence dialogBoxErrorTitle, CharSequence businessObjectAvailabilityProblemHint, CharSequence serviceProblemHint,
         CharSequence connectivityProblemHint, CharSequence otherProblemHint)
     {
       this.dialogBoxErrorTitle = dialogBoxErrorTitle;
@@ -72,31 +86,58 @@ public abstract class SmartApplication
 
   private SharedPreferences preferences;
 
+  /**
+   * @return the shared preferences of the application
+   */
   protected final SharedPreferences getPreferences()
   {
     return preferences;
   }
 
+  /**
+   * @return the version of the framework the application is using
+   */
   public static String getFrameworkVersionString()
   {
     return "@DROID4ME_VERSION_NAME@";
   }
 
+  /**
+   * @return an instance which indicates how to redirect {@link Activity activities} if necessary. Returns <code>null</code>, which means that no
+   *         redirection is handled by default ; override this method, in order to control the redirection mechanism
+   */
   protected ActivityController.Redirector getActivityRedirector()
   {
     return null;
   }
 
+  /**
+   * @return an instance which will be invoked on every {@link Activity} life-cycle event. Returns <code>null</code>, which means that no interception
+   *         is handled by default ; override this method, in order to be notified of activities life-cycle events
+   */
   protected ActivityController.Interceptor getActivityInterceptor()
   {
     return null;
   }
 
+  /**
+   * @return an instance which will be invoked when an exception occurs during the application, provided the exception is handled by the framework.
+   *         Returns a {@link ActivityController.AbstractExceptionHandler} instance ; override this method, in order to handle more specifically some
+   *         application-specific exceptions
+   */
   protected ActivityController.ExceptionHandler getExceptionHandler()
   {
     return new ActivityController.AbstractExceptionHandler(getI18N());
   }
 
+  /**
+   * This method will be invoked by the {@link #getExceptionHandler()} method when building an {@link ActivityController.AbstractExceptionHandler}
+   * instance. This internationalization instance will be used to populate default dialog boxes texts popped-up by this default
+   * {@link ActivityController.ExceptionHandler}.
+   * 
+   * @return an instance which contains the internationalized text strings for some built-in error {@link Dialog dialog boxes}. You need to define
+   *         that method.
+   */
   protected abstract SmartApplication.I18N getI18N();
 
   @Override
@@ -171,6 +212,15 @@ public abstract class SmartApplication
     }
   }
 
+  /**
+   * This method will be invoked at the end of the {@link #onCreate()} method, once the framework initialization is over. You can override this
+   * method, which does nothing by default, in order to initialize your application specific variables, invoke some services.
+   * 
+   * <p>
+   * Keep in mind that this method should complete very quickly, in order to prevent from hanging the GUI thread, and thus causing a bad end-user
+   * experience, and a potentional ANR.
+   * </p>
+   */
   protected void onCreateCustom()
   {
   }
@@ -183,6 +233,10 @@ public abstract class SmartApplication
     return Log.WARN;
   }
 
+  /**
+   * In addition to the default behavior, this event will be logged, and the {@link AppPublics#LOW_PRIORITY_THREAD_POOL} and
+   * {@link AppPublics#THREAD_POOL} thread pools stopped.
+   */
   @Override
   public void onTerminate()
   {
@@ -202,6 +256,9 @@ public abstract class SmartApplication
     }
   }
 
+  /**
+   * In addition to the default behavior, this event will be logged.
+   */
   @Override
   public void onLowMemory()
   {
