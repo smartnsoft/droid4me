@@ -21,17 +21,6 @@ package com.smartnsoft.droid4me.app;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.smartnsoft.droid4me.framework.ActivityResultHandler;
-import com.smartnsoft.droid4me.framework.Events;
-import com.smartnsoft.droid4me.framework.LifeCycle;
-import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.framework.Events.OnCompletion;
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-import com.smartnsoft.droid4me.menu.MenuHandler;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
-
 import android.app.ActivityGroup;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -50,6 +39,17 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
+import com.smartnsoft.droid4me.framework.ActivityResultHandler;
+import com.smartnsoft.droid4me.framework.Events;
+import com.smartnsoft.droid4me.framework.LifeCycle;
+import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
+import com.smartnsoft.droid4me.framework.Events.OnCompletion;
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
+import com.smartnsoft.droid4me.menu.MenuCommand;
+import com.smartnsoft.droid4me.menu.MenuHandler;
+import com.smartnsoft.droid4me.menu.StaticMenuCommand;
+
 /**
  * A basis class for an activity that contains other activities.
  * 
@@ -58,7 +58,7 @@ import android.widget.LinearLayout.LayoutParams;
  */
 public abstract class SmartGroupActivity
     extends ActivityGroup
-    implements LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements AppPublics.CommonActivity, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
   /**
    * This is take from the Android API Demos source code!
@@ -326,6 +326,16 @@ public abstract class SmartGroupActivity
   public final Handler getHandler()
   {
     return stateContainer.handler;
+  }
+
+  public Object getAggregate()
+  {
+    return stateContainer.aggregate;
+  }
+
+  public void setAggregate(Object aggregate)
+  {
+    stateContainer.aggregate = aggregate;
   }
 
   public List<StaticMenuCommand> getMenuCommands()

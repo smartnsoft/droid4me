@@ -46,7 +46,6 @@ import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
-
 /**
  * A basis class for an activity that holds a map.
  * 
@@ -55,7 +54,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartMapActivity
     extends MapActivity
-    implements LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements AppPublics.CommonActivity, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
 
   protected final static Logger log = LoggerFactory.getInstance(SmartMapActivity.class);
@@ -308,6 +307,16 @@ public abstract class SmartMapActivity
   public final Handler getHandler()
   {
     return stateContainer.handler;
+  }
+
+  public Object getAggregate()
+  {
+    return stateContainer.aggregate;
+  }
+
+  public void setAggregate(Object aggregate)
+  {
+    stateContainer.aggregate = aggregate;
   }
 
   public List<StaticMenuCommand> getMenuCommands()

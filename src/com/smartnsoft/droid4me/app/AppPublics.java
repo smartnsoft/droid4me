@@ -33,7 +33,10 @@ import android.app.Application;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
 import android.view.View;
+
+import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * Gathers some interfaces and helpers for the types belonging to its Java package.
@@ -43,6 +46,49 @@ import android.view.View;
  */
 public final class AppPublics
 {
+
+  /**
+   * Defines common methods for all {@link Activity activity classes} defined in the framework.
+   * 
+   * @since 2010.07.10
+   */
+  public interface CommonActivity
+  {
+
+    /**
+     * @return a valid handler that may be used for processing GUI-thread operations.
+     */
+    Handler getHandler();
+
+    /**
+     * @return an object that may be used along the {@link Activity} life ; may return <code>null</code>
+     * @see #setAggregate(Object)
+     */
+    Object getAggregate();
+
+    /**
+     * Enables to set an aggregate hat may be used along the {@link Activity} life.
+     * 
+     * @param aggregate
+     *          the object to use as an aggregate
+     * @see #getAggregate()
+     */
+    void setAggregate(Object aggregate);
+
+    /**
+     * @return all the static menu commands that the activity wants to make available ; may return <code>null</code>
+     */
+    List<StaticMenuCommand> getMenuCommands();
+
+    /**
+     * Can be invoked when an exception is thrown, so that the {@link ActivityController.ExceptionHandler} handles it.
+     * 
+     * @param fromGuiThread
+     *          indicates whether the call is done from the GUI thread
+     */
+    void onException(Throwable throwable, boolean fromGuiThread);
+
+  }
 
   /**
    * Because an Android {@link Activity} can be destroyed and then recreated, following a screen orientation change, for instance, this interface

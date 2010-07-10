@@ -21,6 +21,14 @@ package com.smartnsoft.droid4me.app;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.TabActivity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.Menu;
+import android.view.MenuItem;
+
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.Events;
 import com.smartnsoft.droid4me.framework.LifeCycle;
@@ -32,14 +40,6 @@ import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
-import android.app.TabActivity;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.Menu;
-import android.view.MenuItem;
-
 /**
  * A basis class for an activity that holds some tabs.
  * 
@@ -48,7 +48,7 @@ import android.view.MenuItem;
  */
 public abstract class SmartTabActivity
     extends TabActivity
-    implements LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements AppPublics.CommonActivity, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
 
   protected final static Logger log = LoggerFactory.getInstance(SmartTabActivity.class);
@@ -84,6 +84,16 @@ public abstract class SmartTabActivity
   public final Handler getHandler()
   {
     return stateContainer.handler;
+  }
+
+  public Object getAggregate()
+  {
+    return stateContainer.aggregate;
+  }
+
+  public void setAggregate(Object aggregate)
+  {
+    stateContainer.aggregate = aggregate;
   }
 
   public List<StaticMenuCommand> getMenuCommands()
