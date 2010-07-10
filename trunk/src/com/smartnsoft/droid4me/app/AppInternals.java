@@ -18,7 +18,14 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.List;
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListenerProvider;
@@ -28,16 +35,6 @@ import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuHandler;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
-
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.os.Handler;
-import android.preference.PreferenceManager;
 
 /**
  * Gathers some internal interfaces and helpers for the types belonging to its Java package.
@@ -62,18 +59,6 @@ abstract class AppInternals
 
     void onActuallyDestroyed();
 
-    Handler getHandler();
-
-    List<StaticMenuCommand> getMenuCommands();
-
-    /**
-     * Can be invoked when an exception is thrown, so that the {@link ActivityController.ExceptionHandler} handles it.
-     * 
-     * @param fromGuiThread
-     *          indicates whether the call is done from the GUI thread
-     */
-    void onException(Throwable throwable, boolean fromGuiThread);
-
   }
 
   /**
@@ -93,6 +78,8 @@ abstract class AppInternals
     CompositeHandler compositeActivityResultHandler;
 
     Handler handler;
+
+    Object aggregate;
 
     private SharedPreferences preferences;
 

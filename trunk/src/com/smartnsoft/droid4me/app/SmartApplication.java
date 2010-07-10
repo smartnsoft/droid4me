@@ -72,7 +72,7 @@ public abstract class SmartApplication
      * @param otherProblemHint
      *          the body of the error dialog box when an unhandled problem occurs an {@link Activity}
      */
-    protected I18N(CharSequence dialogBoxErrorTitle, CharSequence businessObjectAvailabilityProblemHint, CharSequence serviceProblemHint,
+    public I18N(CharSequence dialogBoxErrorTitle, CharSequence businessObjectAvailabilityProblemHint, CharSequence serviceProblemHint,
         CharSequence connectivityProblemHint, CharSequence otherProblemHint)
     {
       this.dialogBoxErrorTitle = dialogBoxErrorTitle;
