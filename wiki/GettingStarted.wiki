@@ -1,0 +1,8 @@
+#labels Phase-Implementation,Phase-Deploy
+#How to start with the framework.
+
+= Introduction =
+
+In order to integrate the framework to your Android application, you need to download its .jar file, copy it into your Android project "libs" directory, and add it to the classpath.
+
+= First step =
