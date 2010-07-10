@@ -224,6 +224,10 @@ This Ant buildfile requires that you have included the following Ant library ext
       <doctitle><![CDATA[<h1>droid4me API documentation</h1>]]></doctitle>
       <bottom><![CDATA[<i>Copyright &#169; 2009-2010 Smart&Soft. All Rights Reserved.</i>]]></bottom>
       <group
+        title="Core features"
+        packages="${droid4me.packageName}.app:${droid4me.packageName}.content:${droid4me.packageName}.log"
+       />
+      <group
         title="Shared in the framework"
         packages="${droid4me.packageName}.bo:${droid4me.packageName}.framework"
        />
@@ -233,7 +237,11 @@ This Ant buildfile requires that you have included the following Ant library ext
        />
       <group
         title="User Interface"
-        packages="${droid4me.packageName}.ui:${droid4me.packageName}.widget:${droid4me.packageName}.graphics.drawable"
+        packages="${droid4me.packageName}.ui:${droid4me.packageName}.widget:${droid4me.packageName}.graphics.drawable:${droid4me.packageName}.menu"
+       />
+      <group
+        title="Utilities"
+        packages="${droid4me.packageName}.util"
        />
     </javadoc>
   </target>
