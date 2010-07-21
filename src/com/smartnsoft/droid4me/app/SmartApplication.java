@@ -52,15 +52,15 @@ public abstract class SmartApplication
   protected final static class I18N
   {
 
-    protected final CharSequence dialogBoxErrorTitle;
+    public final CharSequence dialogBoxErrorTitle;
 
-    protected final CharSequence businessObjectAvailabilityProblemHint;
+    public final CharSequence businessObjectAvailabilityProblemHint;
 
-    protected final CharSequence serviceProblemHint;
+    public final CharSequence serviceProblemHint;
 
-    protected final CharSequence connectivityProblemHint;
+    public final CharSequence connectivityProblemHint;
 
-    protected final CharSequence otherProblemHint;
+    public final CharSequence otherProblemHint;
 
     /**
      * @param dialogBoxErrorTitle
@@ -292,7 +292,7 @@ public abstract class SmartApplication
    * 
    * <p>
    * Keep in mind that this method should complete very quickly, in order to prevent from hanging the GUI thread, and thus causing a bad end-user
-   * experience, and a potentional ANR.
+   * experience, and a potential ANR.
    * </p>
    */
   protected void onCreateCustom()
