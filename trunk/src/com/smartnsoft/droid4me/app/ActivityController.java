@@ -187,6 +187,10 @@ public final class ActivityController
 
     public boolean onBusinessObjectAvailableException(final Activity activity, BusinessObjectUnavailableException exception)
     {
+      if (activity == null)
+      {
+        return false;
+      }
       if (checkConnectivityProblem(activity, exception) == true)
       {
         return true;
@@ -212,6 +216,10 @@ public final class ActivityController
 
     public boolean onServiceException(final Activity activity, ServiceException exception)
     {
+      if (activity == null)
+      {
+        return false;
+      }
       if (checkConnectivityProblem(activity, exception) == true)
       {
         return true;
@@ -237,6 +245,10 @@ public final class ActivityController
 
     public boolean onOtherException(final Activity activity, Throwable throwable)
     {
+      if (activity == null)
+      {
+        return false;
+      }
       if (checkConnectivityProblem(activity, throwable) == true)
       {
         return true;
@@ -338,7 +350,7 @@ public final class ActivityController
     this.interceptor = interceptor;
   }
 
-  public synchronized void registerExceptionHandlder(ActivityController.ExceptionHandler exceptionHandler)
+  public synchronized void registerExceptionHandler(ActivityController.ExceptionHandler exceptionHandler)
   {
     this.exceptionHandler = exceptionHandler;
   }
@@ -398,49 +410,62 @@ public final class ActivityController
     {
       return false;
     }
-    if (throwable instanceof LifeCycle.ServiceException)
+    try
     {
-      final LifeCycle.ServiceException exception = (LifeCycle.ServiceException) throwable;
-      if (log.isWarnEnabled())
+      if (throwable instanceof LifeCycle.ServiceException)
       {
-        log.warn("Caught an exception during the processing of the services from the activity with name '" + (activity == null ? "null"
-            : activity.getClass().getName()) + "'", exception);
+        final LifeCycle.ServiceException exception = (LifeCycle.ServiceException) throwable;
+        if (log.isWarnEnabled())
+        {
+          log.warn("Caught an exception during the processing of the services from the activity with name '" + (activity == null ? "null"
+              : activity.getClass().getName()) + "'", exception);
+        }
+        // We do nothing if the activity is dying
+        if (activity != null && activity.isFinishing() == true)
+        {
+          return true;
+        }
+        return exceptionHandler.onServiceException(activity, exception);
       }
-      // We do nothing if the activity is dying
-      if (activity.isFinishing() == true)
+      else if (throwable instanceof LifeCycle.BusinessObjectUnavailableException)
       {
-        return true;
+        final LifeCycle.BusinessObjectUnavailableException exception = (LifeCycle.BusinessObjectUnavailableException) throwable;
+        if (log.isWarnEnabled())
+        {
+          log.warn("Caught an exception during the retrieval of the business objects from the activity with name '" + (activity == null ? "null"
+              : activity.getClass().getName()) + "'", exception);
+        }
+        // We do nothing if the activity is dying
+        if (activity != null && activity.isFinishing() == true)
+        {
+          return true;
+        }
+        return exceptionHandler.onBusinessObjectAvailableException(activity, exception);
       }
-      return exceptionHandler.onServiceException(activity, exception);
+      else
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Caught an exception during the processing of the activity with name '" + (activity == null ? "null" : activity.getClass().getName()) + "'",
+              throwable);
+        }
+        // We do nothing if the activity is dying
+        if (activity != null && activity.isFinishing() == true)
+        {
+          return true;
+        }
+        return exceptionHandler.onOtherException(activity, throwable);
+      }
     }
-    else if (throwable instanceof LifeCycle.BusinessObjectUnavailableException)
+    catch (Throwable otherThrowable)
     {
-      final LifeCycle.BusinessObjectUnavailableException exception = (LifeCycle.BusinessObjectUnavailableException) throwable;
-      if (log.isWarnEnabled())
+      // Just to make sure that handled exceptions do not trigger unhandled exceptions on their turn;)
+      if (log.isErrorEnabled())
       {
-        log.warn("Caught an exception during the retrieval of the business objects from the activity with name '" + (activity == null ? "null"
-            : activity.getClass().getName()) + "'", exception);
+        log.error("An error occurred while handling an exception coming from the activity with name '" + (activity == null ? "null"
+            : activity.getClass().getName()) + "'", otherThrowable);
       }
-      // We do nothing if the activity is dying
-      if (activity.isFinishing() == true)
-      {
-        return true;
-      }
-      return exceptionHandler.onBusinessObjectAvailableException(activity, exception);
-    }
-    else
-    {
-      if (log.isWarnEnabled())
-      {
-        log.warn("Caught an exception during the processing of the activity with name '" + (activity == null ? "null" : activity.getClass().getName()) + "'",
-            throwable);
-      }
-      // We do nothing if the activity is dying
-      if (activity.isFinishing() == true)
-      {
-        return true;
-      }
-      return exceptionHandler.onOtherException(activity, throwable);
+      return false;
     }
   }
 
