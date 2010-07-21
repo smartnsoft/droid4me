@@ -18,10 +18,14 @@
 
 package com.smartnsoft.droid4me.content;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-
-import android.content.BroadcastReceiver;
 
 /**
  * A {@link BroadcastReceiver} with the logging feature.
@@ -34,5 +38,21 @@ public abstract class SmartBroadcastReceiver
 {
 
   protected static final Logger log = LoggerFactory.getInstance(SmartBroadcastReceiver.class);
+
+  private SharedPreferences preferences;
+
+  /**
+   * @return the preferences of the application
+   */
+  protected final SharedPreferences getPreferences()
+  {
+    return preferences;
+  }
+
+  @Override
+  public void onReceive(Context context, Intent intent)
+  {
+    preferences = PreferenceManager.getDefaultSharedPreferences(context);
+  }
 
 }

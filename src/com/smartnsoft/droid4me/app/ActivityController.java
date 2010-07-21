@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
@@ -138,7 +139,7 @@ public final class ActivityController
      * </p>
      * 
      * @param activity
-     *          the activity that issued the exception
+     *          the activity that issued the exception ; cannot be <code>null</code>
      * @return <code>true</code> if the handler has actually handled the exception: this indicates to the framework that it does not need to
      *         investigate for a further exception handler anymore
      */
@@ -151,7 +152,7 @@ public final class ActivityController
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
      * 
-     * @see #onBusinessObjectAvailableException for the explanation about he return value and the <code>activity</code> parameter
+     * @see #onBusinessObjectAvailableException for the explanation about the return value and the <code>activity</code> parameter
      */
     boolean onServiceException(Activity activity, LifeCycle.ServiceException exception);
 
@@ -166,9 +167,26 @@ public final class ActivityController
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
      * 
-     * @see #onBusinessObjectAvailableException for the explanation about he return value and the <code>activity</code> parameter
+     * @see #onBusinessObjectAvailableException for the explanation about the return value and the <code>activity</code> parameter
      */
     boolean onOtherException(Activity activity, Throwable throwable);
+
+    /**
+     * Is invoked whenever a handled exception is thrown with a non-activity context.
+     * 
+     * <p>
+     * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
+     * </p>
+     * 
+     * <p>
+     * Warning, it is not ensured that this method will be invoked from the UI thread!
+     * </p>
+     * 
+     * @param context
+     *          the context that issued the exception
+     * @see #onBusinessObjectAvailableException for the explanation about the return value
+     */
+    boolean onContextException(Context context, Throwable throwable);
 
   }
 
@@ -187,10 +205,6 @@ public final class ActivityController
 
     public boolean onBusinessObjectAvailableException(final Activity activity, BusinessObjectUnavailableException exception)
     {
-      if (activity == null)
-      {
-        return false;
-      }
       if (checkConnectivityProblem(activity, exception) == true)
       {
         return true;
@@ -216,10 +230,6 @@ public final class ActivityController
 
     public boolean onServiceException(final Activity activity, ServiceException exception)
     {
-      if (activity == null)
-      {
-        return false;
-      }
       if (checkConnectivityProblem(activity, exception) == true)
       {
         return true;
@@ -245,10 +255,6 @@ public final class ActivityController
 
     public boolean onOtherException(final Activity activity, Throwable throwable)
     {
-      if (activity == null)
-      {
-        return false;
-      }
       if (checkConnectivityProblem(activity, throwable) == true)
       {
         return true;
@@ -270,6 +276,11 @@ public final class ActivityController
         }
       });
       return true;
+    }
+
+    public boolean onContextException(Context context, Throwable throwable)
+    {
+      return false;
     }
 
     protected final boolean checkConnectivityProblem(final Activity activity, Throwable throwable)
@@ -397,27 +408,45 @@ public final class ActivityController
   /**
    * Dispatches the exception to the {@link ActivityController.ExceptionHandler}, and invokes the right method depending on its nature.
    * 
-   * @param activity
-   *          the activity that originated the exception ; may be <code>null</code>
+   * @param context
+   *          the context that originated the exception ; may be <code>null</code>
    * @param throwable
    *          the reported exception
    * @return <code>true</code> if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception
    *         handled has been set}, returns <code>false</code>
    */
-  public synchronized boolean handleException(Activity activity, Throwable throwable)
+  public synchronized boolean handleException(Context context, Throwable throwable)
   {
     if (exceptionHandler == null)
     {
+      if (log.isWarnEnabled())
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Caught an exception during the processing of the context with name '" + (context == null ? "null" : context.getClass().getName()) + "'",
+              throwable);
+        }
+      }
       return false;
+    }
+    final Activity activity;
+    if (context != null && context instanceof Activity)
+    {
+      activity = (Activity) context;
+    }
+    else
+    {
+      activity = null;
     }
     try
     {
       if (throwable instanceof LifeCycle.ServiceException)
       {
+        // Should only occur with a non-null activity
         final LifeCycle.ServiceException exception = (LifeCycle.ServiceException) throwable;
         if (log.isWarnEnabled())
         {
-          log.warn("Caught an exception during the processing of the services from the activity with name '" + (activity == null ? "null"
+          log.warn("Caught an exception during the processing of the services from the activity with name '" + (context == null ? "null"
               : activity.getClass().getName()) + "'", exception);
         }
         // We do nothing if the activity is dying
@@ -429,6 +458,7 @@ public final class ActivityController
       }
       else if (throwable instanceof LifeCycle.BusinessObjectUnavailableException)
       {
+        // Should only occur with a non-null activity
         final LifeCycle.BusinessObjectUnavailableException exception = (LifeCycle.BusinessObjectUnavailableException) throwable;
         if (log.isWarnEnabled())
         {
@@ -446,7 +476,7 @@ public final class ActivityController
       {
         if (log.isWarnEnabled())
         {
-          log.warn("Caught an exception during the processing of the activity with name '" + (activity == null ? "null" : activity.getClass().getName()) + "'",
+          log.warn("Caught an exception during the processing of the context with name '" + (context == null ? "null" : context.getClass().getName()) + "'",
               throwable);
         }
         // We do nothing if the activity is dying
@@ -454,7 +484,14 @@ public final class ActivityController
         {
           return true;
         }
-        return exceptionHandler.onOtherException(activity, throwable);
+        if (activity != null)
+        {
+          return exceptionHandler.onOtherException(activity, throwable);
+        }
+        else
+        {
+          return exceptionHandler.onContextException(context, throwable);
+        }
       }
     }
     catch (Throwable otherThrowable)
@@ -462,8 +499,8 @@ public final class ActivityController
       // Just to make sure that handled exceptions do not trigger unhandled exceptions on their turn;)
       if (log.isErrorEnabled())
       {
-        log.error("An error occurred while handling an exception coming from the activity with name '" + (activity == null ? "null"
-            : activity.getClass().getName()) + "'", otherThrowable);
+        log.error("An error occurred while handling an exception coming from the context with name '" + (context == null ? "null"
+            : context.getClass().getName()) + "'", otherThrowable);
       }
       return false;
     }
