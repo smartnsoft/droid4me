@@ -118,7 +118,7 @@ public abstract class SmartSplashScreenActivity
    * will be invoked.
    * 
    * <p>
-   * This is a good place to pop-up an error dialog box and prevent the application from resuming.
+   * This is a good place to pop-up an error dialog box and prevent the application from resuming. It is ensured that this callback will be invoked from the GUI thread.
    * <p>
    */
   protected void onNoExternalStorage()
