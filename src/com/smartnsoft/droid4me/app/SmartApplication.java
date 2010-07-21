@@ -19,6 +19,7 @@
 package com.smartnsoft.droid4me.app;
 
 import java.io.File;
+import java.lang.Thread.UncaughtExceptionHandler;
 
 import android.app.Activity;
 import android.app.Application;
@@ -40,6 +41,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  */
 public abstract class SmartApplication
     extends Application
+
 {
 
   protected final static Logger log = LoggerFactory.getInstance(SmartApplication.class);
@@ -83,6 +85,61 @@ public abstract class SmartApplication
     }
 
   }
+
+  /**
+   * Defined as a wrapper over the built-in {@link Thread.UncaughtExceptionHandler uncaught exception handlers}.
+   * 
+   * @since 2010.07.21
+   */
+  private final static class SmartUncaughtExceptionHandler
+      implements Thread.UncaughtExceptionHandler
+  {
+
+    private final Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler;
+
+    /**
+     * @param builtinUncaughtExceptionHandler
+     *          the built-in uncaught exception handler that will be invoked eventually.
+     */
+    public SmartUncaughtExceptionHandler(Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler)
+    {
+      this.builtinUncaughtExceptionHandler = builtinUncaughtExceptionHandler;
+    }
+
+    public final void uncaughtException(Thread thread, Throwable throwable)
+    {
+      try
+      {
+        ActivityController.getInstance().handleException(null, throwable);
+      }
+      finally
+      {
+        if (builtinUncaughtExceptionHandler != null)
+        {
+          if (log.isDebugEnabled())
+          {
+            log.debug("Resorting to the built-in uncaught exception handler");
+          }
+          builtinUncaughtExceptionHandler.uncaughtException(thread, throwable);
+        }
+      }
+    }
+
+  }
+
+  /**
+   * The overridden default thread uncaught exception handler.
+   * 
+   * @see SmartApplication#uncaughtExceptionHandler
+   */
+  private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+
+  /**
+   * The overridden GUI thread uncaught exception handler.
+   * 
+   * @see SmartApplication#uncaughtExceptionHandler
+   */
+  private Thread.UncaughtExceptionHandler uiUncaughtExceptionHandler;
 
   private SharedPreferences preferences;
 
@@ -152,8 +209,25 @@ public abstract class SmartApplication
     }
     super.onCreate();
 
-    // We register the exception handler as soon as possible, in order to be able to handle exceptions
-    ActivityController.getInstance().registerExceptionHandlder(getExceptionHandler());
+    // We register the application exception handler as soon as possible, in order to be able to handle exceptions
+    ActivityController.getInstance().registerExceptionHandler(getExceptionHandler());
+    final Thread uiThread = Thread.currentThread();
+    // We explicitly intercept the GUI thread exceptions, so as to override the default behavior
+    final UncaughtExceptionHandler uiBuiltinUuncaughtExceptionHandler = uiThread.getUncaughtExceptionHandler();
+    uiUncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(uiBuiltinUuncaughtExceptionHandler);
+    if (log.isDebugEnabled())
+    {
+      log.debug("The application " + (uiBuiltinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in GUI uncaught exception handler");
+    }
+    Thread.currentThread().setUncaughtExceptionHandler(uiUncaughtExceptionHandler);
+    // We make sure that other uncaught exceptions will be intercepted and handled
+    final UncaughtExceptionHandler builtinUuncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+    uncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(builtinUuncaughtExceptionHandler);
+    if (log.isDebugEnabled())
+    {
+      log.debug("The application " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
+    }
+    Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
 
     // We check the license of the framework
     if (log.isDebugEnabled())
@@ -246,7 +320,7 @@ public abstract class SmartApplication
     }
     try
     {
-      // We stop the thread pools
+      // We stop the threads pools
       AppPublics.LOW_PRIORITY_THREAD_POOL.shutdown();
       AppPublics.THREAD_POOL.shutdown();
     }
