@@ -26,14 +26,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
-import com.smartnsoft.droid4me.framework.Commands;
 import com.smartnsoft.droid4me.framework.Events;
 import com.smartnsoft.droid4me.framework.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
@@ -59,14 +56,6 @@ public abstract class SmartActivity
   protected static final Logger log = LoggerFactory.getInstance(SmartActivity.class);
 
   final static String ALREADY_STARTED = "com.smartnsoft.droid4me.alreadyStarted";
-
-  public static String TRACE_PREFIX_FILE_PATH = "/sdcard/trace";
-
-  public static boolean TRACING_ON = false;
-
-  public static int traceIndex = 1;
-
-  static boolean isTracing;
 
   public void onBusinessObjectsRetrieved()
   {
@@ -214,40 +203,8 @@ public abstract class SmartActivity
       @Override
       protected List<MenuCommand<Void>> retrieveCommands()
       {
-        final List<MenuCommand<Void>> actions = new ArrayList<MenuCommand<Void>>();
-        if (SmartActivity.TRACING_ON == true)
-        {
-          actions.add(new MenuCommand<Void>("Start Tracing", ' ', ' ', android.R.drawable.ic_menu_more, new Commands.StaticExecutable()
-          {
-            public void run()
-            {
-              Toast.makeText(context, "Starting the traceview recording for series " + SmartActivity.traceIndex, Toast.LENGTH_SHORT).show();
-              Debug.startMethodTracing(TRACE_PREFIX_FILE_PATH + SmartActivity.traceIndex);
-              SmartActivity.isTracing = true;
-            }
-
-            public boolean isEnabled()
-            {
-              return !SmartActivity.isTracing;
-            }
-          }));
-          actions.add(new MenuCommand<Void>("Stop tracing", ' ', ' ', android.R.drawable.ic_menu_more, new Commands.StaticExecutable()
-          {
-            public void run()
-            {
-              Debug.stopMethodTracing();
-              Toast.makeText(context, "Traceview recording for series " + SmartActivity.traceIndex + " over", Toast.LENGTH_SHORT).show();
-              SmartActivity.isTracing = false;
-              SmartActivity.traceIndex++;
-            }
-
-            public boolean isEnabled()
-            {
-              return SmartActivity.isTracing;
-            }
-          }));
-        }
-        return actions;
+        final List<MenuCommand<Void>> commands = new ArrayList<MenuCommand<Void>>();
+        return commands;
       }
     };
     return staticActionHandler;
