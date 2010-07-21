@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -408,27 +409,28 @@ public final class AppPublics
       implements Runnable
   {
 
-    private final Activity activity;
+    private final Context context;
 
     /**
-     * @param activity
-     *          the activity from which the execution originates, and which will be used when reporting a potential exception
+     * @param context
+     *          the context from which the execution originates, and which will be used when reporting a potential exception ; it is not allowed to be
+     *          <code>null</code>
      */
-    public GuardedCommand(Activity activity)
+    public GuardedCommand(Context context)
     {
-      if (activity == null)
+      if (context == null)
       {
-        throw new NullPointerException("The activity should not be null!");
+        throw new NullPointerException("The context should not be null!");
       }
-      this.activity = activity;
+      this.context = context;
     }
 
     /**
      * @return the activity which will be used for reporting a potential exception
      */
-    protected final Activity getActivity()
+    protected final Context getContext()
     {
-      return activity;
+      return context;
     }
 
     /**
@@ -450,7 +452,7 @@ public final class AppPublics
       catch (Throwable throwable)
       {
         // We handle the exception
-        ActivityController.getInstance().handleException(activity, throwable);
+        ActivityController.getInstance().handleException(context, throwable);
       }
     }
 
