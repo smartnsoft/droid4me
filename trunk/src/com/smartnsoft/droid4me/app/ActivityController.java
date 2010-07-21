@@ -272,7 +272,7 @@ public final class ActivityController
       return true;
     }
 
-    private boolean checkConnectivityProblem(final Activity activity, Throwable throwable)
+    protected final boolean checkConnectivityProblem(final Activity activity, Throwable throwable)
     {
       if (throwable instanceof CallException)
       {
