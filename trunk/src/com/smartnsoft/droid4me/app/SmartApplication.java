@@ -141,6 +141,9 @@ public abstract class SmartApplication
    */
   private Thread.UncaughtExceptionHandler uiUncaughtExceptionHandler;
 
+  /**
+   * The application preferences.
+   */
   private SharedPreferences preferences;
 
   /**
@@ -160,6 +163,8 @@ public abstract class SmartApplication
   }
 
   /**
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
+   * 
    * @return an instance which indicates how to redirect {@link Activity activities} if necessary. Returns <code>null</code>, which means that no
    *         redirection is handled by default ; override this method, in order to control the redirection mechanism
    */
@@ -169,6 +174,8 @@ public abstract class SmartApplication
   }
 
   /**
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
+   * 
    * @return an instance which will be invoked on every {@link Activity} life-cycle event. Returns <code>null</code>, which means that no interception
    *         is handled by default ; override this method, in order to be notified of activities life-cycle events
    */
@@ -178,6 +185,8 @@ public abstract class SmartApplication
   }
 
   /**
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
+   * 
    * @return an instance which will be invoked when an exception occurs during the application, provided the exception is handled by the framework.
    *         Returns a {@link ActivityController.AbstractExceptionHandler} instance ; override this method, in order to handle more specifically some
    *         application-specific exceptions
@@ -190,7 +199,7 @@ public abstract class SmartApplication
   /**
    * This method will be invoked by the {@link #getExceptionHandler()} method when building an {@link ActivityController.AbstractExceptionHandler}
    * instance. This internationalization instance will be used to populate default dialog boxes texts popped-up by this default
-   * {@link ActivityController.ExceptionHandler}.
+   * {@link ActivityController.ExceptionHandler}. Hence, the method will be invoked at the application start-up.
    * 
    * @return an instance which contains the internationalized text strings for some built-in error {@link Dialog dialog boxes}. You need to define
    *         that method.
