@@ -33,7 +33,6 @@ import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableExce
 import com.smartnsoft.droid4me.framework.LifeCycle.ServiceException;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.ws.WebServiceCaller.CallException;
 
 /**
  * Is responsible for intercepting an activity starting and redirect it to a pre-requisite one if necessary, and for handling globally exceptions.
@@ -205,7 +204,7 @@ public final class ActivityController
 
     public boolean onBusinessObjectAvailableException(final Activity activity, BusinessObjectUnavailableException exception)
     {
-      if (checkConnectivityProblem(activity, exception) == true)
+      if (checkConnectivityProblemInCause(activity, exception) == true)
       {
         return true;
       }
@@ -230,7 +229,7 @@ public final class ActivityController
 
     public boolean onServiceException(final Activity activity, ServiceException exception)
     {
-      if (checkConnectivityProblem(activity, exception) == true)
+      if (checkConnectivityProblemInCause(activity, exception) == true)
       {
         return true;
       }
@@ -255,7 +254,7 @@ public final class ActivityController
 
     public boolean onOtherException(final Activity activity, Throwable throwable)
     {
-      if (checkConnectivityProblem(activity, throwable) == true)
+      if (checkConnectivityProblemInCause(activity, throwable) == true)
       {
         return true;
       }
@@ -283,29 +282,25 @@ public final class ActivityController
       return false;
     }
 
-    protected final boolean checkConnectivityProblem(final Activity activity, Throwable throwable)
+    protected final boolean checkConnectivityProblemInCause(final Activity activity, final Throwable throwable)
     {
-      if (throwable instanceof CallException)
+      if (throwable.getCause() != null && (throwable.getCause() instanceof UnknownHostException || throwable.getCause() instanceof SocketException))
       {
-        final CallException callException = (CallException) throwable;
-        if (callException.getCause() != null && (callException.getCause() instanceof UnknownHostException || callException.getCause() instanceof SocketException))
+        activity.runOnUiThread(new Runnable()
         {
-          activity.runOnUiThread(new Runnable()
+          public void run()
           {
-            public void run()
-            {
-              new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-                  i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null).setCancelable(false).setPositiveButton(android.R.string.ok,
-                  new DialogInterface.OnClickListener()
+            new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
+                i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null).setCancelable(false).setPositiveButton(android.R.string.ok,
+                new DialogInterface.OnClickListener()
+                {
+                  public void onClick(DialogInterface dialog, int which)
                   {
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                    }
-                  }).show();
-            }
-          });
-          return true;
-        }
+                  }
+                }).show();
+          }
+        });
+        return true;
       }
       return false;
     }
