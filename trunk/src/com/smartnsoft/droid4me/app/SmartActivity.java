@@ -101,23 +101,9 @@ public abstract class SmartActivity
     return null;
   }
 
-  public final void onException(final Throwable throwable, boolean fromGuiThread)
+  public final void onException(Throwable throwable, boolean fromGuiThread)
   {
-    // Eventually, we do not ensure that the handling of the exception will be performed in a specific thread
-    // if (fromGuiThread == true)
-    {
-      ActivityController.getInstance().handleException(this, throwable);
-    }
-    // else
-    // {
-    // runOnUiThread(new Runnable()
-    // {
-    // public void run()
-    // {
-    // ActivityController.getInstance().handleException(SmartActivity.this, throwable);
-    // }
-    // });
-    // }
+    ActivityController.getInstance().handleException(this, throwable);
   }
 
   private final void onInternalCreate(Bundle savedInstanceState)
@@ -223,15 +209,7 @@ public abstract class SmartActivity
     {
       return;
     }
-    try
-    {
-      businessObjectRetrievalAndResultHandlers();
-    }
-    catch (Throwable throwable)
-    {
-      onInternalHandleOtherException(throwable);
-      return;
-    }
+    businessObjectRetrievalAndResultHandlers();
   }
 
   private final void onInternalBusinessObjectAvailableException(Throwable throwable)
@@ -243,15 +221,6 @@ public abstract class SmartActivity
     stateContainer.onStopLoading(this);
     // We need to invoke that method on the GUI thread, because that method may have been triggered from another thread
     onException(throwable, false);
-  }
-
-  private void onInternalHandleOtherException(Throwable throwable)
-  {
-    if (log.isErrorEnabled())
-    {
-      log.error("Unhandled problem", throwable);
-    }
-    onException(throwable, true);
   }
 
   private void businessObjectRetrievalAndResultHandlers()
@@ -295,33 +264,11 @@ public abstract class SmartActivity
     // We can safely retrieve the business objects
     if (!(this instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
     {
-      onBeforeRefreshBusinessObjectsAndDisplay();
-      if (retrieveBusinessObjects == true)
+      if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
       {
-        try
-        {
-          onRetrieveBusinessObjects();
-        }
-        catch (Throwable throwable)
-        {
-          onInternalBusinessObjectAvailableException(throwable);
-          return;
-        }
+        return;
       }
-      stateContainer.businessObjectsRetrieved = true;
-      if (stateContainer.resumedForTheFirstTime == true)
-      {
-        onFulfillDisplayObjects();
-        ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
-      }
-      onSynchronizeDisplayObjects();
-      stateContainer.onStopLoading(this);
-      ActivityController.getInstance().onLifeCycleEvent(SmartActivity.this, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
-      stateContainer.resumedForTheFirstTime = false;
-      if (onRefreshBusinessObjectsAndDisplay != null)
-      {
-        onRefreshBusinessObjectsAndDisplay.done();
-      }
+      onFullfillAndSynchronizeDisplayObjectsInternal(onRefreshBusinessObjectsAndDisplay);
     }
     else
     {
@@ -330,52 +277,82 @@ public abstract class SmartActivity
       {
         public void run()
         {
-          onBeforeRefreshBusinessObjectsAndDisplay();
-
           // We call that method asynchronously in a specific thread
           AppPublics.THREAD_POOL.execute(SmartActivity.this, new Runnable()
           {
             public void run()
             {
-              if (retrieveBusinessObjects == true)
+              if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
               {
-                try
-                {
-                  onRetrieveBusinessObjects();
-                }
-                catch (final Throwable throwable)
-                {
-                  onInternalBusinessObjectAvailableException(throwable);
-                  return;
-                }
+                return;
               }
-              stateContainer.businessObjectsRetrieved = true;
               // We are handling the UI, and we need to make sure that this is done through the GUI thread
               runOnUiThread(new Runnable()
               {
                 public void run()
                 {
-                  if (stateContainer.resumedForTheFirstTime == true)
-                  {
-                    onFulfillDisplayObjects();
-                    ActivityController.getInstance().onLifeCycleEvent(SmartActivity.this,
-                        ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
-                  }
-                  onSynchronizeDisplayObjects();
-                  stateContainer.onStopLoading(SmartActivity.this);
-                  ActivityController.getInstance().onLifeCycleEvent(SmartActivity.this,
-                      ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
-                  stateContainer.resumedForTheFirstTime = false;
-                  if (onRefreshBusinessObjectsAndDisplay != null)
-                  {
-                    onRefreshBusinessObjectsAndDisplay.done();
-                  }
+                  onFullfillAndSynchronizeDisplayObjectsInternal(onRefreshBusinessObjectsAndDisplay);
                 }
               });
             }
           });
         }
       });
+    }
+  }
+
+  private boolean onRetrieveBusinessObjectsInternal(boolean retrieveBusinessObjects)
+  {
+    onBeforeRefreshBusinessObjectsAndDisplay();
+    if (retrieveBusinessObjects == true)
+    {
+      try
+      {
+        onRetrieveBusinessObjects();
+      }
+      catch (Throwable throwable)
+      {
+        onInternalBusinessObjectAvailableException(throwable);
+        return false;
+      }
+    }
+    stateContainer.businessObjectsRetrieved = true;
+    return true;
+  }
+
+  private void onFullfillAndSynchronizeDisplayObjectsInternal(Events.OnCompletion onRefreshBusinessObjectsAndDisplay)
+  {
+    if (stateContainer.resumedForTheFirstTime == true)
+    {
+      try
+      {
+        onFulfillDisplayObjects();
+      }
+      catch (Throwable throwable)
+      {
+        onException(throwable, true);
+        return;
+      }
+      ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
+    }
+    try
+    {
+      onSynchronizeDisplayObjects();
+    }
+    catch (Throwable throwable)
+    {
+      onException(throwable, true);
+      return;
+    }
+    finally
+    {
+      stateContainer.onStopLoading(this);
+    }
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
+    stateContainer.resumedForTheFirstTime = false;
+    if (onRefreshBusinessObjectsAndDisplay != null)
+    {
+      onRefreshBusinessObjectsAndDisplay.done();
     }
   }
 
@@ -399,15 +376,7 @@ public abstract class SmartActivity
       log.debug("SmartActivity::onRestoreInstanceState");
     }
     super.onRestoreInstanceState(savedInstanceState);
-    try
-    {
-      businessObjectRetrievalAndResultHandlers();
-    }
-    catch (Throwable throwable)
-    {
-      onInternalHandleOtherException(throwable);
-      return;
-    }
+    businessObjectRetrievalAndResultHandlers();
   }
 
   @Override
