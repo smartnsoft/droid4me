@@ -78,7 +78,7 @@ public abstract class SmartGroupActivity
 
     private final float mCenterY;
 
-    // private final float mDepthZ;
+    private final float mDepthZ;
 
     private final boolean mReverse;
 
@@ -98,6 +98,8 @@ public abstract class SmartGroupActivity
      *          the X center of the 3D rotation
      * @param centerY
      *          the Y center of the 3D rotation
+     * @param depthZ
+     *          the Z zoom effect factor
      * @param reverse
      *          true if the translation should be reversed, false otherwise
      */
@@ -107,7 +109,7 @@ public abstract class SmartGroupActivity
       mToDegrees = toDegrees;
       mCenterX = centerX;
       mCenterY = centerY;
-      // mDepthZ = depthZ;
+      mDepthZ = depthZ;
       mReverse = reverse;
     }
 
@@ -131,10 +133,15 @@ public abstract class SmartGroupActivity
       final Matrix matrix = transformation.getMatrix();
 
       camera.save();
-      /*
-       * if (mReverse) { camera.translate(0.0f, 0.0f, mDepthZ * interpolatedTime); } else { camera.translate(0.0f, 0.0f, mDepthZ * (1.0f -
-       * interpolatedTime)); }
-       */
+
+      if (mReverse == false)
+      {
+        camera.translate(0.0f, 0.0f, mDepthZ * interpolatedTime);
+      }
+      else
+      {
+        camera.translate(0.0f, 0.0f, mDepthZ * (1.0f - interpolatedTime));
+      }
       camera.rotateY(degrees + (mReverse == true ? 180 : 0));
       camera.getMatrix(matrix);
       camera.restore();
