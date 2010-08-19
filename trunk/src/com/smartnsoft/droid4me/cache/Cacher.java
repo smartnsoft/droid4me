@@ -25,9 +25,12 @@ import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
-
 /**
  * A class which enables to cache business objects.
+ * 
+ * <p>
+ * The class is not thread-safe in the sense that if multiple threads attempts to modify or get the underlying cached object, no atomicity is granted.
+ * </p>
  * 
  * @author Édouard Mercier
  * @since 2009.06.18
@@ -99,7 +102,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     return uriStreamParser.computeUri(parameter);
   }
 
-  public final synchronized Cacher.CachedInfo<BusinessObjectType> getValue(Cacher.Instructions instructions, ParameterType parameter)
+  public final Cacher.CachedInfo<BusinessObjectType> getValue(Cacher.Instructions instructions, ParameterType parameter)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
     final UriType uri = uriStreamParser.computeUri(parameter);
@@ -144,7 +147,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
   /**
    * The data is first attempted to be retrieved from the URI stream parser (and refreshes the cache in case of success), and then from the cache.
    */
-  public final synchronized Cacher.CachedInfo<BusinessObjectType> getValue(ParameterType parameter)
+  public final Cacher.CachedInfo<BusinessObjectType> getValue(ParameterType parameter)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
     final UriType uri = uriStreamParser.computeUri(parameter);
@@ -169,7 +172,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     }
   }
 
-  public final synchronized Values.Info<BusinessObjectType> fetchValueFromUriStreamParser(ParameterType parameter)
+  public final Values.Info<BusinessObjectType> fetchValueFromUriStreamParser(ParameterType parameter)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
     return fetchValueFromUriStreamParser(parameter, uriStreamParser.computeUri(parameter));
