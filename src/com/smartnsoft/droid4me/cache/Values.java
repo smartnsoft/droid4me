@@ -20,14 +20,13 @@ package com.smartnsoft.droid4me.cache;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-
 
 /**
  * Gathers interfaces and classes for handling business objects in cache.
@@ -162,12 +161,12 @@ public final class Values
 
     private Values.Info<BusinessObjectType> info;
 
-    public final synchronized boolean isEmpty()
+    public final boolean isEmpty()
     {
       return info == null;
     }
 
-    public final synchronized BusinessObjectType getLoadedValue()
+    public final BusinessObjectType getLoadedValue()
     {
       if (info == null)
       {
@@ -176,12 +175,12 @@ public final class Values
       return info.value;
     }
 
-    public final synchronized void setLoadedValue(Values.Info<BusinessObjectType> info)
+    public final void setLoadedValue(Values.Info<BusinessObjectType> info)
     {
       this.info = info;
     }
 
-    public final synchronized BusinessObjectType getValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> instructions)
+    public final BusinessObjectType getValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> instructions)
         throws ExceptionType
     {
       if (instructions.tryLoadedFirst() == false)
@@ -233,7 +232,7 @@ public final class Values
     }
 
     @Override
-    public final synchronized void empty()
+    public final void empty()
     {
       info = null;
     }
@@ -615,20 +614,17 @@ public final class Values
       extends Values.Caching
   {
 
-    protected final Map<KeyType, Values.CachedValue<BusinessObjectType, ExceptionType>> map = new HashMap<KeyType, Values.CachedValue<BusinessObjectType, ExceptionType>>();
+    protected final Map<KeyType, Values.CachedValue<BusinessObjectType, ExceptionType>> map = new ConcurrentHashMap<KeyType, Values.CachedValue<BusinessObjectType, ExceptionType>>();
 
     public BusinessObjectType getValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> ifValueNotCached, KeyType key)
         throws ExceptionType
     {
       Values.CachedValue<BusinessObjectType, ExceptionType> cached;
-      synchronized (map)
+      cached = map.get(key);
+      if (map.containsKey(key) == false)
       {
-        cached = map.get(key);
-        if (map.containsKey(key) == false)
-        {
-          cached = new Values.CachedValue<BusinessObjectType, ExceptionType>();
-          map.put(key, cached);
-        }
+        cached = new Values.CachedValue<BusinessObjectType, ExceptionType>();
+        map.put(key, cached);
       }
       return cached.getValue(ifValueNotCached);
     }
@@ -639,7 +635,7 @@ public final class Values
      *@see Values.Caching#empty()
      */
     @Override
-    public final synchronized void empty()
+    public final void empty()
     {
       map.clear();
     }
@@ -663,8 +659,11 @@ public final class Values
       this.cacher = cacher;
     }
 
+    /**
+     * If two setting and getting methods are called concurrently, the consistency of the results are not granted!
+     */
     @Override
-    public final synchronized BusinessObjectType getValue(Values.Instructions<BusinessObjectType, Values.CacheException, Values.CacheException> instructions,
+    public final BusinessObjectType getValue(Values.Instructions<BusinessObjectType, Values.CacheException, Values.CacheException> instructions,
         ParameterType parameter)
         throws Values.CacheException
     {
@@ -730,10 +729,7 @@ public final class Values
     public final BusinessObjectType getLoadedValue(ParameterType parameter)
     {
       final Values.CachedValue<BusinessObjectType, Values.CacheException> cachedValue;
-      synchronized (map)
-      {
-        cachedValue = map.get(parameter);
-      }
+      cachedValue = map.get(parameter);
       if (cachedValue != null)
       {
         return cachedValue.getLoadedValue();
@@ -793,7 +789,7 @@ public final class Values
       }
     }
 
-    private synchronized void setLoadedValue(ParameterType parameter, Values.Info<BusinessObjectType> info)
+    private void setLoadedValue(ParameterType parameter, Values.Info<BusinessObjectType> info)
     {
       Values.CachedValue<BusinessObjectType, Values.CacheException> cachedValue = map.get(parameter);
       if (cachedValue == null)
