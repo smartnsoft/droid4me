@@ -30,7 +30,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 import com.smartnsoft.droid4me.cache.Persistence;
-
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * Gathers various interfaces which handle business objects.
@@ -38,8 +39,10 @@ import com.smartnsoft.droid4me.cache.Persistence;
  * @author Édouard Mercier
  * @since 2009.08.29
  */
-public interface Business
+public final class Business
 {
+
+  private final static Logger log = LoggerFactory.getInstance(Business.class);
 
   public static class BusinessException
       extends Exception
@@ -176,10 +179,30 @@ public interface Business
     public final BusinessObjectType parse(ParameterType parameter, InputStream inputStream)
         throws Business.BusinessException
     {
+      final long start = System.currentTimeMillis();
       try
       {
         final ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-        return (BusinessObjectType) objectInputStream.readObject();
+        try
+        {
+          final BusinessObjectType object = (BusinessObjectType) objectInputStream.readObject();
+          if (log.isDebugEnabled())
+          {
+            log.debug("Deserialized the object corresponding to the parameter '" + parameter + "' in " + (System.currentTimeMillis() - start) + " ms");
+          }
+          return object;
+        }
+        finally
+        {
+          try
+          {
+            objectInputStream.close();
+          }
+          catch (IOException exception)
+          {
+            // Does not matter
+          }
+        }
       }
       catch (EOFException exception)
       {
@@ -195,6 +218,7 @@ public interface Business
     public final InputStream serialize(ParameterType parameter, BusinessObjectType businessObject)
         throws Business.BusinessException
     {
+      final long start = System.currentTimeMillis();
       final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
       try
       {
@@ -221,7 +245,12 @@ public interface Business
         {
           throw new Business.BusinessException("Could not serialize the object", exception);
         }
-        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        if (log.isDebugEnabled())
+        {
+          log.debug("Serialized the object corresponding to the parameter '" + parameter + "' in " + (System.currentTimeMillis() - start) + " ms");
+        }
+        return byteArrayInputStream;
       }
       finally
       {
