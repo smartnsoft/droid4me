@@ -62,8 +62,23 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
 
   }
 
+  /**
+   * Indicates whether the current cached data should be taken from the cache.
+   */
   public static interface Instructions
   {
+    /**
+     * Is invoked in two ways:
+     * <ol>
+     * <li>a first time with a null argument: the returned value indicates whether the timestamp should be taken into account and hence extracted to
+     * determine whether the data should be taken from the cache. If the method returns <code>false</code> at this time, no second call is performed
+     * and it is considered that the data should be taken from the cache ;</li>
+     * <li>a second time with a non-null argument: the returned value indicates whether the data with this timestamp should be taken from the cache ;</li>
+     * </ol>
+     * 
+     * @param timestamp
+     *          <code>null</code> the first time ; the second time, the date corresponding to the last data retrieval
+     */
     boolean takeFromCache(Date timestamp);
   }
 
@@ -106,8 +121,18 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
     final UriType uri = uriStreamParser.computeUri(parameter);
-    final Date lastUpdate = getCacheLastUpdate(parameter, uri);
-    if (lastUpdate != null && instructions.takeFromCache(lastUpdate) == true)
+    // We first ask whether the timestamp associated with the cached data should be retrieved
+    final boolean queryWithTimestamp = instructions.takeFromCache(null);
+    final Date lastUpdate;
+    if (queryWithTimestamp == true)
+    {
+      lastUpdate = getCacheLastUpdate(parameter, uri);
+    }
+    else
+    {
+      lastUpdate = null;
+    }
+    if (queryWithTimestamp == false || (lastUpdate != null && instructions.takeFromCache(lastUpdate) == true))
     {
       try
       {
