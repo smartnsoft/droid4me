@@ -337,7 +337,7 @@ public final class Values
 
     public boolean accept(Values.Info<BusinessObjectType> info)
     {
-      return fromCache(fromCache, info.timestamp);
+      return isTakenFromCache(fromCache, info.timestamp);
     }
 
     public Values.Info<BusinessObjectType> onNotFromLoaded()
@@ -349,7 +349,7 @@ public final class Values
         {
           public boolean takeFromCache(Date lastUpdate)
           {
-            return fromCache(fromCache, lastUpdate);
+            return isTakenFromCache(fromCache, lastUpdate);
           }
         }, parameter);
       }
@@ -363,7 +363,7 @@ public final class Values
           {
             public boolean takeFromCache(Date lastUpdate)
             {
-              return true;
+              return lastUpdate == null ? false : true;
             }
           }, parameter);
         }
@@ -374,9 +374,9 @@ public final class Values
       }
     }
 
-    protected boolean fromCache(boolean fromCache, Date lastUpdate)
+    protected boolean isTakenFromCache(boolean fromCache, Date lastUpdate)
     {
-      return fromCache == true;
+      return lastUpdate == null ? false : fromCache == true;
     }
 
   };
@@ -399,9 +399,9 @@ public final class Values
       return fromMemory == true;
     }
 
-    protected boolean fromCache(boolean fromCache, Date lastUpdate)
+    protected boolean isTakenFromCache(boolean fromCache, Date lastUpdate)
     {
-      return fromCache == true;
+      return lastUpdate == null ? false : fromCache == true;
     }
 
   };
@@ -419,9 +419,10 @@ public final class Values
       this.cachingPeriodInMilliseconds = cachingPeriodInMilliseconds;
     }
 
-    protected boolean fromCache(boolean fromCache, Date lastUpdate)
+    protected boolean isTakenFromCache(boolean fromCache, Date lastUpdate)
     {
-      return fromCache == true && (cachingPeriodInMilliseconds == -1 || ((System.currentTimeMillis() - lastUpdate.getTime()) < cachingPeriodInMilliseconds));
+      return lastUpdate == null ? true
+          : fromCache == true && (cachingPeriodInMilliseconds == -1 || ((System.currentTimeMillis() - lastUpdate.getTime()) < cachingPeriodInMilliseconds));
     }
 
   };
