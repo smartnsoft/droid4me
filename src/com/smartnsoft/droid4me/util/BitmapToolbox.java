@@ -97,9 +97,13 @@ public final class BitmapToolbox
    *          the percentage of the input bitmap height (between 0 and 1) which indicates the height of the reflect
    * @param reflectionGap
    *          the number of pixels that should separate the bitmap and its reflect
+   * @param startGradientColor
+   *          the color (with an alpha properly set), which is used to start the reflection gradient
+   * @param endGradientColor
+   *          the color (with an alpha properly set), which is used to end the reflection gradient; a typical value is <code>0x00ffffff</code>
    * @return a new bitmap, which contains the reflect
    */
-  public static Bitmap computeReflectedBitmap(Bitmap bitmap, float reflectionRatio, int reflectionGap)
+  public static Bitmap computeReflectedBitmap(Bitmap bitmap, float reflectionRatio, int reflectionGap, int startGradientColor, int endGradientColor)
   {
     final int width = bitmap.getWidth();
     final int height = bitmap.getHeight();
@@ -129,7 +133,7 @@ public final class BitmapToolbox
 
     // Create a shader that is a linear gradient that covers the reflection
     final Paint paint = new Paint();
-    final LinearGradient shader = new LinearGradient(0, bitmap.getHeight(), 0, bitmapWithReflection.getHeight() + reflectionGap, 0x70ffffff, 0x00ffffff, TileMode.CLAMP);
+    final LinearGradient shader = new LinearGradient(0, bitmap.getHeight(), 0, bitmapWithReflection.getHeight() + reflectionGap, startGradientColor, endGradientColor, TileMode.CLAMP);
     // Set the paint to use this shader (linear gradient)
     paint.setShader(shader);
     // Set the Transfer mode to be porter duff and destination in
