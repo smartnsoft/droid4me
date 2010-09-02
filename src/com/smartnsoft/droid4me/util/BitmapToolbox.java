@@ -120,8 +120,7 @@ public final class BitmapToolbox
     // Create a new bitmap with same width but taller to fit reflection
     final Bitmap bitmapWithReflection = Bitmap.createBitmap(width, height + (int) (height * reflectionRatio), Config.ARGB_8888);
 
-    // Create a new Canvas with the bitmap that's big enough for
-    // the image plus gap plus reflection
+    // Create a new Canvas with the bitmap that's big enough for the image, plus the gap, plus the reflection
     final Canvas canvas = new Canvas(bitmapWithReflection);
     // Draw in the original image
     canvas.drawBitmap(bitmap, 0, 0, null);
@@ -146,4 +145,34 @@ public final class BitmapToolbox
 
     return bitmapWithReflection;
   }
+
+  /**
+   * Resizes a bitmap so that it is filled with transparency in order to match the expected dimension. No scaling is performed.
+   * 
+   * <p>
+   * Warning, the original bitmap is recycled and cannot be used after this call; futhermore, it is supposed that the provided image is smaller in
+   * both dimension that the provided dimensions!
+   * </p>
+   * 
+   * @param bitmap
+   *          the bitmap to enlarge
+   * @param width
+   *          the new width of the image, which much be greater or equal than the provided bitmap width
+   * @param height
+   *          the new height of the image, which much be greater or equal than the provided bitmap height
+   * @return the resized image
+   */
+  public static Bitmap enlarge(Bitmap bitmap, int width, int height)
+  {
+    // Create a new bitmap with the final size
+    final Bitmap resizedBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
+    // Create a new Canvas with the bitmap that's big enough for the image, plus the gap, plus the reflection
+    final Canvas canvas = new Canvas(resizedBitmap);
+    // Draw in the original image
+    canvas.drawBitmap(bitmap, ((float) width - (float) bitmap.getWidth()) / 2f, ((float) height - (float) bitmap.getHeight()) / 2f, null);
+    // We free the original bitmap image
+    bitmap.recycle();
+    return resizedBitmap;
+  }
+
 }
