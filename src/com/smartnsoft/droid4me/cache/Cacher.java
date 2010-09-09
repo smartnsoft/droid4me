@@ -69,7 +69,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
    */
   public static interface Instructions
   {
-    
+
     /**
      * Is invoked in two ways:
      * <ol>
@@ -85,11 +85,15 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     boolean takeFromCache(Date timestamp);
 
     /**
-     * Invoked when the underlying business object is bound to be fetched from the {@link UriStreamParser}.
+     * Invoked every time the underlying business object is bound to be fetched from the {@link IOStreamer}.
+     */
+    void onFetchingFromIOStreamer();
+
+    /**
+     * Invoked every time the underlying business object is bound to be fetched from the {@link UriStreamParser}.
      */
     void onFetchingFromUriStreamParser();
-    
-    
+
   }
 
   protected final static Logger log = LoggerFactory.getInstance(Cacher.class);
@@ -150,6 +154,8 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         {
           log.debug("The data corresponding to the URI '" + uri + "' seems available in the cache: reusing it");
         }
+        // We notify the instructions that the business object is bound to be read from the persistence layer
+        instructions.onFetchingFromIOStreamer();
         final Values.Info<BusinessObjectType> cachedValue = getCachedValue(parameter);
         if (cachedValue != null)
         {
@@ -176,6 +182,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         log.debug("The data corresponding to the URI '" + uri + "' in not available in the cache: attempting to retrieve it from the IO streamer");
       }
     }
+    // We notify the instructions that the business object is bound to be read not locally
     instructions.onFetchingFromUriStreamParser();
     return new Cacher.CachedInfo<BusinessObjectType>(fetchValueFromUriStreamParser(parameter, uri), Cacher.Origin.UriStreamParser);
   }
