@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.bo.Business.IOStreamer;
 import com.smartnsoft.droid4me.bo.Business.UriStreamParser;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -76,7 +77,12 @@ public final class Values
   {
 
     /**
-     * Is invoked when the wrapped business object is bound to be retrieved from an {@link UriStreamParser}.
+     * Is invoked when the wrapped business object is bound to be retrieved from an {@link IOStreamer}, i.e. from the persistence layer.
+     */
+    void onFromIOStreamer();
+
+    /**
+     * Is invoked when the wrapped business object is bound to be retrieved from an {@link UriStreamParser}, i.e. not locally.
      */
     void onFromUriStreamParser();
 
@@ -383,6 +389,14 @@ public final class Values
             return isTakenFromCache(fromCache, lastUpdate);
           }
 
+          public void onFetchingFromIOStreamer()
+          {
+            if (cachingEvent != null)
+            {
+              cachingEvent.onFromIOStreamer();
+            }
+          }
+
           public void onFetchingFromUriStreamParser()
           {
             if (cachingEvent != null)
@@ -403,6 +417,14 @@ public final class Values
             public boolean takeFromCache(Date lastUpdate)
             {
               return lastUpdate == null ? false : true;
+            }
+
+            public void onFetchingFromIOStreamer()
+            {
+              if (cachingEvent != null)
+              {
+                cachingEvent.onFromIOStreamer();
+              }
             }
 
             public void onFetchingFromUriStreamParser()
