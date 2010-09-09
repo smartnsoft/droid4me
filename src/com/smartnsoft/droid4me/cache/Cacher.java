@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.util.Date;
 
 import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.bo.Business.IOStreamer;
+import com.smartnsoft.droid4me.bo.Business.UriStreamParser;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
@@ -67,6 +69,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
    */
   public static interface Instructions
   {
+    
     /**
      * Is invoked in two ways:
      * <ol>
@@ -80,6 +83,13 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
      *          <code>null</code> the first time ; the second time, the date corresponding to the last data retrieval
      */
     boolean takeFromCache(Date timestamp);
+
+    /**
+     * Invoked when the underlying business object is bound to be fetched from the {@link UriStreamParser}.
+     */
+    void onFetchingFromUriStreamParser();
+    
+    
   }
 
   protected final static Logger log = LoggerFactory.getInstance(Cacher.class);
@@ -166,6 +176,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         log.debug("The data corresponding to the URI '" + uri + "' in not available in the cache: attempting to retrieve it from the IO streamer");
       }
     }
+    instructions.onFetchingFromUriStreamParser();
     return new Cacher.CachedInfo<BusinessObjectType>(fetchValueFromUriStreamParser(parameter, uri), Cacher.Origin.UriStreamParser);
   }
 
@@ -197,6 +208,9 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     }
   }
 
+  /**
+   * Retrieves directly the business object from the underlying {@link UriStreamParser}.
+   */
   public final Values.Info<BusinessObjectType> fetchValueFromUriStreamParser(ParameterType parameter)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
@@ -241,6 +255,10 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     return new Values.Info<BusinessObjectType>(businessObject, atom.timestamp, Values.Info.SOURCE3);
   }
 
+  /**
+   * If the cacher underlying {@link UriStreamParser} is actually a {@link UriStreamParserSerializer}, serializes persistently the business object and
+   * its associated time stamp.
+   */
   public void setValue(ParameterType parameter, Values.Info<BusinessObjectType> info)
       throws StreamerExceptionType, ParseExceptionType
   {
@@ -254,6 +272,9 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     }
   }
 
+  /**
+   * Retrieves the business object from the persistence layer only, without attempting to refresh it from the {@link IOStreamer}.
+   */
   public Values.Info<BusinessObjectType> getCachedValue(ParameterType parameter)
       throws StreamerExceptionType, ParseExceptionType
   {
@@ -267,6 +288,9 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     return null;
   }
 
+  /**
+   * Removes the business object from the persistence layer.
+   */
   public void remove(ParameterType parameter)
       throws StreamerExceptionType
   {
