@@ -101,7 +101,7 @@ public abstract class Persistence
   public static int CACHES_COUNT = 1;
 
   /**
-   * The fully qualified name of the {@link Persistence} implementation.
+   * The fully qualified name of the {@link Persistence} instances implementation.
    */
   public static String IMPLEMENTATION_FQN;
 
@@ -117,7 +117,7 @@ public abstract class Persistence
 
   public static Persistence getInstance()
   {
-    return getInstance(0);
+    return Persistence.getInstance(0);
   }
 
   /**
@@ -127,11 +127,11 @@ public abstract class Persistence
   @SuppressWarnings("unchecked")
   public static Persistence getInstance(int position)
   {
-    if (instances == null)
+    if (Persistence.instances == null)
     {
       synchronized (Persistence.class)
       {
-        if (instances == null)
+        if (Persistence.instances == null)
         {
           try
           {
@@ -144,19 +144,20 @@ public abstract class Persistence
               newInstances[index] = constructor.newInstance(Persistence.CACHE_DIRECTORY_PATHS[index], index);
               newInstances[index].initialize();
             }
-            instances = newInstances;
+            // We only assign the instances class variable here, once all instances have actually been created
+            Persistence.instances = newInstances;
           }
           catch (Exception exception)
           {
             if (log.isFatalEnabled())
             {
-              log.fatal("Cannot instantiate properly the persistence  ", exception);
+              log.fatal("Cannot instantiate properly the persistence instances", exception);
             }
           }
         }
       }
     }
-    return instances[position];
+    return Persistence.instances[position];
   }
 
   /**
