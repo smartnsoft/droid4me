@@ -284,23 +284,30 @@ public final class ActivityController
 
     protected final boolean checkConnectivityProblemInCause(final Activity activity, final Throwable throwable)
     {
-      if (throwable.getCause() != null && (throwable.getCause() instanceof UnknownHostException || throwable.getCause() instanceof SocketException))
+      Throwable cause;
+      Throwable newThrowable = throwable;
+      // We investigate over the whole cause stack
+      while ((cause = newThrowable.getCause()) != null)
       {
-        activity.runOnUiThread(new Runnable()
+        if (cause instanceof UnknownHostException || cause instanceof SocketException)
         {
-          public void run()
+          activity.runOnUiThread(new Runnable()
           {
-            new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-                i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null).setCancelable(false).setPositiveButton(android.R.string.ok,
-                new DialogInterface.OnClickListener()
-                {
-                  public void onClick(DialogInterface dialog, int which)
+            public void run()
+            {
+              new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
+                  i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null).setCancelable(false).setPositiveButton(android.R.string.ok,
+                  new DialogInterface.OnClickListener()
                   {
-                  }
-                }).show();
-          }
-        });
-        return true;
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                    }
+                  }).show();
+            }
+          });
+          return true;
+        }
+        newThrowable = cause;
       }
       return false;
     }
