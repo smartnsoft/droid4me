@@ -23,7 +23,8 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 /**
- * Enables to receive an event when the {@link ImageView} size has changed and to set an automatic ratio between its width and its height.
+ * Enables to receive an event when the {@link ImageView} size has changed, set an automatic ratio between its width and its height, and discard the
+ * layout requests.
  * 
  * <p>
  * This is especially useful when an image width is set to a specific width policy and that the height should be set accordingly.
@@ -79,6 +80,8 @@ public class SmartImageView
 
   private float ratio = 9f / 16f;
 
+  private boolean fixedSized;
+
   public float getRatio()
   {
     return ratio;
@@ -93,6 +96,23 @@ public class SmartImageView
   public void setRatio(float ratio)
   {
     this.ratio = ratio;
+  }
+
+  public boolean isFixedSized()
+  {
+    return fixedSized;
+  }
+
+  /**
+   * Indicates that the underlying bitmap size never changes, and hence causing the {@link #requestLayout()} to do nothing. The default value is
+   * <code>false</code>
+   * 
+   * @param fixedSized
+   *          when set to <code>true</code>, the {@link #requestLayout()} will not invoke its parent method, and will do nothing
+   */
+  public void setFixedSized(boolean fixedSized)
+  {
+    this.fixedSized = fixedSized;
   }
 
   /**
@@ -120,6 +140,15 @@ public class SmartImageView
     if (onSizeChangedListener != null)
     {
       onSizeChangedListener.onSizeChanged(this, w, h, oldw, oldh);
+    }
+  }
+
+  @Override
+  public void requestLayout()
+  {
+    if (fixedSized == false)
+    {
+      super.requestLayout();
     }
   }
 
