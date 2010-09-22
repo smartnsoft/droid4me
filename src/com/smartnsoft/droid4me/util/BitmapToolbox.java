@@ -56,7 +56,34 @@ public final class BitmapToolbox
   }
 
   /**
+   * Flips the provided bitmap horizontally or vertically.
+   * 
+   * <p>
+   * Warning, the original bitmap is recycled and cannot be used after this call!
+   * </p>
+   * 
+   * @param bitmap
+   *          the bitmap to flip
+   * @param horizontal
+   *          indicates the flip direction
+   * @return the transformed bitmap
+   */
+  public static Bitmap flipBitmap(Bitmap bitmap, boolean horizontal)
+  {
+    final Matrix matrix = new Matrix();
+    matrix.preScale(horizontal == false ? 1 : -1, horizontal == false ? -1 : 1);
+    final Bitmap flippedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+    // We free the original bitmap image
+    bitmap.recycle();
+    return flippedBitmap;
+  }
+
+  /**
    * Merges a little bitmap to a larger one.
+   * 
+   * <p>
+   * Warning, the original bitmaps are recycled and cannot be used after this call!
+   * </p>
    * 
    * @param bigBitmap
    *          this object is {@link Bitmap#recycle() recycled} once the method has returned
