@@ -194,7 +194,7 @@ public abstract class SmartTabActivity
     {
       return;
     }
-      businessObjectRetrievalAndResultHandlers();
+    businessObjectRetrievalAndResultHandlers();
   }
 
   private final void onInternalBusinessObjectAvailableException(Throwable throwable)
@@ -210,10 +210,7 @@ public abstract class SmartTabActivity
 
   private void businessObjectRetrievalAndResultHandlers()
   {
-    if (stateContainer.businessObjectsRetrieved == false)
-    {
-      refreshBusinessObjectsAndDisplay(!stateContainer.businessObjectsRetrieved);
-    }
+    refreshBusinessObjectsAndDisplay(!stateContainer.businessObjectsRetrieved);
     if (stateContainer.actionResultsRetrieved == false)
     {
       onRegisterResultHandlers(stateContainer.compositeActivityResultHandler);
@@ -366,7 +363,7 @@ public abstract class SmartTabActivity
       log.debug("SmartTabActivity::onRestoreInstanceState");
     }
     super.onRestoreInstanceState(savedInstanceState);
-      businessObjectRetrievalAndResultHandlers();
+    businessObjectRetrievalAndResultHandlers();
   }
 
   @Override
