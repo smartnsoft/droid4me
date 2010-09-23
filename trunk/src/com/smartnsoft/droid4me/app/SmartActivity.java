@@ -225,10 +225,7 @@ public abstract class SmartActivity
 
   private void businessObjectRetrievalAndResultHandlers()
   {
-    if (stateContainer.businessObjectsRetrieved == false)
-    {
-      refreshBusinessObjectsAndDisplay(!stateContainer.businessObjectsRetrieved);
-    }
+    refreshBusinessObjectsAndDisplay(!stateContainer.businessObjectsRetrieved);
     if (stateContainer.actionResultsRetrieved == false)
     {
       onRegisterResultHandlers(stateContainer.compositeActivityResultHandler);
