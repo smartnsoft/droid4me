@@ -174,8 +174,15 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
 
   public void setEmptyView(View view)
   {
-    listWrapperLayout.addView(view, new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+    if (listView.getEmptyView() != null)
+    {
+      listWrapperLayout.removeView(listView.getEmptyView());
+    }
     listView.setEmptyView(view);
+    if (view != null)
+    {
+      listWrapperLayout.addView(view, new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+    }
   }
 
   @Override
