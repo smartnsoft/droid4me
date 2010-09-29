@@ -22,17 +22,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.ActivityGroup;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Camera;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.View.OnFocusChangeListener;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.FrameLayout;
@@ -58,10 +62,13 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartGroupActivity
     extends ActivityGroup
-    implements AppPublics.CommonActivity, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements AppPublics.CommonActivity, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals/*
+                                                                                                                             * ,ViewTreeObserver.
+                                                                                                                             * OnTouchModeChangeListener
+                                                                                                                             */, OnFocusChangeListener
 {
   /**
-   * This is take from the Android API Demos source code!
+   * This is taken from the Android API Demos source code!
    * 
    * An animation that rotates the view on the Y axis between two specified angles. This animation also adds a translation on the Z axis (depth) to
    * improve the effect.
@@ -152,6 +159,41 @@ public abstract class SmartGroupActivity
 
   }
 
+  private final class GroupLayout
+      extends LinearLayout
+  {
+
+    private GroupLayout(Context context)
+    {
+      super(context);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event)
+    {
+      // We want the header to get back the focus if possible
+      final boolean handled = super.dispatchKeyEvent(event);
+
+      // unhandled key ups change focus to tab indicator for embedded activities
+      // when there is nothing that will take focus from default focus searching
+      if (!handled && (event.getAction() == KeyEvent.ACTION_DOWN) && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) /*
+                                                                                                                       * &&
+                                                                                                                       * (frameLayout.isRootNamespace
+                                                                                                                       * ())
+                                                                                                                       */&& (contentView.hasFocus()) && (contentView.findFocus().focusSearch(
+          View.FOCUS_UP) == null))
+      {
+        if (headerView != null)
+        {
+          headerView.requestFocus();
+        }
+        playSoundEffect(SoundEffectConstants.NAVIGATION_UP);
+        return true;
+      }
+      return handled;
+    }
+  }
+
   protected static final Logger log = LoggerFactory.getInstance(SmartGroupActivity.class);
 
   private final List<String> activitiesIds = new ArrayList<String>();
@@ -166,11 +208,13 @@ public abstract class SmartGroupActivity
 
   private String currentActivityId;
 
-  private LinearLayout topLayout;
+  private SmartGroupActivity.GroupLayout wrapperView;
 
-  private FrameLayout frameLayout;
+  private View headerView;
 
-  protected abstract View getHeaderLayout();
+  private FrameLayout contentView;
+
+  protected abstract View getHeaderView();
 
   protected abstract Intent getSubIntent(String activityId);
 
@@ -197,14 +241,14 @@ public abstract class SmartGroupActivity
   /**
    * @return the root view of the activity
    */
-  protected final LinearLayout getTopLayout()
+  protected final ViewGroup getWraperView()
   {
-    return topLayout;
+    return wrapperView;
   }
 
-  protected final FrameLayout getFrameLayout()
+  protected final ViewGroup getContentView()
   {
-    return frameLayout;
+    return contentView;
   }
 
   protected final boolean hasActivityAlreadyStarted()
@@ -235,10 +279,10 @@ public abstract class SmartGroupActivity
 
   protected final void switchWindow()
   {
-    frameLayout.addView(windowDisplaying.getDecorView(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
+    contentView.addView(windowDisplaying.getDecorView(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
     if (windowDisplayed != null)
     {
-      frameLayout.removeView(windowDisplayed.getDecorView());
+      contentView.removeView(windowDisplayed.getDecorView());
     }
     windowDisplayed = windowDisplaying;
   }
@@ -279,27 +323,56 @@ public abstract class SmartGroupActivity
       decorView.requestFocus();
     }
     currentActivityId = activityId;
+    if (headerView.hasFocus() == false)
+    {
+      contentView.requestFocus();
+    }
     return window;
   }
+
+  // public void onTouchModeChanged(boolean isInTouchMode)
+  // {
+  // if (isInTouchMode == false)
+  // {
+  // // leaving touch mode.. if nothing has focus, let's give it to
+  // // the indicator of the current tab
+  // if (frameLayout != null && (!frameLayout.hasFocus() || frameLayout.isFocused()))
+  // {
+  // frameLayout.requestFocus();
+  // }
+  // }
+  // }
 
   public void onBusinessObjectsRetrieved()
   {
   }
 
+  public void onFocusChange(View view, boolean hasFocus)
+  {
+    log.debug("onFocusChange(" + view + ", " + hasFocus + ")");
+  }
+
   public void onRetrieveDisplayObjects()
   {
-    topLayout = new LinearLayout(this);
-    topLayout.setOrientation(LinearLayout.VERTICAL);
+    wrapperView = new SmartGroupActivity.GroupLayout(this);
+    wrapperView.setOrientation(LinearLayout.VERTICAL);
 
-    frameLayout = new FrameLayout(this);
+    contentView = new FrameLayout(this);
 
-    final View headerLayout = getHeaderLayout();
-    if (headerLayout != null)
+    headerView = getHeaderView();
+    if (headerView != null)
     {
-      topLayout.addView(headerLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+      wrapperView.addView(headerView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+      headerView.setOnFocusChangeListener(this);
+      for (int index = 0; index < ((ViewGroup) headerView).getChildCount(); index++)
+      {
+        ((ViewGroup) headerView).getChildAt(index).setOnFocusChangeListener(this);
+      }
     }
-    topLayout.addView(frameLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-    setContentView(topLayout);
+    wrapperView.addView(contentView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+    contentView.setOnFocusChangeListener(this);
+    wrapperView.setOnFocusChangeListener(this);
+    setContentView(wrapperView);
   }
 
   public final void onInternalCreateCustom()
