@@ -65,7 +65,8 @@ public abstract class SmartGroupActivity
     implements AppPublics.CommonActivity, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals/*
                                                                                                                              * ,ViewTreeObserver.
                                                                                                                              * OnTouchModeChangeListener
-                                                                                                                             */, OnFocusChangeListener
+                                                                                                                             * , OnFocusChangeListener
+                                                                                                                             */
 {
   /**
    * This is taken from the Android API Demos source code!
@@ -347,10 +348,10 @@ public abstract class SmartGroupActivity
   {
   }
 
-  public void onFocusChange(View view, boolean hasFocus)
-  {
-    log.debug("onFocusChange(" + view + ", " + hasFocus + ")");
-  }
+  // public void onFocusChange(View view, boolean hasFocus)
+  // {
+  // log.debug("onFocusChange(" + view + ", " + hasFocus + ")");
+  // }
 
   public void onRetrieveDisplayObjects()
   {
@@ -363,15 +364,11 @@ public abstract class SmartGroupActivity
     if (headerView != null)
     {
       wrapperView.addView(headerView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-      headerView.setOnFocusChangeListener(this);
-      for (int index = 0; index < ((ViewGroup) headerView).getChildCount(); index++)
-      {
-        ((ViewGroup) headerView).getChildAt(index).setOnFocusChangeListener(this);
-      }
+//      headerView.setOnFocusChangeListener(this);
     }
     wrapperView.addView(contentView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-    contentView.setOnFocusChangeListener(this);
-    wrapperView.setOnFocusChangeListener(this);
+//    contentView.setOnFocusChangeListener(this);
+//    wrapperView.setOnFocusChangeListener(this);
     setContentView(wrapperView);
   }
 
