@@ -85,13 +85,13 @@ public abstract class ProgressHandler
    */
   public final void onProgress(Activity activity, boolean inProgress, Object progressExtra)
   {
-    if (activity.isFinishing() == true)
-    {
-      // We do nothing when the activity is finishing
-      return;
-    }
     if (inProgress == true)
     {
+      if (activity.isFinishing() == true)
+      {
+        // We do nothing when the activity is finishing
+        return;
+      }
       show(activity, progressExtra);
     }
     else
