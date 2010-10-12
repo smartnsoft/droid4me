@@ -21,24 +21,24 @@ package com.smartnsoft.droid4me.app;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.smartnsoft.droid4me.framework.LifeCycle;
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Environment;
 
+import com.smartnsoft.droid4me.framework.LifeCycle;
+import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
+
 /**
  * A basis activity class which is displayed while the application is loading.
  * 
- * The loading of the business objects is asynchronous, so as to relief the UI.
+ * The loading of the business objects is synchronous, but in the derived class, if necessary, think of making it
+ * {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy asynchronous} if necessary, so as to relief the UI.
  * 
  * @author Édouard Mercier
  * @since 2010.01.05
  */
 public abstract class SmartSplashScreenActivity
     extends SmartActivity
-    implements LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy
 {
 
   private static final Set<String> initialized = new HashSet<String>();
@@ -118,11 +118,27 @@ public abstract class SmartSplashScreenActivity
    * will be invoked.
    * 
    * <p>
-   * This is a good place to pop-up an error dialog box and prevent the application from resuming. It is ensured that this callback will be invoked from the GUI thread.
+   * This is a good place to pop-up an error dialog box and prevent the application from resuming. It is ensured that this callback will be invoked
+   * from the GUI thread.
    * <p>
    */
   protected void onNoExternalStorage()
   {
+  }
+
+  /**
+   * Indicates to the splash screen to stop doing anything, prevents the calling Intent from being executed, and considers the splash-screen as
+   * {@link #markAsUnitialized(Class) uninitialized}. Invoke this method during the {@link #onRetrieveBusinessObjectsCustom() method}. May be called
+   * from any thread.
+   * 
+   * <p>
+   * This may be extremely useful if you to integrate a licensing mechanism, for instance.
+   * </p>
+   */
+  protected final void stopActivity()
+  {
+    this.stopActivity = true;
+    markAsUnitialized(getClass());
   }
 
   private boolean canWriteOnExternalStorage()
