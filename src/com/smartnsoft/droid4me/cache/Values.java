@@ -145,7 +145,7 @@ public final class Values
 
     BusinessObjectType getLoadedValue();
 
-    void setLoadedValue(Values.Info<BusinessObjectType> info);
+    void setLoadedInfoValue(Values.Info<BusinessObjectType> info);
 
     BusinessObjectType getValue(Values.Instructions<BusinessObjectType, ExceptionType, ProblemExceptionType> instructions, Values.CachingEvent cachingEvent)
         throws ExceptionType, ProblemExceptionType;
@@ -202,6 +202,11 @@ public final class Values
       return info == null;
     }
 
+    public final Values.Info<BusinessObjectType> getLoadedInfoValue()
+    {
+      return info;
+    }
+
     public final BusinessObjectType getLoadedValue()
     {
       if (info == null)
@@ -211,12 +216,12 @@ public final class Values
       return info.value;
     }
 
-    public final void setLoadedValue(Values.Info<BusinessObjectType> info)
+    public final void setLoadedInfoValue(Values.Info<BusinessObjectType> info)
     {
       this.info = info;
     }
 
-    public final BusinessObjectType getValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> instructions,
+    public final Values.Info<BusinessObjectType> getInfoValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> instructions,
         Values.CachingEvent cachingEvent)
         throws ExceptionType
     {
@@ -228,8 +233,8 @@ public final class Values
           final Values.Info<BusinessObjectType> newInfo = instructions.onNotFromLoaded(cachingEvent);
           if (newInfo != null)
           {
-            setLoadedValue(newInfo);
-            return newInfo.value;
+            setLoadedInfoValue(newInfo);
+            return newInfo;
           }
           else
           {
@@ -244,7 +249,7 @@ public final class Values
         }
         if (isEmpty() == false && instructions.accept(info) == true)
         {
-          return getLoadedValue();
+          return getLoadedInfoValue();
         }
         throw instructions.onUnaccessible(onNotFromLoadedException);
       }
@@ -253,19 +258,27 @@ public final class Values
         // The business object is first attempted to be retrieved from memory
         if (isEmpty() == false && instructions.accept(info) == true)
         {
-          return getLoadedValue();
+          return getLoadedInfoValue();
         }
         final Values.Info<BusinessObjectType> newInfo = instructions.onNotFromLoaded(cachingEvent);
         if (newInfo != null)
         {
-          setLoadedValue(newInfo);
-          return newInfo.value;
+          setLoadedInfoValue(newInfo);
+          return newInfo;
         }
         else
         {
           throw instructions.onUnaccessible(new Values.InstructionsException("Cannot access to the live business object when the data should not be taken from the cache!"));
         }
       }
+    }
+
+    public final BusinessObjectType getValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> instructions,
+        Values.CachingEvent cachingEvent)
+        throws ExceptionType
+    {
+      final Info<BusinessObjectType> infoValue = getInfoValue(instructions, cachingEvent);
+      return infoValue == null ? null : infoValue.value;
     }
 
     @Override
@@ -557,7 +570,7 @@ public final class Values
     {
       final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.SOURCE1);
       // Even if cacher fails to persist the business object, the memory is up-to-date
-      super.setLoadedValue(info);
+      super.setLoadedInfoValue(info);
       try
       {
         cacher.setValue(parameter, info);
@@ -624,7 +637,7 @@ public final class Values
           throw new Values.CacheException(throwable);
         }
       }
-      setLoadedValue(null);
+      setLoadedInfoValue(null);
     }
 
     public final void safeRemove(ParameterType parameter)
@@ -642,35 +655,73 @@ public final class Values
       }
     }
 
+    public final Values.Info<BusinessObjectType> getOnlyFromCacheInfoValue(boolean fromMemory, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.OnlyFromCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory),
+          null);
+    }
+
     public final BusinessObjectType getOnlyFromCacheValue(boolean fromMemory, ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.OnlyFromCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory),
-          null);
+      final Values.Info<BusinessObjectType> infoValue = getOnlyFromCacheInfoValue(fromMemory, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getSessionInfoValue(Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.SessionInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter),
+          cachingEvent);
     }
 
     public final BusinessObjectType getSessionValue(Values.CachingEvent cachingEvent, ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.SessionInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter),
+      final Values.Info<BusinessObjectType> infoValue = getSessionInfoValue(cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache),
           cachingEvent);
     }
 
     public final BusinessObjectType getMemoryValue(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache),
+      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromCache, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
           cachingEvent);
     }
 
     public final BusinessObjectType getMemoryValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
+      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromMemory, fromCache, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getRetentionInfoValue(boolean fromCache, long cachingPeriodInMilliseconds, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.RetentionInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache, cachingPeriodInMilliseconds),
           cachingEvent);
     }
 
@@ -678,9 +729,8 @@ public final class Values
         ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.RetentionInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache, cachingPeriodInMilliseconds),
-          cachingEvent);
+      final Values.Info<BusinessObjectType> infoValue = getRetentionInfoValue(fromCache, cachingPeriodInMilliseconds, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
     }
 
   }
@@ -697,7 +747,7 @@ public final class Values
 
     protected final Map<KeyType, Values.CachedValue<BusinessObjectType, ExceptionType>> map = new ConcurrentHashMap<KeyType, Values.CachedValue<BusinessObjectType, ExceptionType>>();
 
-    public BusinessObjectType getValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> ifValueNotCached,
+    public Values.Info<BusinessObjectType> getInfoValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> ifValueNotCached,
         Values.CachingEvent cachingEvent, KeyType key)
         throws ExceptionType
     {
@@ -708,7 +758,15 @@ public final class Values
         cached = new Values.CachedValue<BusinessObjectType, ExceptionType>();
         map.put(key, cached);
       }
-      return cached.getValue(ifValueNotCached, cachingEvent);
+      return cached.getInfoValue(ifValueNotCached, cachingEvent);
+    }
+
+    public BusinessObjectType getValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> ifValueNotCached,
+        Values.CachingEvent cachingEvent, KeyType key)
+        throws ExceptionType
+    {
+      final Values.Info<BusinessObjectType> infoValue = getInfoValue(ifValueNotCached, cachingEvent, key);
+      return infoValue == null ? null : infoValue.value;
     }
 
     /**
@@ -879,38 +937,76 @@ public final class Values
         cachedValue = new Values.CachedValue<BusinessObjectType, Values.CacheException>();
         map.put(parameter, cachedValue);
       }
-      cachedValue.setLoadedValue(info);
+      cachedValue.setLoadedInfoValue(info);
+    }
+
+    public final Values.Info<BusinessObjectType> getOnlyFromCacheInfoValue(boolean fromMemory, Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.OnlyFromCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory),
+          cachingEvent, parameter);
     }
 
     public final BusinessObjectType getOnlyFromCacheValue(boolean fromMemory, Values.CachingEvent cachingEvent, ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.OnlyFromCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory),
+      final Values.Info<BusinessObjectType> infoValue = getOnlyFromCacheInfoValue(fromMemory, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getSessionInfoValue(Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.SessionInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter),
           cachingEvent, parameter);
     }
 
     public final BusinessObjectType getSessionValue(Values.CachingEvent cachingEvent, ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.SessionInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter),
+      final Values.Info<BusinessObjectType> infoValue = getSessionInfoValue(cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache),
           cachingEvent, parameter);
     }
 
     public final BusinessObjectType getMemoryValue(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache),
+      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromCache, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
           cachingEvent, parameter);
     }
 
     public final BusinessObjectType getMemoryValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
+      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromMemory, fromCache, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getRetentionInfoValue(boolean fromCache, long cachingPeriodInMilliseconds, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.RetentionInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache, cachingPeriodInMilliseconds),
           cachingEvent, parameter);
     }
 
@@ -918,9 +1014,8 @@ public final class Values
         ParameterType parameter)
         throws Values.CacheException
     {
-      return getValue(
-          new Values.RetentionInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache, cachingPeriodInMilliseconds),
-          cachingEvent, parameter);
+      final Values.Info<BusinessObjectType> infoValue = getRetentionInfoValue(fromCache, cachingPeriodInMilliseconds, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
     }
 
   }
