@@ -24,6 +24,7 @@ import java.util.Date;
 import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.bo.Business.IOStreamer;
 import com.smartnsoft.droid4me.bo.Business.UriStreamParser;
+import com.smartnsoft.droid4me.bo.Business.UriStreamParserSerializer;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
@@ -247,7 +248,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), null));
         return info;
       }
-      else if (uriStreamParser instanceof Business.UriStreamParserSerializer)
+      else if (uriStreamParser instanceof Business.UriStreamParserSerializer<?, ?, ?, ?>)
       {
         // In that case, we put the business object in the cache
         ioStreamer.writeInputStream(
@@ -276,6 +277,13 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
           uri,
           new Business.InputAtom(info.timestamp, ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(
               parameter, info.value)));
+    }
+    else
+    {
+      if (log.isWarnEnabled())
+      {
+        log.warn("The call to persist the business object corresponding to the parameter '" + parameter + "' failed, because we do not know how to serialize the business object");
+      }
     }
   }
 
