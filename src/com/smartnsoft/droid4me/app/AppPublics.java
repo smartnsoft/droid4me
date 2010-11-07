@@ -169,6 +169,7 @@ public final class AppPublics
   /**
    * States that the Android {@link Activity} which implements this interface is able to provide an intent broadcast listener.
    * 
+   * @see AppPublics#BroadcastListenersProvider
    * @since 2010.02.04
    */
   public interface BroadcastListenerProvider
@@ -178,6 +179,29 @@ public final class AppPublics
      * @return is not allowed to be null!
      */
     AppPublics.BroadcastListener getBroadcastListener();
+
+  }
+
+  /**
+   * States that the Android {@link Activity} which implements this interface is able to provide several broadcast listener.
+   * 
+   * @see AppPublics#BroadcastListenerProvider
+   * @since 2010.11.07
+   */
+  public interface BroadcastListenersProvider
+  {
+
+    /**
+     * @return the number of {@link AppPublics.BroadcastListener} which are supported
+     */
+    int getBroadcastListenersCount();
+
+    /**
+     * @param the
+     *          index of the {@link AppPublics.BroadcastListener} to return
+     * @return is not allowed to be null!
+     */
+    AppPublics.BroadcastListener getBroadcastListener(int index);
 
   }
 

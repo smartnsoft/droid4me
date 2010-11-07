@@ -155,7 +155,7 @@ public abstract class SmartTabActivity
       onActuallyCreated();
       ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
-    stateContainer.registerBroadcastListener(this);
+    stateContainer.registerBroadcastListeners(this);
 
     onInternalCreate(savedInstanceState);
     onBeforeRetrievingDisplayObjects();
@@ -445,7 +445,7 @@ public abstract class SmartTabActivity
       {
         ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onDestroy);
       }
-      stateContainer.unregisterBroadcastListener(this);
+      stateContainer.unregisterBroadcastListeners(this);
     }
     finally
     {
