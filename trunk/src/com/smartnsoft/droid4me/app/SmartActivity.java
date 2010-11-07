@@ -156,7 +156,7 @@ public abstract class SmartActivity
       onActuallyCreated();
       ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
-    stateContainer.registerBroadcastListener(this);
+    stateContainer.registerBroadcastListeners(this);
 
     onInternalCreate(savedInstanceState);
     onBeforeRetrievingDisplayObjects();
@@ -455,7 +455,7 @@ public abstract class SmartActivity
       {
         ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onDestroy);
       }
-      stateContainer.unregisterBroadcastListener(this);
+      stateContainer.unregisterBroadcastListeners(this);
     }
     finally
     {

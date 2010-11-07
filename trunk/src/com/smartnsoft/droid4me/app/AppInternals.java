@@ -27,8 +27,6 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
-import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
-import com.smartnsoft.droid4me.app.AppPublics.BroadcastListenerProvider;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
@@ -93,7 +91,7 @@ abstract class AppInternals
 
     public boolean beingRedirected;
 
-    private BroadcastReceiver broadcastReceiver;
+    private BroadcastReceiver[] broadcastReceivers;
 
     boolean isFirstLifeCycle()
     {
@@ -118,28 +116,47 @@ abstract class AppInternals
     }
 
     /**
-     * If the activity implements the {@link AppPublics.BroadcastListener} interface, it will register for listening to some broadcast intents.
+     * If the activity implements either the {@link AppPublics.BroadcastListener} or {@link AppPublics.BroadcastListenerProvider} or
+     * {@link AppPublics.BroadcastListenersProvider} interface, it will register for listening to some broadcast intents.
      */
-    void registerBroadcastListener(Activity activity)
+    void registerBroadcastListeners(Activity activity)
     {
-      final BroadcastListener broadcastListener;
-      if (activity instanceof BroadcastListener)
+      final AppPublics.BroadcastListener broadcastListener;
+      if (activity instanceof AppPublics.BroadcastListenerProvider)
       {
-        broadcastListener = (BroadcastListener) activity;
+        broadcastListener = ((AppPublics.BroadcastListenerProvider) activity).getBroadcastListener();
+        broadcastReceivers = new BroadcastReceiver[1];
+        registerBroadcastListeners(activity, 0, broadcastListener);
       }
-      else if (activity instanceof BroadcastListenerProvider)
+      else if (activity instanceof AppPublics.BroadcastListener)
       {
-        broadcastListener = ((BroadcastListenerProvider) activity).getBroadcastListener();
+        broadcastListener = (AppPublics.BroadcastListener) activity;
+        broadcastReceivers = new BroadcastReceiver[1];
+        registerBroadcastListeners(activity, 0, broadcastListener);
       }
-      else
+      else if (activity instanceof AppPublics.BroadcastListenersProvider)
       {
-        return;
+        final AppPublics.BroadcastListenersProvider broadcastListenersProvider = (AppPublics.BroadcastListenersProvider) activity;
+        final int count = broadcastListenersProvider.getBroadcastListenersCount();
+        if (log.isDebugEnabled())
+        {
+          log.debug("Found out that the activity supports " + count + " intent broadcast listeners");
+        }
+        broadcastReceivers = new BroadcastReceiver[count];
+        for (int index = 0; index < count; index++)
+        {
+          registerBroadcastListeners(activity, index, broadcastListenersProvider.getBroadcastListener(index));
+        }
       }
-      if (log.isDebugEnabled())
+    }
+
+    private void registerBroadcastListeners(Activity activity, int index, final AppPublics.BroadcastListener broadcastListener)
+    {
+      if (index == 0 && log.isDebugEnabled())
       {
-        log.debug("Registering for listening to intent broacasts");
+        log.debug("Registering for listening to intent broadcasts");
       }
-      broadcastReceiver = new BroadcastReceiver()
+      broadcastReceivers[index] = new BroadcastReceiver()
       {
         public void onReceive(Context context, Intent intent)
         {
@@ -168,17 +185,23 @@ abstract class AppInternals
           log.error("An exception occurred while computing the intent filter!", throwable);
         }
       }
-      activity.registerReceiver(broadcastReceiver, intentFilter == null ? new IntentFilter() : intentFilter);
+      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter() : intentFilter);
     }
 
     /**
      * If the activity implements the {@link AppPublics.BroadcastListener} interface, this will make it stop listening to broadcasted intents.
      */
-    void unregisterBroadcastListener(Activity activity)
+    void unregisterBroadcastListeners(Activity activity)
     {
-      if (broadcastReceiver != null)
+      if (broadcastReceivers != null)
       {
-        activity.unregisterReceiver(broadcastReceiver);
+        for (int index = broadcastReceivers.length - 1; index >= 0; index--)
+        {
+          if (broadcastReceivers[index] != null)
+          {
+            activity.unregisterReceiver(broadcastReceivers[index]);
+          }
+        }
         if (log.isDebugEnabled())
         {
           log.debug("Stopped listening to intent broadcasts");
