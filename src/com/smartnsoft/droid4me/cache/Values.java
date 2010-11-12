@@ -94,18 +94,34 @@ public final class Values
   public static interface Instructions<BusinessObjectType, ExceptionType extends Exception, ProblemExceptionType extends Exception>
   {
 
+    /**
+     * Indicates whether the business object should be first taken from the cache.
+     * 
+     * @return <code>true</code> if and only if the business object should be tested from the cache
+     * @see #accept(Values.Info)
+     */
     boolean tryLoadedFirst();
 
+    /**
+     * Is invoked every time the business object is taken from the cache, in order to decide whether it is valid.
+     * 
+     * @param info
+     *          the proposed business object and its associated timestamp
+     * @return <code>true</code> if and only if the proposed business is accepted
+     */
     boolean accept(Values.Info<BusinessObjectType> info);
 
     /**
-     * Is invoked when the underlying business object will not be taken from the cache.
+     * Is invoked when the underlying business object will not be taken from the memory cache, or when the cached value has been rejected.
      * 
+     * @param previouslyRejected
+     *          indicates whether the retrieval of the business object follows a previous retrieval, which was not {@link #accept(Values.Info)
+     *          accepted}
      * @param cachingEvent
      *          the interface that will be used to notify the caller about the loading workflow ; may be <code>null</code>
      * @return the wrapped business object
      */
-    Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)
+    Values.Info<BusinessObjectType> onNotFromLoaded(boolean previouslyRejected, Values.CachingEvent cachingEvent)
         throws ExceptionType, ProblemExceptionType;
 
     /**
@@ -230,7 +246,7 @@ public final class Values
         Exception onNotFromLoadedException;
         try
         {
-          final Values.Info<BusinessObjectType> newInfo = instructions.onNotFromLoaded(cachingEvent);
+          final Values.Info<BusinessObjectType> newInfo = instructions.onNotFromLoaded(false, cachingEvent);
           if (newInfo != null)
           {
             setLoadedInfoValue(newInfo);
@@ -260,16 +276,26 @@ public final class Values
         {
           return getLoadedInfoValue();
         }
-        final Values.Info<BusinessObjectType> newInfo = instructions.onNotFromLoaded(cachingEvent);
+        final Values.Info<BusinessObjectType> newInfo = instructions.onNotFromLoaded(false, cachingEvent);
         if (newInfo != null)
         {
-          setLoadedInfoValue(newInfo);
-          return newInfo;
+          // We check whether the newly retrieved info is accepted
+          if (instructions.accept(newInfo) == true)
+          {
+            setLoadedInfoValue(newInfo);
+            return newInfo;
+          }
+          else
+          {
+            final Values.Info<BusinessObjectType> reloadedInfo = instructions.onNotFromLoaded(true, cachingEvent);
+            if (reloadedInfo != null)
+            {
+              setLoadedInfoValue(reloadedInfo);
+              return reloadedInfo;
+            }
+          }
         }
-        else
-        {
-          throw instructions.onUnaccessible(new Values.InstructionsException("Cannot access to the live business object when the data should not be taken from the cache!"));
-        }
+        throw instructions.onUnaccessible(new Values.InstructionsException("Cannot access to the live business object when the data should not be taken from the cache!"));
       }
     }
 
@@ -352,7 +378,7 @@ public final class Values
       return true;
     }
 
-    public Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)
+    public Values.Info<BusinessObjectType> onNotFromLoaded(boolean previouslyRejected, Values.CachingEvent cachingEvent)
         throws Values.CacheException
     {
       try
@@ -390,7 +416,7 @@ public final class Values
       return isTakenFromCache(fromCache, info.timestamp);
     }
 
-    public Values.Info<BusinessObjectType> onNotFromLoaded(final Values.CachingEvent cachingEvent)
+    public Values.Info<BusinessObjectType> onNotFromLoaded(final boolean previouslyRejected, final Values.CachingEvent cachingEvent)
         throws Values.CacheException
     {
       try
@@ -399,7 +425,7 @@ public final class Values
         {
           public boolean takeFromCache(Date lastUpdate)
           {
-            return isTakenFromCache(fromCache, lastUpdate);
+            return previouslyRejected == false && isTakenFromCache(fromCache, lastUpdate);
           }
 
           public void onFetchingFromIOStreamer()
@@ -531,7 +557,7 @@ public final class Values
       return info.source == Values.Info.SOURCE3;
     }
 
-    public Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)
+    public Values.Info<BusinessObjectType> onNotFromLoaded(boolean previouslyRejected, Values.CachingEvent cachingEvent)
         throws Values.CacheException
     {
       try
@@ -558,7 +584,7 @@ public final class Values
       extends Values.CachedValue<BusinessObjectType, Values.CacheException>
   {
 
-    private final Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher;
+    public final Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher;
 
     public BackedCachedValue(Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher)
     {
@@ -792,7 +818,7 @@ public final class Values
 
   {
 
-    private final Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher;
+    public final Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher;
 
     public BackedCachedMap(Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher)
     {
