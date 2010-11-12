@@ -194,23 +194,43 @@ public abstract class SmartSplashScreenActivity
     {
       if (getIntent().hasExtra(ActivityController.CALLING_INTENT) == true)
       {
-        // We only resume the previous activity if the splash screen has not bee dismissed
-        final Intent callingIntent = getIntent().getParcelableExtra(ActivityController.CALLING_INTENT);
-        if (log.isDebugEnabled())
-        {
-          log.debug("Redirecting to the initial activity for the component with class '" + callingIntent.getComponent().getClassName() + "'");
-        }
-        // This is essential, in order for the activity to be displayed
-        callingIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(callingIntent);
+        // We only resume the previous activity if the splash screen has not been dismissed
+        startCallingIntent();
       }
       else
       {
-        // We only resume the previous activity if the splash screen has not bee dismissed
-        startActivity(new Intent(getApplicationContext(), getNextActivity()));
+        // We only resume the previous activity if the splash screen has not been dismissed
+        startActivity(computeNextIntent());
       }
     }
     finish();
+  }
+
+  /**
+   * Is invoked when the splash screen is bound to complete successfully, and that it has been started with a
+   * {@link ActivityController#CALLING_INTENT calling intent}. Should start the {@link Activity} calling intent.
+   */
+  protected void startCallingIntent()
+  {
+    final Intent callingIntent = getIntent().getParcelableExtra(ActivityController.CALLING_INTENT);
+    if (log.isDebugEnabled())
+    {
+      log.debug("Redirecting to the initial activity for the component with class '" + callingIntent.getComponent().getClassName() + "'");
+    }
+    // This is essential, in order for the activity to be displayed
+    callingIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    startActivity(callingIntent);
+  }
+
+  /**
+   * Invoked when the splash screen is bound to complete successfully, and that it has not been started with a
+   * {@link ActivityController#CALLING_INTENT calling intent}.
+   * 
+   * @return the intent that will be started next
+   */
+  protected Intent computeNextIntent()
+  {
+    return new Intent(getApplicationContext(), getNextActivity());
   }
 
   public void onSynchronizeDisplayObjects()
