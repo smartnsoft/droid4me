@@ -425,7 +425,7 @@ public final class Values
         {
           public boolean takeFromCache(Date lastUpdate)
           {
-            return previouslyRejected == false && isTakenFromCache(fromCache, lastUpdate);
+            return previouslyRejected == false ? isTakenFromCache(fromCache, lastUpdate) == true : lastUpdate == null;
           }
 
           public void onFetchingFromIOStreamer()
