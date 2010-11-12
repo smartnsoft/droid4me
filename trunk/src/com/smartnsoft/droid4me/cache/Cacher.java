@@ -162,7 +162,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         {
           return new Cacher.CachedInfo<BusinessObjectType>(cachedValue, Cacher.Origin.Cache);
         }
-        if (log.isWarnEnabled())
+        if (log.isDebugEnabled())
         {
           log.debug("The data corresponding to the URI '" + uri + "' was eventually not present on the cache: a new request will be attempted again!");
         }
