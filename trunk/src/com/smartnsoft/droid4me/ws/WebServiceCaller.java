@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketException;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -127,11 +129,6 @@ public abstract class WebServiceCaller
 
     private int statusCode;
 
-    public CallException()
-    {
-      super();
-    }
-
     public CallException(String message, Throwable throwable)
     {
       super(message, throwable);
@@ -156,6 +153,38 @@ public abstract class WebServiceCaller
     public int getStatusCode()
     {
       return statusCode;
+    }
+
+    /**
+     * @return <code>true</code> is the current exception is linked to a connectivity problem with Internet.
+     * @see #isConnectivityProblem(Throwable)
+     */
+    public final boolean isConnectivityProblem()
+    {
+      return WebServiceCaller.CallException.isConnectivityProblem(this);
+    }
+
+    /**
+     * Indicates whether the cause of the provided exception is due to a connectivity problem.
+     * 
+     * @param throwable
+     *          the exception to test
+     * @return <code>true</code> if the {@link Throwable} was triggered because of a connectivity problem with Internet
+     */
+    public static boolean isConnectivityProblem(Throwable throwable)
+    {
+      Throwable cause;
+      Throwable newThrowable = throwable;
+      // We investigate over the whole cause stack
+      while ((cause = newThrowable.getCause()) != null)
+      {
+        if (cause instanceof UnknownHostException || cause instanceof SocketException)
+        {
+          return true;
+        }
+        newThrowable = cause;
+      }
+      return false;
     }
 
   }
