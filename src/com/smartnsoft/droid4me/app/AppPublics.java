@@ -483,6 +483,66 @@ public final class AppPublics
   }
 
   /**
+   * Enables to execute in background a task, by notifying when the execution is running. It is especially useful when the UI should be notified when
+   * a command is running.
+   * 
+   * <p>
+   * When the command is executed by the {@link AppPublics#LOW_PRIORITY_THREAD_POOL}, its underlying {@link ProgressHandler} is notified.
+   * </p>
+   * 
+   * @since 2010.11.30
+   */
+  public static abstract class ProgressGuardedCommand
+      extends AppPublics.GuardedCommand
+  {
+
+    private final ProgressHandler progressHandler;
+
+    private final String message;
+
+    /**
+     * @param activity
+     *          the activity that initiates the command
+     * @param progressHandler
+     *          it will be invoked when the command {@link #runGuardedProgress() starts}, and when the command is over, evn if an exception is trhown
+     *          during the execution
+     * @param message
+     *          an optional message that will be passed to the {@link ProgressHandler} when the command starts
+     */
+    public ProgressGuardedCommand(Activity activity, ProgressHandler progressHandler, String message)
+    {
+      super(activity);
+      this.progressHandler = progressHandler;
+      this.message = message;
+    }
+
+    /**
+     * The commands to execute during the task.
+     * 
+     * @throws Exception
+     *           any thrown exception will be properly handled
+     */
+    protected abstract void runGuardedProgress()
+        throws Exception;
+
+    @Override
+    protected final void runGuarded()
+        throws Exception
+    {
+      try
+      {
+        progressHandler.onProgress((Activity) getContext(), true, new ProgressHandler.ProgressExtra(0, message), false);
+        runGuardedProgress();
+      }
+      finally
+      {
+        progressHandler.onProgress((Activity) getContext(), false, null, false);
+      }
+    }
+
+  }
+
+  /**
    * Introduced so as to be able to catch the exceptions thrown in the framework thread pools.
    * 
    * @since 2010.03.02
