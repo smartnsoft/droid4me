@@ -20,16 +20,6 @@ package com.smartnsoft.droid4me.ui;
 
 import java.util.List;
 
-import com.smartnsoft.droid4me.framework.ActivityResultHandler;
-import com.smartnsoft.droid4me.framework.DetailsProvider;
-import com.smartnsoft.droid4me.framework.LifeCycle;
-import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-import com.smartnsoft.droid4me.menu.MenuHandler;
-
 import android.app.Activity;
 import android.content.Context;
 import android.view.ContextMenu;
@@ -41,9 +31,18 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.LinearLayout.LayoutParams;
+
+import com.smartnsoft.droid4me.framework.ActivityResultHandler;
+import com.smartnsoft.droid4me.framework.DetailsProvider;
+import com.smartnsoft.droid4me.framework.LifeCycle;
+import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
+import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
+import com.smartnsoft.droid4me.menu.MenuCommand;
+import com.smartnsoft.droid4me.menu.MenuHandler;
 
 /**
  * In order to propose a list which automates many things regarding its underlying business objects.
@@ -275,16 +274,26 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
   public abstract void notifyDataSetChanged(boolean businessObjectCountAndSortingUnchanged);
 
   /**
-   * Adds a view to the underlying list view.
+   * Adds a view to the underlying list view, on its top, or on its bottom.
    * 
-   * @param top
+   * @param onTop
    *          if <code>true</code>, the view is added to the header ; otherwise to the footer
    * @param fixed
    *          whether the view will scroll or not
    * @param view
    *          the view to add
    */
-  public abstract void setHeaderFooterView(boolean top, boolean fixed, View view);
+  public abstract void addHeaderFooterView(boolean onTop, boolean fixed, View view);
+
+  /**
+   * Adds a view to the underlying list view, or its left or on its right.
+   * 
+   * @param onLeft
+   *          if <code>true</code>, the view is added to left of the view ; otherwise to the right
+   * @param view
+   *          the view to add
+   */
+  public abstract void addLeftRightView(boolean onLeft, View view);
 
   /**
    * Sets the view which will be used instead of the list it it is empty.
@@ -306,7 +315,11 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
   protected LinearLayout footerLayout;
 
-  protected RelativeLayout listWrapperLayout;
+  protected LinearLayout leftLayout;
+
+  protected LinearLayout rightLayout;
+
+  protected LinearLayout listWrapperLayout;
 
   public SmartListView(Activity activity)
   {
@@ -331,7 +344,7 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
     };
   }
 
-  public RelativeLayout getListWrapperLayout()
+  public LinearLayout getListWrapperLayout()
   {
     return listWrapperLayout;
   }
@@ -364,10 +377,23 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
     // wrapperLayout.addView(listWrapperLayout, layoutParams);
     // }
     {
-      listWrapperLayout = new RelativeLayout(context);
-      listWrapperLayout.addView(getListView(), new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+      listWrapperLayout = new LinearLayout(context);
+      listWrapperLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+      leftLayout = new LinearLayout(context);
+      leftLayout.setOrientation(LinearLayout.HORIZONTAL);
+      listWrapperLayout.addView(leftLayout, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+
+      // This is essential to give a width of 0 and a weight of 1
+      listWrapperLayout.addView(getListView(), new LinearLayout.LayoutParams(0, LayoutParams.FILL_PARENT, 1));
+
+      rightLayout = new LinearLayout(context);
+      rightLayout.setOrientation(LinearLayout.HORIZONTAL);
+      listWrapperLayout.addView(rightLayout, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+
       // This is essential to give a height of 0 and a weight of 1
       wrapperLayout.addView(listWrapperLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, 0, 1));
+
     }
     {
       footerLayout = new LinearLayout(context);

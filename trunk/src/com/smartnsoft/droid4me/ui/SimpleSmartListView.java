@@ -18,8 +18,6 @@
 
 package com.smartnsoft.droid4me.ui;
 
-import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
-
 import android.app.Activity;
 import android.content.Context;
 import android.view.GestureDetector;
@@ -35,6 +33,8 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.LinearLayout.LayoutParams;
+
+import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
 
 /**
  * A simple (not expandable) smart list view.
@@ -134,21 +134,21 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
   }
 
   @Override
-  protected ForList<BusinessObjectClass, ViewClass> getForListProvider()
+  protected final ForList<BusinessObjectClass, ViewClass> getForListProvider()
   {
     return forListProvider;
   }
 
   @Override
-  public ListView getListView()
+  public final ListView getListView()
   {
     return listView;
   }
 
   @Override
-  public void setHeaderFooterView(boolean top, boolean fixed, View view)
+  public final void addHeaderFooterView(boolean onTop, boolean fixed, View view)
   {
-    if (top == true)
+    if (onTop == true)
     {
       if (fixed == true)
       {
@@ -169,6 +169,19 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
       {
         listView.addFooterView(view);
       }
+    }
+  }
+
+  @Override
+  public final void addLeftRightView(boolean onLeft, View view)
+  {
+    if (onLeft == true)
+    {
+      leftLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+    }
+    else
+    {
+      rightLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
     }
   }
 
@@ -198,7 +211,7 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
   }
 
   @Override
-  protected void setAdapter()
+  protected final void setAdapter()
   {
     // TODO: remove the duplicated "setOnItemClickListener"
     listView.setOnItemClickListener(new OnItemClickListener()
@@ -308,7 +321,7 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
   }
 
   @Override
-  public void notifyDataSetChanged(boolean businessObjectCountAndSortingUnchanged)
+  public final void notifyDataSetChanged(boolean businessObjectCountAndSortingUnchanged)
   {
     if (businessObjectCountAndSortingUnchanged == false)
     {
@@ -321,7 +334,7 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
   }
 
   @Override
-  protected void setSelected(int position)
+  protected final void setSelected(int position)
   {
     listView.setSelection(position + listView.getHeaderViewsCount());
   }
