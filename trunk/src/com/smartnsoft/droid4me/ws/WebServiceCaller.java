@@ -548,8 +548,11 @@ public abstract class WebServiceCaller
    *          the Apache HTTP client that will run the HTTP request
    * @param request
    *          the HTTP request
+   * @throws WebServiceCaller.CallException
+   *           in case the HTTP request cannot be eventually invoked properly
    */
   protected void onBeforeHttpRequestExecution(DefaultHttpClient httpClient, HttpRequestBase request)
+      throws WebServiceCaller.CallException
   {
   }
 
