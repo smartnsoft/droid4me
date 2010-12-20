@@ -22,6 +22,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build.VERSION;
 import android.view.ContextMenu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -317,7 +318,11 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
   protected LinearLayout leftLayout;
 
+  protected boolean leftAdded;
+
   protected LinearLayout rightLayout;
+
+  protected boolean rightAdded;
 
   protected LinearLayout listWrapperLayout;
 
@@ -382,6 +387,11 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
       leftLayout = new LinearLayout(context);
       leftLayout.setOrientation(LinearLayout.HORIZONTAL);
+      if (VERSION.SDK_INT <= 4)
+      {
+        // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
+        leftLayout.addView(new View(context), new LinearLayout.LayoutParams(0, 0));
+      }
       listWrapperLayout.addView(leftLayout, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
 
       // This is essential to give a width of 0 and a weight of 1
@@ -389,11 +399,15 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
       rightLayout = new LinearLayout(context);
       rightLayout.setOrientation(LinearLayout.HORIZONTAL);
+      if (VERSION.SDK_INT <= 4)
+      {
+        // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
+        rightLayout.addView(new View(context), new LinearLayout.LayoutParams(0, 0));
+      }
       listWrapperLayout.addView(rightLayout, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
 
       // This is essential to give a height of 0 and a weight of 1
       wrapperLayout.addView(listWrapperLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, 0, 1));
-
     }
     {
       footerLayout = new LinearLayout(context);
