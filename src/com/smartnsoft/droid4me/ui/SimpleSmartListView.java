@@ -20,7 +20,6 @@ package com.smartnsoft.droid4me.ui;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Build.VERSION;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -153,7 +152,12 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
     {
       if (fixed == true)
       {
+        if (headerAdded == false)
+        {
+          initializeHeader();
+        }
         headerLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+        headerAdded = true;
       }
       else
       {
@@ -164,7 +168,12 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
     {
       if (fixed == true)
       {
+        if (footerAdded == false)
+        {
+          initializeFooter();
+        }
         footerLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+        footerAdded = true;
       }
       else
       {
@@ -178,23 +187,31 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
   {
     if (onLeft == true)
     {
-      if (VERSION.SDK_INT <= 4 && leftAdded == false)
+      if (leftAdded == false)
       {
-        // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
-        leftLayout.removeViewAt(0);
+        initializeLeft();
       }
+      // if (VERSION.SDK_INT <= 4 && leftAdded == false)
+      // {
+      // // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
+      // leftLayout.removeViewAt(0);
+      // }
       leftLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
       leftAdded = true;
     }
     else
     {
-      if (VERSION.SDK_INT <= 4 && rightAdded == false)
+      if (rightAdded == false)
       {
-        // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
-        rightLayout.removeViewAt(0);
+        initializeRight();
       }
-      rightAdded = true;
+      // if (VERSION.SDK_INT <= 4 && rightAdded == false)
+      // {
+      // // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
+      // rightLayout.removeViewAt(0);
+      // }
       rightLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+      rightAdded = true;
     }
   }
 

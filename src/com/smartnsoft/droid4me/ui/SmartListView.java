@@ -22,7 +22,6 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Build.VERSION;
 import android.view.ContextMenu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -312,9 +311,15 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
   protected OnEventObjectListener<BusinessObjectClass> onEventObjectListener;
 
+  protected LinearLayout wrapperLayout;
+
   protected LinearLayout headerLayout;
 
+  protected boolean headerAdded;
+
   protected LinearLayout footerLayout;
+
+  protected boolean footerAdded;
 
   protected LinearLayout leftLayout;
 
@@ -361,64 +366,59 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
   public final ViewGroup createWrapperLayout(Context context)
   {
-    // final RelativeLayout wrapperLayout = new RelativeLayout(context);
-    final LinearLayout wrapperLayout = new LinearLayout(context);
+    wrapperLayout = new LinearLayout(context);
     wrapperLayout.setOrientation(LinearLayout.VERTICAL);
-    {
-      headerLayout = new LinearLayout(context);
-      headerLayout.setOrientation(LinearLayout.VERTICAL);
-      // headerLayout.setId(1000);
-      // final RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT);
-      // layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-      // wrapperLayout.addView(headerLayout, layoutParams);
-      wrapperLayout.addView(headerLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-    }
-    // {
-    // listWrapperLayout = new RelativeLayout(context);
-    // listWrapperLayout.addView(getListView(), new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-    // final RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT);
-    // layoutParams.addRule(RelativeLayout.BELOW, headerLayout.getId());
-    // layoutParams.addRule(RelativeLayout.ABOVE, footerLayout.getId());
-    // wrapperLayout.addView(listWrapperLayout, layoutParams);
-    // }
+
     {
       listWrapperLayout = new LinearLayout(context);
       listWrapperLayout.setOrientation(LinearLayout.HORIZONTAL);
 
-      leftLayout = new LinearLayout(context);
-      leftLayout.setOrientation(LinearLayout.HORIZONTAL);
-      if (VERSION.SDK_INT <= 4)
-      {
-        // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
-        leftLayout.addView(new View(context), new LinearLayout.LayoutParams(0, 0));
-      }
-      listWrapperLayout.addView(leftLayout, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
-
       // This is essential to give a width of 0 and a weight of 1
       listWrapperLayout.addView(getListView(), new LinearLayout.LayoutParams(0, LayoutParams.FILL_PARENT, 1));
-
-      rightLayout = new LinearLayout(context);
-      rightLayout.setOrientation(LinearLayout.HORIZONTAL);
-      if (VERSION.SDK_INT <= 4)
-      {
-        // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
-        rightLayout.addView(new View(context), new LinearLayout.LayoutParams(0, 0));
-      }
-      listWrapperLayout.addView(rightLayout, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
 
       // This is essential to give a height of 0 and a weight of 1
       wrapperLayout.addView(listWrapperLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, 0, 1));
     }
-    {
-      footerLayout = new LinearLayout(context);
-      footerLayout.setOrientation(LinearLayout.VERTICAL);
-      // footerLayout.setId(1001);
-      // final RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT);
-      // layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-      // wrapperLayout.addView(footerLayout, layoutParams);
-      wrapperLayout.addView(footerLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-    }
+
     return wrapperLayout;
+  }
+
+  protected final void initializeHeader()
+  {
+    headerLayout = new LinearLayout(wrapperLayout.getContext());
+    headerLayout.setOrientation(LinearLayout.VERTICAL);
+    wrapperLayout.addView(headerLayout, 0, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+  }
+
+  protected final void initializeFooter()
+  {
+    footerLayout = new LinearLayout(wrapperLayout.getContext());
+    footerLayout.setOrientation(LinearLayout.VERTICAL);
+    wrapperLayout.addView(footerLayout, 1 + (headerAdded == true ? 1 : 0), new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+  }
+
+  protected final void initializeLeft()
+  {
+    leftLayout = new LinearLayout(wrapperLayout.getContext());
+    leftLayout.setOrientation(LinearLayout.HORIZONTAL);
+//    if (VERSION.SDK_INT <= 4)
+//    {
+//      // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
+//      leftLayout.addView(new View(wrapperLayout.getContext()), new LinearLayout.LayoutParams(0, 0));
+//    }
+    listWrapperLayout.addView(leftLayout, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+  }
+
+  protected final void initializeRight()
+  {
+    rightLayout = new LinearLayout(wrapperLayout.getContext());
+    rightLayout.setOrientation(LinearLayout.HORIZONTAL);
+    // if (VERSION.SDK_INT <= 4)
+    // {
+    // // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
+    // rightLayout.addView(new View(wrapperLayout.getContext()), new LinearLayout.LayoutParams(0, 0));
+    // }
+    listWrapperLayout.addView(rightLayout, 1 + (leftAdded == true ? 1 : 0), new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
   }
 
   public final void declareActionHandlers(MenuHandler.Composite compositeActionHandler)
