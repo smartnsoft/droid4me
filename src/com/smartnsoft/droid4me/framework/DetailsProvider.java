@@ -21,9 +21,6 @@ package com.smartnsoft.droid4me.framework;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.view.View;
@@ -31,6 +28,9 @@ import android.widget.Adapter;
 import android.widget.GridView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+
+import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
+import com.smartnsoft.droid4me.menu.MenuCommand;
 
 /**
  * Introduced in order to define various contract between:
@@ -230,6 +230,20 @@ public abstract class DetailsProvider
     public final View getNewView(Activity activity)
     {
       final View view = createNewView(activity, getBusinessObject());
+      return setNewView(activity, view);
+    }
+
+    /**
+     * Attaches a view to the underlying business object.
+     * 
+     * @param activity
+     *          the activity the view belongs to
+     * @param view
+     *          the view to attach
+     * @return the provided view
+     */
+    final View setNewView(Activity activity, View view)
+    {
       view.setTag(extractNewViewAttributes(activity, view, getBusinessObject()));
       return view;
     }
@@ -259,6 +273,14 @@ public abstract class DetailsProvider
     }
 
     /**
+     * @return the wrapper passed in the constructor
+     */
+    public DetailsProvider.BusinessViewWrapper<?> getBusinessViewWrapper()
+    {
+      return businessViewWrapper;
+    }
+
+    /**
      * This method should be called only once during the object life cycle.
      * 
      * <p>
@@ -269,10 +291,25 @@ public abstract class DetailsProvider
      *          the activity on which the business object is being rendered
      * @return the initialized view that represent the underlying business object
      */
-    public View getView(Activity activity)
+    public final View getView(Activity activity)
     {
       view = businessViewWrapper.getNewView(activity);
       return view;
+    }
+
+    /**
+     * Sets the view of the of the underlying business view wrapper, so that it is not necessary to invoke the {@link #getView(Activity)} method.
+     * 
+     * @param activity
+     *          the activity on which the business object is being rendered
+     * @param view
+     *          the view that will be attached to the business view wrapper
+     * @return
+     */
+    public final View setView(Activity activity, View view)
+    {
+      this.view = view;
+      return businessViewWrapper.setNewView(activity, view);
     }
 
     /**
@@ -285,7 +322,7 @@ public abstract class DetailsProvider
      * @param activity
      *          the activity on which the business object is being rendered
      */
-    public void updateView(Activity activity)
+    public final void updateView(Activity activity)
     {
       businessViewWrapper.updateView(activity, view, 0);
     }
@@ -321,7 +358,6 @@ public abstract class DetailsProvider
   public static interface ForList<BusinessObjectClass, ViewClass>
       extends DetailsProvider.ForListHandler<BusinessObjectClass>, DetailsProvider.ForListView<BusinessObjectClass, ViewClass>
   {
-
   }
 
 }
