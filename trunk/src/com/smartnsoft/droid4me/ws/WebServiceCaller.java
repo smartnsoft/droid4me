@@ -265,7 +265,7 @@ public abstract class WebServiceCaller
     try
     {
       final HttpResponse response = performHttpRequest(uri, callType, body, 0);
-      return response.getEntity().getContent();
+      return getContent(uri, callType, response);
     }
     catch (WebServiceCaller.CallException exception)
     {
@@ -295,7 +295,7 @@ public abstract class WebServiceCaller
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, SAXException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null, 0);
-    return WebServiceCaller.getDom(response.getEntity().getContent());
+    return WebServiceCaller.getDom(getContent(uri, WebServiceCaller.CallType.Get, response));
   }
 
   protected final void performHttpGetSAX(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters, ContentHandler contentHandler)
@@ -328,21 +328,21 @@ public abstract class WebServiceCaller
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null, 0);
-    return getJson(response.getEntity().getContent());
+    return getJson(getContent(uri, WebServiceCaller.CallType.Get, response));
   }
 
   protected final String performHttpPostJson(String uri, HttpEntity body)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Post, body, 0);
-    return getJson(response.getEntity().getContent());
+    return getJson(getContent(uri, WebServiceCaller.CallType.Post, response));
   }
 
   protected final String performHttpPutJson(String uri, HttpEntity body)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Put, body, 0);
-    return getJson(response.getEntity().getContent());
+    return getJson(getContent(uri, WebServiceCaller.CallType.Put, response));
   }
 
   public static final String getString(InputStream inputStream)
@@ -387,12 +387,12 @@ public abstract class WebServiceCaller
     return builder.parse(inputStream);
   }
 
-  protected final Document parseDom(HttpResponse response)
+  protected final Document parseDom(String uri, WebServiceCaller.CallType callType, HttpResponse response)
       throws CallException
   {
     try
     {
-      return WebServiceCaller.parseDom(response.getEntity().getContent());
+      return WebServiceCaller.parseDom(getContent(uri, callType, response));
     }
     catch (IOException exception)
     {
@@ -554,6 +554,29 @@ public abstract class WebServiceCaller
   protected void onBeforeHttpRequestExecution(DefaultHttpClient httpClient, HttpRequestBase request)
       throws WebServiceCaller.CallException
   {
+  }
+
+  /**
+   * Invoked on every call, in order to extract the input stream from the response.
+   * 
+   * <p>
+   * If the content type is gzipped, this is the ideal place for unzipping it.
+   * </p>
+   * 
+   * @param uri
+   *          the web call initial URI
+   * @param callType
+   *          the kind of request
+   * @param response
+   *          the HTTP response
+   * @return the (decoded) input stream of the response
+   * @throws IOException
+   *           if some exception occurred while extracting the content of the response
+   */
+  protected InputStream getContent(String uri, WebServiceCaller.CallType callType, HttpResponse response)
+      throws IOException
+  {
+    return response.getEntity().getContent();
   }
 
   /**
