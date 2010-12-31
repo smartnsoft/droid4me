@@ -19,6 +19,7 @@
 package com.smartnsoft.droid4me.app;
 
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import android.app.Activity;
@@ -289,7 +290,7 @@ public final class ActivityController
       // We investigate over the whole cause stack
       while ((cause = newThrowable.getCause()) != null)
       {
-        if (cause instanceof UnknownHostException || cause instanceof SocketException)
+        if (cause instanceof UnknownHostException || cause instanceof SocketException || cause instanceof SocketTimeoutException)
         {
           activity.runOnUiThread(new Runnable()
           {
