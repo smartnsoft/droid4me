@@ -18,6 +18,7 @@
 
 package com.smartnsoft.droid4me.app;
 
+import java.io.InterruptedIOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -290,7 +291,7 @@ public final class ActivityController
       // We investigate over the whole cause stack
       while ((cause = newThrowable.getCause()) != null)
       {
-        if (cause instanceof UnknownHostException || cause instanceof SocketException || cause instanceof SocketTimeoutException)
+        if (cause instanceof UnknownHostException || cause instanceof SocketException || cause instanceof SocketTimeoutException || cause instanceof InterruptedIOException)
         {
           activity.runOnUiThread(new Runnable()
           {
