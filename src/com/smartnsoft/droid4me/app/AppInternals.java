@@ -218,7 +218,7 @@ abstract class AppInternals
       if (activity instanceof AppPublics.SendLoadingIntent)
       {
         // We indicate the activity which is loading, in order to filter the loading events
-        activity.sendBroadcast(new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_ACTIVITY, activity.getClass().getName()));
+        AppPublics.LoadingBroadcastListener.broadcastLoading(activity, activity.getClass(), true, false);
       }
     }
 
@@ -231,8 +231,7 @@ abstract class AppInternals
       if (activity instanceof AppPublics.SendLoadingIntent)
       {
         // We indicate the activity which is loading, in order to filter the loading events
-        activity.sendBroadcast(new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_LOADING, false).putExtra(
-            AppPublics.UI_LOAD_ACTION_ACTIVITY, activity.getClass().getName()));
+        AppPublics.LoadingBroadcastListener.broadcastLoading(activity, activity.getClass(), false, false);
       }
     }
 

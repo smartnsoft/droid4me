@@ -231,6 +231,29 @@ public final class AppPublics
 
     private boolean restrictToActivity;
 
+    /**
+     * Triggers a loading event.
+     * 
+     * @param context
+     *          the context which triggers that event
+     * @param targetActivityClass
+     *          the class which should receive the loading event
+     * @param isLoading
+     *          whether this deals with a loading which starts or stop
+     * @param addCategory
+     *          whether the broadcast intent should contain the target category
+     */
+    public static void broadcastLoading(Context context, Class<? extends Activity> targetActivityClass, boolean isLoading, boolean addCategory)
+    {
+      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_LOADING, isLoading).putExtra(
+          AppPublics.UI_LOAD_ACTION_ACTIVITY, targetActivityClass.getName());
+      if (addCategory == true)
+      {
+        intent.addCategory(targetActivityClass.getName());
+      }
+      context.sendBroadcast(intent);
+    }
+
     public LoadingBroadcastListener(Activity activity)
     {
       this(activity, true);
@@ -259,8 +282,8 @@ public final class AppPublics
 
     public void onReceive(Intent intent)
     {
-      if (intent.hasExtra(AppPublics.UI_LOAD_ACTION_ACTIVITY) == true && intent.getStringExtra(AppPublics.UI_LOAD_ACTION_ACTIVITY).equals(
-          activity.getClass().getName()) == true)
+      if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.UI_LOAD_ACTION_ACTIVITY) == true && intent.getStringExtra(
+          AppPublics.UI_LOAD_ACTION_ACTIVITY).equals(activity.getClass().getName()) == true)
       {
         final int previousCounter = counter;
         // We only take into account the loading event coming from the activity itself
@@ -275,7 +298,6 @@ public final class AppPublics
         {
           onLoading(false);
         }
-        // activity.setProgressBarIndeterminateVisibility(counter > 0);
       }
     }
 
