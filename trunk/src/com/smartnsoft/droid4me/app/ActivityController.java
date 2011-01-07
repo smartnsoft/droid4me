@@ -95,6 +95,11 @@ public final class ActivityController
        */
       onStart,
       /**
+       * Called during the {@link Activity#onResume} method, at the beginning of the method, but after the parent's call, provided no
+       * {@link ActivityController.Redirector activity redirection} is requested.
+       */
+      onResume,
+      /**
        * Called during the {@link Activity#onPause} method, at the beginning of the method, but after the parent's call, provided no
        * {@link ActivityController.Redirector activity redirection} is requested.
        */

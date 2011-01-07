@@ -513,6 +513,7 @@ public abstract class SmartGroupActivity
     {
       return;
     }
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onResume);
     businessObjectRetrievalAndResultHandlers();
   }
 
