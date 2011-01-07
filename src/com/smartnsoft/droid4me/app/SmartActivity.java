@@ -209,6 +209,7 @@ public abstract class SmartActivity
     {
       return;
     }
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onResume);
     businessObjectRetrievalAndResultHandlers();
   }
 
