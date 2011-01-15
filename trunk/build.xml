@@ -171,14 +171,23 @@ This Ant buildfile requires that you have included the following Ant library ext
     depends="init"
     description="Copies and pastes the source code by modyfying it."
   >
-    <!-- TODO: add a timestamp to the version -->
     <loadfile
       srcFile="VERSION.txt"
-      property="droid4meVersionName"
+      property="droid4meVersionNameRaw"
     />
     <input
       message="Name of droid4me version?"
-      addproperty="droid4meVersionName"
+      addproperty="droid4meVersionNameRaw"
+    />
+    <tstamp>
+      <format
+        property="timestamp"
+        pattern="yyyy.MM.dd-HH:mm"
+      />
+    </tstamp>
+    <property
+      name="droid4meVersionName"
+      value="${droid4meVersionNameRaw} built on ${timestamp}"
     />
     <delete dir="${tweakedSource.directoryPath}"/>
     <mkdir dir="${tweakedSource.directoryPath}"/>
