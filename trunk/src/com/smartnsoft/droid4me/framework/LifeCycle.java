@@ -111,7 +111,7 @@ public final class LifeCycle
 
     /**
      * This is the place where the derived class can get all graphical objects and put them into attributes. The method is invoked during the
-     * {@link Activity#onCreate} execution.
+     * {@link Activity#onCreate} execution, after the parent {@link Activity#onCreate} method has been invoked.
      */
     void onRetrieveDisplayObjects();
 

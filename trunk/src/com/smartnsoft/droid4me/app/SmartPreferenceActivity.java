@@ -174,7 +174,9 @@ public abstract class SmartPreferenceActivity
 
     onInternalCreate(savedInstanceState);
     onBeforeRetrievingDisplayObjects();
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     onRetrieveDisplayObjects();
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
     // We add the static menu commands
     getCompositeActionHandler().add(new MenuHandler.Static()
     {
