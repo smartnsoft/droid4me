@@ -62,7 +62,7 @@ public final class ActivityController
   }
 
   /**
-   * An interface which is queried during the various life cycle events of an activity.
+   * An interface which is queried during the various life cycle events of an {@link LifeCycle.ForActivity activity}.
    */
   public interface Interceptor
   {
@@ -78,18 +78,19 @@ public final class ActivityController
        */
       onCreate,
       /**
+       * Called during the {@link Activity#onCreate} method, just before the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has been
+       * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
+       */
+      onRetrieveDisplayObjectsBefore,
+      /**
+       * Called during the {@link Activity#onCreate} method, just after the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has been
+       * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
+       */
+      onRetrieveDisplayObjectsAfter,
+      /**
        * Called just after the {@link AppInternals.LifeCycleInternals#onActuallyCreated} method.
        */
       onActuallyCreatedDone,
-      /**
-       * Called during the {@link Activity#onDestroy} method, at the very end of the method, provided no {@link ActivityController.Redirector activity
-       * redirection} is requested.
-       */
-      onDestroy,
-      /**
-       * Called just after the {@link AppInternals.LifeCycleInternals#onActuallyDestroyed} method.
-       */
-      onActuallyDestroyedDone,
       /**
        * Called during the {@link Activity#onStart} method, at the beginning of the method, but after the parent's call.
        */
@@ -115,7 +116,16 @@ public final class ActivityController
       /**
        * Called just after the {@link LifeCycle.ForActivity#onSynchronizeDisplayObjects} method.
        */
-      onSynchronizeDisplayObjectsDone
+      onSynchronizeDisplayObjectsDone,
+      /**
+       * Called during the {@link Activity#onDestroy} method, at the very end of the method, provided no {@link ActivityController.Redirector activity
+       * redirection} is requested.
+       */
+      onDestroy,
+      /**
+       * Called just after the {@link AppInternals.LifeCycleInternals#onActuallyDestroyed} method.
+       */
+      onActuallyDestroyedDone
     }
 
     /**
