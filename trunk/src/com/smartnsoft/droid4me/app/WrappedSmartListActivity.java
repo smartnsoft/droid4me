@@ -32,8 +32,8 @@ import android.view.View;
  * @author Édouard Mercier
  * @since 2009.04.29
  */
-public abstract class WrappedSmartListActivity
-    extends SmartListActivity<DetailsProvider.BusinessViewWrapper<?>, View>
+public abstract class WrappedSmartListActivity<AggregateClass>
+    extends SmartListActivity<AggregateClass, DetailsProvider.BusinessViewWrapper<?>, View>
 {
 
   @Override

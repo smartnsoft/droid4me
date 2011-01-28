@@ -36,7 +36,6 @@ import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.View.OnFocusChangeListener;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.FrameLayout;
@@ -60,13 +59,15 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  * @author Édouard Mercier
  * @since 2010.02.24
  */
-public abstract class SmartGroupActivity
+public abstract class SmartGroupActivity<AggregateClass>
     extends ActivityGroup
-    implements AppPublics.CommonActivity, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals/*
-                                                                                                                             * ,ViewTreeObserver.
-                                                                                                                             * OnTouchModeChangeListener
-                                                                                                                             * , OnFocusChangeListener
-                                                                                                                             */
+    implements AppPublics.CommonActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals/*
+                                                                                                                                             * ,ViewTreeObserver
+                                                                                                                                             * .
+                                                                                                                                             * OnTouchModeChangeListener
+                                                                                                                                             * ,
+                                                                                                                                             * OnFocusChangeListener
+                                                                                                                                             */
 {
   /**
    * This is taken from the Android API Demos source code!
@@ -209,7 +210,7 @@ public abstract class SmartGroupActivity
 
   private String currentActivityId;
 
-  private SmartGroupActivity.GroupLayout wrapperView;
+  private SmartGroupActivity<AggregateClass>.GroupLayout wrapperView;
 
   private View headerView;
 
@@ -355,7 +356,7 @@ public abstract class SmartGroupActivity
 
   public void onRetrieveDisplayObjects()
   {
-    wrapperView = new SmartGroupActivity.GroupLayout(this);
+    wrapperView = new GroupLayout(this);
     wrapperView.setOrientation(LinearLayout.VERTICAL);
 
     contentView = new FrameLayout(this);
@@ -364,11 +365,11 @@ public abstract class SmartGroupActivity
     if (headerView != null)
     {
       wrapperView.addView(headerView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-//      headerView.setOnFocusChangeListener(this);
+      // headerView.setOnFocusChangeListener(this);
     }
     wrapperView.addView(contentView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-//    contentView.setOnFocusChangeListener(this);
-//    wrapperView.setOnFocusChangeListener(this);
+    // contentView.setOnFocusChangeListener(this);
+    // wrapperView.setOnFocusChangeListener(this);
     setContentView(wrapperView);
   }
 
@@ -380,7 +381,7 @@ public abstract class SmartGroupActivity
    * ------------------- Beginning of "Copied from the SmartActivity class" -------------------
    */
 
-  private AppInternals.StateContainer stateContainer = new AppInternals.StateContainer();
+  private AppInternals.StateContainer<AggregateClass> stateContainer = new AppInternals.StateContainer<AggregateClass>();
 
   public void onActuallyCreated()
   {
@@ -405,14 +406,19 @@ public abstract class SmartGroupActivity
     return stateContainer.handler;
   }
 
-  public Object getAggregate()
+  public final AggregateClass getAggregate()
   {
     return stateContainer.aggregate;
   }
 
-  public void setAggregate(Object aggregate)
+  public final void setAggregate(AggregateClass aggregate)
   {
     stateContainer.aggregate = aggregate;
+  }
+
+  public final void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners)
+  {
+    stateContainer.registerBroadcastListeners(this, broadcastListeners);
   }
 
   public List<StaticMenuCommand> getMenuCommands()
@@ -453,6 +459,7 @@ public abstract class SmartGroupActivity
     {
       log.debug("SmartGroupActivity::onCreate");
     }
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     super.onCreate(savedInstanceState);
     if (ActivityController.getInstance().needsRedirection(this) == true)
     {
@@ -478,9 +485,9 @@ public abstract class SmartGroupActivity
 
     onInternalCreate(savedInstanceState);
     onBeforeRetrievingDisplayObjects();
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
+    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     onRetrieveDisplayObjects();
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
+    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
     // We add the static menu commands
     getCompositeActionHandler().add(new MenuHandler.Static()
     {
@@ -500,6 +507,13 @@ public abstract class SmartGroupActivity
         return menuCommands;
       }
     });
+  }
+
+  @Override
+  public void onContentChanged()
+  {
+    super.onContentChanged();
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
   }
 
   @Override

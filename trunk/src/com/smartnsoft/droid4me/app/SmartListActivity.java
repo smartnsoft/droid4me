@@ -45,8 +45,8 @@ import android.widget.LinearLayout;
  * @author Édouard Mercier
  * @since 2008.04.04
  */
-public abstract class SmartListActivity<BusinessObjectClass, ViewClass extends View>
-    extends SmartActivity
+public abstract class SmartListActivity<AggregateClass, BusinessObjectClass, ViewClass extends View>
+    extends SmartActivity<AggregateClass>
     implements DetailsProvider.ForList<BusinessObjectClass, ViewClass>, SmartListView.OnEventObjectListener<BusinessObjectClass>
 {
 

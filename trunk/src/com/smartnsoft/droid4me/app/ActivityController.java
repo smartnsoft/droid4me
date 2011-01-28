@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
+import android.view.Window;
 
 import com.smartnsoft.droid4me.framework.LifeCycle;
 import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
@@ -73,20 +74,33 @@ public final class ActivityController
     public static enum InterceptorEvent
     {
       /**
+       * Called during the {@link Activity#onCreate} method, before the Android built-in super method {@link Activity#onCreate} method is invoked.
+       * 
+       * <p>
+       * This is an ideal place where to {@link Window#requestFeature(int) request for window features}.
+       * </p>
+       */
+      onSuperCreateBefore,
+      /**
        * Called during the {@link Activity#onCreate} method, at the beginning of the method, but after the parent's call, provided no
        * {@link ActivityController.Redirector activity redirection} is requested.
        */
       onCreate,
       /**
+       * Called at the end of the {@link Activity#onContentChanged} method execution, but after the parent's call, provided no
+       * {@link ActivityController.Redirector activity redirection} is requested.
+       */
+      onContentChanged,
+      /**
        * Called during the {@link Activity#onCreate} method, just before the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has been
        * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
-      onRetrieveDisplayObjectsBefore,
+      // onRetrieveDisplayObjectsBefore,
       /**
        * Called during the {@link Activity#onCreate} method, just after the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has been
        * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
-      onRetrieveDisplayObjectsAfter,
+      // onRetrieveDisplayObjectsAfter,
       /**
        * Called just after the {@link AppInternals.LifeCycleInternals#onActuallyCreated} method.
        */

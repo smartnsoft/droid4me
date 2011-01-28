@@ -18,6 +18,8 @@
 
 package com.smartnsoft.droid4me.app;
 
+import java.util.Arrays;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -64,7 +66,7 @@ abstract class AppInternals
    * 
    * @since 2009.02.16
    */
-  final static class StateContainer
+  final static class StateContainer<AggregateClass>
   {
 
     private static final Logger log = LoggerFactory.getInstance(StateContainer.class);
@@ -77,7 +79,7 @@ abstract class AppInternals
 
     Handler handler;
 
-    Object aggregate;
+    AggregateClass aggregate;
 
     private SharedPreferences preferences;
 
@@ -125,14 +127,12 @@ abstract class AppInternals
       if (activity instanceof AppPublics.BroadcastListenerProvider)
       {
         broadcastListener = ((AppPublics.BroadcastListenerProvider) activity).getBroadcastListener();
-        broadcastReceivers = new BroadcastReceiver[1];
-        registerBroadcastListeners(activity, 0, broadcastListener);
+        registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
       }
       else if (activity instanceof AppPublics.BroadcastListener)
       {
         broadcastListener = (AppPublics.BroadcastListener) activity;
-        broadcastReceivers = new BroadcastReceiver[1];
-        registerBroadcastListeners(activity, 0, broadcastListener);
+        registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
       }
       else if (activity instanceof AppPublics.BroadcastListenersProvider)
       {
@@ -142,11 +142,20 @@ abstract class AppInternals
         {
           log.debug("Found out that the activity supports " + count + " intent broadcast listeners");
         }
-        broadcastReceivers = new BroadcastReceiver[count];
+        final int startIndex = enrichBroadCastListeners(count);
         for (int index = 0; index < count; index++)
         {
-          registerBroadcastListeners(activity, index, broadcastListenersProvider.getBroadcastListener(index));
+          registerBroadcastListeners(activity, startIndex + index, broadcastListenersProvider.getBroadcastListener(index));
         }
+      }
+    }
+
+    void registerBroadcastListeners(Activity activity, AppPublics.BroadcastListener[] broadcastListeners)
+    {
+      final int startIndex = enrichBroadCastListeners(broadcastListeners.length);
+      for (int index = 0; index < broadcastListeners.length; index++)
+      {
+        registerBroadcastListeners(activity, index + startIndex, broadcastListeners[index]);
       }
     }
 
@@ -186,6 +195,22 @@ abstract class AppInternals
         }
       }
       activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter() : intentFilter);
+    }
+
+    private int enrichBroadCastListeners(int count)
+    {
+      final int newIndex;
+      if (broadcastReceivers == null)
+      {
+        newIndex = 0;
+        broadcastReceivers = new BroadcastReceiver[count];
+      }
+      else
+      {
+        newIndex = broadcastReceivers.length;
+        broadcastReceivers = Arrays.copyOf(broadcastReceivers, count + broadcastReceivers.length);
+      }
+      return newIndex;
     }
 
     /**
