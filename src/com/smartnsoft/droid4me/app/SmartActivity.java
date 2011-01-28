@@ -48,9 +48,9 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  * @since 2008.04.11
  */
 // TODO: think of using the onRetainNonConfigurationInstance/getLastNonConfigurationInstance() when the screen orientation changes.
-public abstract class SmartActivity
+public abstract class SmartActivity<AggregateClass>
     extends Activity
-    implements AppPublics.CommonActivity, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements AppPublics.CommonActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
 
   protected static final Logger log = LoggerFactory.getInstance(SmartActivity.class);
@@ -61,7 +61,7 @@ public abstract class SmartActivity
   {
   }
 
-  private AppInternals.StateContainer stateContainer = new AppInternals.StateContainer();
+  private AppInternals.StateContainer<AggregateClass> stateContainer = new AppInternals.StateContainer<AggregateClass>();
 
   public void onActuallyCreated()
   {
@@ -86,14 +86,19 @@ public abstract class SmartActivity
     return stateContainer.handler;
   }
 
-  public Object getAggregate()
+  public final AggregateClass getAggregate()
   {
     return stateContainer.aggregate;
   }
 
-  public void setAggregate(Object aggregate)
+  public final void setAggregate(AggregateClass aggregate)
   {
     stateContainer.aggregate = aggregate;
+  }
+
+  public final void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners)
+  {
+    stateContainer.registerBroadcastListeners(this, broadcastListeners);
   }
 
   public List<StaticMenuCommand> getMenuCommands()
@@ -134,6 +139,7 @@ public abstract class SmartActivity
     {
       log.debug("SmartActivity::onCreate");
     }
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     super.onCreate(savedInstanceState);
     if (ActivityController.getInstance().needsRedirection(this) == true)
     {
@@ -160,9 +166,9 @@ public abstract class SmartActivity
 
     onInternalCreate(savedInstanceState);
     onBeforeRetrievingDisplayObjects();
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
+//    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     onRetrieveDisplayObjects();
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
+//    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
     // We add the static menu commands
     getCompositeActionHandler().add(new MenuHandler.Static()
     {
@@ -182,6 +188,13 @@ public abstract class SmartActivity
         return menuCommands;
       }
     });
+  }
+
+  @Override
+  public void onContentChanged()
+  {
+    super.onContentChanged();
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
   }
 
   static MenuHandler.Static createStaticActionHandler(final Context context)

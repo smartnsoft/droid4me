@@ -46,9 +46,9 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  * @author Édouard Mercier
  * @since 2010.09.23
  */
-public abstract class SmartPreferenceActivity
+public abstract class SmartPreferenceActivity<AggregateClass>
     extends PreferenceActivity
-    implements AppPublics.CommonActivity, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements AppPublics.CommonActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
 
   protected static final Logger log = LoggerFactory.getInstance(SmartPreferenceActivity.class);
@@ -76,7 +76,7 @@ public abstract class SmartPreferenceActivity
    * ------------------- Beginning of "Copied from the SmartActivity class" -------------------
    */
 
-  private AppInternals.StateContainer stateContainer = new AppInternals.StateContainer();
+  private AppInternals.StateContainer<AggregateClass> stateContainer = new AppInternals.StateContainer<AggregateClass>();
 
   public void onActuallyCreated()
   {
@@ -101,14 +101,19 @@ public abstract class SmartPreferenceActivity
     return stateContainer.handler;
   }
 
-  public Object getAggregate()
+  public final AggregateClass getAggregate()
   {
     return stateContainer.aggregate;
   }
 
-  public void setAggregate(Object aggregate)
+  public final void setAggregate(AggregateClass aggregate)
   {
     stateContainer.aggregate = aggregate;
+  }
+
+  public final void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners)
+  {
+    stateContainer.registerBroadcastListeners(this, broadcastListeners);
   }
 
   public List<StaticMenuCommand> getMenuCommands()
@@ -149,6 +154,7 @@ public abstract class SmartPreferenceActivity
     {
       log.debug("SmartPreferenceActivity::onCreate");
     }
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     super.onCreate(savedInstanceState);
     if (ActivityController.getInstance().needsRedirection(this) == true)
     {
@@ -174,9 +180,9 @@ public abstract class SmartPreferenceActivity
 
     onInternalCreate(savedInstanceState);
     onBeforeRetrievingDisplayObjects();
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
+    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     onRetrieveDisplayObjects();
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
+    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
     // We add the static menu commands
     getCompositeActionHandler().add(new MenuHandler.Static()
     {
@@ -196,6 +202,13 @@ public abstract class SmartPreferenceActivity
         return menuCommands;
       }
     });
+  }
+
+  @Override
+  public void onContentChanged()
+  {
+    super.onContentChanged();
+    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
   }
 
   @Override

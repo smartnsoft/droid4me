@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -53,7 +54,7 @@ public final class AppPublics
    * 
    * @since 2010.07.10
    */
-  public interface CommonActivity
+  public interface CommonActivity<AggregateClass>
   {
 
     /**
@@ -65,7 +66,7 @@ public final class AppPublics
      * @return an object that may be used along the {@link Activity} life ; may return <code>null</code>
      * @see #setAggregate(Object)
      */
-    Object getAggregate();
+    AggregateClass getAggregate();
 
     /**
      * Enables to set an aggregate hat may be used along the {@link Activity} life.
@@ -74,7 +75,24 @@ public final class AppPublics
      *          the object to use as an aggregate
      * @see #getAggregate()
      */
-    void setAggregate(Object aggregate);
+    void setAggregate(AggregateClass aggregate);
+
+    /**
+     * Explicitly registers {@link BroadcastReceiver wrapped broadcast receivers} for the {@link Activity}.
+     * 
+     * <p>
+     * Those receivers will be unregistered by the {@link Activity#onDestroy} method.
+     * </p>
+     * 
+     * <p>
+     * When invoking that method, all previously registered listeners via the {@link AppPublics.BroadcastListenerProvider} or
+     * {@link AppPublics.BroadcastListenersProvider} are kept.
+     * </p>
+     * 
+     * @param broadcastListeners
+     *          the wrapped {@link BroadcastReceiver receivers} to registers
+     */
+    void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners);
 
     /**
      * @return all the static menu commands that the activity wants to make available ; may return <code>null</code>
@@ -168,6 +186,11 @@ public final class AppPublics
 
   /**
    * States that the Android {@link Activity} which implements this interface is able to provide an intent broadcast listener.
+   * 
+   * <p>
+   * This method will be invoked by the framework during the {@link Activity#onCreate()} method, which will register the underlying
+   * {@link BroadcastReceiver}, and this receiver will be unregistered by the {@link Activity#onDestroy()} method.
+   * </p>
    * 
    * @see AppPublics#BroadcastListenersProvider
    * @since 2010.02.04
@@ -267,6 +290,11 @@ public final class AppPublics
     {
       this.activity = activity;
       this.restrictToActivity = restrictToActivity;
+    }
+
+    protected final Activity getActivity()
+    {
+      return activity;
     }
 
     public IntentFilter getIntentFilter()
