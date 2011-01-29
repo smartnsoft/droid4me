@@ -38,7 +38,7 @@ import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableExce
  * @since 2010.01.05
  */
 public abstract class SmartSplashScreenActivity
-    extends SmartActivity
+    extends SmartActivity<Void>
 {
 
   private static final Set<String> initialized = new HashSet<String>();

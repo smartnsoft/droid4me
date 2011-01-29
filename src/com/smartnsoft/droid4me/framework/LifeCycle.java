@@ -198,8 +198,6 @@ public final class LifeCycle
     BusinessObjectClass retrieveBusinessObject()
         throws BusinessObjectUnavailableException;
 
-    void discardBusinessObject();
-
     void onBusinessObjectsRetrieved();
 
     BusinessObjectClass getBusinessObject()
