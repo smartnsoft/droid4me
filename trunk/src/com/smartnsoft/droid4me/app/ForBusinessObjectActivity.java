@@ -20,13 +20,13 @@ package com.smartnsoft.droid4me.app;
 
 import java.util.List;
 
+import android.os.Bundle;
+
 import com.smartnsoft.droid4me.framework.ForBusinessObjectImplementation;
 import com.smartnsoft.droid4me.framework.LifeCycle;
 import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler.Custom;
-
-import android.os.Bundle;
 
 /**
  * An activity which handles the persistence properly, which proposes a framework regarding the custom action, and which provides a framework
@@ -35,8 +35,8 @@ import android.os.Bundle;
  * @author Édouard Mercier
  * @date 2008.04.13
  */
-public abstract class ForBusinessObjectActivity<BusinessObjectClass>
-    extends SmartActivity
+public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectClass>
+    extends SmartActivity<AggregateClass>
     implements LifeCycle.ForBusinessObject<BusinessObjectClass>
 {
 
@@ -72,30 +72,6 @@ public abstract class ForBusinessObjectActivity<BusinessObjectClass>
       return;
     }
     getCompositeActionHandler().add(forBusinessObjectImplementation.getActionHandler());
-  }
-
-  @Override
-  protected void onPause()
-  {
-    try
-    {
-      if (isBeingRedirected() == true)
-      {
-        // We stop here if a redirection is needed
-        return;
-      }
-      // We must consider that the business object is now null, and should be retrieved back if necessary
-      discardBusinessObject();
-    }
-    finally
-    {
-      super.onPause();
-    }
-  }
-
-  public final void discardBusinessObject()
-  {
-//    forBusinessObjectImplementation.discardBusinessObject();
   }
 
   public final Custom<BusinessObjectClass> getActionHandler()
