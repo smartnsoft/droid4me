@@ -16,10 +16,9 @@
  *     Smart&Soft - initial API and implementation
  */
 
-package com.smartnsoft.droid4me.content;
+package com.smartnsoft.droid4me.app;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -28,16 +27,16 @@ import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
- * A {@link BroadcastReceiver} with the logging feature.
+ * A {@link IntentService} with the logging feature.
  * 
  * @author Édouard Mercier
- * @since 2010.03.25
+ * @since 2011.01.30
  */
-public abstract class SmartBroadcastReceiver
-    extends BroadcastReceiver
+public abstract class SmartIntentService
+    extends IntentService
 {
 
-  protected static final Logger log = LoggerFactory.getInstance(SmartBroadcastReceiver.class);
+  protected static final Logger log = LoggerFactory.getInstance(SmartIntentService.class);
 
   private SharedPreferences preferences;
 
@@ -49,13 +48,23 @@ public abstract class SmartBroadcastReceiver
     return preferences;
   }
 
+  public SmartIntentService()
+  {
+    this(null);
+  }
+
+  public SmartIntentService(String name)
+  {
+    super(name);
+  }
+
   /**
    * Should always be invoked first by the derived classes.
    */
   @Override
-  public void onReceive(Context context, Intent intent)
+  protected void onHandleIntent(Intent intent)
   {
-    preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    preferences = PreferenceManager.getDefaultSharedPreferences(this);
   }
 
 }
