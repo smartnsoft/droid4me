@@ -18,8 +18,6 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.Arrays;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -208,7 +206,14 @@ abstract class AppInternals
       else
       {
         newIndex = broadcastReceivers.length;
-        broadcastReceivers = Arrays.copyOf(broadcastReceivers, count + broadcastReceivers.length);
+        final BroadcastReceiver[] newBroadcastReceivers = new BroadcastReceiver[count + broadcastReceivers.length];
+        // Only available from Android v9, a.k.a. GingerBread
+        // broadcastReceivers = Arrays.copyOf(broadcastReceivers, count + broadcastReceivers.length);
+        for (int index = 0; index < broadcastReceivers.length; index++)
+        {
+          newBroadcastReceivers[index] = broadcastReceivers[index];
+        }
+        broadcastReceivers = newBroadcastReceivers;
       }
       return newIndex;
     }
