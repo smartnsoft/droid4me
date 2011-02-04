@@ -140,18 +140,15 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
     {
       // log.debug("Asking for the view for list at position " + position);
       final BusinessObjectClass businessObject;
-      // synchronized (filteredObjectsSynchronization)
+      if (position >= smartListView.getFilteredObjects().size())
       {
-        if (position >= smartListView.getFilteredObjects().size())
+        if (log.isWarnEnabled())
         {
-          if (log.isWarnEnabled())
-          {
-            log.warn("Asking for a view type for a position " + position + " greater than that the filtered list size which is " + smartListView.getFilteredObjects().size());
-          }
-          return Adapter.IGNORE_ITEM_VIEW_TYPE;
+          log.warn("Asking for a view type for a position " + position + " greater than that the filtered list size which is " + smartListView.getFilteredObjects().size());
         }
-        businessObject = smartListView.getFilteredObjects().get(position);
+        return Adapter.IGNORE_ITEM_VIEW_TYPE;
       }
+      businessObject = smartListView.getFilteredObjects().get(position);
       return forListProvider.getViewType(businessObject, position);
     }
 
@@ -174,18 +171,15 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
       try
       {
         final BusinessObjectClass businessObject;
-        // synchronized (filteredObjectsSynchronization)
+        if (position >= smartListView.getFilteredObjects().size())
         {
-          if (position >= smartListView.getFilteredObjects().size())
+          if (log.isWarnEnabled())
           {
-            if (log.isWarnEnabled())
-            {
-              log.warn("Asking for a view for a position " + position + " greater than that the filtered list size which is " + smartListView.getFilteredObjects().size());
-            }
-            return null;
+            log.warn("Asking for a view for a position " + position + " greater than that the filtered list size which is " + smartListView.getFilteredObjects().size());
           }
-          businessObject = smartListView.getFilteredObjects().get(position);
+          return null;
         }
+        businessObject = smartListView.getFilteredObjects().get(position);
         final ViewClass innerView;
         boolean recycle = (convertView != null);// && forListProvider.doesViewFit((ViewClass) convertView, businessObject) == true);
         if (recycle == false)
@@ -222,26 +216,24 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
           protected synchronized FilterResults performFiltering(CharSequence constraint)
           {
             smartListView.setFilterText(constraint.toString());
-            smartListView.recomputeFilterObjectsList();
             final FilterResults results = new FilterResults();
-            synchronized (smartListView.filteredObjectsSynchronization)
-            {
-              results.count = smartListView.getFilteredObjects().size();
-              results.values = smartListView.getFilteredObjects();
-            }
+            final List<? extends BusinessObjectClass> resultFilteredObjects = smartListView.getForListProvider().getFilteredObjects(smartListView.getObjects());
+            results.values = resultFilteredObjects;
+            results.count = resultFilteredObjects.size();
             return results;
           }
 
           // This method is called from the main GUI thread
+          @SuppressWarnings("unchecked")
           protected synchronized void publishResults(CharSequence constraint, FilterResults results)
           {
+            smartListView.filteredObjects = (List<? extends BusinessObjectClass>) results.values;
             smartListView.filterHasChanged(false);
           }
         };
       }
       return filter;
     }
-
   }
 
   protected final static Logger log = LoggerFactory.getInstance(SmartListView.class);
@@ -251,8 +243,6 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
   private List<? extends BusinessObjectClass> objects;
 
   private List<? extends BusinessObjectClass> filteredObjects;
-
-  public final Object filteredObjectsSynchronization = new Object();
 
   private String filterText;
 
@@ -401,11 +391,11 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
   {
     leftLayout = new LinearLayout(wrapperLayout.getContext());
     leftLayout.setOrientation(LinearLayout.HORIZONTAL);
-//    if (VERSION.SDK_INT <= 4)
-//    {
-//      // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
-//      leftLayout.addView(new View(wrapperLayout.getContext()), new LinearLayout.LayoutParams(0, 0));
-//    }
+    // if (VERSION.SDK_INT <= 4)
+    // {
+    // // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
+    // leftLayout.addView(new View(wrapperLayout.getContext()), new LinearLayout.LayoutParams(0, 0));
+    // }
     listWrapperLayout.addView(leftLayout, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
   }
 
@@ -490,15 +480,12 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
   public final void filterHasChanged(boolean recomputeFilteredObjects)
   {
-    synchronized (filteredObjectsSynchronization)
+    if (recomputeFilteredObjects == true)
     {
-      if (recomputeFilteredObjects == true)
-      {
-        recomputeFilterObjectsList();
-      }
-      // We need to indicate the list adapter that the underlying data have changed
-      notifyDataSetChanged(!recomputeFilteredObjects);
+      recomputeFilterObjectsList();
     }
+    // We need to indicate the list adapter that the underlying data have changed
+    notifyDataSetChanged(!recomputeFilteredObjects);
   }
 
   protected void recomputeObjectsAndRefreshDisplay()
@@ -536,10 +523,7 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
   public List<? extends BusinessObjectClass> getFilteredObjects()
   {
-    synchronized (filteredObjectsSynchronization)
-    {
-      return filteredObjects;
-    }
+    return filteredObjects;
   }
 
   public Activity getActivity()
@@ -557,10 +541,7 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
   protected final void recomputeFilterObjectsList()
   {
-    synchronized (filteredObjectsSynchronization)
-    {
-      filteredObjects = getForListProvider().getFilteredObjects(getObjects());
-    }
+    filteredObjects = getForListProvider().getFilteredObjects(getObjects());
   }
 
 }

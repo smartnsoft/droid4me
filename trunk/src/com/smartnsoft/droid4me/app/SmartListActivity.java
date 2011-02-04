@@ -21,6 +21,14 @@ package com.smartnsoft.droid4me.app;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.view.ContextMenu;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.widget.LinearLayout;
+
 import com.smartnsoft.droid4me.framework.DetailsProvider;
 import com.smartnsoft.droid4me.framework.Events;
 import com.smartnsoft.droid4me.framework.DetailsProvider.ObjectEvent;
@@ -30,14 +38,6 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.ui.SimpleSmartListView;
 import com.smartnsoft.droid4me.ui.SmartListView;
-
-import android.content.Intent;
-import android.net.Uri;
-import android.view.ContextMenu;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.widget.LinearLayout;
 
 /**
  * In order to propose a list activity which automates many things regarding its underlying business objects.
@@ -326,13 +326,20 @@ public abstract class SmartListActivity<AggregateClass, BusinessObjectClass, Vie
 
   protected final List<? extends BusinessObjectClass> getFilteredByTextObjects(List<? extends BusinessObjectClass> fullObjectsList)
   {
-    final String filterTextLower = getFilterText().toLowerCase();
-    List<BusinessObjectClass> filteredObjectsList = new ArrayList<BusinessObjectClass>();
-    for (BusinessObjectClass businessObject : fullObjectsList)
+    final String filterTextLower = getFilterText() == null ? null : getFilterText().toLowerCase();
+    final List<BusinessObjectClass> filteredObjectsList = new ArrayList<BusinessObjectClass>();
+    if (filterTextLower == null)
     {
-      if (containsText(businessObject, filterTextLower) == true)
+      filteredObjectsList.addAll(fullObjectsList);
+    }
+    else
+    {
+      for (BusinessObjectClass businessObject : fullObjectsList)
       {
-        filteredObjectsList.add(businessObject);
+        if (containsText(businessObject, filterTextLower) == true)
+        {
+          filteredObjectsList.add(businessObject);
+        }
       }
     }
     return filteredObjectsList;
