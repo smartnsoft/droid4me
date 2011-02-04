@@ -257,20 +257,17 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
         {
           return;
         }
-        synchronized (filteredObjectsSynchronization)
+        if (actualPosition >= getFilteredObjects().size())
         {
-          if (actualPosition >= getFilteredObjects().size())
+          if (log.isErrorEnabled())
           {
-            if (log.isErrorEnabled())
-            {
-              log.error("The selected row " + actualPosition + " exceeds the size of the filtered business objetcs list which is " + getFilteredObjects().size());
-            }
-            return;
+            log.error("The selected row " + actualPosition + " exceeds the size of the filtered business objetcs list which is " + getFilteredObjects().size());
           }
-          if (onEventObjectListener != null)
-          {
-            onEventObjectListener.onClickedObject(view, getFilteredObjects().get(actualPosition));
-          }
+          return;
+        }
+        if (onEventObjectListener != null)
+        {
+          onEventObjectListener.onClickedObject(view, getFilteredObjects().get(actualPosition));
         }
       }
     });
@@ -294,7 +291,7 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
     final OnItemClickListener onItemClickListener = listView.getOnItemClickListener();
     listView.setOnItemClickListener(new OnItemClickListener()
     {
-      public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3)
+      public void onItemClick(AdapterView<?> adapterView, View view, int position, long id)
       {
         if (getListView().isEnabled() == false)
         {
@@ -306,7 +303,7 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
           return;
         }
         setSelectedObject(getFilteredObjects().get(actualPosition));
-        onItemClickListener.onItemClick(arg0, arg1, position, arg3);
+        onItemClickListener.onItemClick(adapterView, view, position, id);
       }
     });
     listView.setOnItemSelectedListener(new OnItemSelectedListener()
@@ -314,31 +311,28 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
       public void onItemSelected(AdapterView<?> adapterView, View view, int position, long rowId)
       {
         final int actualPosition = position - listView.getHeaderViewsCount();
-        synchronized (filteredObjectsSynchronization)
+        if (getFilteredObjects() == null)
         {
-          if (getFilteredObjects() == null)
+          if (log.isErrorEnabled())
           {
-            if (log.isErrorEnabled())
-            {
-              log.error("The row at position " + position + " has been marked as selected whereas no filter business objects are available yet");
-            }
-            return;
+            log.error("The row at position " + position + " has been marked as selected whereas no filter business objects are available yet");
           }
-
-          if (actualPosition < 0 || actualPosition >= getFilteredObjects().size())
-          {
-            // No item is selected
-            setSelectedObject(null);
-            return;
-          }
-          setSelectedObject(getFilteredObjects().get(actualPosition));
-          if (onEventObjectListener != null)
-          {
-            onEventObjectListener.onSelectedObject(view, getSelectedObject());
-          }
-          // log.debug("The view at position " + actualPosition + " is now selected, and corresponds to the business object with id '" +
-          // forListProvider.getObjectId(getSelectedObject()) + "'");
+          return;
         }
+
+        if (actualPosition < 0 || actualPosition >= getFilteredObjects().size())
+        {
+          // No item is selected
+          setSelectedObject(null);
+          return;
+        }
+        setSelectedObject(getFilteredObjects().get(actualPosition));
+        if (onEventObjectListener != null)
+        {
+          onEventObjectListener.onSelectedObject(view, getSelectedObject());
+        }
+        // log.debug("The view at position " + actualPosition + " is now selected, and corresponds to the business object with id '" +
+        // forListProvider.getObjectId(getSelectedObject()) + "'");
       }
 
       @SuppressWarnings("unchecked")
