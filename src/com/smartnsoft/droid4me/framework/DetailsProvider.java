@@ -273,6 +273,16 @@ public abstract class DetailsProvider
     }
 
     /**
+     * Is allowed to be invoked once the {@link #getView(Activity)} or {@link #setView(Activity, View)} method has been called.
+     * 
+     * @return the view which represents the underlying business object
+     */
+    public View getView()
+    {
+      return view;
+    }
+
+    /**
      * @return the wrapper passed in the constructor
      */
     public DetailsProvider.BusinessViewWrapper<?> getBusinessViewWrapper()
