@@ -93,6 +93,8 @@ abstract class AppInternals
 
     private BroadcastReceiver[] broadcastReceivers;
 
+    private int onSynchronizeDisplayObjectsCount = -1;
+
     boolean isFirstLifeCycle()
     {
       return firstLifeCycle;
@@ -295,7 +297,7 @@ abstract class AppInternals
      * Invoked when the provided activity enters the {@link Activity#onStop()} method. We check whether to invoke the {@link LifeCycle.ForServices}
      * methods.
      */
-    public void onStop(final Activity activity)
+    void onStop(final Activity activity)
     {
       if (activity instanceof LifeCycle.ForServices)
       {
@@ -315,6 +317,16 @@ abstract class AppInternals
           });
         }
       }
+    }
+
+    void onSynchronizeDisplayObjects()
+    {
+      onSynchronizeDisplayObjectsCount++;
+    }
+
+    int getOnSynchronizeDisplayObjectsCount()
+    {
+      return onSynchronizeDisplayObjectsCount + 1;
     }
 
     private boolean areServicesAsynchronous(Activity activity)

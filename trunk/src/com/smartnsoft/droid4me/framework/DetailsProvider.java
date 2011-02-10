@@ -107,11 +107,18 @@ public abstract class DetailsProvider
       this.businessObject = businessObject;
     }
 
-    // TODO: find a a way to make that field private: it is not because of the contextual menu
+    /**
+     * @return the underlying business object
+     */
     public final BusinessObjectClass getBusinessObject()
     {
       return businessObject;
     }
+
+//    final void updateBusinessObject(BusinessObjectClass businessObject)
+//    {
+//      this.businessObject = businessObject;
+//    }
 
     public final int getType(int position)
     {
@@ -260,14 +267,14 @@ public abstract class DetailsProvider
    * 
    * @since 2010.06.23
    */
-  public static class BusinessViewHolder
+  public static class BusinessViewHolder<BusinessObjectClass>
   {
 
-    private final DetailsProvider.BusinessViewWrapper<?> businessViewWrapper;
+    private final DetailsProvider.BusinessViewWrapper<BusinessObjectClass> businessViewWrapper;
 
     private View view;
 
-    public BusinessViewHolder(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
+    public BusinessViewHolder(DetailsProvider.BusinessViewWrapper<BusinessObjectClass> businessViewWrapper)
     {
       this.businessViewWrapper = businessViewWrapper;
     }
@@ -277,7 +284,7 @@ public abstract class DetailsProvider
      * 
      * @return the view which represents the underlying business object
      */
-    public View getView()
+    public final View getView()
     {
       return view;
     }
@@ -285,10 +292,15 @@ public abstract class DetailsProvider
     /**
      * @return the wrapper passed in the constructor
      */
-    public DetailsProvider.BusinessViewWrapper<?> getBusinessViewWrapper()
+    public final DetailsProvider.BusinessViewWrapper<BusinessObjectClass> getBusinessViewWrapper()
     {
       return businessViewWrapper;
     }
+
+//    public final void updateBusinessObject(BusinessObjectClass businessObject)
+//    {
+//      businessViewWrapper.updateBusinessObject(businessObject);
+//    }
 
     /**
      * This method should be called only once during the object life cycle.

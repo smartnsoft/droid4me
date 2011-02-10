@@ -38,6 +38,7 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.view.View;
 
+import com.smartnsoft.droid4me.framework.LifeCycle;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
@@ -124,6 +125,14 @@ public final class AppPublics
      * @return <code>true</code> if and only if the entity life cycle is the first time to execute during its container life
      */
     boolean isFirstLifeCycle();
+
+    /**
+     * Enables to know how many times the {@link LifeCycle.ForActivity#onSynchronizeDisplayObjects()} method has been invoked, which may be useful
+     * when you do not want this method to do something that the {@link LifeCycle.ForActivity#onFulfillDisplayObjects()} method may have already done.
+     * 
+     * @return the number of time the {@link LifeCycle.ForActivity#onSynchronizeDisplayObjects()} method has actually been invoked
+     */
+    int getOnSynchronizeDisplayObjectsCount();
 
   }
 
