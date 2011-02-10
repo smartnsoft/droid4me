@@ -76,6 +76,11 @@ public abstract class SmartActivity<AggregateClass>
     return stateContainer.isFirstLifeCycle();
   }
 
+  public final int getOnSynchronizeDisplayObjectsCount()
+  {
+    return stateContainer.getOnSynchronizeDisplayObjectsCount();
+  }
+
   public final boolean isBeingRedirected()
   {
     return stateContainer.beingRedirected;
@@ -166,9 +171,9 @@ public abstract class SmartActivity<AggregateClass>
 
     onInternalCreate(savedInstanceState);
     onBeforeRetrievingDisplayObjects();
-//    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
+    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     onRetrieveDisplayObjects();
-//    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
+    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
     // We add the static menu commands
     getCompositeActionHandler().add(new MenuHandler.Static()
     {
@@ -350,6 +355,7 @@ public abstract class SmartActivity<AggregateClass>
     }
     try
     {
+      stateContainer.onSynchronizeDisplayObjects();
       onSynchronizeDisplayObjects();
     }
     catch (Throwable throwable)

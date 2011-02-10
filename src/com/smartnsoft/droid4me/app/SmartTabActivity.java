@@ -76,6 +76,11 @@ public abstract class SmartTabActivity<AggregateClass>
     return stateContainer.isFirstLifeCycle();
   }
 
+  public final int getOnSynchronizeDisplayObjectsCount()
+  {
+    return stateContainer.getOnSynchronizeDisplayObjectsCount();
+  }
+
   public final boolean isBeingRedirected()
   {
     return stateContainer.beingRedirected;
@@ -340,6 +345,7 @@ public abstract class SmartTabActivity<AggregateClass>
     }
     try
     {
+      stateContainer.onSynchronizeDisplayObjects();
       onSynchronizeDisplayObjects();
     }
     catch (Throwable throwable)

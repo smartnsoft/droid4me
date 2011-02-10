@@ -91,6 +91,11 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     return stateContainer.isFirstLifeCycle();
   }
 
+  public final int getOnSynchronizeDisplayObjectsCount()
+  {
+    return stateContainer.getOnSynchronizeDisplayObjectsCount();
+  }
+
   public final boolean isBeingRedirected()
   {
     return stateContainer.beingRedirected;
@@ -355,6 +360,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     }
     try
     {
+      stateContainer.onSynchronizeDisplayObjects();
       onSynchronizeDisplayObjects();
     }
     catch (Throwable throwable)
