@@ -20,8 +20,6 @@ package com.smartnsoft.droid4me.cache;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -180,7 +178,7 @@ public abstract class Persistence
     {
       byteArrayInputStream = null;
       bufferedInputStream = new BufferedInputStream(inputStream, 8192);
-      bufferedInputStream.mark(MAXIMUM_URI_CONTENTS_SIZE_IN_BYTES);
+      bufferedInputStream.mark(Persistence.MAXIMUM_URI_CONTENTS_SIZE_IN_BYTES);
       actualInputStream = bufferedInputStream;
     }
     else
@@ -261,22 +259,6 @@ public abstract class Persistence
     }
   }
 
-  public static InputStream storeInputStreamToFile(String filePath, InputStream inputStream, boolean closeInput)
-  {
-    try
-    {
-      return Persistence.storeInputStream(new FileOutputStream(filePath), inputStream, closeInput, " corresponding to the file '" + filePath + "'");
-    }
-    catch (FileNotFoundException exception)
-    {
-      if (log.isWarnEnabled())
-      {
-        log.warn("Could not access to the file '" + filePath + "' for writing", exception);
-      }
-      return null;
-    }
-  }
-
   /**
    * The unique constructor.
    * 
@@ -291,12 +273,35 @@ public abstract class Persistence
     uriUsages = new HashMap<String, Persistence.UriUsage>();
   }
 
+  /**
+   * Invoked when the object is used for the first time.
+   */
   protected abstract void initialize();
 
-  public abstract InputStream getRawInputStream(String uri)
+  /**
+   * Is responsible for extracting an input stream from the persistence related to the provided URI.
+   * 
+   * @param uri
+   *          the URI which identifies the stream to extract
+   * @return <code>null</code> if and only if there is no data associated to the given URI; otherwise, its related wrapped input stream is returned
+   */
+  public abstract Business.InputAtom extractInputStream(String uri)
       throws Persistence.PersistenceException;
 
-  public abstract InputStream cacheInputStream(String uri, InputStream inputStream)
+  /**
+   * Is responsible for writing the stream related to the given URI.
+   * 
+   * <p>
+   * Beware: the {@link Business.InputAtom#inputStream} of the provided parameter is consumed by the method!
+   * </p>
+   * 
+   * @param uri
+   *          the URI which identifies the stream to persist
+   * @param inputAtom
+   *          the wrapper which contains the stream to write
+   * @return a new stream wrapper, which is operational
+   */
+  public abstract Business.InputAtom flushInputStream(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException;
 
   /**
