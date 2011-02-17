@@ -289,7 +289,7 @@ public abstract class Persistence
       throws Persistence.PersistenceException;
 
   /**
-   * Is responsible for writing the stream related to the given URI.
+   * Is responsible for writing persistently the stream related to the given URI.
    * 
    * <p>
    * Beware: the {@link Business.InputAtom#inputStream} of the provided parameter is consumed by the method!
