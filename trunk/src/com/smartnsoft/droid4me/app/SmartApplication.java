@@ -22,9 +22,12 @@ import java.io.File;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnClickListener;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -32,6 +35,7 @@ import android.util.Log;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
+import com.smartnsoft.droid4me.util.SendLogsTask;
 
 /**
  * To be derived from when using the framework.
@@ -85,6 +89,89 @@ public abstract class SmartApplication
     }
 
   }
+
+  /**
+   * Contains various attributes that will be used on the UI, especially on unexpected exceptions dialog boxes.
+   * 
+   * @since 2010.07.21
+   */
+  protected final static class I18NExt
+  {
+
+    public final String applicationName;
+
+    public final CharSequence reportButtonLabel;
+
+    public final String retrievingLogProgressMessage;
+
+    public I18NExt(String applicationName, CharSequence reportButtonLabel, String retrievingLogProgressMessage)
+    {
+      this.applicationName = applicationName;
+      this.reportButtonLabel = reportButtonLabel;
+      this.retrievingLogProgressMessage = retrievingLogProgressMessage;
+    }
+
+  }
+
+  protected class DefaultExceptionHandler
+      extends ActivityController.AbstractExceptionHandler
+  {
+
+    public DefaultExceptionHandler(I18N i18n)
+    {
+      super(i18n);
+    }
+
+    @Override
+    public boolean onOtherException(final Activity activity, Throwable throwable)
+    {
+      if (checkConnectivityProblemInCause(activity, throwable) == true)
+      {
+        return true;
+      }
+      // We log the exception in that case
+      if (log.isErrorEnabled())
+      {
+        log.error("An unexpected error occured!", throwable);
+      }
+      // We make sure that the dialog is popped from the UI thread
+      activity.runOnUiThread(new Runnable()
+      {
+        public void run()
+        {
+          final I18NExt i18nExt = getI18NExt();
+          new AlertDialog.Builder(activity).setTitle(getI18N().dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
+              getI18N().otherProblemHint).setNegativeButton(android.R.string.cancel, new OnClickListener()
+          {
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+              // We leave the activity, because we cannot go any further
+              activity.finish();
+            }
+          }).setPositiveButton(i18nExt.reportButtonLabel, new OnClickListener()
+          {
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+              new SendLogsTask(activity, i18nExt.retrievingLogProgressMessage, "[" + i18nExt.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
+                  null, null);
+            }
+          }).setCancelable(false).show();
+        }
+      });
+      return true;
+    }
+
+  }
+
+  /**
+   * @return the i18n attributes that will be used when the framework interacts with the UI
+   */
+  protected abstract SmartApplication.I18NExt getI18NExt();
+
+  /**
+   * @return the e-mail address that will be used when submitting an error log message
+   */
+  protected abstract String getLogReportRecipient();
 
   /**
    * Defined as a wrapper over the built-in {@link Thread.UncaughtExceptionHandler uncaught exception handlers}.
@@ -193,7 +280,7 @@ public abstract class SmartApplication
    */
   protected ActivityController.ExceptionHandler getExceptionHandler()
   {
-    return new ActivityController.AbstractExceptionHandler(getI18N());
+    return new SmartApplication.DefaultExceptionHandler(getI18N());
   }
 
   /**
