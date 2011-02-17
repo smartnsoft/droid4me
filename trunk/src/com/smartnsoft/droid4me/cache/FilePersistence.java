@@ -185,11 +185,10 @@ public final class FilePersistence
     throw new UnsupportedOperationException("FilePersistence::getLastUpdate() is not implemented!");
   }
 
-  public InputStream getRawInputStream(String uri)
+  public Business.InputAtom extractInputStream(String uri)
       throws Persistence.PersistenceException
   {
-    final Business.InputAtom atom = readInputStream(uri);
-    return (atom == null ? null : atom.inputStream);
+    return readInputStream(uri);
   }
 
   // TODO: put the URI usage in the parent class
@@ -269,10 +268,10 @@ public final class FilePersistence
   }
 
   @Override
-  public InputStream cacheInputStream(String uri, InputStream inputStream)
+  public Business.InputAtom flushInputStream(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException
   {
-    return cacheInputStream(uri, inputStream, false);
+    return cacheInputStream(uri, inputAtom, false);
   }
 
   public void remove(String uri)
@@ -280,10 +279,10 @@ public final class FilePersistence
     throw new UnsupportedOperationException("FilePersistence::remove() is not implemented!");
   }
 
-  public InputStream writeInputStream(String uri, Business.InputAtom atom)
+  public InputStream writeInputStream(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException
   {
-    return cacheInputStream(uri, atom.inputStream, false);
+    return cacheInputStream(uri, inputAtom, false).inputStream;
   }
 
   protected void empty()
@@ -300,7 +299,7 @@ public final class FilePersistence
   }
 
   // TODO: think of making the processing in another thread
-  public InputStream cacheInputStream(String uri, InputStream inputStream, boolean closeInput)
+  public Business.InputAtom cacheInputStream(String uri, Business.InputAtom inputAtom, boolean closeInput)
       throws Persistence.PersistenceException
   {
     synchronized (beingProcessed)
@@ -326,17 +325,20 @@ public final class FilePersistence
       if (storageBackendAvailable == true)
       {
         final String filePath = computeUriFilePath(uri);
+        // if (log.isDebugEnabled())
+        // {
         // log.debug("Caching the stream for the URI '" + uri + "' to the file '" + filePath + "'");
+        // }
         // We store the contents of the input stream on the SD card
-        final InputStream newInputStream = Persistence.storeInputStreamToFile(filePath, inputStream, closeInput);
+        final InputStream newInputStream = FilePersistence.storeInputStreamToFile(filePath, inputAtom, closeInput);
         rememberUriUsed(uri);
         saveIndexFileIfNecessary();
-        return newInputStream;
+        return new Business.InputAtom(new Date(), newInputStream, inputAtom.context);
       }
       else
       {
         // There is no use trying to cache the stream, since the back-end storage is not available
-        return inputStream;
+        return inputAtom;
       }
     }
     finally
@@ -346,6 +348,22 @@ public final class FilePersistence
         beingProcessed.remove(uri);
         beingProcessed.notify();
       }
+    }
+  }
+
+  private static InputStream storeInputStreamToFile(String filePath, Business.InputAtom inputAtom, boolean closeInput)
+  {
+    try
+    {
+      return Persistence.storeInputStream(new FileOutputStream(filePath), inputAtom.inputStream, closeInput, " corresponding to the file '" + filePath + "'");
+    }
+    catch (FileNotFoundException exception)
+    {
+      if (log.isWarnEnabled())
+      {
+        log.warn("Could not access to the file '" + filePath + "' for writing", exception);
+      }
+      return null;
     }
   }
 

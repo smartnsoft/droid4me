@@ -88,10 +88,18 @@ public final class Business
 
     public final InputStream inputStream;
 
-    public InputAtom(Date timestamp, InputStream inputstream)
+    public final Serializable context;
+
+    public InputAtom(Date timestamp, InputStream inputStream)
+    {
+      this(timestamp, inputStream, null);
+    }
+
+    public InputAtom(Date timestamp, InputStream inputStream, Serializable context)
     {
       super(timestamp);
-      this.inputStream = inputstream;
+      this.inputStream = inputStream;
+      this.context = context;
     }
 
   }
