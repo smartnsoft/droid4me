@@ -296,9 +296,26 @@ public final class Business
   public static interface InputStreamer<UriType, ExceptionType extends Throwable>
   {
 
+    /**
+     * Should return an input stream related to the provided URI.
+     * 
+     * @param uri
+     *          an URI which identifies the resource; it is not allowed to be <code>null</code>
+     * @return a wrapper of the resulting input stream, which may be <code>null</code>; the {@link Business.InputAtom#inputStream} and
+     *         {@link Business.InputAtom#context} are allowed to be null
+     * @throws ExceptionType
+     *           whenever a problem occurred while processing
+     */
     Business.InputAtom readInputStream(UriType uri)
         throws ExceptionType;
 
+    /**
+     * Should return the last modification date of the input stream related to the provided URI.
+     * 
+     * @param uri
+     *          an URI which identifies the resource; it is not allowed to be <code>null</code>
+     * @return the last modification date of the related input stream, or <code>null</code> if there is no such input stream
+     */
     Date getLastUpdate(UriType uri);
 
   }
