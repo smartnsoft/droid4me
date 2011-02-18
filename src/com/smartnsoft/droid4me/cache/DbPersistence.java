@@ -330,6 +330,15 @@ public final class DbPersistence
     {
       log.debug("Reading from the table '" + tableName + "' the contents related to the URI '" + uri + "'");
     }
+    // We do not allow null URIs
+    if (uri == null)
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("It is not allowed to use a null URI: cannot read!");
+      }
+      throw new Persistence.PersistenceException();
+    }
 
     final long start = System.currentTimeMillis();
     writeableDb.beginTransaction();
@@ -464,6 +473,14 @@ public final class DbPersistence
     if (storageBackendAvailable == false)
     {
       return inputAtom;
+    } // We do not allow null URIs
+    if (uri == null)
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("It is not allowed to use a null URI: cannot write!");
+      }
+      throw new Persistence.PersistenceException();
     }
 
     // We immediately duplicate the input stream
