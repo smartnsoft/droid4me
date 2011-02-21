@@ -41,30 +41,6 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
 {
 
-  public static enum Origin
-  {
-    Cache, UriStreamParser
-  }
-
-  /**
-   * Contains additional information regarding the source of the business object.
-   * 
-   * @since 2009.11.25
-   */
-  public static final class CachedInfo<BusinessObjectType>
-      extends Values.Info<BusinessObjectType>
-  {
-
-    public final Cacher.Origin origin;
-
-    public CachedInfo(Values.Info<BusinessObjectType> info, Cacher.Origin origin)
-    {
-      super(info.value, info.timestamp, origin == Cacher.Origin.Cache ? Values.Info.SOURCE2 : Values.Info.SOURCE3);
-      this.origin = origin;
-    }
-
-  }
-
   /**
    * Indicates whether the current cached data should be taken from the cache.
    */
@@ -132,7 +108,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     return uriStreamParser.computeUri(parameter);
   }
 
-  public final Cacher.CachedInfo<BusinessObjectType> getValue(Cacher.Instructions instructions, ParameterType parameter)
+  public final Values.Info<BusinessObjectType> getValue(Cacher.Instructions instructions, ParameterType parameter)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
     final UriType uri = uriStreamParser.computeUri(parameter);
@@ -160,7 +136,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         final Values.Info<BusinessObjectType> cachedValue = getCachedValue(parameter);
         if (cachedValue != null)
         {
-          return new Cacher.CachedInfo<BusinessObjectType>(cachedValue, Cacher.Origin.Cache);
+          return cachedValue;
         }
         if (log.isDebugEnabled())
         {
@@ -185,19 +161,19 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     }
     // We notify the instructions that the business object is bound to be read not locally
     instructions.onFetchingFromUriStreamParser();
-    return new Cacher.CachedInfo<BusinessObjectType>(fetchValueFromUriStreamParser(parameter, uri), Cacher.Origin.UriStreamParser);
+    return fetchValueFromUriStreamParser(parameter, uri);
   }
 
   /**
    * The data is first attempted to be retrieved from the URI stream parser (and refreshes the cache in case of success), and then from the cache.
    */
-  public final Cacher.CachedInfo<BusinessObjectType> getValue(ParameterType parameter)
+  public final Values.Info<BusinessObjectType> getValue(ParameterType parameter)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
     final UriType uri = uriStreamParser.computeUri(parameter);
     try
     {
-      return new Cacher.CachedInfo<BusinessObjectType>(fetchValueFromUriStreamParser(parameter, uri), Cacher.Origin.UriStreamParser);
+      return fetchValueFromUriStreamParser(parameter, uri);
     }
     // This is for the ' InputExceptionType', 'StreamerExceptionType', 'ParseExceptionType' exceptions
     catch (Exception exception)
@@ -210,7 +186,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
       final Values.Info<BusinessObjectType> cachedValue = getCachedValue(parameter);
       if (cachedValue != null)
       {
-        return new Cacher.CachedInfo<BusinessObjectType>(cachedValue, Cacher.Origin.Cache);
+        return cachedValue;
       }
       return null;
     }

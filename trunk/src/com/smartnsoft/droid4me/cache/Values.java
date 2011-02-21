@@ -49,9 +49,9 @@ public final class Values
 
     public final static int SOURCE1 = 0;
 
-    public final static int SOURCE2 = SOURCE1 + 1;
+    public final static int SOURCE2 = Values.Info.SOURCE1 + 1;
 
-    public final static int SOURCE3 = SOURCE2 + 1;
+    public final static int SOURCE3 = Values.Info.SOURCE2 + 1;
 
     public final BusinessObjectType value;
 
@@ -95,7 +95,7 @@ public final class Values
   {
 
     /**
-     * Indicates whether the business object should be first taken from the cache.
+     * Indicates whether the business object should be first attempted to be taken from the cache.
      * 
      * @return <code>true</code> if and only if the business object should be tested from the cache
      * @see #accept(Values.Info)
@@ -280,20 +280,20 @@ public final class Values
         if (newInfo != null)
         {
           // We check whether the newly retrieved info is accepted
-          if (instructions.accept(newInfo) == true)
+//          if (instructions.accept(newInfo) == true)
           {
             setLoadedInfoValue(newInfo);
             return newInfo;
           }
-          else
-          {
-            final Values.Info<BusinessObjectType> reloadedInfo = instructions.onNotFromLoaded(true, cachingEvent);
-            if (reloadedInfo != null)
-            {
-              setLoadedInfoValue(reloadedInfo);
-              return reloadedInfo;
-            }
-          }
+//          else
+//          {
+//            final Values.Info<BusinessObjectType> reloadedInfo = instructions.onNotFromLoaded(true, cachingEvent);
+//            if (reloadedInfo != null)
+//            {
+//              setLoadedInfoValue(reloadedInfo);
+//              return reloadedInfo;
+//            }
+//          }
         }
         throw instructions.onUnaccessible(new Values.InstructionsException("Cannot access to the live business object when the data should not be taken from the cache!"));
       }
@@ -413,7 +413,7 @@ public final class Values
 
     public boolean accept(Values.Info<BusinessObjectType> info)
     {
-      return isTakenFromCache(fromCache, info.timestamp);
+      return /* info.source == Values.Info.SOURCE3 || */isTakenFromCache(fromCache, info.timestamp) == true;
     }
 
     public Values.Info<BusinessObjectType> onNotFromLoaded(final boolean previouslyRejected, final Values.CachingEvent cachingEvent)
@@ -562,7 +562,7 @@ public final class Values
     {
       try
       {
-        final Cacher.CachedInfo<BusinessObjectType> info = cacher.getValue(parameter);
+        final Values.Info<BusinessObjectType> info = cacher.getValue(parameter);
         // if (info != null && info.origin == Cacher.Origin.UriStreamParser)
         // {
         // alreadyLoadedFromUriStreamParser = true;
