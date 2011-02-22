@@ -243,7 +243,7 @@ public abstract class SmartGroupActivity<AggregateClass>
   /**
    * @return the root view of the activity
    */
-  protected final ViewGroup getWraperView()
+  protected final ViewGroup getWrapperView()
   {
     return wrapperView;
   }
