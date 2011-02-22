@@ -218,11 +218,23 @@ public final class DbPersistence
       // }
       // Just like a "SELECT * FROM sqlite_master WHERE name = 'whatever' AND type = 'table'"
       final boolean tableExists;
+      final boolean needsSchemaUpgrade;
       {
-        final Cursor cursor = database.query("sqlite_master", new String[] { "name" }, "name='" + tableName + "' AND type = 'table'", null, null, null, null);
+        final Cursor cursor = database.query("sqlite_master", new String[] { "name", "sql" }, "name='" + tableName + "' AND type = 'table'", null, null, null,
+            null);
         try
         {
           tableExists = (cursor.moveToFirst() == true);
+          if (tableExists == true)
+          {
+            // We retrieve the SQL statement used for creating the table
+            final String sqlStatement = cursor.getString(1);
+            needsSchemaUpgrade = sqlStatement.contains(DbPersistence.CacheColumns.CONTEXT) == false;
+          }
+          else
+          {
+            needsSchemaUpgrade = false;
+          }
         }
         finally
         {
@@ -230,33 +242,27 @@ public final class DbPersistence
         }
       }
       final int expectedVersion = 2;
-      if (tableExists == false || version != expectedVersion)
+      if (tableExists == false || version != expectedVersion || needsSchemaUpgrade == true)
       {
-        if (tableExists == false)
-        {
-          if (log.isInfoEnabled())
-          {
-            log.info("Creating the table '" + tableName + "' in the database located at '" + dbFilePath + "' because it does not already exist");
-          }
-        }
-        else if (version != expectedVersion)
-        {
-          if (log.isInfoEnabled())
-          {
-            log.info("Updating the table '" + tableName + "' in the database located at '" + dbFilePath + "' because its schema is out of date");
-          }
-        }
         database.beginTransaction();
         try
         {
           if (tableExists == false)
           {
+            if (log.isInfoEnabled())
+            {
+              log.info("Creating the table '" + tableName + "' in the database located at '" + dbFilePath + "' because it does not already exist");
+            }
             database.execSQL("CREATE TABLE " + tableName + " (" + DbPersistence.CacheColumns._ID + " INTEGER PRIMARY KEY" + ", " + DbPersistence.CacheColumns.URI + " TEXT" + ", " + DbPersistence.CacheColumns.LAST_UPDATE + " TIMESTAMP" + ", " + DbPersistence.CacheColumns.CONTEXT + " BLOG" + ", " + DbPersistence.CacheColumns.CONTENTS + " BLOG);");
             // We create an index, so as to optimize the database performance
-            database.execSQL("CREATE UNIQUE INDEX " + tableName + "_index ON " + tableName + " ( " + DbPersistence.CacheColumns.URI + " )");
+            database.execSQL("CREATE UNIQUE INDEX " + tableName + "_index ON " + tableName + " ( " + DbPersistence.CacheColumns.URI + " );");
           }
-          else if (version != expectedVersion)
+          else if (needsSchemaUpgrade == true)
           {
+            if (log.isInfoEnabled())
+            {
+              log.info("Updating the table '" + tableName + "' in the database located at '" + dbFilePath + "' because its schema is out of date");
+            }
             database.execSQL("ALTER TABLE " + tableName + " ADD COLUMN " + DbPersistence.CacheColumns.CONTEXT + " BLOB;");
           }
           database.setVersion(expectedVersion);
