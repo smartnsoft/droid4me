@@ -20,6 +20,7 @@ package com.smartnsoft.droid4me.cache;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,19 +48,21 @@ public final class Values
   public static class Info<BusinessObjectType>
   {
 
-    public final static int SOURCE1 = 0;
-
-    public final static int SOURCE2 = Values.Info.SOURCE1 + 1;
-
-    public final static int SOURCE3 = Values.Info.SOURCE2 + 1;
+    /**
+     * Indicates the origin of a business object.
+     */
+    public static enum Source
+    {
+      Memory, IOStreamer, URIStreamer
+    }
 
     public final BusinessObjectType value;
 
     public final Date timestamp;
 
-    public final int source;
+    public final Values.Info.Source source;
 
-    public Info(BusinessObjectType value, Date timestamp, int source)
+    public Info(BusinessObjectType value, Date timestamp, Values.Info.Source source)
     {
       this.value = value;
       this.timestamp = timestamp;
@@ -95,33 +98,42 @@ public final class Values
   {
 
     /**
-     * Indicates whether the business object should be first attempted to be taken from the cache.
+     * States the result of an assessment.
      * 
-     * @return <code>true</code> if and only if the business object should be tested from the cache
-     * @see #accept(Values.Info)
+     * @see Values.Instructions#assess(Values.Info)
      */
-    boolean tryLoadedFirst();
+    public static enum Result
+    {
+      Rejected, Accepted
+    }
 
     /**
-     * Is invoked every time the business object is taken from the cache, in order to decide whether it is valid.
+     * Is invoked every time the business object is tested in order to determine whether it is valid in its current state, or should be reloaded.
      * 
      * @param info
-     *          the proposed business object and its associated timestamp
-     * @return <code>true</code> if and only if the proposed business is accepted
+     *          the proposed business object, its associated timestamp, and source
+     * @return the status which indicates whether the provided business object state has been validated
      */
-    boolean accept(Values.Info<BusinessObjectType> info);
+    Values.Instructions.Result assess(Values.Info<BusinessObjectType> info);
+
+    /**
+     * Is invoked after each {@link #assess(Values.Info) assessment} and enables to store its result.
+     * 
+     * @param source
+     *          where the business object comes from
+     * @param result
+     *          the result of the assessment
+     */
+    void remember(Values.Info.Source source, Values.Instructions.Result result);
 
     /**
      * Is invoked when the underlying business object will not be taken from the memory cache, or when the cached value has been rejected.
      * 
-     * @param previouslyRejected
-     *          indicates whether the retrieval of the business object follows a previous retrieval, which was not {@link #accept(Values.Info)
-     *          accepted}
      * @param cachingEvent
      *          the interface that will be used to notify the caller about the loading workflow ; may be <code>null</code>
      * @return the wrapped business object
      */
-    Values.Info<BusinessObjectType> onNotFromLoaded(boolean previouslyRejected, Values.CachingEvent cachingEvent)
+    Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)
         throws ExceptionType, ProblemExceptionType;
 
     /**
@@ -241,62 +253,38 @@ public final class Values
         Values.CachingEvent cachingEvent)
         throws ExceptionType
     {
-      if (instructions.tryLoadedFirst() == false)
+      // The business object is first attempted to be retrieved from memory
+      if (isEmpty() == false)
       {
-        Exception onNotFromLoadedException;
-        try
-        {
-          final Values.Info<BusinessObjectType> newInfo = instructions.onNotFromLoaded(false, cachingEvent);
-          if (newInfo != null)
-          {
-            setLoadedInfoValue(newInfo);
-            return newInfo;
-          }
-          else
-          {
-            throw instructions.onUnaccessible(new Values.InstructionsException("Cannot access to the live data when the data should not be taken from the cache!"));
-          }
-        }
-        // The 'ExceptionType' exception
-        catch (Exception exception)
-        {
-          // We try to retrieve the object via the cache
-          onNotFromLoadedException = exception;
-        }
-        if (isEmpty() == false && instructions.accept(info) == true)
+        final Values.Instructions.Result result = instructions.assess(info);
+        instructions.remember(info.source, result);
+        if (result == Values.Instructions.Result.Accepted)
         {
           return getLoadedInfoValue();
         }
-        throw instructions.onUnaccessible(onNotFromLoadedException);
       }
-      else
+      final Values.Info<BusinessObjectType> newInfo = instructions.onNotFromLoaded(cachingEvent);
+      if (newInfo != null)
       {
-        // The business object is first attempted to be retrieved from memory
-        if (isEmpty() == false && instructions.accept(info) == true)
+        // We check whether the newly retrieved info is accepted
+        final Values.Instructions.Result result = instructions.assess(newInfo);
+        instructions.remember(newInfo.source, result);
+        if (result == Values.Instructions.Result.Accepted)
         {
-          return getLoadedInfoValue();
+          setLoadedInfoValue(newInfo);
+          return newInfo;
         }
-        final Values.Info<BusinessObjectType> newInfo = instructions.onNotFromLoaded(false, cachingEvent);
-        if (newInfo != null)
+        else
         {
-          // We check whether the newly retrieved info is accepted
-//          if (instructions.accept(newInfo) == true)
+          final Values.Info<BusinessObjectType> reloadedInfo = instructions.onNotFromLoaded(cachingEvent);
+          if (reloadedInfo != null)
           {
-            setLoadedInfoValue(newInfo);
-            return newInfo;
+            setLoadedInfoValue(reloadedInfo);
+            return reloadedInfo;
           }
-//          else
-//          {
-//            final Values.Info<BusinessObjectType> reloadedInfo = instructions.onNotFromLoaded(true, cachingEvent);
-//            if (reloadedInfo != null)
-//            {
-//              setLoadedInfoValue(reloadedInfo);
-//              return reloadedInfo;
-//            }
-//          }
         }
-        throw instructions.onUnaccessible(new Values.InstructionsException("Cannot access to the live business object when the data should not be taken from the cache!"));
       }
+      throw instructions.onUnaccessible(new Values.InstructionsException("Cannot access to the live business object when the data should not be taken from the cache!"));
     }
 
     public final BusinessObjectType getValue(Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> instructions,
@@ -348,6 +336,10 @@ public final class Values
       this.parameter = parameter;
     }
 
+    public void remember(Values.Info.Source source, Values.Instructions.Result result)
+    {
+    }
+
     public final Values.CacheException onUnaccessible(Exception exception)
     {
       return new Values.CacheException("Could not access to the business object neither through the cache nor through the IO streamer", exception);
@@ -368,17 +360,13 @@ public final class Values
       this.fromMemory = fromMemory;
     }
 
-    public boolean tryLoadedFirst()
+    public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return fromMemory == true;
+      return fromMemory == false ? (info.source == Values.Info.Source.IOStreamer ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected)
+          : Values.Instructions.Result.Accepted;
     }
 
-    public boolean accept(Values.Info<BusinessObjectType> info)
-    {
-      return true;
-    }
-
-    public Values.Info<BusinessObjectType> onNotFromLoaded(boolean previouslyRejected, Values.CachingEvent cachingEvent)
+    public Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)
         throws Values.CacheException
     {
       try
@@ -399,6 +387,8 @@ public final class Values
 
     private final boolean fromCache;
 
+    private final Map<Values.Info.Source, Values.Instructions.Result> assessments = new LinkedHashMap<Values.Info.Source, Values.Instructions.Result>();
+
     public MemoryInstructions(Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher,
         ParameterType parameter, boolean fromCache)
     {
@@ -406,17 +396,19 @@ public final class Values
       this.fromCache = fromCache;
     }
 
-    public boolean tryLoadedFirst()
+    public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return true;
+      return ((info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1) || isTakenFromCache(fromCache, info.timestamp) == true) ? Values.Instructions.Result.Accepted
+          : Values.Instructions.Result.Rejected;
     }
 
-    public boolean accept(Values.Info<BusinessObjectType> info)
+    @Override
+    public void remember(Values.Info.Source source, Values.Instructions.Result result)
     {
-      return /* info.source == Values.Info.SOURCE3 || */isTakenFromCache(fromCache, info.timestamp) == true;
+      assessments.put(source, result);
     }
 
-    public Values.Info<BusinessObjectType> onNotFromLoaded(final boolean previouslyRejected, final Values.CachingEvent cachingEvent)
+    public Values.Info<BusinessObjectType> onNotFromLoaded(final Values.CachingEvent cachingEvent)
         throws Values.CacheException
     {
       try
@@ -425,7 +417,7 @@ public final class Values
         {
           public boolean takeFromCache(Date lastUpdate)
           {
-            return previouslyRejected == false ? isTakenFromCache(fromCache, lastUpdate) == true : lastUpdate == null;
+            return assessments.containsKey(Values.Info.Source.IOStreamer) == false ? isTakenFromCache(fromCache, lastUpdate) == true : lastUpdate == null;
           }
 
           public void onFetchingFromIOStreamer()
@@ -489,31 +481,6 @@ public final class Values
 
   };
 
-  public static class MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
-      extends MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>
-  {
-
-    private final boolean fromMemory;
-
-    public MemoryAndCacheInstructions(Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher,
-        ParameterType parameter, boolean fromMemory, boolean fromCache)
-    {
-      super(cacher, parameter, fromCache);
-      this.fromMemory = fromMemory;
-    }
-
-    public boolean tryLoadedFirst()
-    {
-      return fromMemory == true;
-    }
-
-    protected boolean isTakenFromCache(boolean fromCache, Date lastUpdate)
-    {
-      return lastUpdate == null ? false : fromCache == true;
-    }
-
-  };
-
   public static class RetentionInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
       extends MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>
   {
@@ -539,34 +506,23 @@ public final class Values
       extends WithParameterInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>
   {
 
-    // private boolean alreadyLoadedFromUriStreamParser;
-
     public SessionInstructions(Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher,
         ParameterType parameter)
     {
       super(cacher, parameter);
     }
 
-    public boolean tryLoadedFirst()
+    public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return true;
+      return info.source == Values.Info.Source.URIStreamer ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected;
     }
 
-    public boolean accept(Values.Info<BusinessObjectType> info)
-    {
-      return info.source == Values.Info.SOURCE3;
-    }
-
-    public Values.Info<BusinessObjectType> onNotFromLoaded(boolean previouslyRejected, Values.CachingEvent cachingEvent)
+    public Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)
         throws Values.CacheException
     {
       try
       {
         final Values.Info<BusinessObjectType> info = cacher.getValue(parameter);
-        // if (info != null && info.origin == Cacher.Origin.UriStreamParser)
-        // {
-        // alreadyLoadedFromUriStreamParser = true;
-        // }
         return info;
       }
       catch (Throwable throwable)
@@ -594,7 +550,7 @@ public final class Values
     public void setValue(ParameterType parameter, BusinessObjectType businessObject)
         throws Values.CacheException
     {
-      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.SOURCE1);
+      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.Source.Memory);
       // Even if cacher fails to persist the business object, the memory is up-to-date
       super.setLoadedInfoValue(info);
       try
@@ -609,19 +565,19 @@ public final class Values
 
     public final BusinessObjectType safeGet(ParameterType parameter)
     {
-      return safeGet(true, true, null, parameter);
+      return safeGet(true, null, parameter);
     }
 
     public final BusinessObjectType safeGet(boolean fromCache, ParameterType parameter)
     {
-      return safeGet(fromCache, true, null, parameter);
+      return safeGet(fromCache, null, parameter);
     }
 
-    public final BusinessObjectType safeGet(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+    public final BusinessObjectType safeGet(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
     {
       try
       {
-        return getMemoryValue(fromMemory, fromCache, cachingEvent, parameter);
+        return getMemoryValue(fromCache, cachingEvent, parameter);
       }
       catch (Values.CacheException exception)
       {
@@ -723,22 +679,6 @@ public final class Values
         throws Values.CacheException
     {
       final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromCache, cachingEvent, parameter);
-      return infoValue == null ? null : infoValue.value;
-    }
-
-    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent,
-        ParameterType parameter)
-        throws Values.CacheException
-    {
-      return getInfoValue(
-          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
-          cachingEvent);
-    }
-
-    public final BusinessObjectType getMemoryValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromMemory, fromCache, cachingEvent, parameter);
       return infoValue == null ? null : infoValue.value;
     }
 
@@ -852,35 +792,24 @@ public final class Values
       return businessObject;
     }
 
-    public final BusinessObjectType getValue(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
+    public final BusinessObjectType safeGet(Values.CachingEvent cachingEvent, ParameterType parameter)
     {
-      return getValue(true, fromCache, cachingEvent, parameter);
+      return safeGet(true, cachingEvent, parameter);
     }
 
-    public final BusinessObjectType getValue(boolean fromMemory, final boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+    public final BusinessObjectType getValue(final boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
         throws Values.CacheException
     {
       return getValue(
-          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
+          new Values.MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache),
           cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType safeGet(Values.CachingEvent cachingEvent, ParameterType parameter)
-    {
-      return safeGet(true, true, cachingEvent, parameter);
     }
 
     public final BusinessObjectType safeGet(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
     {
-      return safeGet(true, fromCache, cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType safeGet(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
-    {
       try
       {
-        return getValue(fromMemory, fromCache, cachingEvent, parameter);
+        return getValue(fromCache, cachingEvent, parameter);
       }
       catch (Values.CacheException exception)
       {
@@ -939,7 +868,7 @@ public final class Values
 
     public final void safeSet(ParameterType parameter, BusinessObjectType businessObject)
     {
-      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.SOURCE1);
+      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.Source.Memory);
       // We modify the memory first, so as to make sure that it is actually modified
       setLoadedValue(parameter, info);
       try
@@ -1008,22 +937,6 @@ public final class Values
         throws Values.CacheException
     {
       final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromCache, cachingEvent, parameter);
-      return infoValue == null ? null : infoValue.value;
-    }
-
-    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent,
-        ParameterType parameter)
-        throws Values.CacheException
-    {
-      return getInfoValue(
-          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
-          cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType getMemoryValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromMemory, fromCache, cachingEvent, parameter);
       return infoValue == null ? null : infoValue.value;
     }
 
