@@ -61,7 +61,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartGroupActivity<AggregateClass>
     extends ActivityGroup
-    implements AppPublics.CommonActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals/*
+    implements AppPublics.SmartableActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals/*
                                                                                                                                              * ,ViewTreeObserver
                                                                                                                                              * .
                                                                                                                                              * OnTouchModeChangeListener
@@ -512,6 +512,22 @@ public abstract class SmartGroupActivity<AggregateClass>
         return menuCommands;
       }
     });
+  }
+
+  @Override
+  protected void onNewIntent(Intent intent)
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("SmartGroupActivity::onNewIntent");
+    }
+    super.onNewIntent(intent);
+
+    if (ActivityController.getInstance().needsRedirection(this) == true)
+    {
+      // We stop here if a redirection is needed
+      stateContainer.beingRedirected = true;
+    }
   }
 
   @Override

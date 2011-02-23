@@ -48,7 +48,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartTabActivity<AggregateClass>
     extends TabActivity
-    implements AppPublics.CommonActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements AppPublics.SmartableActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
 
   protected final static Logger log = LoggerFactory.getInstance(SmartTabActivity.class);
@@ -192,6 +192,22 @@ public abstract class SmartTabActivity<AggregateClass>
         return menuCommands;
       }
     });
+  }
+
+  @Override
+  protected void onNewIntent(Intent intent)
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("SmartTabActivity::onNewIntent");
+    }
+    super.onNewIntent(intent);
+
+    if (ActivityController.getInstance().needsRedirection(this) == true)
+    {
+      // We stop here if a redirection is needed
+      stateContainer.beingRedirected = true;
+    }
   }
 
   @Override

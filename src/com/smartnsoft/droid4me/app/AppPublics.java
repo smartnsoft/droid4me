@@ -55,7 +55,7 @@ public final class AppPublics
    * 
    * @since 2010.07.10
    */
-  public interface CommonActivity<AggregateClass>
+  public interface SmartableActivity<AggregateClass>
   {
 
     /**
