@@ -54,7 +54,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartMapActivity<AggregateClass>
     extends MapActivity
-    implements AppPublics.CommonActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements AppPublics.SmartableActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
 
   protected final static Logger log = LoggerFactory.getInstance(SmartMapActivity.class);
@@ -416,6 +416,22 @@ public abstract class SmartMapActivity<AggregateClass>
         return menuCommands;
       }
     });
+  }
+
+  @Override
+  public void onNewIntent(Intent intent)
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("SmartMapActivity::onNewIntent");
+    }
+    super.onNewIntent(intent);
+
+    if (ActivityController.getInstance().needsRedirection(this) == true)
+    {
+      // We stop here if a redirection is needed
+      stateContainer.beingRedirected = true;
+    }
   }
 
   @Override

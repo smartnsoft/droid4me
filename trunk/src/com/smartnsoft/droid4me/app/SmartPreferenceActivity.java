@@ -48,7 +48,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartPreferenceActivity<AggregateClass>
     extends PreferenceActivity
-    implements AppPublics.CommonActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements AppPublics.SmartableActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
 
   protected static final Logger log = LoggerFactory.getInstance(SmartPreferenceActivity.class);
@@ -207,6 +207,22 @@ public abstract class SmartPreferenceActivity<AggregateClass>
         return menuCommands;
       }
     });
+  }
+
+  @Override
+  protected void onNewIntent(Intent intent)
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("SmartPreferenceActivity::onNewIntent");
+    }
+    super.onNewIntent(intent);
+
+    if (ActivityController.getInstance().needsRedirection(this) == true)
+    {
+      // We stop here if a redirection is needed
+      stateContainer.beingRedirected = true;
+    }
   }
 
   @Override
