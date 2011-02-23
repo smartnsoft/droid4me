@@ -27,8 +27,8 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
+import com.smartnsoft.droid4me.ServiceLifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
-import com.smartnsoft.droid4me.framework.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -40,7 +40,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler;
  * @author Édouard Mercier
  * @since 2010.01.05
  */
-abstract class AppInternals
+final class AppInternals
 {
 
   /**
@@ -268,14 +268,14 @@ abstract class AppInternals
     }
 
     /**
-     * Invoked when the provided activity enters the {@link Activity#onStart()} method. We check whether to invoke the {@link LifeCycle.ForServices}
-     * methods.
+     * Invoked when the provided activity enters the {@link Activity#onStart()} method. We check whether to invoke the
+     * {@link ServiceLifeCycle} methods.
      */
     void onStart(final Activity activity)
     {
-      if (activity instanceof LifeCycle.ForServices)
+      if (activity instanceof ServiceLifeCycle)
       {
-        final LifeCycle.ForServices forServices = (LifeCycle.ForServices) activity;
+        final ServiceLifeCycle forServices = (ServiceLifeCycle) activity;
         if (areServicesAsynchronous(activity) == false)
         {
           internalPrepareServices(activity, forServices);
@@ -294,14 +294,14 @@ abstract class AppInternals
     }
 
     /**
-     * Invoked when the provided activity enters the {@link Activity#onStop()} method. We check whether to invoke the {@link LifeCycle.ForServices}
+     * Invoked when the provided activity enters the {@link Activity#onStop()} method. We check whether to invoke the {@link ServiceLifeCycle}
      * methods.
      */
     void onStop(final Activity activity)
     {
-      if (activity instanceof LifeCycle.ForServices)
+      if (activity instanceof ServiceLifeCycle)
       {
-        final LifeCycle.ForServices forServices = (LifeCycle.ForServices) activity;
+        final ServiceLifeCycle forServices = (ServiceLifeCycle) activity;
         if (areServicesAsynchronous(activity) == false)
         {
           internalDisposeServices(activity, forServices);
@@ -331,34 +331,34 @@ abstract class AppInternals
 
     private boolean areServicesAsynchronous(Activity activity)
     {
-      return activity instanceof LifeCycle.ForServicesAsynchronousPolicy;
+      return activity instanceof ServiceLifeCycle.ForServicesAsynchronousPolicy;
     }
 
-    private void internalPrepareServices(Activity activity, LifeCycle.ForServices forServices)
+    private void internalPrepareServices(Activity activity, ServiceLifeCycle forServices)
     {
       try
       {
         forServices.prepareServices();
       }
-      catch (LifeCycle.ServiceException exception)
+      catch (ServiceLifeCycle.ServiceException exception)
       {
         onInternalServiceException(activity, forServices, exception);
       }
     }
 
-    private void internalDisposeServices(Activity activity, LifeCycle.ForServices forServices)
+    private void internalDisposeServices(Activity activity, ServiceLifeCycle forServices)
     {
       try
       {
         forServices.disposeServices();
       }
-      catch (LifeCycle.ServiceException exception)
+      catch (ServiceLifeCycle.ServiceException exception)
       {
         onInternalServiceException(activity, forServices, exception);
       }
     }
 
-    private void onInternalServiceException(Activity activity, LifeCycle.ForServices forServices, LifeCycle.ServiceException exception)
+    private void onInternalServiceException(Activity activity, ServiceLifeCycle forServices, ServiceLifeCycle.ServiceException exception)
     {
       if (log.isErrorEnabled())
       {
@@ -370,6 +370,10 @@ abstract class AppInternals
       }
     }
 
+  }
+
+  private AppInternals()
+  {
   }
 
 }

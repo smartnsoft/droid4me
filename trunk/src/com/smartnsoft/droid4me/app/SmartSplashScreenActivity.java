@@ -25,8 +25,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Environment;
 
-import com.smartnsoft.droid4me.framework.LifeCycle;
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
+import com.smartnsoft.droid4me.LifeCycle;
 
 /**
  * A basis activity class which is displayed while the application is loading.
@@ -87,7 +86,7 @@ public abstract class SmartSplashScreenActivity
   protected abstract Class<? extends Activity> getNextActivity();
 
   /**
-   * The method that should be overriden, instead of the usual {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method.
+   * The method that should be overriden, instead of the usual {@link LifeCycle#onRetrieveDisplayObjects()} method.
    * 
    * <p>
    * This method is invoked even if an external storage is required and no external storage is available at runtime.
@@ -96,7 +95,7 @@ public abstract class SmartSplashScreenActivity
   protected abstract void onRetrieveDisplayObjectsCustom();
 
   /**
-   * The method that should be overriden, instead of the usual {@link LifeCycle.ForActivity#onRetrieveBusinessObjects()} method.
+   * The method that should be overriden, instead of the usual {@link LifeCycle#onRetrieveBusinessObjects()} method.
    * 
    * <p>
    * This method is not invoked when an external storage is required and no external storage is available at runtime.

@@ -34,11 +34,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.LinearLayout.LayoutParams;
 
+import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.DetailsProvider;
-import com.smartnsoft.droid4me.framework.LifeCycle;
 import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
@@ -51,7 +50,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler;
  * @since 2008.05.19
  */
 public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
-    implements LifeCycle.ForActivity
+    implements LifeCycle
 {
 
   public static interface OnEventObjectListener<BusinessObjectClass>

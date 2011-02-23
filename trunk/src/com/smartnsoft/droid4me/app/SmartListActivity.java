@@ -32,7 +32,6 @@ import android.widget.LinearLayout;
 import com.smartnsoft.droid4me.framework.DetailsProvider;
 import com.smartnsoft.droid4me.framework.Events;
 import com.smartnsoft.droid4me.framework.DetailsProvider.ObjectEvent;
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;

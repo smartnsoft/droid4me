@@ -35,9 +35,9 @@ import android.widget.ZoomControls;
 
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
+import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.Events;
-import com.smartnsoft.droid4me.framework.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.framework.Events.OnCompletion;
 import com.smartnsoft.droid4me.log.Logger;
@@ -54,7 +54,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartMapActivity<AggregateClass>
     extends MapActivity
-    implements AppPublics.SmartableActivity<AggregateClass>, LifeCycle.ForActivity, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements Smarted<AggregateClass>, LifeCycle, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
 
   protected final static Logger log = LoggerFactory.getInstance(SmartMapActivity.class);
