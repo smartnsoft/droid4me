@@ -218,7 +218,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     {
       final BusinessObjectType businessObject = ((Business.NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, InputExceptionType, InputExceptionType>) uriInputStreamer).onNullInputStream(
           parameter, uri);
-      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.SOURCE2);
+      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.Source.IOStreamer);
       if (businessObject == null)
       {
         ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), null));
@@ -236,7 +236,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     }
     final InputStream inputStream = onNewInputStream(parameter, uri, atom);
     final BusinessObjectType businessObject = uriStreamParser.parse(parameter, inputStream);
-    return new Values.Info<BusinessObjectType>(businessObject, atom.timestamp, Values.Info.SOURCE3);
+    return new Values.Info<BusinessObjectType>(businessObject, atom.timestamp, Values.Info.Source.URIStreamer);
   }
 
   /**
@@ -274,7 +274,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     if (atom != null)
     {
       // If the input stream is null but not the atom, we return a null business object
-      return new Values.Info<BusinessObjectType>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.inputStream), atom.timestamp, Values.Info.SOURCE2);
+      return new Values.Info<BusinessObjectType>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.inputStream), atom.timestamp, Values.Info.Source.IOStreamer);
     }
     return null;
   }
