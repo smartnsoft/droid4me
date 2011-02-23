@@ -28,6 +28,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.smartnsoft.droid4me.LifeCycle;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.BroadcastReceiver;
@@ -35,11 +37,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Handler;
 import android.view.View;
-
-import com.smartnsoft.droid4me.framework.LifeCycle;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * Gathers some interfaces and helpers for the types belonging to its Java package.
@@ -49,92 +47,6 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public final class AppPublics
 {
-
-  /**
-   * Defines common methods for all {@link Activity activity classes} defined in the framework.
-   * 
-   * @since 2010.07.10
-   */
-  public interface SmartableActivity<AggregateClass>
-  {
-
-    /**
-     * @return a valid handler that may be used for processing GUI-thread operations.
-     */
-    Handler getHandler();
-
-    /**
-     * @return an object that may be used along the {@link Activity} life ; may return <code>null</code>
-     * @see #setAggregate(Object)
-     */
-    AggregateClass getAggregate();
-
-    /**
-     * Enables to set an aggregate hat may be used along the {@link Activity} life.
-     * 
-     * @param aggregate
-     *          the object to use as an aggregate
-     * @see #getAggregate()
-     */
-    void setAggregate(AggregateClass aggregate);
-
-    /**
-     * Explicitly registers {@link BroadcastReceiver wrapped broadcast receivers} for the {@link Activity}.
-     * 
-     * <p>
-     * Those receivers will be unregistered by the {@link Activity#onDestroy} method.
-     * </p>
-     * 
-     * <p>
-     * When invoking that method, all previously registered listeners via the {@link AppPublics.BroadcastListenerProvider} or
-     * {@link AppPublics.BroadcastListenersProvider} are kept.
-     * </p>
-     * 
-     * @param broadcastListeners
-     *          the wrapped {@link BroadcastReceiver receivers} to registers
-     */
-    void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners);
-
-    /**
-     * @return all the static menu commands that the activity wants to make available ; may return <code>null</code>
-     */
-    List<StaticMenuCommand> getMenuCommands();
-
-    /**
-     * Can be invoked when an exception is thrown, so that the {@link ActivityController.ExceptionHandler} handles it.
-     * 
-     * @param fromGuiThread
-     *          indicates whether the call is done from the GUI thread
-     */
-    void onException(Throwable throwable, boolean fromGuiThread);
-
-  }
-
-  /**
-   * Because an Android {@link Activity} can be destroyed and then recreated, following a screen orientation change, for instance, this interface
-   * gives information about an entity life cycle.
-   * 
-   * @since 2010.01.05
-   */
-  public interface LifeCyclePublic
-  {
-
-    /**
-     * Is not invoked by the framework, and provides information about the current entity life cycle.
-     * 
-     * @return <code>true</code> if and only if the entity life cycle is the first time to execute during its container life
-     */
-    boolean isFirstLifeCycle();
-
-    /**
-     * Enables to know how many times the {@link LifeCycle.ForActivity#onSynchronizeDisplayObjects()} method has been invoked, which may be useful
-     * when you do not want this method to do something that the {@link LifeCycle.ForActivity#onFulfillDisplayObjects()} method may have already done.
-     * 
-     * @return the number of time the {@link LifeCycle.ForActivity#onSynchronizeDisplayObjects()} method has actually been invoked
-     */
-    int getOnSynchronizeDisplayObjectsCount();
-
-  }
 
   /**
    * Use this intent action when you need to indicate that something is being loaded. For indicating that the loading is over, attach the
@@ -171,6 +83,33 @@ public final class AppPublics
     AppPublics.UPDATE_ACTION = application.getPackageName() + ".action.UPDATE";
     AppPublics.RELOAD_ACTION = application.getPackageName() + ".action.RELOAD";
     AppPublics.MultiSelectionHandler.ACTION_SELECTION = application.getPackageName() + ".action.SELECTION";
+  }
+
+  /**
+   * Because an Android {@link Activity} can be destroyed and then recreated, following a screen orientation change, for instance, this interface
+   * gives information about an entity life cycle.
+   * 
+   * @author Édouard Mercier
+   * @since 2010.01.05
+   */
+  public interface LifeCyclePublic
+  {
+
+    /**
+     * Is not invoked by the framework, and provides information about the current entity life cycle.
+     * 
+     * @return <code>true</code> if and only if the entity life cycle is the first time to execute during its container life
+     */
+    boolean isFirstLifeCycle();
+
+    /**
+     * Enables to know how many times the {@link LifeCycle#onSynchronizeDisplayObjects()} method has been invoked, which may be useful when
+     * you do not want this method to do something that the {@link LifeCycle#onFulfillDisplayObjects()} method may have already done.
+     * 
+     * @return the number of time the {@link LifeCycle#onSynchronizeDisplayObjects()} method has actually been invoked
+     */
+    int getOnSynchronizeDisplayObjectsCount();
+
   }
 
   /**
@@ -773,6 +712,10 @@ public final class AppPublics
       AppPublics.LOW_PRIORITY_THREAD_POOL.execute(this);
     }
 
+  }
+
+  private AppPublics()
+  {
   }
 
 }

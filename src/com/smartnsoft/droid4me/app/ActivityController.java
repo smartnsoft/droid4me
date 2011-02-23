@@ -31,9 +31,9 @@ import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.view.Window;
 
-import com.smartnsoft.droid4me.framework.LifeCycle;
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
-import com.smartnsoft.droid4me.framework.LifeCycle.ServiceException;
+import com.smartnsoft.droid4me.LifeCycle;
+import com.smartnsoft.droid4me.LifeCycle.BusinessObjectUnavailableException;
+import com.smartnsoft.droid4me.ServiceLifeCycle.ServiceException;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
@@ -63,7 +63,7 @@ public final class ActivityController
   }
 
   /**
-   * An interface which is queried during the various life cycle events of an {@link LifeCycle.ForActivity activity}.
+   * An interface which is queried during the various life cycle events of an {@link LifeCycle activity}.
    */
   public interface Interceptor
   {
@@ -162,7 +162,7 @@ public final class ActivityController
   {
 
     /**
-     * Is invoked whenever the {@link LifeCycle.ForActivity#onRetrieveBusinessObjects()} throws an exception.
+     * Is invoked whenever the {@link LifeCycle#onRetrieveBusinessObjects()} throws an exception.
      * 
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
@@ -173,10 +173,10 @@ public final class ActivityController
      * @return <code>true</code> if the handler has actually handled the exception: this indicates to the framework that it does not need to
      *         investigate for a further exception handler anymore
      */
-    boolean onBusinessObjectAvailableException(Activity activity, LifeCycle.BusinessObjectUnavailableException exception);
+    boolean onBusinessObjectAvailableException(Activity activity, BusinessObjectUnavailableException exception);
 
     /**
-     * Is invoked whenever the {@link LifeCycle.ForActivity#onRetrieveBusinessObjects()} throws an exception.
+     * Is invoked whenever the {@link LifeCycle#onRetrieveBusinessObjects()} throws an exception.
      * 
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
@@ -184,10 +184,10 @@ public final class ActivityController
      * 
      * @see #onBusinessObjectAvailableException for the explanation about the return value and the <code>activity</code> parameter
      */
-    boolean onServiceException(Activity activity, LifeCycle.ServiceException exception);
+    boolean onServiceException(Activity activity, ServiceException exception);
 
     /**
-     * Is invoked whenever an activity implementing {@link LifeCycle.ForActivity} throws an unexpected exception.
+     * Is invoked whenever an activity implementing {@link LifeCycle} throws an unexpected exception.
      * 
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
@@ -473,10 +473,10 @@ public final class ActivityController
     }
     try
     {
-      if (throwable instanceof LifeCycle.ServiceException)
+      if (throwable instanceof ServiceException)
       {
         // Should only occur with a non-null activity
-        final LifeCycle.ServiceException exception = (LifeCycle.ServiceException) throwable;
+        final ServiceException exception = (ServiceException) throwable;
         if (log.isWarnEnabled())
         {
           log.warn("Caught an exception during the processing of the services from the activity with name '" + (context == null ? "null"
@@ -489,10 +489,10 @@ public final class ActivityController
         }
         return exceptionHandler.onServiceException(activity, exception);
       }
-      else if (throwable instanceof LifeCycle.BusinessObjectUnavailableException)
+      else if (throwable instanceof BusinessObjectUnavailableException)
       {
         // Should only occur with a non-null activity
-        final LifeCycle.BusinessObjectUnavailableException exception = (LifeCycle.BusinessObjectUnavailableException) throwable;
+        final BusinessObjectUnavailableException exception = (BusinessObjectUnavailableException) throwable;
         if (log.isWarnEnabled())
         {
           log.warn("Caught an exception during the retrieval of the business objects from the activity with name '" + (activity == null ? "null"

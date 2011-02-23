@@ -22,9 +22,8 @@ import java.util.List;
 
 import android.os.Bundle;
 
+import com.smartnsoft.droid4me.framework.BusinessObjectLifeCycle;
 import com.smartnsoft.droid4me.framework.ForBusinessObjectImplementation;
-import com.smartnsoft.droid4me.framework.LifeCycle;
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler.Custom;
 
@@ -37,7 +36,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler.Custom;
  */
 public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectClass>
     extends SmartActivity<AggregateClass>
-    implements LifeCycle.ForBusinessObject<BusinessObjectClass>
+    implements BusinessObjectLifeCycle<BusinessObjectClass>
 {
 
   private final ForBusinessObjectImplementation<BusinessObjectClass> forBusinessObjectImplementation = new ForBusinessObjectImplementation<BusinessObjectClass>()
@@ -98,7 +97,7 @@ public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectCl
   }
 
   public void onRetrieveBusinessObjects()
-      throws LifeCycle.BusinessObjectUnavailableException
+      throws BusinessObjectUnavailableException
   {
     forBusinessObjectImplementation.retrieveBusinessObjects();
   }

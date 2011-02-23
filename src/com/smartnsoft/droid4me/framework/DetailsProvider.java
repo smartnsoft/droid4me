@@ -29,7 +29,7 @@ import android.widget.GridView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
+import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 
 /**
@@ -65,7 +65,7 @@ public abstract class DetailsProvider
      * This is specific to the smart list.
      */
     List<? extends BusinessObjectClass> retrieveBusinessObjectsList()
-        throws BusinessObjectUnavailableException;
+        throws LifeCycle.BusinessObjectUnavailableException;
 
     /**
      * If some filtering is applied, do not touch the provided list, but create a new one from scratch.

@@ -20,11 +20,10 @@ package com.smartnsoft.droid4me.framework;
 
 import java.util.List;
 
-import com.smartnsoft.droid4me.framework.LifeCycle.BusinessObjectUnavailableException;
+import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
 import com.smartnsoft.droid4me.menu.MenuHandler.Custom;
-
 
 /**
  * A basic implementation.
@@ -33,7 +32,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler.Custom;
  * @date 2008.08.11
  */
 public abstract class ForBusinessObjectImplementation<BusinessObjectClass>
-    implements LifeCycle.ForBusinessObject<BusinessObjectClass>
+    implements BusinessObjectLifeCycle<BusinessObjectClass>
 {
 
   private BusinessObjectClass businessObject;
@@ -85,7 +84,7 @@ public abstract class ForBusinessObjectImplementation<BusinessObjectClass>
   }
 
   public final BusinessObjectClass getBusinessObject()
-      throws BusinessObjectUnavailableException
+      throws LifeCycle.BusinessObjectUnavailableException
   {
     return businessObject;
   }
