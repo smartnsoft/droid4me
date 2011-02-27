@@ -48,16 +48,19 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
   {
 
     /**
-     * Is invoked in two ways:
-     * <ol>
-     * <li>a first time with a null argument: the returned value indicates whether the timestamp should be taken into account and hence extracted to
-     * determine whether the data should be taken from the cache. If the method returns <code>false</code> at this time, no second call is performed
-     * and it is considered that the data should be taken from the cache ;</li>
-     * <li>a second time with a non-null argument: the returned value indicates whether the data with this timestamp should be taken from the cache ;</li>
-     * </ol>
+     * Is invoked to determine whether the persistence timestamp field should be requested.
+     * 
+     * @return <code>true</code> if and only if the timestamp of the underlying business object should be requested on the persistence layer
+     */
+    boolean queryTimestamp();
+
+    /**
+     * Indicates whether the underlying business is still valid regarding its storage timestamp. Is invoked in two ways:
      * 
      * @param timestamp
-     *          <code>null</code> the first time ; the second time, the date corresponding to the last data retrieval
+     *          the date corresponding to the last data retrieval ; may be <code>null</code>, and will be if the {@link #queryTimestamp()} previously
+     *          returned <code>false</code>
+     * @return <code>true</code> if and only if the business object state should be taken from the persistence layer
      */
     boolean takeFromCache(Date timestamp);
 
@@ -113,9 +116,9 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
   {
     final UriType uri = uriStreamParser.computeUri(parameter);
     // We first ask whether the timestamp associated with the cached data should be retrieved
-    final boolean queryWithTimestamp = instructions.takeFromCache(null);
+    final boolean queryTimestamp = instructions.queryTimestamp();
     final Date lastUpdate;
-    if (queryWithTimestamp == true)
+    if (queryTimestamp == true)
     {
       lastUpdate = getCacheLastUpdate(parameter, uri);
     }
@@ -123,14 +126,10 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     {
       lastUpdate = null;
     }
-    if (queryWithTimestamp == false || (lastUpdate != null && instructions.takeFromCache(lastUpdate) == true))
+    if (instructions.takeFromCache(lastUpdate) == true)
     {
       try
       {
-        if (log.isDebugEnabled())
-        {
-          log.debug("The data corresponding to the URI '" + uri + "' seems available in the cache: reusing it");
-        }
         // We notify the instructions that the business object is bound to be read from the persistence layer
         instructions.onFetchingFromIOStreamer();
         final Values.Info<BusinessObjectType> cachedValue = getCachedValue(parameter);
@@ -152,11 +151,11 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         }
       }
     }
-    else if (lastUpdate == null)
+    else
     {
       if (log.isDebugEnabled())
       {
-        log.debug("The data corresponding to the URI '" + uri + "' in not available in the cache: attempting to retrieve it from the IO streamer");
+        log.debug("The data corresponding to the URI '" + uri + "' in the cache has not been accepted: attempting to retrieve it from the IO streamer");
       }
     }
     // We notify the instructions that the business object is bound to be read not locally

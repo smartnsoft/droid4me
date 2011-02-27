@@ -385,21 +385,15 @@ public final class Values
       extends WithParameterInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>
   {
 
-    private final boolean fromCache;
+    protected final boolean fromCache;
 
-    private final Map<Values.Info.Source, Values.Instructions.Result> assessments = new LinkedHashMap<Values.Info.Source, Values.Instructions.Result>();
+    protected final Map<Values.Info.Source, Values.Instructions.Result> assessments = new LinkedHashMap<Values.Info.Source, Values.Instructions.Result>();
 
     public MemoryInstructions(Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher,
         ParameterType parameter, boolean fromCache)
     {
       super(cacher, parameter);
       this.fromCache = fromCache;
-    }
-
-    public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
-    {
-      return ((info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1) || isTakenFromCache(fromCache, info.timestamp) == true) ? Values.Instructions.Result.Accepted
-          : Values.Instructions.Result.Rejected;
     }
 
     @Override
@@ -415,9 +409,14 @@ public final class Values
       {
         return cacher.getValue(new Cacher.Instructions()
         {
+          public boolean queryTimestamp()
+          {
+            return assessFromCacher(true, null);
+          }
+
           public boolean takeFromCache(Date lastUpdate)
           {
-            return assessments.containsKey(Values.Info.Source.IOStreamer) == false ? isTakenFromCache(fromCache, lastUpdate) == true : lastUpdate == null;
+            return assessFromCacher(false, lastUpdate);
           }
 
           public void onFetchingFromIOStreamer()
@@ -445,9 +444,14 @@ public final class Values
         {
           return cacher.getValue(new Cacher.Instructions()
           {
+            public boolean queryTimestamp()
+            {
+              return false;
+            }
+
             public boolean takeFromCache(Date lastUpdate)
             {
-              return lastUpdate == null ? false : true;
+              return true;
             }
 
             public void onFetchingFromIOStreamer()
@@ -474,9 +478,62 @@ public final class Values
       }
     }
 
-    protected boolean isTakenFromCache(boolean fromCache, Date lastUpdate)
+    public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return lastUpdate == null ? false : fromCache == true;
+      return (fromCache == true || (info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1)) ? Values.Instructions.Result.Accepted
+          : Values.Instructions.Result.Rejected;
+    }
+
+    protected boolean assessFromCacher(boolean queryTimestamp, Date lastUpdate)
+    {
+      if (fromCache == true)
+      {
+        return queryTimestamp == false;
+      }
+      else
+      {
+        if (assessments.containsKey(Values.Info.Source.URIStreamer) == true)
+        {
+          return queryTimestamp == false;
+        }
+        else
+        {
+          return false;
+        }
+      }
+    }
+
+  };
+
+  public static class MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
+      extends MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>
+  {
+
+    private final boolean fromMemory;
+
+    public MemoryAndCacheInstructions(Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher,
+        ParameterType parameter, boolean fromMemory, boolean fromCache)
+    {
+      super(cacher, parameter, fromCache);
+      this.fromMemory = fromMemory;
+    }
+
+    @Override
+    public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
+    {
+      if (fromMemory == true)
+      {
+        return Values.Instructions.Result.Accepted;
+      }
+      else if (fromCache == true)
+      {
+        return info.source != Values.Info.Source.Memory ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected;
+      }
+      else
+      {
+        return (info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+            : Values.Instructions.Result.Rejected;
+      }
     }
 
   };
@@ -494,10 +551,53 @@ public final class Values
       this.cachingPeriodInMilliseconds = cachingPeriodInMilliseconds;
     }
 
-    protected boolean isTakenFromCache(boolean fromCache, Date lastUpdate)
+    @Override
+    public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return lastUpdate == null ? true
-          : fromCache == true && (cachingPeriodInMilliseconds == -1 || ((System.currentTimeMillis() - lastUpdate.getTime()) < cachingPeriodInMilliseconds));
+      if (fromCache == false)
+      {
+        return (info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+            : Values.Instructions.Result.Rejected;
+      }
+      else
+      {
+        if (cachingPeriodInMilliseconds == -1 || ((System.currentTimeMillis() - info.timestamp.getTime()) <= cachingPeriodInMilliseconds))
+        {
+          return Values.Instructions.Result.Accepted;
+        }
+        else
+        {
+          return (info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+              : Values.Instructions.Result.Rejected;
+        }
+      }
+    }
+
+    @Override
+    protected boolean assessFromCacher(boolean queryTimestamp, Date lastUpdate)
+    {
+      if (fromCache == true)
+      {
+        if (cachingPeriodInMilliseconds == -1)
+        {
+          return queryTimestamp == false;
+        }
+        else
+        {
+          return queryTimestamp == true ? true : (((System.currentTimeMillis() - lastUpdate.getTime()) <= cachingPeriodInMilliseconds) ? true : false);
+        }
+      }
+      else
+      {
+        if (assessments.containsKey(Values.Info.Source.URIStreamer) == true)
+        {
+          return queryTimestamp == false;
+        }
+        else
+        {
+          return false;
+        }
+      }
     }
 
   };
@@ -565,19 +665,19 @@ public final class Values
 
     public final BusinessObjectType safeGet(ParameterType parameter)
     {
-      return safeGet(true, null, parameter);
+      return safeGet(true, true, null, parameter);
     }
 
     public final BusinessObjectType safeGet(boolean fromCache, ParameterType parameter)
     {
-      return safeGet(fromCache, null, parameter);
+      return safeGet(fromCache, true, null, parameter);
     }
 
-    public final BusinessObjectType safeGet(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+    public final BusinessObjectType safeGet(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
     {
       try
       {
-        return getMemoryValue(fromCache, cachingEvent, parameter);
+        return getMemoryValue(fromMemory, fromCache, cachingEvent, parameter);
       }
       catch (Values.CacheException exception)
       {
@@ -679,6 +779,22 @@ public final class Values
         throws Values.CacheException
     {
       final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromCache, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
+          cachingEvent);
+    }
+
+    public final BusinessObjectType getMemoryValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromMemory, fromCache, cachingEvent, parameter);
       return infoValue == null ? null : infoValue.value;
     }
 
@@ -792,24 +908,35 @@ public final class Values
       return businessObject;
     }
 
-    public final BusinessObjectType safeGet(Values.CachingEvent cachingEvent, ParameterType parameter)
+    public final BusinessObjectType getValue(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
     {
-      return safeGet(true, cachingEvent, parameter);
+      return getValue(true, fromCache, cachingEvent, parameter);
     }
 
-    public final BusinessObjectType getValue(final boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+    public final BusinessObjectType getValue(boolean fromMemory, final boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
         throws Values.CacheException
     {
       return getValue(
-          new Values.MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromCache),
+          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
           cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType safeGet(Values.CachingEvent cachingEvent, ParameterType parameter)
+    {
+      return safeGet(true, true, cachingEvent, parameter);
     }
 
     public final BusinessObjectType safeGet(boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
     {
+      return safeGet(fromCache, true, cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType safeGet(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+    {
       try
       {
-        return getValue(fromCache, cachingEvent, parameter);
+        return getValue(fromMemory, fromCache, cachingEvent, parameter);
       }
       catch (Values.CacheException exception)
       {
