@@ -28,9 +28,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -49,42 +47,6 @@ import android.widget.ImageView;
 public class ImageDownloader
     extends BasisImageDownloader
 {
-
-  /**
-   * Introduced so as to be able to catch the exceptions thrown during the execution of the thread.
-   * 
-   * @since 2010.09.10
-   */
-  public final static class ImageThreadPoolExecutor
-      extends ThreadPoolExecutor
-  {
-
-    private ImageThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue,
-        ThreadFactory threadFactory, RejectedExecutionHandler rejectedExecutionHandler)
-    {
-      super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, rejectedExecutionHandler);
-    }
-
-    /**
-     * Makes sure that exceptions will not kill the thread.
-     */
-    @Override
-    public void execute(Runnable command)
-    {
-      try
-      {
-        super.execute(command);
-      }
-      catch (Throwable throwable)
-      {
-        if (log.isErrorEnabled())
-        {
-          log.error("An unhandled exception has been raised during the processing of a command", throwable);
-        }
-      }
-    }
-
-  }
 
   private static int preThreadCount;
 
@@ -112,12 +74,12 @@ public class ImageDownloader
 
   // private final static ImageDownloader.ImagePriorityBlockingQueue PRE_BLOCKING_QUEUE = new ImageDownloader.ImagePriorityBlockingQueue();
 
-  private final static ImageDownloader.ImageThreadPoolExecutor PRE_THREAD_POOL = new ImageDownloader.ImageThreadPoolExecutor(2, 3, 5l, TimeUnit.SECONDS, new PriorityBlockingQueue<Runnable>(), new ThreadFactory()
+  private final static ThreadPoolExecutor PRE_THREAD_POOL = new ThreadPoolExecutor(2, 3, 5l, TimeUnit.SECONDS, new PriorityBlockingQueue<Runnable>(), new ThreadFactory()
   {
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
-      thread.setName("droid4me.ext-" + (ImageDownloader.preThreadCount < ImageDownloader.PRE_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "pre #" + ImageDownloader.preThreadCount++);
+      thread.setName("droid4me-" + (ImageDownloader.preThreadCount < ImageDownloader.PRE_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "pre #" + ImageDownloader.preThreadCount++);
       return thread;
     }
   }, /*
@@ -128,7 +90,7 @@ public class ImageDownloader
   private static int downloadThreadCount;
 
   @SuppressWarnings("serial")
-  private final static ImageDownloader.ImageThreadPoolExecutor DOWNLOAD_THREAD_POOL = new ImageDownloader.ImageThreadPoolExecutor(2, 4, 5l, TimeUnit.SECONDS, new PriorityBlockingQueue<Runnable>()
+  private final static ThreadPoolExecutor DOWNLOAD_THREAD_POOL = new ThreadPoolExecutor(2, 4, 5l, TimeUnit.SECONDS, new PriorityBlockingQueue<Runnable>()
   {
     // @Override
     // public boolean offer(Runnable runnable)
@@ -146,7 +108,7 @@ public class ImageDownloader
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
-      thread.setName("droid4me.ext-" + (ImageDownloader.downloadThreadCount < ImageDownloader.DOWNLOAD_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "download #" + ImageDownloader.downloadThreadCount++);
+      thread.setName("droid4me-" + (ImageDownloader.downloadThreadCount < ImageDownloader.DOWNLOAD_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "download #" + ImageDownloader.downloadThreadCount++);
       return thread;
     }
   }, new ThreadPoolExecutor.AbortPolicy());
@@ -204,18 +166,24 @@ public class ImageDownloader
      */
     public final void run()
     {
-      if (executeEnd == false)
+      try
       {
-        // if (log.isDebugEnabled())
-        // {
-        // log.debug("Executing a command start phase in the thread '" + Thread.currentThread().getName() + "' for image with id '" + imageUid + "'");
-        // }
-        executeEnd = true;
-        executeStart(false);
+        if (executeEnd == false)
+        {
+          executeEnd = true;
+          executeStart(false);
+        }
+        else
+        {
+          executeEnd();
+        }
       }
-      else
+      catch (Throwable throwable)
       {
-        executeEnd();
+        if (log.isErrorEnabled())
+        {
+          log.error("An unhandled exception has been raised during the processing of a command", throwable);
+        }
       }
     }
 
@@ -940,25 +908,6 @@ public class ImageDownloader
       }
       preCommand.executeStart(true);
     }
-  }
-
-  /**
-   * @deprecated Use the {@link #get(ImageView, String, Object, Handler, BasisImageDownloader.Instructions)} method instead.
-   */
-  @Deprecated
-  public void computeAndGetUrl(ImageView imageView, String imageUid, Object imageSpecs, Handler handler, BasisImageDownloader.Instructions instructions)
-  {
-    get(imageView, imageUid, imageSpecs, handler, instructions);
-  }
-
-  /**
-   * @deprecated Use the {@link #get(boolean, ImageView, String, Object, Handler, BasisImageDownloader.Instructions)} method instead.
-   */
-  @Deprecated
-  public void computeAndGetUrl(boolean isBlocking, ImageView imageView, String imageUid, Object imageSpecs, Handler handler,
-      BasisImageDownloader.Instructions instructions)
-  {
-    get(isBlocking, imageView, imageUid, imageSpecs, handler, instructions);
   }
 
   public synchronized void empty()
