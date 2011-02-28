@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
@@ -140,22 +141,40 @@ public abstract class SmartApplication
         public void run()
         {
           final I18NExt i18nExt = getI18NExt();
-          new AlertDialog.Builder(activity).setTitle(getI18N().dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-              getI18N().otherProblemHint).setNegativeButton(android.R.string.cancel, new OnClickListener()
+          // If the logger recipient is not set, no e-mail submission is proposed
+          final boolean proposeToSendLog = getLogReportRecipient() != null;
+          final Builder alertBuilder = new AlertDialog.Builder(activity).setTitle(getI18N().dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
+              getI18N().otherProblemHint);
+          if (proposeToSendLog == true)
           {
-            public void onClick(DialogInterface dialogInterface, int i)
+            alertBuilder.setNegativeButton(android.R.string.cancel, new OnClickListener()
             {
-              // We leave the activity, because we cannot go any further
-              activity.finish();
-            }
-          }).setPositiveButton(i18nExt.reportButtonLabel, new OnClickListener()
+              public void onClick(DialogInterface dialogInterface, int i)
+              {
+                // We leave the activity, because we cannot go any further
+                activity.finish();
+              }
+            }).setPositiveButton(i18nExt.reportButtonLabel, new OnClickListener()
+            {
+              public void onClick(DialogInterface dialogInterface, int i)
+              {
+                new SendLogsTask(activity, i18nExt.retrievingLogProgressMessage, "[" + i18nExt.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
+                    null, null);
+              }
+            });
+          }
+          else
           {
-            public void onClick(DialogInterface dialogInterface, int i)
+            alertBuilder.setPositiveButton(android.R.string.ok, new OnClickListener()
             {
-              new SendLogsTask(activity, i18nExt.retrievingLogProgressMessage, "[" + i18nExt.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
-                  null, null);
-            }
-          }).setCancelable(false).show();
+              public void onClick(DialogInterface dialogInterface, int i)
+              {
+                // We leave the activity, because we cannot go any further
+                activity.finish();
+              }
+            });
+          }
+          alertBuilder.setCancelable(false).show();
         }
       });
       return true;
