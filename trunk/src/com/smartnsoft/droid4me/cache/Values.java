@@ -494,7 +494,14 @@ public final class Values
       {
         if (assessments.containsKey(Values.Info.Source.URIStreamer) == true)
         {
-          return queryTimestamp == false;
+          if (assessments.size() == 1)
+          {
+            return false;
+          }
+          else
+          {
+            return queryTimestamp == false;
+          }
         }
         else
         {
@@ -591,7 +598,14 @@ public final class Values
       {
         if (assessments.containsKey(Values.Info.Source.URIStreamer) == true)
         {
-          return queryTimestamp == false;
+          if (assessments.size() == 1)
+          {
+            return false;
+          }
+          else
+          {
+            return queryTimestamp == false;
+          }
         }
         else
         {
