@@ -72,6 +72,10 @@ public abstract class ProgressHandler
    * Should be invoked when a progress event occurs.
    * 
    * <p>
+   * If the provided activity is {@link Activity#isFinishing() finishing}, it does nothing.
+   * </p>
+   * 
+   * <p>
    * Caution: this method must be exclusively invoked from the GUI thread!
    * <p>
    * 
@@ -85,13 +89,13 @@ public abstract class ProgressHandler
    */
   public final void onProgress(Activity activity, boolean inProgress, Object progressExtra)
   {
+    if (activity.isFinishing() == true)
+    {
+      // We do nothing when the activity is finishing
+      return;
+    }
     if (inProgress == true)
     {
-      if (activity.isFinishing() == true)
-      {
-        // We do nothing when the activity is finishing
-        return;
-      }
       show(activity, progressExtra);
     }
     else
