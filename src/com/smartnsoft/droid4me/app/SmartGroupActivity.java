@@ -62,10 +62,10 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 public abstract class SmartGroupActivity<AggregateClass>
     extends ActivityGroup
     implements Smarted<AggregateClass>, LifeCycle, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals/*
-                                                                                                                           * ,ViewTreeObserver .
-                                                                                                                           * OnTouchModeChangeListener
-                                                                                                                           * , OnFocusChangeListener
-                                                                                                                           */
+                                                                                                               * ,ViewTreeObserver .
+                                                                                                               * OnTouchModeChangeListener ,
+                                                                                                               * OnFocusChangeListener
+                                                                                                               */
 {
   /**
    * This is taken from the Android API Demos source code!
@@ -277,14 +277,20 @@ public abstract class SmartGroupActivity<AggregateClass>
     onActivityStarted(activityId);
   }
 
-  protected final void switchWindow()
+  // Synchronized to avoid concurrency
+  protected synchronized final void switchWindow()
   {
-    contentView.addView(windowDisplaying.getDecorView(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
-    if (windowDisplayed != null)
+    // Does nothing if the same window is displayed again
+    if (windowDisplaying != windowDisplayed)
     {
-      contentView.removeView(windowDisplayed.getDecorView());
+      contentView.addView(windowDisplaying.getDecorView(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
+
+      if (windowDisplayed != null)
+      {
+        contentView.removeView(windowDisplayed.getDecorView());
+      }
+      windowDisplayed = windowDisplaying;
     }
-    windowDisplayed = windowDisplaying;
   }
 
   protected final View startActivity(String activityId, Intent intent)
