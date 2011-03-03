@@ -171,7 +171,15 @@ public abstract class SmartTabActivity<AggregateClass>
     onInternalCreate(savedInstanceState);
     onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
-    onRetrieveDisplayObjects();
+    try
+    {
+      onRetrieveDisplayObjects();
+    }
+    catch (Throwable throwable)
+    {
+      onException(throwable, true);
+      return;
+    }
     // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
     // We add the static menu commands
     getCompositeActionHandler().add(new MenuHandler.Static()
