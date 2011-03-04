@@ -65,9 +65,9 @@ public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectCl
   {
     super.onCreate(savedInstanceState);
 
-    if (isBeingRedirected() == true)
+    if (shouldKeepOn() == false)
     {
-      // We stop here if a redirection is needed
+      // We stop here if a redirection is needed or is something went wrong
       return;
     }
     getCompositeActionHandler().add(forBusinessObjectImplementation.getActionHandler());

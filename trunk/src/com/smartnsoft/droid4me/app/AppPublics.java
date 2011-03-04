@@ -95,6 +95,9 @@ public final class AppPublics
   public interface LifeCyclePublic
   {
 
+    // TO COME
+    // AppPublics.Aggregator onRetrieveAggregates();
+
     /**
      * Is not invoked by the framework, and provides information about the current entity life cycle.
      * 
@@ -103,12 +106,25 @@ public final class AppPublics
     boolean isFirstLifeCycle();
 
     /**
-     * Enables to know how many times the {@link LifeCycle#onSynchronizeDisplayObjects()} method has been invoked, which may be useful when
-     * you do not want this method to do something that the {@link LifeCycle#onFulfillDisplayObjects()} method may have already done.
+     * Enables to know how many times the {@link LifeCycle#onSynchronizeDisplayObjects()} method has been invoked, which may be useful when you do not
+     * want this method to do something that the {@link LifeCycle#onFulfillDisplayObjects()} method may have already done.
      * 
      * @return the number of time the {@link LifeCycle#onSynchronizeDisplayObjects()} method has actually been invoked
      */
     int getOnSynchronizeDisplayObjectsCount();
+
+  }
+
+  public final static class Aggregator
+  {
+
+    private final List<LifeCycle> aggregates = new ArrayList<LifeCycle>();
+
+    public AppPublics.Aggregator append(LifeCycle aggregate)
+    {
+      aggregates.add(aggregate);
+      return this;
+    }
 
   }
 

@@ -50,7 +50,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 // TODO: think of using the onRetainNonConfigurationInstance/getLastNonConfigurationInstance() when the screen orientation changes.
 public abstract class SmartActivity<AggregateClass>
     extends Activity
-    implements Smarted<AggregateClass>, LifeCycle, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+    implements SmartableActivity<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance(SmartActivity.class);
@@ -81,9 +81,9 @@ public abstract class SmartActivity<AggregateClass>
     return stateContainer.getOnSynchronizeDisplayObjectsCount();
   }
 
-  public final boolean isBeingRedirected()
+  public final boolean shouldKeepOn()
   {
-    return stateContainer.beingRedirected;
+    return stateContainer.shouldKeepOn();
   }
 
   public final Handler getHandler()
@@ -149,7 +149,7 @@ public abstract class SmartActivity<AggregateClass>
     if (ActivityController.getInstance().needsRedirection(this) == true)
     {
       // We stop here if a redirection is needed
-      stateContainer.beingRedirected = true;
+      stateContainer.beingRedirected();
       return;
     }
     else
@@ -178,6 +178,7 @@ public abstract class SmartActivity<AggregateClass>
     }
     catch (Throwable throwable)
     {
+      stateContainer.stopHandling();
       onException(throwable, true);
       return;
     }
@@ -215,7 +216,7 @@ public abstract class SmartActivity<AggregateClass>
     if (ActivityController.getInstance().needsRedirection(this) == true)
     {
       // We stop here if a redirection is needed
-      stateContainer.beingRedirected = true;
+      stateContainer.beingRedirected();
     }
   }
 
@@ -223,6 +224,10 @@ public abstract class SmartActivity<AggregateClass>
   public void onContentChanged()
   {
     super.onContentChanged();
+    if (stateContainer.shouldKeepOn() == false)
+    {
+      return;
+    }
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
   }
 
@@ -249,7 +254,7 @@ public abstract class SmartActivity<AggregateClass>
     }
     super.onResume();
     stateContainer.doNotCallOnActivityDestroyed = false;
-    if (isBeingRedirected() == true)
+    if (shouldKeepOn() == false)
     {
       return;
     }
@@ -443,9 +448,9 @@ public abstract class SmartActivity<AggregateClass>
     }
     try
     {
-      if (isBeingRedirected() == true)
+      if (shouldKeepOn() == false)
       {
-        // We stop here if a redirection is needed
+        // We stop here if a redirection is needed or is something went wrong
         return;
       }
       else
@@ -486,9 +491,9 @@ public abstract class SmartActivity<AggregateClass>
     }
     try
     {
-      if (isBeingRedirected() == true)
+      if (shouldKeepOn() == false)
       {
-        // We stop here if a redirection is needed
+        // We stop here if a redirection is needed or is something went wrong
         return;
       }
       onInternalDestroy();

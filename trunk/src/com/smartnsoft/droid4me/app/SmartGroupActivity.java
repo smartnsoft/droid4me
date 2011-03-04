@@ -61,11 +61,9 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartGroupActivity<AggregateClass>
     extends ActivityGroup
-    implements Smarted<AggregateClass>, LifeCycle, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals/*
-                                                                                                               * ,ViewTreeObserver .
-                                                                                                               * OnTouchModeChangeListener ,
-                                                                                                               * OnFocusChangeListener
-                                                                                                               */
+    implements SmartableActivity<AggregateClass>/*
+                                                 * ,ViewTreeObserver . OnTouchModeChangeListener , OnFocusChangeListener
+                                                 */
 {
   /**
    * This is taken from the Android API Demos source code!
@@ -405,9 +403,9 @@ public abstract class SmartGroupActivity<AggregateClass>
     return stateContainer.getOnSynchronizeDisplayObjectsCount();
   }
 
-  public final boolean isBeingRedirected()
+  public final boolean shouldKeepOn()
   {
-    return stateContainer.beingRedirected;
+    return stateContainer.shouldKeepOn();
   }
 
   public final Handler getHandler()
@@ -473,6 +471,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     if (ActivityController.getInstance().needsRedirection(this) == true)
     {
       // We stop here if a redirection is needed
+      stateContainer.beingRedirected();
       return;
     }
     else
@@ -501,6 +500,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
     catch (Throwable throwable)
     {
+      stateContainer.stopHandling();
       onException(throwable, true);
       return;
     }
@@ -538,7 +538,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     if (ActivityController.getInstance().needsRedirection(this) == true)
     {
       // We stop here if a redirection is needed
-      stateContainer.beingRedirected = true;
+      stateContainer.beingRedirected();
     }
   }
 
@@ -546,6 +546,10 @@ public abstract class SmartGroupActivity<AggregateClass>
   public void onContentChanged()
   {
     super.onContentChanged();
+    if (stateContainer.shouldKeepOn() == false)
+    {
+      return;
+    }
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
   }
 
@@ -558,7 +562,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
     super.onResume();
     stateContainer.doNotCallOnActivityDestroyed = false;
-    if (isBeingRedirected() == true)
+    if (shouldKeepOn() == false)
     {
       return;
     }
@@ -757,9 +761,9 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
     try
     {
-      if (isBeingRedirected() == true)
+      if (shouldKeepOn() == false)
       {
-        // We stop here if a redirection is needed
+        // We stop here if a redirection is needed or is something went wrong
         return;
       }
       else
@@ -800,9 +804,9 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
     try
     {
-      if (isBeingRedirected() == true)
+      if (shouldKeepOn() == false)
       {
-        // We stop here if a redirection is needed
+        // We stop here if a redirection is needed or is something went wrong
         return;
       }
       onInternalDestroy();
