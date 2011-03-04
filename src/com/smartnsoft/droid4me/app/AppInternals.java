@@ -51,7 +51,18 @@ final class AppInternals
   interface LifeCycleInternals
   {
 
-    boolean isBeingRedirected();
+    /**
+     * Indicates whether nothing went wrong during the implementing {@link Activity activity}, or if a {@link #isBeingRedirected() redirection} is
+     * being processed.
+     * 
+     * <p>
+     * Thanks to the {@link ActivityController.Redirector redirection controller}, it is possible to re-route any {@link SmartableActivity activity}
+     * when it starts, if some other activity needs to be executed beforehand.
+     * </p>
+     * 
+     * @return <code>true</code> if and only if the implementing {@link Activity} should resume its execution
+     */
+    boolean shouldKeepOn();
 
     void onActuallyCreated();
 
@@ -89,11 +100,13 @@ final class AppInternals
 
     boolean firstLifeCycle = true;
 
-    public boolean beingRedirected;
+    private boolean beingRedirected;
 
     private BroadcastReceiver[] broadcastReceivers;
 
     private int onSynchronizeDisplayObjectsCount = -1;
+
+    private boolean stopHandling;
 
     boolean isFirstLifeCycle()
     {
@@ -268,8 +281,8 @@ final class AppInternals
     }
 
     /**
-     * Invoked when the provided activity enters the {@link Activity#onStart()} method. We check whether to invoke the
-     * {@link ServiceLifeCycle} methods.
+     * Invoked when the provided activity enters the {@link Activity#onStart()} method. We check whether to invoke the {@link ServiceLifeCycle}
+     * methods.
      */
     void onStart(final Activity activity)
     {
@@ -327,6 +340,24 @@ final class AppInternals
     int getOnSynchronizeDisplayObjectsCount()
     {
       return onSynchronizeDisplayObjectsCount + 1;
+    }
+
+    void beingRedirected()
+    {
+      beingRedirected = true;
+    }
+
+    /**
+     * Should be invoked as soon as the activity has stopped working and that no more handling should be done.
+     */
+    void stopHandling()
+    {
+      stopHandling = true;
+    }
+
+    boolean shouldKeepOn()
+    {
+      return stopHandling == false && beingRedirected == false;
     }
 
     private boolean areServicesAsynchronous(Activity activity)

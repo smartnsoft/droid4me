@@ -80,9 +80,9 @@ public abstract class SmartListActivity<AggregateClass, BusinessObjectClass, Vie
     }
     try
     {
-      if (isBeingRedirected() == true)
+      if (shouldKeepOn() == false)
       {
-        // We stop here if a redirection is needed
+        // We stop here if a redirection is needed or is something went wrong
         return;
       }
       if (getSmartListView() != null)
@@ -105,9 +105,9 @@ public abstract class SmartListActivity<AggregateClass, BusinessObjectClass, Vie
     }
     try
     {
-      if (isBeingRedirected() == true)
+      if (shouldKeepOn() == false)
       {
-        // We stop here if a redirection is needed
+        // We stop here if a redirection is needed or is something went wrong
         return;
       }
       if (getSmartListView() != null)
