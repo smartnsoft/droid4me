@@ -31,6 +31,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.LifeCycle;
+import com.smartnsoft.droid4me.app.AppPublics.Aggregator;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.Events;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
@@ -61,7 +62,7 @@ public abstract class SmartActivity<AggregateClass>
   {
   }
 
-  private AppInternals.StateContainer<AggregateClass> stateContainer = new AppInternals.StateContainer<AggregateClass>();
+  private final AppInternals.StateContainer<AggregateClass> stateContainer = new AppInternals.StateContainer<AggregateClass>();
 
   public void onActuallyCreated()
   {
@@ -144,6 +145,14 @@ public abstract class SmartActivity<AggregateClass>
     {
       log.debug("SmartActivity::onCreate");
     }
+
+    // TO COME
+    // AppPublics.Aggregator aggregator = onRetrieveAggregator();
+    // if (aggregator == null)
+    // {
+    // aggregator = new AppPublics.Aggregator(this);
+    // }
+
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     super.onCreate(savedInstanceState);
     if (ActivityController.getInstance().needsRedirection(this) == true)
@@ -172,6 +181,8 @@ public abstract class SmartActivity<AggregateClass>
     onInternalCreate(savedInstanceState);
     onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
+    // TO COME
+    // aggregator.onRetrieveDisplayObjects();
     try
     {
       onRetrieveDisplayObjects();
