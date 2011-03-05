@@ -95,8 +95,8 @@ public final class AppPublics
   public interface LifeCyclePublic
   {
 
-    // TO COME
-    // AppPublics.Aggregator onRetrieveAggregates();
+    //TO COME
+    //    AppPublics.Aggregator onRetrieveAggregator();
 
     /**
      * Is not invoked by the framework, and provides information about the current entity life cycle.
@@ -115,10 +115,33 @@ public final class AppPublics
 
   }
 
+  /**
+   * @since 2011.03.04
+   */
+  // TO COME
   public final static class Aggregator
+      implements LifeCycle
   {
 
+    static interface ProblemHandler
+    {
+
+      void onProblem(LifeCycle aggregate, Throwable throwable, boolean fromUIThread);
+
+    }
+
+    private AppPublics.Aggregator.ProblemHandler handler;
+
     private final List<LifeCycle> aggregates = new ArrayList<LifeCycle>();
+
+    public Aggregator()
+    {
+    }
+
+    public Aggregator(LifeCycle aggregate)
+    {
+      aggregates.add(aggregate);
+    }
 
     public AppPublics.Aggregator append(LifeCycle aggregate)
     {
@@ -126,6 +149,48 @@ public final class AppPublics
       return this;
     }
 
+    public void onRetrieveDisplayObjects()
+    {
+      // for (LifeCycle aggregate : aggregates)
+      // {
+      // try
+      // {
+      // aggregate.onRetrieveDisplayObjects();
+      // }
+      // catch (Throwable throwable)
+      // {
+      // handler.onProblem(aggregate, throwable, true);
+      // stateContainer.stopHandling();
+      // onException(throwable, true);
+      // return;
+      // }
+      // }
+    }
+
+    public void onRetrieveBusinessObjects()
+        throws BusinessObjectUnavailableException
+    {
+      // TODO Auto-generated method stub
+
+    }
+
+    public void onBusinessObjectsRetrieved()
+    {
+      // TODO Auto-generated method stub
+
+    }
+
+    public void onFulfillDisplayObjects()
+    {
+      // TODO Auto-generated method stub
+
+    }
+
+    public void onSynchronizeDisplayObjects()
+    {
+      // TODO Auto-generated method stub
+
+    }
   }
 
   /**
