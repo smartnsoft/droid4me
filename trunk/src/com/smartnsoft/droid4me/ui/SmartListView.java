@@ -356,17 +356,18 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
   public final ViewGroup createWrapperLayout(Context context)
   {
     wrapperLayout = new LinearLayout(context);
+    wrapperLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT));
     wrapperLayout.setOrientation(LinearLayout.VERTICAL);
 
     {
       listWrapperLayout = new LinearLayout(context);
       listWrapperLayout.setOrientation(LinearLayout.HORIZONTAL);
+//
+//      // This is essential to give a weight of 1
+      listWrapperLayout.addView(getListView(), new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
 
-      // This is essential to give a width of 0 and a weight of 1
-      listWrapperLayout.addView(getListView(), new LinearLayout.LayoutParams(0, LayoutParams.FILL_PARENT, 1));
-
-      // This is essential to give a height of 0 and a weight of 1
-      wrapperLayout.addView(listWrapperLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, 0, 1));
+      // This is essential to give weight of 1
+      wrapperLayout.addView(listWrapperLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
     }
 
     return wrapperLayout;
@@ -395,7 +396,7 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
     // // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
     // leftLayout.addView(new View(wrapperLayout.getContext()), new LinearLayout.LayoutParams(0, 0));
     // }
-    listWrapperLayout.addView(leftLayout, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+    listWrapperLayout.addView(leftLayout, 0, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
   }
 
   protected final void initializeRight()
