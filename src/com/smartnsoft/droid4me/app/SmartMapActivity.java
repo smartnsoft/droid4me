@@ -82,10 +82,6 @@ public abstract class SmartMapActivity<AggregateClass>
     return mapView;
   }
 
-  protected void onMapViewKnown(int width, int height)
-  {
-  }
-
   public void onRetrieveDisplayObjects()
   {
     wrapperLayout = new RelativeLayout(this);
@@ -106,7 +102,7 @@ public abstract class SmartMapActivity<AggregateClass>
     }
     {
       mapWrapperLayout = new RelativeLayout(this);
-      mapView = createMapView();
+      mapView = internalCreateMapView();
       getMapWrapperLayout().addView(mapView, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
       // We need to set an identifier to the map view, because we want to locate other views relatively to it
       mapView.setId(footerView.getId() + 1);
@@ -207,21 +203,22 @@ public abstract class SmartMapActivity<AggregateClass>
 
   // Many explanations are taken from http://androidguys.com/?p=1413 and at
   // http://groups.google.com/group/android-developers/browse_thread/thread/db3eee0abe7aafe4/16a44c09741d9883?lnk=raot
-  private MapView createMapView()
+  private MapView internalCreateMapView()
   {
-    final MapView theMapView = new MapView(this, getGoogleMapsApiKey())
-    {
-      protected void onSizeChanged(int width, int height, int oldw, int oldh)
-      {
-        super.onSizeChanged(width, height, oldw, oldh);
-        onMapViewKnown(width, height);
-      }
-    };
+    final MapView theMapView = createMapView(getGoogleMapsApiKey());
     // Without these two settings, it is not possible to click, zoom in/out, and navigate on the map
     theMapView.setEnabled(true);
     theMapView.setClickable(true);
     // mapView.setReticleDrawMode(ReticleDrawMode.DRAW_RETICLE_OVER);
     return theMapView;
+  }
+
+  /**
+   * You can override this method, in order to tune the handled {@link MapView}.
+   */
+  protected MapView createMapView(String apiKey)
+  {
+    return new MapView(this, apiKey);
   }
 
   private final static double EQUATOR_IN_PIXELS_WHEN_ZOOM_SET_TO_1 = 256.0d;
