@@ -324,6 +324,12 @@ public abstract class WebServiceCaller
     return performHttpPutJson(computeUri(methodUriPrefix, methodUriSuffix, null), postContents);
   }
 
+  protected final String performHttpDeleteJson(String methodUriPrefix, String methodUriSuffix)
+      throws UnsupportedEncodingException, ClientProtocolException, IllegalStateException, IOException, CallException, JSONException
+  {
+    return performHttpDeleteJson(computeUri(methodUriPrefix, methodUriSuffix, null));
+  }
+
   protected final String performHttpGetJson(String uri)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, JSONException
   {
@@ -343,6 +349,13 @@ public abstract class WebServiceCaller
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Put, body, 0);
     return getJson(getContent(uri, WebServiceCaller.CallType.Put, response));
+  }
+
+  protected final String performHttpDeleteJson(String uri)
+      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, JSONException
+  {
+    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Delete, null, 0);
+    return getJson(getContent(uri, WebServiceCaller.CallType.Delete, response));
   }
 
   public static final String getString(InputStream inputStream)
