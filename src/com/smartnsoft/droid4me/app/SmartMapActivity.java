@@ -108,12 +108,14 @@ public abstract class SmartMapActivity<AggregateClass>
       mapView.setId(footerView.getId() + 1);
       {
         innerHeaderView = new LinearLayout(this);
+        innerHeaderView.setOrientation(LinearLayout.VERTICAL);
         final RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
         layoutParams.addRule(RelativeLayout.ALIGN_TOP, mapView.getId());
         getMapWrapperLayout().addView(innerHeaderView, layoutParams);
       }
       {
         innerFooterView = new LinearLayout(this);
+        innerFooterView.setOrientation(LinearLayout.VERTICAL);
         innerFooterView.setId(mapView.getId() + 1);
         final RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         layoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, mapView.getId());
