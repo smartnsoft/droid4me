@@ -20,7 +20,7 @@ package com.smartnsoft.droid4me.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 /**
  * Introduced in order to get notified when a container size changes, because there is no <code>OnSizeChangedListener</code> in Android {@link View},
@@ -30,12 +30,12 @@ import android.widget.FrameLayout;
  * Use this wrapper container every time you need to be notified when a {@link View widget} sizes changes.
  * </p>
  * 
- * @see SmartRelativeLayout
- * @author ɉdouard Mercier, Willy Noel
- * @since 2011.03.11
+ * @see SmartFrameLayout
+ * @author ɉdouard Mercier
+ * @since 2011.04.01
  */
-public class SmartFrameLayout
-    extends FrameLayout
+public class SmartRelativeLayout
+    extends RelativeLayout
 {
 
   /**
@@ -46,29 +46,29 @@ public class SmartFrameLayout
     void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight);
   }
 
-  private SmartFrameLayout.OnSizeChangedListener onSizeChangedListener;
+  private SmartRelativeLayout.OnSizeChangedListener onSizeChangedListener;
 
-  public SmartFrameLayout(Context context, AttributeSet attrs, int defStyle)
+  public SmartRelativeLayout(Context context, AttributeSet attrs, int defStyle)
   {
     super(context, attrs, defStyle);
   }
 
-  public SmartFrameLayout(Context context, AttributeSet attrs)
+  public SmartRelativeLayout(Context context, AttributeSet attrs)
   {
     super(context, attrs);
   }
 
-  public SmartFrameLayout(Context context)
+  public SmartRelativeLayout(Context context)
   {
     super(context);
   }
 
-  public final SmartFrameLayout.OnSizeChangedListener getOnSizeChangedListener()
+  public final SmartRelativeLayout.OnSizeChangedListener getOnSizeChangedListener()
   {
     return onSizeChangedListener;
   }
 
-  public final void setOnSizeChangedListener(SmartFrameLayout.OnSizeChangedListener onSizeChangedListener)
+  public final void setOnSizeChangedListener(SmartRelativeLayout.OnSizeChangedListener onSizeChangedListener)
   {
     this.onSizeChangedListener = onSizeChangedListener;
   }
