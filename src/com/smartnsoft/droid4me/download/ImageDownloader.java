@@ -796,11 +796,11 @@ public class ImageDownloader
           {
             final Class<? extends ImageDownloader> implementationClass = (Class<? extends ImageDownloader>) Class.forName(ImageDownloader.IMPLEMENTATION_FQN);
             final ImageDownloader[] newInstances = (ImageDownloader[]) Array.newInstance(implementationClass, ImageDownloader.INSTANCES_COUNT);
-            final Constructor<? extends ImageDownloader> constructor = implementationClass.getDeclaredConstructor(long.class, long.class, boolean.class,
-                boolean.class);
+            final Constructor<? extends ImageDownloader> constructor = implementationClass.getDeclaredConstructor(String.class, long.class, long.class,
+                boolean.class, boolean.class);
             for (int index = 0; index < ImageDownloader.INSTANCES_COUNT; index++)
             {
-              newInstances[index] = constructor.newInstance(ImageDownloader.MAX_MEMORY_IN_BYTES[index],
+              newInstances[index] = constructor.newInstance("ImageDownloader-" + index, ImageDownloader.MAX_MEMORY_IN_BYTES[index],
                   ImageDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[index], ImageDownloader.USE_REFERENCES[index], ImageDownloader.RECYCLE_BITMAP[index]);
             }
             // We only assign the instances class variable here, once all instances have actually been created
@@ -842,9 +842,9 @@ public class ImageDownloader
    */
   private int commandIdCount = -1;
 
-  protected ImageDownloader(long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  protected ImageDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
-    super(maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
+    super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
     prioritiesStack = new Hashtable<ImageView, Integer>();
     prioritiesPreStack = new Hashtable<ImageView, ImageDownloader.PreCommand>();
     prioritiesDownloadStack = new Hashtable<ImageView, ImageDownloader.DownloadBitmapCommand>();
@@ -914,7 +914,7 @@ public class ImageDownloader
   {
     if (log.isInfoEnabled())
     {
-      log.info("Clearing the cache");
+      log.info("Clearing the cache '" + name + "'");
     }
     ImageDownloader.PRE_THREAD_POOL.getQueue().clear();
     ImageDownloader.DOWNLOAD_THREAD_POOL.getQueue().clear();

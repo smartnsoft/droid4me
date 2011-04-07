@@ -375,6 +375,10 @@ public abstract class BasisImageDownloader
   }
 
   /**
+   * The name of the instance, mostly useful for the logs.
+   */
+  public String name;
+  /**
    * Indicates the upper limit of memory that the cache is allowed to reach.
    */
   public final long maxMemoryInBytes;
@@ -400,8 +404,10 @@ public abstract class BasisImageDownloader
 
   private boolean cleanUpInProgress;
 
-  protected BasisImageDownloader(long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+
+  protected BasisImageDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
+    this.name = name;
     this.recycleMap = recycleMap;
     this.maxMemoryInBytes = maxMemoryInBytes;
     this.useReferences = useReferences;
@@ -564,7 +570,7 @@ public abstract class BasisImageDownloader
         }
         if (log.isInfoEnabled())
         {
-          log.info("The image cache has been cleaned-up (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumption + " bytes");
+          log.info("The image cache '" + name+ "' has been cleaned-up (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumption + " bytes");
         }
       }
     }
