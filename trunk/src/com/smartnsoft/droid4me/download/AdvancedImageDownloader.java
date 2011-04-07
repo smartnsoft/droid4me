@@ -177,9 +177,9 @@ public final class AdvancedImageDownloader
 
   }
 
-  protected AdvancedImageDownloader(long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  protected AdvancedImageDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
-    super(maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
+    super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
   }
 
   @Override
