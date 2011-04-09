@@ -19,7 +19,6 @@
 package com.smartnsoft.droid4me.app;
 
 import android.app.IntentService;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
@@ -62,8 +61,9 @@ public abstract class SmartIntentService
    * Should always be invoked first by the derived classes.
    */
   @Override
-  protected void onHandleIntent(Intent intent)
+  public void onCreate()
   {
+    super.onCreate();
     preferences = PreferenceManager.getDefaultSharedPreferences(this);
   }
 
