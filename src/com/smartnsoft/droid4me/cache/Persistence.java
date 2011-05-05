@@ -56,6 +56,9 @@ public abstract class Persistence
 
   }
 
+  /**
+   * Defined in order to count how many times an URI has been consumed.
+   */
   protected final static class UriUsage
       implements Comparable<Persistence.UriUsage>
   {
@@ -94,15 +97,32 @@ public abstract class Persistence
 
   private static volatile Persistence[] instances;
 
+  /**
+   * The directory paths of the instances.
+   * 
+   * <p>
+   * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
+   * </p>
+   */
   public static String[] CACHE_DIRECTORY_PATHS = new String[] { "/sdcard" };
 
-  public static int CACHES_COUNT = 1;
+  /**
+   * The number of instances.
+   */
+  public static int INSTANCES_COUNT = 1;
 
   /**
    * The fully qualified name of the {@link Persistence} instances implementation.
    */
   public static String IMPLEMENTATION_FQN;
 
+  /**
+   * The maximum size, expressed in bytes, of the data associated to an URI.
+   * 
+   * <p>
+   * Think of tuning this parameter in case the application stores large data.
+   * </p>
+   */
   public static int MAXIMUM_URI_CONTENTS_SIZE_IN_BYTES = 512 * 1024;
 
   protected boolean storageBackendAvailable;
@@ -113,13 +133,20 @@ public abstract class Persistence
 
   protected final Set<String> beingProcessed = new HashSet<String>();
 
+  /**
+   * Equivalent to calling {@link #getInstance(0)}.
+   */
   public static Persistence getInstance()
   {
     return Persistence.getInstance(0);
   }
 
   /**
-   * This is a lazy instantiation.
+   * Enables to access the various persistence instances.
+   * 
+   * <p>
+   * Note that the instantiation is lazy.
+   * </p>
    */
   // We accept the "out-of-order writes" case
   @SuppressWarnings("unchecked")
@@ -135,9 +162,9 @@ public abstract class Persistence
           {
             // We do that way, because the Persistence initialization may be long, and we want the "instances" attribute to be atomic
             final Class<? extends Persistence> implementationClass = (Class<? extends Persistence>) Class.forName(Persistence.IMPLEMENTATION_FQN);
-            final Persistence[] newInstances = (Persistence[]) Array.newInstance(implementationClass, Persistence.CACHES_COUNT);
+            final Persistence[] newInstances = (Persistence[]) Array.newInstance(implementationClass, Persistence.INSTANCES_COUNT);
             final Constructor<? extends Persistence> constructor = implementationClass.getDeclaredConstructor(String.class, int.class);
-            for (int index = 0; index < Persistence.CACHES_COUNT; index++)
+            for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
             {
               newInstances[index] = constructor.newInstance(Persistence.CACHE_DIRECTORY_PATHS[index], index);
               newInstances[index].initialize();
@@ -345,7 +372,7 @@ public abstract class Persistence
     {
       log.debug("Emptying all persistence instances");
     }
-    for (int index = 0; index < Persistence.CACHES_COUNT; index++)
+    for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
     {
       Persistence.instances[index].clear();
     }

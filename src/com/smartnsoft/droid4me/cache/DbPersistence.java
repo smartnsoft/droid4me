@@ -57,6 +57,9 @@ public final class DbPersistence
     extends Persistence
 {
 
+  /**
+   * Defined in order to set up the database columns.
+   */
   private final static class CacheColumns
       implements BaseColumns
   {
@@ -75,12 +78,32 @@ public final class DbPersistence
 
   }
 
+  /**
+   * The default name of the database file.
+   */
   public final static String DEFAULT_FILE_NAME = "cache.db";
 
+  /**
+   * The default name of the database table.
+   */
   public final static String DEFAULT_TABLE_NAME = "cache";
 
+  /**
+   * The file names of the instances database files.
+   * 
+   * <p>
+   * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
+   * </p>
+   */
   public static String[] FILE_NAMES = new String[] { DbPersistence.DEFAULT_FILE_NAME };
 
+  /**
+   * The table names of the instances database files.
+   * 
+   * <p>
+   * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
+   * </p>
+   */
   public static String[] TABLE_NAMES = new String[] { DbPersistence.DEFAULT_TABLE_NAME };
 
   private static int threadCount = 1;
