@@ -283,6 +283,15 @@ public final class Business
   public static interface UriInputStreamer<UriType, ExceptionType extends Exception>
   {
 
+    /**
+     * Is responsible for returning the date and input stream related to the the provided URI.
+     * 
+     * @param uri
+     *          the URI for which the data are asked for
+     * @return a wrapper which contains the last modification date and the data {@link InputStream}
+     * @throws ExceptionType
+     *           if a problem occurred while accessing to the data
+     */
     Business.InputAtom getInputStream(UriType uri)
         throws ExceptionType;
 
@@ -330,8 +339,16 @@ public final class Business
   {
 
     /**
+     * Is responsible for writing the persist the provided data.
+     * 
+     * @param uri
+     *          the URI the data belongs to
      * @param inputAtom
-     *          the {@link Business.InputAtom#inputStream} is allowed to be null: in that case, a null-like object must be persisted
+     *          the wrapper that contains the data to be persisted the {@link Business.InputAtom#inputStream} is allowed to be null: in that case, a
+     *          null-like object must be persisted
+     *@return a valid input stream corresponding to the persisted data; it is not allowed to be <code>null</code>
+     *@throws Exception
+     *           if any problem occurs while persisting the data
      */
     InputStream writeInputStream(UriType uri, Business.InputAtom inputAtom)
         throws ExceptionType;
@@ -346,6 +363,14 @@ public final class Business
       extends Business.InputStreamer<UriType, ExceptionType>, Business.OutputStreamer<UriType, ExceptionType>
   {
 
+    /**
+     * Is responsible for removing any data related to the provided URI. A further attempt to access to this same URI should be a failure.
+     * 
+     * @param uri
+     *          the URI corresponding to the data to erase
+     * @throws ExceptionType
+     *           if a problem occurred while removing the data
+     */
     void remove(UriType uri)
         throws ExceptionType;
 
