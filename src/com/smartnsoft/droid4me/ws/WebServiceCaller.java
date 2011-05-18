@@ -121,6 +121,9 @@ public abstract class WebServiceCaller
 
   }
 
+  /**
+   * The exception that will be thrown if any problem occurs during a web service call.
+   */
   public static class CallException
       extends Exception
   {
@@ -146,7 +149,17 @@ public abstract class WebServiceCaller
 
     public CallException(String message, int statusCode)
     {
-      super(message);
+      this(message, null, statusCode);
+    }
+
+    public CallException(Throwable throwable, int statusCode)
+    {
+      this(null, throwable, statusCode);
+    }
+
+    public CallException(String message, Throwable throwable, int statusCode)
+    {
+      super(message, throwable);
       this.statusCode = statusCode;
     }
 
