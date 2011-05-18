@@ -327,6 +327,8 @@ public abstract class Persistence
    * @param inputAtom
    *          the wrapper which contains the stream to write
    * @return a new stream wrapper, which is operational
+   * @throws Persistence.PersistenceException
+   *           if a problem occurred while persisting the data
    */
   public abstract Business.InputAtom flushInputStream(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException;
@@ -335,10 +337,16 @@ public abstract class Persistence
    * Empties the specific part of the persistence.
    * 
    * When called, the persistence storage is ensured to be available.
+   * 
+   * @throws if any problem occurs while emptying the persistence
+   * @see #clear()
    */
   protected abstract void empty()
       throws Persistence.PersistenceException;
 
+  /**
+   * @return the directory path of the persistence provided in the {@link #Persistence(String, int) constructor}
+   */
   public final String getStorageDirectoryPath()
   {
     return storageDirectoryPath;
@@ -346,6 +354,9 @@ public abstract class Persistence
 
   /**
    * Totally clears the cache related to the current instance.
+   * 
+   * @throws if any problem occurs while clearing the persistence
+   * @see #clear()
    */
   public final synchronized void clear()
       throws Persistence.PersistenceException
