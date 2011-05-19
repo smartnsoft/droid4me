@@ -313,32 +313,70 @@ public final class ActivityController
       return false;
     }
 
-    protected final boolean checkConnectivityProblemInCause(final Activity activity, final Throwable throwable)
+    /**
+     * Attempts to find a connection issue in the provided exception by iterating over the causes, and display a dialog box if any.
+     * 
+     * @param activity
+     *          in case a connection issue is discovered, it will be used to pop up a dialog box. When the dialog box "OK" button is hit, it will be
+     *          simply dismissed
+     * @param throwable
+     *          the exception to be inspected
+     * @return <code>true</code> if and only a connection issue has been detected
+     */
+    @SuppressWarnings("unchecked")
+    protected final boolean checkConnectivityProblemInCause(final Activity activity, Throwable throwable)
     {
-      Throwable cause;
-      Throwable newThrowable = throwable;
-      // We investigate over the whole cause stack
-      while ((cause = newThrowable.getCause()) != null)
+      if (searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class) == true)
       {
-        if (cause instanceof UnknownHostException || cause instanceof SocketException || cause instanceof SocketTimeoutException || cause instanceof InterruptedIOException)
+        activity.runOnUiThread(new Runnable()
         {
-          activity.runOnUiThread(new Runnable()
+          public void run()
           {
-            public void run()
-            {
-              new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-                  i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null).setCancelable(false).setPositiveButton(android.R.string.ok,
-                  new DialogInterface.OnClickListener()
+            new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
+                i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null).setCancelable(false).setPositiveButton(android.R.string.ok,
+                new DialogInterface.OnClickListener()
+                {
+                  public void onClick(DialogInterface dialog, int which)
                   {
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                    }
-                  }).show();
-            }
-          });
-          return true;
+                  }
+                }).show();
+          }
+        });
+        return true;
+      }
+      return false;
+    }
+
+    /**
+     * Attempts to find a specific exception in the provided exception by iterating over the causes.
+     * 
+     * @param throwable
+     *          the exception to be inspected
+     * @param exceptionClass
+     *          a list of exception classes to look after
+     * @return <code>true</code> if and only one of the provided exception classes has been detected
+     */
+    protected final boolean searchForCause(Throwable throwable, Class<? extends Throwable>... exceptionClass)
+    {
+      Throwable newThrowable = throwable;
+      Throwable cause = newThrowable.getCause();
+      // We investigate over the whole causes stack
+      while (cause != null)
+      {
+        for (Class<? extends Throwable> anExceptionClass : exceptionClass)
+        {
+          if (cause.getClass() == anExceptionClass)
+          {
+            return true;
+          }
+        }
+        // It seems that when there are no more causes, the exception itself is returned as a cause: stupid implementation!
+        if (newThrowable.getCause() == newThrowable)
+        {
+          break;
         }
         newThrowable = cause;
+        cause = newThrowable.getCause();
       }
       return false;
     }
