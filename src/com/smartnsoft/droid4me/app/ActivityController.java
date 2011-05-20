@@ -326,7 +326,7 @@ public final class ActivityController
     @SuppressWarnings("unchecked")
     protected final boolean checkConnectivityProblemInCause(final Activity activity, Throwable throwable)
     {
-      if (searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class) == true)
+      if (searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class) != null)
       {
         activity.runOnUiThread(new Runnable()
         {
@@ -354,9 +354,9 @@ public final class ActivityController
      *          the exception to be inspected
      * @param exceptionClass
      *          a list of exception classes to look after
-     * @return <code>true</code> if and only one of the provided exception classes has been detected
+     * @return <code>null</code> if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
-    protected final boolean searchForCause(Throwable throwable, Class<? extends Throwable>... exceptionClass)
+    protected final Throwable searchForCause(Throwable throwable, Class<? extends Throwable>... exceptionClass)
     {
       Throwable newThrowable = throwable;
       Throwable cause = newThrowable.getCause();
@@ -365,9 +365,20 @@ public final class ActivityController
       {
         for (Class<? extends Throwable> anExceptionClass : exceptionClass)
         {
-          if (cause.getClass() == anExceptionClass)
+          final Class<? extends Throwable> causeClass = cause.getClass();
+          if (causeClass == anExceptionClass)
           {
-            return true;
+            return cause;
+          }
+          // We scan the cause class hierarchy
+          Class<?> superclass = causeClass.getSuperclass();
+          while (superclass != null)
+          {
+            if (superclass == anExceptionClass)
+            {
+              return cause;
+            }
+            superclass = superclass.getSuperclass();
           }
         }
         // It seems that when there are no more causes, the exception itself is returned as a cause: stupid implementation!
@@ -378,7 +389,7 @@ public final class ActivityController
         newThrowable = cause;
         cause = newThrowable.getCause();
       }
-      return false;
+      return null;
     }
 
   }
