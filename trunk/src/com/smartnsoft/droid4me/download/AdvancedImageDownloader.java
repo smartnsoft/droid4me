@@ -172,7 +172,11 @@ public final class AdvancedImageDownloader
     @Override
     protected InputStream onInputStreamDownloaded(InputStream inputStream)
     {
-      return ((AdvancedImageDownloader.AdvancedInstructions) instructions).onInputStreamDownloaded(imageUid, imageSpecs, url, inputStream);
+      if (instructions instanceof AdvancedImageDownloader.AdvancedInstructions)
+      {
+        return ((AdvancedImageDownloader.AdvancedInstructions) instructions).onInputStreamDownloaded(imageUid, imageSpecs, url, inputStream);
+      }
+      return inputStream;
     }
 
   }
