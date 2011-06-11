@@ -269,6 +269,20 @@ public abstract class SmartApplication
   }
 
   /**
+   * A callback method which enables to indicate whether the process newly created should use the usual workflow.
+   * 
+   * <p>
+   * It is useful when having multiple processes for the same application, and that some of the processes should not use the framework.
+   * </p>
+   * 
+   * @return <code>true</code> if and only if you want the framework to be ignored for the process. Returns <code>false</code> by default
+   */
+  protected boolean shouldBeSilent()
+  {
+    return false;
+  }
+
+  /**
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
    * 
    * @return an instance which indicates how to redirect {@link Activity activities} if necessary. Returns <code>null</code>, which means that no
@@ -315,6 +329,11 @@ public abstract class SmartApplication
   @Override
   public final void onCreate()
   {
+    if (shouldBeSilent() == true)
+    {
+      return;
+    }
+
     LoggerFactory.logLevel = getLogLevel();
     // This boilerplate is printed whatever the log level
     log.info("Application powered by droid4me " + SmartApplication.getFrameworkVersionString() + " - Copyright Smart&Soft");
@@ -429,6 +448,11 @@ public abstract class SmartApplication
   @Override
   public void onTerminate()
   {
+    if (shouldBeSilent() == true)
+    {
+      return;
+    }
+
     if (log.isDebugEnabled())
     {
       log.debug("Application terminating");
@@ -451,6 +475,11 @@ public abstract class SmartApplication
   @Override
   public void onLowMemory()
   {
+    if (shouldBeSilent() == true)
+    {
+      return;
+    }
+
     if (log.isWarnEnabled())
     {
       log.warn("Application low memory");
