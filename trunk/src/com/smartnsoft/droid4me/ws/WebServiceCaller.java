@@ -64,6 +64,20 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 /**
  * A basis class for making web service calls easier.
  * 
+ * <p>
+ * When invoking an HTTP method, the caller goes through the following workflow:
+ * <ol>
+ * <li>the {@link #isConnected()} method is checked: if the return value is set to <code>false</code>, no request will be attempted and a
+ * {@link WebServiceCaller.CallException} exception will be thrown (embedding a {@link UnknownHostException} exception) ;</li>
+ * <li>the {@link #onBeforeHttpRequestExecution(DefaultHttpClient, HttpRequestBase)} method will be invoked, so as to let the caller tune the HTTP
+ * method request ;</li>
+ * <li>if a connection issue arises (connection time-out, socket time-out, lost of connectivity), a {@link WebServiceCaller.CallException} exception
+ * will be thrown, and it will {@link Throwable#getCause() embed} the reason for the connection issue ;</li>
+ * <li>if the status code of the HTTP response does not belong to the [{@link HttpStatus.SC_OK}, {@link HttpStatus.SC_MULTI_STATUS}] range, the
+ * {@link #onStatusCodeNotOk(String, CallType, HttpEntity, HttpResponse, int, int)} method will be invoked.</li>
+ * </ol>
+ * </p>
+ * 
  * @author Édouard Mercier
  * @since 2009.03.26
  */
@@ -204,27 +218,9 @@ public abstract class WebServiceCaller
 
   protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
 
-  private final static DocumentBuilder builder;
+  private static DocumentBuilder builder;
 
-  static
-  {
-    final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(false);
-    factory.setValidating(false);
-    DocumentBuilder theBuilder = null;
-    try
-    {
-      theBuilder = factory.newDocumentBuilder();
-    }
-    catch (ParserConfigurationException exception)
-    {
-      if (log.isFatalEnabled())
-      {
-        log.fatal("Cannot create the DOM XML parser factories", exception);
-      }
-    }
-    builder = theBuilder;
-  }
+  private boolean isConnected = true;
 
   public static InputStream createInputStreamFromJson(JSONObject jsonObject)
   {
@@ -266,15 +262,53 @@ public abstract class WebServiceCaller
     return theReader;
   }
 
+  /**
+   * @return the value previously set by the {@link #setConnected(boolean)} method
+   */
+  public boolean isConnected()
+  {
+    return isConnected;
+  }
+
+  /**
+   * Enables to indicate that no Internet connectivity is available, or that the connectivity has been restored. The initial value is
+   * <code>true</code>.
+   */
+  public void setConnected(boolean isConnected)
+  {
+    this.isConnected = isConnected;
+  }
+
   public final InputStream getInputStream(String uri)
       throws WebServiceCaller.CallException
   {
     return getInputStream(uri, WebServiceCaller.CallType.Get, null);
   }
 
+  /**
+   * Performs an HTTP request corresponding to the provided parameters.
+   * 
+   * @param uri
+   *          the URI being requested
+   * @param callType
+   *          the HTTP method
+   * @param body
+   *          if the HTTP method is set to {@link WebServiceCaller.CallType#Post} or {@link WebServiceCaller.CallType#Put}, this is the body of the
+   *          request
+   * @return the input stream of the HTTP method call; cannot be <code>null</code>
+   * @throws WebServiceCaller.CallException
+   *           if the status code of the HTTP response does not belong to the [{@link HttpStatus.SC_OK}, {@link HttpStatus.SC_MULTI_STATUS}] range.
+   *           Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
+   *           {@link #isConnected()} method returns <code>false</code>, no request will be attempted and a {@link WebServiceCaller.CallException}
+   *           exception will be thrown (embedding a {@link UnknownHostException} exception).
+   */
   public final InputStream getInputStream(String uri, WebServiceCaller.CallType callType, HttpEntity body)
       throws WebServiceCaller.CallException
   {
+    if (isConnected == false)
+    {
+      throw new WebServiceCaller.CallException(new UnknownHostException("No connectivity"));
+    }
     try
     {
       final HttpResponse response = performHttpRequest(uri, callType, body, 0);
@@ -410,6 +444,24 @@ public abstract class WebServiceCaller
   public static Document parseDom(InputStream inputStream)
       throws SAXException, IOException
   {
+    // TODO: make this thread-safe one day, even if it is very likely that it is not necessary at all
+    if (WebServiceCaller.builder == null)
+    {
+      final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setNamespaceAware(false);
+      factory.setValidating(false);
+      try
+      {
+        WebServiceCaller.builder = factory.newDocumentBuilder();
+      }
+      catch (ParserConfigurationException exception)
+      {
+        if (log.isFatalEnabled())
+        {
+          log.fatal("Cannot create the DOM XML parser factories", exception);
+        }
+      }
+    }
     return builder.parse(inputStream);
   }
 
