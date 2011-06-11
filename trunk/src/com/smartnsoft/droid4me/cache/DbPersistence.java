@@ -318,26 +318,17 @@ public final class DbPersistence
         getLastUpdateStreamExistsStatement = writeableDb.compileStatement("SELECT " + DbPersistence.CacheColumns.LAST_UPDATE + " FROM " + tableName + " WHERE " + DbPersistence.CacheColumns.URI + " = ?");
       }
       getLastUpdateStreamExistsStatement.bindString(1, uri);
-      writeableDb.beginTransaction();
+      // A single operation is bound to execute, hence no transaction is required
+      final long date;
       try
       {
-        final long date;
-        try
-        {
-          date = getLastUpdateStreamExistsStatement.simpleQueryForLong();
-          writeableDb.setTransactionSuccessful();
-        }
-        catch (SQLiteDoneException exception)
-        {
-          writeableDb.setTransactionSuccessful();
-          return null;
-        }
-        return new Date(date);
+        date = getLastUpdateStreamExistsStatement.simpleQueryForLong();
       }
-      finally
+      catch (SQLiteDoneException exception)
       {
-        writeableDb.endTransaction();
+        return null;
       }
+      return new Date(date);
     }
   }
 
@@ -370,31 +361,22 @@ public final class DbPersistence
     }
 
     final long start = System.currentTimeMillis();
-    writeableDb.beginTransaction();
+    // A single database operation is bound to be executed, hence no transaction is required
     Cursor cursor;
+    /*
+     * final SQLiteQueryBuilder qb = new SQLiteQueryBuilder(); qb.setTables(tableName); final Cursor cursor = qb.query(writeableDb, null,
+     * DbPersistence.CacheColumns.URI + " = '" + uri + "'", null, null, null, null);
+     */
     try
     {
-      /*
-       * final SQLiteQueryBuilder qb = new SQLiteQueryBuilder(); qb.setTables(tableName); final Cursor cursor = qb.query(writeableDb, null,
-       * DbPersistence.CacheColumns.URI + " = '" + uri + "'", null, null, null, null);
-       */
-      try
-      {
-        cursor = writeableDb.rawQuery(readInputStreamQuery, new String[] { uri });
-        writeableDb.setTransactionSuccessful();
-      }
-      catch (SQLException exception)
-      {
-        // Cannot figure out why the first time the database is accessed once it has just been created, an exception is thrown on that query
-        // Re-running it, fixes the problem ;(
-        // Hence, we silently ignore the previous exception
-        cursor = writeableDb.rawQuery(readInputStreamQuery, new String[] { uri });
-        writeableDb.setTransactionSuccessful();
-      }
+      cursor = writeableDb.rawQuery(readInputStreamQuery, new String[] { uri });
     }
-    finally
+    catch (SQLException exception)
     {
-      writeableDb.endTransaction();
+      // Cannot figure out why the first time the database is accessed once it has just been created, an exception is thrown on that query
+      // Re-running it, fixes the problem ;(
+      // Hence, we silently ignore the previous exception
+      cursor = writeableDb.rawQuery(readInputStreamQuery, new String[] { uri });
     }
     try
     {
@@ -468,16 +450,8 @@ public final class DbPersistence
     {
       return;
     }
-    writeableDb.beginTransaction();
-    try
-    {
-      writeableDb.delete(tableName, DbPersistence.CacheColumns.URI + " = '" + uri + "'", null);
-      writeableDb.setTransactionSuccessful();
-    }
-    finally
-    {
-      writeableDb.endTransaction();
-    }
+    // This is a single operation, no transaction is needed
+    writeableDb.delete(tableName, DbPersistence.CacheColumns.URI + " = '" + uri + "'", null);
   }
 
   protected void empty()
@@ -600,7 +574,6 @@ public final class DbPersistence
     // Optimization
     final long result;
 
-    writeableDb.beginTransaction();
     try
     {
       // Fixes the "android.database.sqlite.SQLiteMisuseException: library routine called out of sequence" problem!
@@ -653,15 +626,10 @@ public final class DbPersistence
       {
         writeableDb.update(tableName, contentValues, DbPersistence.CacheColumns.URI + " = '" + uri + "'", null);
       }
-      writeableDb.setTransactionSuccessful();
     }
     catch (IOException exception)
     {
       throw new Persistence.PersistenceException();
-    }
-    finally
-    {
-      writeableDb.endTransaction();
     }
     if (log.isDebugEnabled())
     {
