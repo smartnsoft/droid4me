@@ -30,7 +30,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.LinearLayout;
 
 import com.smartnsoft.droid4me.framework.DetailsProvider;
-import com.smartnsoft.droid4me.framework.Events;
 import com.smartnsoft.droid4me.framework.DetailsProvider.ObjectEvent;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -292,6 +291,22 @@ public abstract class SmartListActivity<AggregateClass, BusinessObjectClass, Vie
     getSmartListView().notifyDataSetChanged(businessObjectCountAndSortingUnchanged);
   }
 
+  @Override
+  void refreshBusinessObjectsAndDisplayInternal(boolean retrieveBusinessObjects, final Runnable onOver, final boolean businessObjectCountAndSortingUnchanged)
+  {
+    super.refreshBusinessObjectsAndDisplayInternal(true, new Runnable()
+    {
+      public void run()
+      {
+        notifyBusinessObjectsChanged(businessObjectCountAndSortingUnchanged);
+        if (onOver != null)
+        {
+          onOver.run();
+        }
+      }
+    }, businessObjectCountAndSortingUnchanged);
+  }
+
   /**
    * Forces the retrieving of the business objects list, and eventually asks to the underlying list UI to refresh.
    * 
@@ -302,13 +317,7 @@ public abstract class SmartListActivity<AggregateClass, BusinessObjectClass, Vie
    */
   public final void refreshBusinessObjectsAndDisplayAndNotifyBusinessObjectsChanged(final boolean businessObjectCountAndSortingUnchanged)
   {
-    refreshBusinessObjectsAndDisplay(true, new Events.OnCompletion()
-    {
-      public void done()
-      {
-        notifyBusinessObjectsChanged(businessObjectCountAndSortingUnchanged);
-      }
-    });
+    refreshBusinessObjectsAndDisplayInternal(true, null, businessObjectCountAndSortingUnchanged);
   }
 
   public final List<? extends BusinessObjectClass> getFilteredObjects(List<? extends BusinessObjectClass> fullObjectsList)

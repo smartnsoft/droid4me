@@ -25,6 +25,7 @@ import java.net.UnknownHostException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -235,7 +236,7 @@ public final class ActivityController
 
     public boolean onBusinessObjectAvailableException(final Activity activity, BusinessObjectUnavailableException exception)
     {
-      if (checkConnectivityProblemInCause(activity, exception) == true)
+      if (checkConnectivityProblemInCause(activity, exception, true) == true)
       {
         return true;
       }
@@ -247,7 +248,7 @@ public final class ActivityController
           new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
               i18n.businessObjectAvailabilityProblemHint).setPositiveButton(android.R.string.ok, new OnClickListener()
           {
-            public void onClick(DialogInterface dialogInterface, int i)
+            public void onClick(DialogInterface dialogInterface, int which)
             {
               // We leave the activity, because we cannot go any further
               activity.finish();
@@ -260,7 +261,7 @@ public final class ActivityController
 
     public boolean onServiceException(final Activity activity, ServiceException exception)
     {
-      if (checkConnectivityProblemInCause(activity, exception) == true)
+      if (checkConnectivityProblemInCause(activity, exception, false) == true)
       {
         return true;
       }
@@ -272,7 +273,7 @@ public final class ActivityController
           new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(i18n.serviceProblemHint).setPositiveButton(
               android.R.string.ok, new OnClickListener()
               {
-                public void onClick(DialogInterface dialogInterface, int i)
+                public void onClick(DialogInterface dialogInterface, int which)
                 {
                   // We leave the activity, because we cannot go any further
                   activity.finish();
@@ -285,7 +286,7 @@ public final class ActivityController
 
     public boolean onOtherException(final Activity activity, Throwable throwable)
     {
-      if (checkConnectivityProblemInCause(activity, throwable) == true)
+      if (checkConnectivityProblemInCause(activity, throwable, false) == true)
       {
         return true;
       }
@@ -321,10 +322,12 @@ public final class ActivityController
      *          simply dismissed
      * @param throwable
      *          the exception to be inspected
+     * @param proposeRetry
+     *          when set to <code>true</code, the dialog box displayed will present an additional "Retry" action
      * @return <code>true</code> if and only a connection issue has been detected
      */
     @SuppressWarnings("unchecked")
-    protected final boolean checkConnectivityProblemInCause(final Activity activity, Throwable throwable)
+    protected final boolean checkConnectivityProblemInCause(final Activity activity, Throwable throwable, final boolean proposeRetry)
     {
       if (searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class) != null)
       {
@@ -332,14 +335,42 @@ public final class ActivityController
         {
           public void run()
           {
-            new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-                i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null).setCancelable(false).setPositiveButton(android.R.string.ok,
-                new DialogInterface.OnClickListener()
+            final boolean retry = proposeRetry == true && activity instanceof LifeCycle;
+            final Builder builder = new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
+                retry == true ? i18n.connectivityProblemRetryHint : i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null);
+            if (retry == true)
+            {
+              builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
+              {
+                public void onClick(DialogInterface dialog, int which)
                 {
-                  public void onClick(DialogInterface dialog, int which)
-                  {
-                  }
-                }).show();
+                  ((LifeCycle) activity).refreshBusinessObjectsAndDisplay(true, null);
+                  dialog.dismiss();
+                }
+              }).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener()
+              {
+                public void onClick(DialogInterface dialog, int which)
+                {
+                  dialog.cancel();
+                  activity.finish();
+                }
+              }).setOnCancelListener(new DialogInterface.OnCancelListener()
+              {
+                public void onCancel(DialogInterface dialog)
+                {
+                  activity.finish();
+                }
+              }).show();
+            }
+            else
+            {
+              builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+              {
+                public void onClick(DialogInterface dialog, int which)
+                {
+                }
+              }).show();
+            }
           }
         });
         return true;

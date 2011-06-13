@@ -28,8 +28,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.smartnsoft.droid4me.LifeCycle;
-
 import android.app.Activity;
 import android.app.Application;
 import android.content.BroadcastReceiver;
@@ -38,6 +36,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.view.View;
+
+import com.smartnsoft.droid4me.LifeCycle;
 
 /**
  * Gathers some interfaces and helpers for the types belonging to its Java package.
@@ -49,15 +49,15 @@ public final class AppPublics
 {
 
   /**
+   * A flag name which indicates the FQN name of the activity class concerned with the action.
+   */
+  public final static String ACTION_ACTIVITY = "activity";
+
+  /**
    * Use this intent action when you need to indicate that something is being loaded. For indicating that the loading is over, attach the
    * {@link AppPublics#UI_LOAD_ACTION_LOADING} key to the {@link Intent}.
    */
   public static String UI_LOAD_ACTION = "com.smartnsoft.droid4me.action.UI_LOADING";
-
-  /**
-   * A flag name which indicates the FQN name of the activity class which is loading.
-   */
-  public final static String UI_LOAD_ACTION_ACTIVITY = "activity";
 
   /**
    * A flag name which indicates whether the loading event is starting or ending.
@@ -95,8 +95,8 @@ public final class AppPublics
   public interface LifeCyclePublic
   {
 
-    //TO COME
-    //    AppPublics.Aggregator onRetrieveAggregator();
+    // TO COME
+    // AppPublics.Aggregator onRetrieveAggregator();
 
     /**
      * Is not invoked by the framework, and provides information about the current entity life cycle.
@@ -191,6 +191,13 @@ public final class AppPublics
       // TODO Auto-generated method stub
 
     }
+
+    public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver)
+    {
+      // TODO Auto-generated method stub
+
+    }
+
   }
 
   /**
@@ -297,8 +304,8 @@ public final class AppPublics
      */
     public static void broadcastLoading(Context context, Class<? extends Activity> targetActivityClass, boolean isLoading, boolean addCategory)
     {
-      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_LOADING, isLoading).putExtra(
-          AppPublics.UI_LOAD_ACTION_ACTIVITY, targetActivityClass.getName());
+      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_LOADING, isLoading).putExtra(AppPublics.ACTION_ACTIVITY,
+          targetActivityClass.getName());
       if (addCategory == true)
       {
         intent.addCategory(targetActivityClass.getName());
@@ -339,8 +346,8 @@ public final class AppPublics
 
     public void onReceive(Intent intent)
     {
-      if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.UI_LOAD_ACTION_ACTIVITY) == true && intent.getStringExtra(
-          AppPublics.UI_LOAD_ACTION_ACTIVITY).equals(activity.getClass().getName()) == true)
+      if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.ACTION_ACTIVITY) == true && intent.getStringExtra(
+          AppPublics.ACTION_ACTIVITY).equals(activity.getClass().getName()) == true)
       {
         final int previousCounter = counter;
         // We only take into account the loading event coming from the activity itself
