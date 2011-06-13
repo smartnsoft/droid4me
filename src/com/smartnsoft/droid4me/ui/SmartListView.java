@@ -362,8 +362,8 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
     {
       listWrapperLayout = new LinearLayout(context);
       listWrapperLayout.setOrientation(LinearLayout.HORIZONTAL);
-//
-//      // This is essential to give a weight of 1
+      //
+      // // This is essential to give a weight of 1
       listWrapperLayout.addView(getListView(), new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
 
       // This is essential to give weight of 1
@@ -428,6 +428,10 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
   }
 
   public void onSynchronizeDisplayObjects()
+  {
+  }
+
+  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver)
   {
   }
 

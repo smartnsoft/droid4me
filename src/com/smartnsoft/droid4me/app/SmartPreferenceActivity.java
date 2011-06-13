@@ -30,7 +30,6 @@ import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
-import com.smartnsoft.droid4me.framework.Events;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.framework.Events.OnCompletion;
 import com.smartnsoft.droid4me.log.Logger;
@@ -289,29 +288,26 @@ public abstract class SmartPreferenceActivity<AggregateClass>
   }
 
   /**
-   * Must be invoked only from the GUI thread!
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, Runnable)} with parameters <code>true</code> and <code>null<code>.
    * 
    * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion)
    */
-  protected final void refreshBusinessObjectsAndDisplay()
+  public final void refreshBusinessObjectsAndDisplay()
   {
     refreshBusinessObjectsAndDisplay(true, null);
   }
 
   /**
-   * Must be invoked only from the GUI thread!
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, Runnable)} with second parameter <code>null<code>.
    * 
    * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion)
    */
-  protected final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
+  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
   {
     refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null);
   }
 
-  /**
-   * Must be invoked only from the GUI thread, when the {@link SmartActivity} is synchronous!
-   */
-  public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Events.OnCompletion onRefreshBusinessObjectsAndDisplay)
+  public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver)
   {
     // We can safely retrieve the business objects
     if (!(this instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
@@ -320,7 +316,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
       {
         return;
       }
-      onFullfillAndSynchronizeDisplayObjectsInternal(onRefreshBusinessObjectsAndDisplay);
+      onFullfillAndSynchronizeDisplayObjectsInternal(onOver);
     }
     else
     {
@@ -343,7 +339,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
               {
                 public void run()
                 {
-                  onFullfillAndSynchronizeDisplayObjectsInternal(onRefreshBusinessObjectsAndDisplay);
+                  onFullfillAndSynchronizeDisplayObjectsInternal(onOver);
                 }
               });
             }
@@ -372,7 +368,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     return true;
   }
 
-  private void onFullfillAndSynchronizeDisplayObjectsInternal(Events.OnCompletion onRefreshBusinessObjectsAndDisplay)
+  private void onFullfillAndSynchronizeDisplayObjectsInternal(Runnable onOver)
   {
     if (stateContainer.resumedForTheFirstTime == true)
     {
@@ -403,9 +399,9 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     }
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
     stateContainer.resumedForTheFirstTime = false;
-    if (onRefreshBusinessObjectsAndDisplay != null)
+    if (onOver != null)
     {
-      onRefreshBusinessObjectsAndDisplay.done();
+      onOver.run();
     }
   }
 

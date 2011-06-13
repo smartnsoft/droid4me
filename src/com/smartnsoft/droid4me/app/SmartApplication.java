@@ -65,7 +65,15 @@ public abstract class SmartApplication
 
     public final CharSequence connectivityProblemHint;
 
+    public final CharSequence connectivityProblemRetryHint;
+
     public final CharSequence otherProblemHint;
+
+    public final String applicationName;
+
+    public final CharSequence reportButtonLabel;
+
+    public final String retrievingLogProgressMessage;
 
     /**
      * @param dialogBoxErrorTitle
@@ -75,42 +83,49 @@ public abstract class SmartApplication
      * @param serviceProblemHint
      *          the body of the error dialog box when a service is not available on an {@link Activity}
      * @param connectivityProblemHint
-     *          the body of the error dialog box a connectivity issue occurs an {@link Activity}
+     *          the body of the error dialog box a connectivity issue occurs
+     * @param connectivityProblemRetryHint
+     *          the body of the error dialog box a connectivity issue occurs, and that a "Retry" button is displayed
      * @param otherProblemHint
-     *          the body of the error dialog box when an unhandled problem occurs an {@link Activity}
+     *          the "Retry" button label of the dialog box when a connectivity issue occurs
+     * @param applicationName
+     *          the name of the application, used when logging an unexpected problem
+     * @param reportButtonLabel
+     *          the "Report" button label displayed in the dialog box when an unexpected problem occurs
+     * @param retrievingLogProgressMessage
+     *          the message of the toast popped up when preparing the unexpected problem log e-mail
      */
     public I18N(CharSequence dialogBoxErrorTitle, CharSequence businessObjectAvailabilityProblemHint, CharSequence serviceProblemHint,
-        CharSequence connectivityProblemHint, CharSequence otherProblemHint)
+        CharSequence connectivityProblemHint, CharSequence connectivityProblemRetryHint, CharSequence otherProblemHint, String applicationName,
+        CharSequence reportButtonLabel, String retrievingLogProgressMessage)
     {
       this.dialogBoxErrorTitle = dialogBoxErrorTitle;
       this.businessObjectAvailabilityProblemHint = businessObjectAvailabilityProblemHint;
       this.serviceProblemHint = serviceProblemHint;
       this.connectivityProblemHint = connectivityProblemHint;
+      this.connectivityProblemRetryHint = connectivityProblemRetryHint;
       this.otherProblemHint = otherProblemHint;
-    }
-
-  }
-
-  /**
-   * Contains various attributes that will be used on the UI, especially on unexpected exceptions dialog boxes.
-   * 
-   * @since 2010.07.21
-   */
-  protected final static class I18NExt
-  {
-
-    public final String applicationName;
-
-    public final CharSequence reportButtonLabel;
-
-    public final String retrievingLogProgressMessage;
-
-    public I18NExt(String applicationName, CharSequence reportButtonLabel, String retrievingLogProgressMessage)
-    {
       this.applicationName = applicationName;
       this.reportButtonLabel = reportButtonLabel;
       this.retrievingLogProgressMessage = retrievingLogProgressMessage;
     }
+
+    // /**
+    // * @param stringResourcesId
+    // * the string array identifier which contains all textual resources required in the framework
+    // */
+    // public I18N(Context context, int stringResourcesId)
+    // {
+    // final String[] strings = context.getResources().getStringArray(stringResourcesId);
+    // this.dialogBoxErrorTitle = strings[0];
+    // this.businessObjectAvailabilityProblemHint = strings[1];
+    // this.serviceProblemHint = strings[2];
+    // this.connectivityProblemHint = strings[3];
+    // this.otherProblemHint = strings[4];
+    // this.applicationName = strings[5];
+    // this.reportButtonLabel = strings[6];
+    // this.retrievingLogProgressMessage = strings[7];
+    // }
 
   }
 
@@ -126,7 +141,7 @@ public abstract class SmartApplication
     @Override
     public boolean onOtherException(final Activity activity, Throwable throwable)
     {
-      if (checkConnectivityProblemInCause(activity, throwable) == true)
+      if (checkConnectivityProblemInCause(activity, throwable, false) == true)
       {
         return true;
       }
@@ -140,7 +155,7 @@ public abstract class SmartApplication
       {
         public void run()
         {
-          final I18NExt i18nExt = getI18NExt();
+          final I18N i18n = getI18N();
           // If the logger recipient is not set, no e-mail submission is proposed
           final boolean proposeToSendLog = getLogReportRecipient() != null;
           final Builder alertBuilder = new AlertDialog.Builder(activity).setTitle(getI18N().dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
@@ -154,11 +169,11 @@ public abstract class SmartApplication
                 // We leave the activity, because we cannot go any further
                 activity.finish();
               }
-            }).setPositiveButton(i18nExt.reportButtonLabel, new OnClickListener()
+            }).setPositiveButton(i18n.reportButtonLabel, new OnClickListener()
             {
               public void onClick(DialogInterface dialogInterface, int i)
               {
-                new SendLogsTask(activity, i18nExt.retrievingLogProgressMessage, "[" + i18nExt.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
+                new SendLogsTask(activity, i18n.retrievingLogProgressMessage, "[" + i18n.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
                     null, null);
               }
             });
@@ -181,11 +196,6 @@ public abstract class SmartApplication
     }
 
   }
-
-  /**
-   * @return the i18n attributes that will be used when the framework interacts with the UI
-   */
-  protected abstract SmartApplication.I18NExt getI18NExt();
 
   /**
    * @return the e-mail address that will be used when submitting an error log message

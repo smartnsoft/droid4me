@@ -20,6 +20,8 @@ package com.smartnsoft.droid4me;
 
 import android.app.Activity;
 
+import com.smartnsoft.droid4me.app.SmartActivity;
+
 /**
  * Identifies a typical work-flow for an {@link Activity activity of the framework}.
  * 
@@ -126,5 +128,19 @@ public interface LifeCycle
    * </p>
    */
   void onSynchronizeDisplayObjects();
+
+  /**
+   * Asks the implementing {@link Activity} to reload its business objects and to synchronize its display. The method invokes the
+   * {@link #onRetrieveBusinessObjects()} and {@link #onSynchronizeDisplayObjects()} methods.
+   * <p>
+   * Must be invoked only from the UI thread, when the {@link SmartActivity} is synchronous!
+   * </p>
+   * 
+   * @param retrieveBusinessObjects
+   *          indicates whether the {@link #onRetrieveBusinessObjects()} method should be invoked or not
+   * @param onOver
+   *          if not <code>null</code>, this method will be eventually invoked from the UI thread
+   */
+  void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver);
 
 }

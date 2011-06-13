@@ -597,29 +597,26 @@ public abstract class SmartGroupActivity<AggregateClass>
   }
 
   /**
-   * Must be invoked only from the GUI thread!
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, Runnable)} with parameters <code>true</code> and <code>null<code>.
    * 
    * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion)
    */
-  protected final void refreshBusinessObjectsAndDisplay()
+  public final void refreshBusinessObjectsAndDisplay()
   {
     refreshBusinessObjectsAndDisplay(true, null);
   }
 
   /**
-   * Must be invoked only from the GUI thread!
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, Runnable)} with second parameter <code>null<code>.
    * 
    * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion)
    */
-  protected final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
+  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
   {
     refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null);
   }
 
-  /**
-   * Must be invoked only from the GUI thread, when the {@link SmartActivity} is synchronous!
-   */
-  public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Events.OnCompletion onRefreshBusinessObjectsAndDisplay)
+  public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver)
   {
     // We can safely retrieve the business objects
     if (!(this instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
@@ -628,7 +625,7 @@ public abstract class SmartGroupActivity<AggregateClass>
       {
         return;
       }
-      onFullfillAndSynchronizeDisplayObjectsInternal(onRefreshBusinessObjectsAndDisplay);
+      onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
     }
     else
     {
@@ -651,7 +648,7 @@ public abstract class SmartGroupActivity<AggregateClass>
               {
                 public void run()
                 {
-                  onFullfillAndSynchronizeDisplayObjectsInternal(onRefreshBusinessObjectsAndDisplay);
+                  onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
                 }
               });
             }
@@ -680,7 +677,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     return true;
   }
 
-  private void onFullfillAndSynchronizeDisplayObjectsInternal(Events.OnCompletion onRefreshBusinessObjectsAndDisplay)
+  private void onFulfillAndSynchronizeDisplayObjectsInternal(Runnable onOver)
   {
     if (stateContainer.resumedForTheFirstTime == true)
     {
@@ -711,9 +708,9 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
     stateContainer.resumedForTheFirstTime = false;
-    if (onRefreshBusinessObjectsAndDisplay != null)
+    if (onOver != null)
     {
-      onRefreshBusinessObjectsAndDisplay.done();
+      onOver.run();
     }
   }
 
