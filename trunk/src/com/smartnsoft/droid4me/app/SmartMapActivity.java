@@ -337,11 +337,6 @@ public abstract class SmartMapActivity<AggregateClass>
     ActivityController.getInstance().handleException(this, throwable);
   }
 
-  private final void onInternalCreate(Bundle savedInstanceState)
-  {
-    stateContainer.create(getApplicationContext());
-  }
-
   private final void onInternalDestroy()
   {
   }
@@ -390,7 +385,7 @@ public abstract class SmartMapActivity<AggregateClass>
     }
     stateContainer.registerBroadcastListeners(this);
 
-    onInternalCreate(savedInstanceState);
+    stateContainer.create(getApplicationContext());
     onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     try
