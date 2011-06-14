@@ -515,7 +515,7 @@ public abstract class SmartMapActivity<AggregateClass>
       {
         return;
       }
-      onFullfillAndSynchronizeDisplayObjectsInternal(onOver);
+      onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
     }
     else
     {
@@ -538,7 +538,7 @@ public abstract class SmartMapActivity<AggregateClass>
               {
                 public void run()
                 {
-                  onFullfillAndSynchronizeDisplayObjectsInternal(onOver);
+                  onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
                 }
               });
             }
@@ -567,7 +567,7 @@ public abstract class SmartMapActivity<AggregateClass>
     return true;
   }
 
-  private void onFullfillAndSynchronizeDisplayObjectsInternal(Runnable onOver)
+  private void onFulfillAndSynchronizeDisplayObjectsInternal(Runnable onOver)
   {
     if (stateContainer.resumedForTheFirstTime == true)
     {

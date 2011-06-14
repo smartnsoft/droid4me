@@ -307,7 +307,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
       {
         return;
       }
-      onFullfillAndSynchronizeDisplayObjectsInternal(onOver);
+      onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
     }
     else
     {
@@ -330,7 +330,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
               {
                 public void run()
                 {
-                  onFullfillAndSynchronizeDisplayObjectsInternal(onOver);
+                  onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
                 }
               });
             }
@@ -359,7 +359,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     return true;
   }
 
-  private void onFullfillAndSynchronizeDisplayObjectsInternal(Runnable onOver)
+  private void onFulfillAndSynchronizeDisplayObjectsInternal(Runnable onOver)
   {
     if (stateContainer.resumedForTheFirstTime == true)
     {
