@@ -112,10 +112,6 @@ public abstract class SmartActivity<AggregateClass>
     ActivityController.getInstance().handleException(this, throwable);
   }
 
-  private final void onInternalDestroy()
-  {
-  }
-
   protected void onBeforeRetrievingDisplayObjects()
   {
   }
@@ -486,7 +482,6 @@ public abstract class SmartActivity<AggregateClass>
         // We stop here if a redirection is needed or is something went wrong
         return;
       }
-      onInternalDestroy();
       if (stateContainer.doNotCallOnActivityDestroyed == false)
       {
         onActuallyDestroyed();
