@@ -18,6 +18,9 @@
 
 package com.smartnsoft.droid4me.app;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -32,6 +35,7 @@ import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
+import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
 
 /**
@@ -64,8 +68,16 @@ final class AppInternals
      */
     boolean shouldKeepOn();
 
+    /**
+     * This callback method will be invoked when the activity is being created, during the {@link Activity#onCreate(Bundle)} method execution, but not
+     * when it is recreated due to a configuration change.
+     */
     void onActuallyCreated();
 
+    /**
+     * This callback method will be invoked when the activity is being destroyed, during the {@link Activity#onDestroy()} method execution, but not
+     * when it is destroyed due to a configuration change.
+     */
     void onActuallyDestroyed();
 
   }
@@ -125,9 +137,23 @@ final class AppInternals
     void create(Context context)
     {
       compositeActionHandler = new MenuHandler.Composite();
-      compositeActionHandler.add(SmartActivity.createStaticActionHandler(context));
+      compositeActionHandler.add(createStaticActionHandler(context));
       compositeActivityResultHandler = new ActivityResultHandler.CompositeHandler();
       handler = new Handler();
+    }
+
+    MenuHandler.Static createStaticActionHandler(final Context context)
+    {
+      final MenuHandler.Static staticActionHandler = new MenuHandler.Static()
+      {
+        @Override
+        protected List<MenuCommand<Void>> retrieveCommands()
+        {
+          final List<MenuCommand<Void>> commands = new ArrayList<MenuCommand<Void>>();
+          return commands;
+        }
+      };
+      return staticActionHandler;
     }
 
     /**
@@ -140,12 +166,18 @@ final class AppInternals
       if (activity instanceof AppPublics.BroadcastListenerProvider)
       {
         broadcastListener = ((AppPublics.BroadcastListenerProvider) activity).getBroadcastListener();
-        registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
+        if (broadcastListener != null)
+        {
+          registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
+        }
       }
       else if (activity instanceof AppPublics.BroadcastListener)
       {
         broadcastListener = (AppPublics.BroadcastListener) activity;
-        registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
+        if (broadcastListener != null)
+        {
+          registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
+        }
       }
       else if (activity instanceof AppPublics.BroadcastListenersProvider)
       {
@@ -402,6 +434,8 @@ final class AppInternals
     }
 
   }
+
+  final static String ALREADY_STARTED = "com.smartnsoft.droid4me.alreadyStarted";
 
   private AppInternals()
   {

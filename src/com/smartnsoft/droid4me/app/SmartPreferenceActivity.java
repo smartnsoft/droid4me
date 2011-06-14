@@ -170,7 +170,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
       ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onCreate);
     }
 
-    if (savedInstanceState != null && savedInstanceState.containsKey(SmartActivity.ALREADY_STARTED) == true)
+    if (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true)
     {
       stateContainer.firstLifeCycle = false;
     }
@@ -414,7 +414,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     }
     super.onSaveInstanceState(outState);
     stateContainer.doNotCallOnActivityDestroyed = true;
-    outState.putBoolean(SmartActivity.ALREADY_STARTED, true);
+    outState.putBoolean(AppInternals.ALREADY_STARTED, true);
   }
 
   @Override
