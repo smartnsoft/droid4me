@@ -86,7 +86,7 @@ public final class AppPublics
   }
 
   /**
-   * Because an Android {@link Activity} can be destroyed and then recreated, following a screen orientation change, for instance, this interface
+   * Because an Android {@link Activity} can be destroyed and then recreated, following a configuration change (a screen orientation change, for instance), this interface
    * gives information about an entity life cycle.
    * 
    * @author Édouard Mercier
@@ -130,7 +130,7 @@ public final class AppPublics
 
     }
 
-    private AppPublics.Aggregator.ProblemHandler handler;
+//    private AppPublics.Aggregator.ProblemHandler handler;
 
     private final List<LifeCycle> aggregates = new ArrayList<LifeCycle>();
 
@@ -235,7 +235,7 @@ public final class AppPublics
   {
 
     /**
-     * @return is not allowed to be null!
+     * @return the broadcast listener that this provider exposes ; can be <code>null</code>
      */
     AppPublics.BroadcastListener getBroadcastListener();
 

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -53,8 +52,6 @@ public abstract class SmartActivity<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance(SmartActivity.class);
-
-  final static String ALREADY_STARTED = "com.smartnsoft.droid4me.alreadyStarted";
 
   public void onBusinessObjectsRetrieved()
   {
@@ -164,7 +161,7 @@ public abstract class SmartActivity<AggregateClass>
       ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onCreate);
     }
 
-    if (savedInstanceState != null && savedInstanceState.containsKey(SmartActivity.ALREADY_STARTED) == true)
+    if (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true)
     {
       stateContainer.firstLifeCycle = false;
     }
@@ -238,20 +235,6 @@ public abstract class SmartActivity<AggregateClass>
       return;
     }
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
-  }
-
-  static MenuHandler.Static createStaticActionHandler(final Context context)
-  {
-    final MenuHandler.Static staticActionHandler = new MenuHandler.Static()
-    {
-      @Override
-      protected List<MenuCommand<Void>> retrieveCommands()
-      {
-        final List<MenuCommand<Void>> commands = new ArrayList<MenuCommand<Void>>();
-        return commands;
-      }
-    };
-    return staticActionHandler;
   }
 
   @Override
@@ -425,7 +408,7 @@ public abstract class SmartActivity<AggregateClass>
     }
     super.onSaveInstanceState(outState);
     stateContainer.doNotCallOnActivityDestroyed = true;
-    outState.putBoolean(SmartActivity.ALREADY_STARTED, true);
+    outState.putBoolean(AppInternals.ALREADY_STARTED, true);
   }
 
   @Override

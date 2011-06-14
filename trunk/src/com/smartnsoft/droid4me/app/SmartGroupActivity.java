@@ -44,7 +44,6 @@ import android.widget.LinearLayout.LayoutParams;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
-import com.smartnsoft.droid4me.framework.Events;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.framework.Events.OnCompletion;
 import com.smartnsoft.droid4me.log.Logger;
@@ -212,6 +211,9 @@ public abstract class SmartGroupActivity<AggregateClass>
 
   private FrameLayout contentView;
 
+  /**
+   * @return the top view ; can be <code>null</code>
+   */
   protected abstract View getHeaderView();
 
   protected abstract Intent getSubIntent(String activityId);
@@ -479,7 +481,7 @@ public abstract class SmartGroupActivity<AggregateClass>
       ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onCreate);
     }
 
-    if (savedInstanceState != null && savedInstanceState.containsKey(SmartActivity.ALREADY_STARTED) == true)
+    if (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true)
     {
       stateContainer.firstLifeCycle = false;
     }
@@ -723,7 +725,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
     super.onSaveInstanceState(outState);
     stateContainer.doNotCallOnActivityDestroyed = true;
-    outState.putBoolean(SmartActivity.ALREADY_STARTED, true);
+    outState.putBoolean(AppInternals.ALREADY_STARTED, true);
   }
 
   @Override
