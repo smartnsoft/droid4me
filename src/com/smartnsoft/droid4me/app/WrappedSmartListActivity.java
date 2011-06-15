@@ -18,86 +18,16 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.List;
-
-import com.smartnsoft.droid4me.framework.DetailsProvider;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-
-import android.content.Intent;
-import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListView;
 
 /**
- * Uses wrapped business objects for simplifying the handling of heterogeneous business objects.
+ * An instantiation of the {@link AbstractWrappedSmartListActivity} bound to the native {@link ListView}.
  * 
  * @author Édouard Mercier
- * @since 2009.04.29
+ * @since 2011.06.15
  */
-public abstract class WrappedSmartListActivity<AggregateClass>
-    extends SmartListActivity<AggregateClass, DetailsProvider.BusinessViewWrapper<?>, View>
+public abstract class WrappedSmartListActivity<AggregateClass, ListViewClass extends ViewGroup>
+    extends AbstractWrappedSmartListActivity<AggregateClass, ListView>
 {
-
-  @Override
-  protected final Intent computeIntent(View view, DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, DetailsProvider.ObjectEvent objectEvent)
-  {
-    if (businessViewWrapper != null)
-    {
-      return businessViewWrapper.computeIntent(this, view, objectEvent);
-    }
-    return null;
-  }
-
-  @Override
-  protected final boolean onObjectEvent(View view, DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, DetailsProvider.ObjectEvent objectEvent)
-  {
-    if (businessViewWrapper != null)
-    {
-      return businessViewWrapper.onObjectEvent(this, view, objectEvent);
-    }
-    return false;
-  }
-
-  @Override
-  protected final boolean containsText(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, String lowerText)
-  {
-    return businessViewWrapper.containsText(lowerText);
-  }
-
-  public final String getBusinessObjectName(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
-  {
-    return businessViewWrapper.getName();
-  }
-
-  public final long getObjectId(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
-  {
-    return businessViewWrapper.getId();
-  }
-
-  @Override
-  public final boolean isEnabled(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
-  {
-    return businessViewWrapper.isEnabled();
-  }
-
-  @Override
-  public final int getViewType(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, int position)
-  {
-    return businessViewWrapper.getType(position);
-  }
-
-  public final View getNewView(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
-  {
-    return businessViewWrapper.getNewView(this);
-  }
-
-  public final void updateView(View view, DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, int position)
-  {
-    businessViewWrapper.updateView(this, view, position);
-  }
-
-  @Override
-  protected final List<MenuCommand<DetailsProvider.BusinessViewWrapper<?>>> getContextualMenuCommands(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
-  {
-    return businessViewWrapper.getMenuCommands(this);
-  }
-
 }
