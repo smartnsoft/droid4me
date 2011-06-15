@@ -42,8 +42,8 @@ import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
  * @author Édouard Mercier
  * @since 2008.11.14
  */
-public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
-    extends SmartListView<BusinessObjectClass, ViewClass>
+public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
+    extends WrappedListView<BusinessObjectClass, ListView, ViewClass>
 {
 
   // Inspired from http://groups.google.com/group/android-developers/browse_thread/thread/59dbe46cfbc5672f/e3a5e21754a7a725?lnk=raot
@@ -126,7 +126,7 @@ public class SimpleSmartListView<BusinessObjectClass, ViewClass extends View>
 
   private final ForList<BusinessObjectClass, ViewClass> forListProvider;
 
-  public SimpleSmartListView(Activity activity, ForList<BusinessObjectClass, ViewClass> forListProvider)
+  public SimpleWrappedListView(Activity activity, ForList<BusinessObjectClass, ViewClass> forListProvider)
   {
     super(activity);
     this.forListProvider = forListProvider;

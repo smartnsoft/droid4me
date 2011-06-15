@@ -30,7 +30,6 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.LinearLayout.LayoutParams;
 
@@ -49,7 +48,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler;
  * @author Édouard Mercier
  * @since 2008.05.19
  */
-public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
+public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends ViewGroup, ViewClass extends View>
     implements LifeCycle
 {
 
@@ -62,18 +61,18 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
     boolean onWipedObject(View view, BusinessObjectClass wipedObject, boolean leftToRight);
   }
 
-  public static class SmartAdapter<BusinessObjectClass, ViewClass extends View>
+  public static class SmartAdapter<BusinessObjectClass, ListViewClass extends ViewGroup, ViewClass extends View>
       extends BaseAdapter
       implements Filterable
   {
 
-    private final SmartListView<BusinessObjectClass, ViewClass> smartListView;
+    private final WrappedListView<BusinessObjectClass, ListViewClass, ViewClass> smartListView;
 
     private final ForList<BusinessObjectClass, ViewClass> forListProvider;
 
     private Filter filter;
 
-    public SmartAdapter(SmartListView<BusinessObjectClass, ViewClass> smartListView, ForList<BusinessObjectClass, ViewClass> forListProvider)
+    public SmartAdapter(WrappedListView<BusinessObjectClass, ListViewClass, ViewClass> smartListView, ForList<BusinessObjectClass, ViewClass> forListProvider)
     {
       this.smartListView = smartListView;
       this.forListProvider = forListProvider;
@@ -235,7 +234,7 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
     }
   }
 
-  protected final static Logger log = LoggerFactory.getInstance(SmartListView.class);
+  protected final static Logger log = LoggerFactory.getInstance(WrappedListView.class);
 
   private BusinessObjectClass selectedObject;
 
@@ -256,7 +255,7 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
   /**
    * @return underlying list view
    */
-  public abstract ListView getListView();
+  public abstract ListViewClass getListView();
 
   public abstract void invalidateViews();
 
@@ -320,7 +319,7 @@ public abstract class SmartListView<BusinessObjectClass, ViewClass extends View>
 
   protected LinearLayout listWrapperLayout;
 
-  public SmartListView(Activity activity)
+  public WrappedListView(Activity activity)
   {
     this.activity = activity;
 
