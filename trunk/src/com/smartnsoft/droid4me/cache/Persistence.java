@@ -40,7 +40,6 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * @author Édouard Mercier
  * @since 2009.03.26
  */
-// TODO: turn the derived classes exception into actual Persistence.PersistenceException instances!
 public abstract class Persistence
     implements Business.IOStreamer<String, Persistence.PersistenceException>
 {
@@ -53,6 +52,20 @@ public abstract class Persistence
   {
 
     private static final long serialVersionUID = -5246441820601050842L;
+
+    public PersistenceException()
+    {
+    }
+
+    private PersistenceException(String message)
+    {
+      super(message);
+    }
+
+    private PersistenceException(String message, Throwable throwable)
+    {
+      super(message, throwable);
+    }
 
   }
 
@@ -147,6 +160,9 @@ public abstract class Persistence
    * <p>
    * Note that the instantiation is lazy.
    * </p>
+   * 
+   * @throws Persistence.PersistenceException
+   *           in case a problem occurred while initializing the persistence
    */
   // We accept the "out-of-order writes" case
   @SuppressWarnings("unchecked")
@@ -158,6 +174,10 @@ public abstract class Persistence
       {
         if (Persistence.instances == null)
         {
+          if (Persistence.IMPLEMENTATION_FQN == null)
+          {
+            throw new Persistence.PersistenceException("The persistance implementation has not been set!");
+          }
           try
           {
             // We do that way, because the Persistence initialization may be long, and we want the "instances" attribute to be atomic
@@ -178,6 +198,7 @@ public abstract class Persistence
             {
               log.fatal("Cannot instantiate properly the persistence instances", exception);
             }
+            throw new Persistence.PersistenceException("Cannot instantiate properly the persistence instances", exception);
           }
         }
       }
