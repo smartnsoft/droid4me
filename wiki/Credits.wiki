@@ -1,14 +1,12 @@
-#summary One-sentence summary of this page.
+#summary Support droid4me!
 #labels droid4me,credits
 
 = Introduction =
 
-Add your content here.
+You made an Android application with the droid4me framework, and want to recommend its use? You can put one of the droid4me icons on the splashscreen or into the credits screen. Thanks for support!
 
 
 = Details =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+<a href="//droid4me.googlecode.com/files/droid4me_inside_small.png">Downland the small droid4me icon</a>
+<a>href="//droid4me.googlecode.com/files/droid4me_inside_large.png">Downland the large droid4me icon</a>
