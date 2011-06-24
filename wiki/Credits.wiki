@@ -3,7 +3,7 @@
 
 = Introduction =
 
-You made an Android application with the droid4me framework, and want to recommend its use? You can put one of the droid4me icons on the splashscreen or into the credits screen. Thanks for support!
+You made an Android application with the droid4me framework, and you want to recommend people to use it? You can put one of the droid4me icons on the splashscreen or into the credits screen. Thanks for your support!
 
 
 = Details =
