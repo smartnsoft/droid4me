@@ -7,10 +7,12 @@ You made an Android application with the droid4me framework, and want to recomme
 
 
 = Details =
-Downland the droid4me small icon 
+Downland the droid4me small icon:
 
 [http://code.google.com/p/droid4me/downloads/detail?name=droid4me_inside_small.png&can=2&q=#makechanges http://droid4me.googlecode.com/files/droid4me_inside_small.png]
 
-Downland the droid4me large icon
+Downland the droid4me large icon:
 
 [http://code.google.com/p/droid4me/downloads/detail?name=droid4me_inside_large.png&can=2&q=#makechanges http://droid4me.googlecode.com/files/droid4me_inside_large.png]
+
+These two icons are works of authorship. You do not have permission to modify them by any way.
