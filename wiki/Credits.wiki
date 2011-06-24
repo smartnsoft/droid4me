@@ -8,5 +8,4 @@ You made an Android application with the droid4me framework, and want to recomme
 
 = Details =
 
-<a href="//droid4me.googlecode.com/files/droid4me_inside_small.png">Downland the small droid4me icon</a>
-<a>href="//droid4me.googlecode.com/files/droid4me_inside_large.png">Downland the large droid4me icon</a>
+Downland the droid4me icons here : [http://code.google.com/p/droid4me/downloads/list]
