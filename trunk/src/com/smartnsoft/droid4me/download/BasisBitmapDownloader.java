@@ -32,21 +32,22 @@ import java.util.Map;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
- * Responsible for downloading the bitmaps in dedicated threads and to bind them to Android {@link ImageView ImageViews}.
+ * Responsible for downloading the bitmaps in dedicated threads and to bind them to Android {@link View Views}.
  * 
  * @author Édouard Mercier
  * @since 2009.02.19
  */
-public abstract class BasisImageDownloader
+public abstract class BasisBitmapDownloader
 {
 
-  protected static final Logger log = LoggerFactory.getInstance(BasisImageDownloader.class);
+  protected static final Logger log = LoggerFactory.getInstance(BasisBitmapDownloader.class);
 
   /**
    * When the input stream related to an image needs to be downloaded asynchronously, this interface enables to indicate it, and to notify the owner
@@ -83,13 +84,13 @@ public abstract class BasisImageDownloader
     /**
      * Given the image identifier, its size and its extra specifications, returns its URL, which will be used for downloading it.
      */
-    String computeUrl(String imageUid, Object imageSpecs);
+    String computeUrl(String bitmapUid, Object imageSpecs);
 
     /**
-     * @return <code>true</code> if and only if a temporary image should be used for the underlying image: in that case, the
-     *         {@link Instructions#onBindTemporaryImage(ImageView, String, Object)} will be invoked
+     * @return <code>true</code> if and only if a temporary bitmap should be used for the underlying image: in that case, the
+     *         {@link Instructions#onBindTemporaryBitmap(View, String, Object)} will be invoked
      */
-    boolean hasTemporaryImage(String imageUid, Object imageSpecs);
+    boolean hasTemporaryBitmap(String bitmapUid, Object imageSpecs);
 
     /**
      * When a temporary image usage has been specified, is responsible for binding the image view with that temporary image.
@@ -98,13 +99,13 @@ public abstract class BasisImageDownloader
      * It is ensured that this method will be run from the UI thread.
      * </p>
      */
-    void onBindTemporaryImage(ImageView imageView, String imageUid, Object imageSpecs);
+    void onBindTemporaryBitmap(View view, String bitmapUid, Object imageSpecs);
 
     /**
      * @return <code>true</code> if and only the image should be taken locally, instead of running into the downloading process: in that case, the
-     *         {@link Instructions#onBindLocalImage(ImageView, String, Object)} will be invoked
+     *         {@link Instructions#onBindLocalBitmap(View, String, Object)} will be invoked
      */
-    boolean hasLocalImage(String imageUid, Object imageSpecs);
+    boolean hasLocalBitmap(String bitmapUid, Object imageSpecs);
 
     /**
      * When a local image usage has been specified, is responsible for binding the image view with that local image.
@@ -113,7 +114,7 @@ public abstract class BasisImageDownloader
      * It is ensured that this method will be run from the UI thread.
      * </p>
      */
-    void onBindLocalImage(ImageView imageView, String imageUid, Object imageSpecs);
+    void onBindLocalBitmap(View view, String bitmapUid, Object imageSpecs);
 
     /**
      * Is invoked every time once the underlying image bitmap is either not <code>null</code> ready in memory (the <code>allright</code> parameter is
@@ -126,36 +127,36 @@ public abstract class BasisImageDownloader
      * 
      * @param allright
      *          indicates whether the bitmap is actually available and well formed
-     * @param imageView
-     *          will be <code>null</code> if, and only if the provided {@link ImageView} is <code>null</code>
+     * @param view
+     *          will be <code>null</code> if, and only if the provided {@link View} is <code>null</code>
      * @param bitmap
      *          cannot be <code>null</code> if and only if <code>allright</code> is <code>true</code>
      */
-    void onImageReady(boolean allright, ImageView imageView, Bitmap bitmap, String imageUid, Object imageSpecs);
+    void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
 
     /**
-     * Is invoked once the image bitmap is ready when the provided {@link ImageView} is not <code>null</code>, whether it has been downloaded from
-     * Internet or retrieved from the cache.
+     * Is invoked once the image bitmap is ready when the provided {@link View} is not <code>null</code>, whether it has been downloaded from Internet
+     * or retrieved from the cache.
      * 
      * <p>
      * It is ensured that this method will be run from the UI thread.
      * </p>
      * 
      * @param downloaded
-     *          indicates whether the image has actually been downloaded from the network or retrieved locally
+     *          indicates whether the bitmap has actually been downloaded from the network or retrieved locally
      * @return <code>false</code> if and only if the current instance did not perform the binding
      */
-    boolean onBindImage(boolean downloaded, ImageView imageView, Bitmap bitmap, String imageUid, Object imageSpecs);
+    boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
 
     /**
-     * Is invoked once the given the image identifier, its specifications and either:
+     * Is invoked once the given the bitmap identifier, its specifications and either:
      * <ul>
-     * <li>the underlying bitmap has actually been downloaded, and attached to its {@link ImageView},</li>
-     * <li>or, the underlying bitmap download was failure (wrong image URL, connectivity problem).</li>
+     * <li>the underlying bitmap has actually been downloaded, and attached to its {@link View},</li>
+     * <li>or, the underlying bitmap download was failure (wrong bitmap URL, connectivity problem).</li>
      * </ul>
      * 
      * <p>
-     * Also invoked when the image has been taken from a local resource, or when taken from the cache.
+     * Also invoked when the bitmap has been taken from a local resource, or when taken from the cache.
      * </p>
      * <p>
      * It is ensured that this notification will be invoked from the GUI thread.
@@ -164,7 +165,7 @@ public abstract class BasisImageDownloader
      * @param result
      *          <code>true</code> if and only if the image bitmap has actually been downloaded and attached to its view
      */
-    void onImageBound(boolean result, ImageView image, String imageUid, Object imageSpecs);
+    void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
 
     /**
      * Invoked in a non-deterministic thread, just before the image gets downloaded via the provided {@link URLConnection}.
@@ -173,7 +174,7 @@ public abstract class BasisImageDownloader
      * This is a place where it is possible to tweak the urlConnection.
      * </p>
      */
-    void onBeforeImageDownloaded(String imageUid, Object imageSpecs, URLConnection urlConnection);
+    void onBeforeBitmapDownloaded(String bitmapUid, Object imageSpecs, URLConnection urlConnection);
 
     /**
      * Is invoked just before the stream corresponding to the image is started, provided its computed URL is not null nor empty.
@@ -184,21 +185,21 @@ public abstract class BasisImageDownloader
      * 
      * @param instructor
      *          if you want the input stream download to be asynchronous, call
-     *          {@link BasisImageDownloader.InputStreamDownloadInstructor#setAsynchronous()} and return <code>null</code> ; once the input stream has
-     *          been download, invoke {@link BasisImageDownloader.InputStreamDownloadInstructor#onDownloaded(InputStream)}.
-     * @return if <code>null</code> and {@link BasisImageDownloader.InputStreamDownloadInstructor#setAsynchronous()} has not been invoked, the
+     *          {@link BasisBitmapDownloader.InputStreamDownloadInstructor#setAsynchronous()} and return <code>null</code> ; once the input stream has
+     *          been download, invoke {@link BasisBitmapDownloader.InputStreamDownloadInstructor#onDownloaded(InputStream)}.
+     * @return if <code>null</code> and {@link BasisBitmapDownloader.InputStreamDownloadInstructor#setAsynchronous()} has not been invoked, the
      *         framework will download the input from Internet; otherwise that input stream will be used for populating the image view
      */
-    InputStream getInputStream(String imageUid, Object imageSpecs, String url, BasisImageDownloader.InputStreamDownloadInstructor instructor)
+    InputStream getInputStream(String bitmapUid, Object imageSpecs, String url, BasisBitmapDownloader.InputStreamDownloadInstructor instructor)
         throws IOException;
 
   }
 
   public static abstract class SimpleInstructions
-      implements BasisImageDownloader.Instructions
+      implements BasisBitmapDownloader.Instructions
   {
 
-    public InputStream getInputStream(String imageUid, Object imageSpecs, String url, BasisImageDownloader.InputStreamDownloadInstructor instructor)
+    public InputStream getInputStream(String bitmapUid, Object imageSpecs, String url, BasisBitmapDownloader.InputStreamDownloadInstructor instructor)
         throws IOException
     {
       return null;
@@ -207,59 +208,65 @@ public abstract class BasisImageDownloader
   }
 
   /**
-   * An implementation of the {@link BasisImageDownloader.Instructions}, which returns the <code>imageUid</code> as an URL, and which does not present
-   * any temporary nor local image.
+   * An implementation of the {@link BasisBitmapDownloader.Instructions}, which returns the <code>bitmapUid</code> as an URL, and which does not
+   * present any temporary nor local image.
+   * 
+   * <p>
+   * Caution: this implementation supposes that the provided {@View view} is actually an {@ImageView} in the
+   * {@link BasisBitmapDownloader.AbstractInstructions#onBindBitmap(boolean, View, Bitmap, String, Object)} method.
+   * </p>
    */
   public static class AbstractInstructions
-      extends BasisImageDownloader.SimpleInstructions
+      extends BasisBitmapDownloader.SimpleInstructions
   {
 
-    public String computeUrl(String imageUid, Object imageSpecs)
+    public String computeUrl(String bitmapUid, Object imageSpecs)
     {
-      return imageUid;
+      return bitmapUid;
     }
 
-    public boolean hasTemporaryImage(String imageUid, Object imageSpecs)
-    {
-      return false;
-    }
-
-    public void onBindTemporaryImage(ImageView imageView, String imageUid, Object imageSpecs)
-    {
-    }
-
-    public boolean hasLocalImage(String imageUid, Object imageSpecs)
+    public boolean hasTemporaryBitmap(String bitmapUid, Object imageSpecs)
     {
       return false;
     }
 
-    public void onBindLocalImage(ImageView imageView, String imageUid, Object imageSpecs)
+    public void onBindTemporaryBitmap(View view, String bitmapUid, Object imageSpecs)
     {
     }
 
-    public void onBeforeImageDownloaded(String imageUid, Object imageSpecs, URLConnection urlConnection)
-    {
-    }
-
-    public void onImageReady(boolean allright, ImageView imageView, Bitmap bitmap, String imageUid, Object imageSpecs)
-    {
-    }
-
-    public boolean onBindImage(boolean downloaded, ImageView imageView, Bitmap bitmap, String imageUid, Object imageSpecs)
+    public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
     {
       return false;
     }
 
-    public void onImageBound(boolean result, ImageView image, String imageUid, Object imageSpecs)
+    public void onBindLocalBitmap(View view, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    public void onBeforeBitmapDownloaded(String bitmapUid, Object imageSpecs, URLConnection urlConnection)
+    {
+    }
+
+    public void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    public boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
+    {
+      ((ImageView) (view)).setImageBitmap(bitmap);
+      return true;
+    }
+
+    public void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs)
     {
     }
 
   }
 
-  public final static BasisImageDownloader.Instructions ABSTRACT_INSTRUCTIONS = new BasisImageDownloader.AbstractInstructions();
+  public final static BasisBitmapDownloader.Instructions ABSTRACT_INSTRUCTIONS = new BasisBitmapDownloader.AbstractInstructions();
 
   final class UsedBitmap
-      implements Comparable<BasisImageDownloader.UsedBitmap>
+      implements Comparable<BasisBitmapDownloader.UsedBitmap>
   {
 
     private final Reference<Bitmap> bitmapReference;
@@ -323,13 +330,13 @@ public abstract class BasisImageDownloader
       }
     }
 
-    public void rememberBinding(ImageView imageView)
+    public void rememberBinding(View view)
     {
       if (recycleMap == false)
       {
         return;
       }
-      final BasisImageDownloader.UsedBitmap otherUsedBitmap = (BasisImageDownloader.UsedBitmap) imageView.getTag();
+      final BasisBitmapDownloader.UsedBitmap otherUsedBitmap = (BasisBitmapDownloader.UsedBitmap) view.getTag();
       if (otherUsedBitmap != null)
       {
         otherUsedBitmap.bindingCount--;
@@ -346,7 +353,7 @@ public abstract class BasisImageDownloader
         // }
       }
       bindingCount++;
-      imageView.setTag(this);
+      view.setTag(this);
     }
 
     public void rememberAccessed()
@@ -354,7 +361,7 @@ public abstract class BasisImageDownloader
       accessCount++;
     }
 
-    public int compareTo(BasisImageDownloader.UsedBitmap another)
+    public int compareTo(BasisBitmapDownloader.UsedBitmap another)
     {
       if (accessCount > another.accessCount)
       {
@@ -378,6 +385,7 @@ public abstract class BasisImageDownloader
    * The name of the instance, mostly useful for the logs.
    */
   public String name;
+
   /**
    * Indicates the upper limit of memory that the cache is allowed to reach.
    */
@@ -398,14 +406,13 @@ public abstract class BasisImageDownloader
   /**
    * A {@link HashMap} is used instead of a {@link java.util.Hashtable}, because we want to allow null values.
    */
-  protected final Map<String, BasisImageDownloader.UsedBitmap> cache = new HashMap<String, BasisImageDownloader.UsedBitmap>();
+  protected final Map<String, BasisBitmapDownloader.UsedBitmap> cache = new HashMap<String, BasisBitmapDownloader.UsedBitmap>();
 
   private long memoryConsumption = 0;
 
   private boolean cleanUpInProgress;
 
-
-  protected BasisImageDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  protected BasisBitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
     this.name = name;
     this.recycleMap = recycleMap;
@@ -416,17 +423,17 @@ public abstract class BasisImageDownloader
 
   /**
    * This method will retrieve the bitmap corresponding to the provided identifier along with the provided instructions, and bind it to the provided
-   * {@link ImageView}.
+   * {@link View}.
    * 
    * <p>
    * Can be invoked from any thread, not only the GUI's! The method is non-blocking.
    * </p>
    * 
-   * @param imageView
+   * @param view
    *          the image that will be bound with the retrieved {@link Bitmap}
-   * @param imageUid
+   * @param bitmapUid
    *          the identifier of the bitmap to retrieve. Most of the time, this is the URL of the bitmap on Internet, but it can serve as a basis to
-   *          {@link Instructions#computeUrl(String, Object) compute} the actual URL
+   *          {@link BasisBitmapDownloader.Instructions#computeUrl(String, Object) compute} the actual URL
    * @param imageSpecs
    *          a free object that will be passed along during the bitmap retrieval workflow
    * @param handler
@@ -434,16 +441,16 @@ public abstract class BasisImageDownloader
    * @param instructions
    *          the instructions that will be invoked during the retrieval workflow
    */
-  public abstract void get(ImageView imageView, String imageUid, Object imageSpecs, Handler handler, Instructions instructions);
+  public abstract void get(View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions);
 
   /**
-   * Provides the same feature as {@link #computeAndGetUrl(ImageView, String, Object, Handler, Instructions)}, except that it may be called from the
-   * GUI thread and blocking.
+   * Provides the same feature as {@link #computeAndGetUrl(View, String, Object, Handler, BasisBitmapDownloader.Instructions)}, except that it may be
+   * called from the GUI thread and blocking.
    * 
    * @param isBlocking
    *          indicates whether the call is blocking. It <code>true</code>, the call must be done from the GUI thread!
    */
-  public abstract void get(boolean isBlocking, ImageView imageView, String imageUid, Object imageSpecs, Handler handler, Instructions instructions);
+  public abstract void get(boolean isBlocking, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions);
 
   /**
    * Empties the cache, so that no more bitmap is available in memory.
@@ -454,11 +461,11 @@ public abstract class BasisImageDownloader
    */
   public abstract void empty();
 
-  protected final BasisImageDownloader.UsedBitmap getUsedBitmapFromCache(String url)
+  protected final BasisBitmapDownloader.UsedBitmap getUsedBitmapFromCache(String url)
   {
     synchronized (cache)
     {
-      final BasisImageDownloader.UsedBitmap usedBitmap = cache.get(url);
+      final BasisBitmapDownloader.UsedBitmap usedBitmap = cache.get(url);
       if (usedBitmap != null)
       {
         if (usedBitmap.getBitmap() != null)
@@ -477,11 +484,11 @@ public abstract class BasisImageDownloader
     return null;
   }
 
-  protected final BasisImageDownloader.UsedBitmap putInCache(String url, Bitmap bitmap)
+  protected final BasisBitmapDownloader.UsedBitmap putInCache(String url, Bitmap bitmap)
   {
     // log.debug("The thread '" + Thread.currentThread().getName() + "' put in cache the image with the URL '" + url + "' (size=" + cache.size()
     // + ")");
-    final BasisImageDownloader.UsedBitmap usedBitmap = new BasisImageDownloader.UsedBitmap(bitmap, url);
+    final BasisBitmapDownloader.UsedBitmap usedBitmap = new BasisBitmapDownloader.UsedBitmap(bitmap, url);
     synchronized (cache)
     {
       final UsedBitmap previousUsedBitmap = cache.put(url, usedBitmap);
@@ -526,14 +533,14 @@ public abstract class BasisImageDownloader
       {
         int discardedCount = 0;
         int recycledCount = 0;
-        final List<BasisImageDownloader.UsedBitmap> toBeDiscardedUsedBitmaps = new ArrayList<BasisImageDownloader.UsedBitmap>(cache.values());
+        final List<BasisBitmapDownloader.UsedBitmap> toBeDiscardedUsedBitmaps = new ArrayList<BasisBitmapDownloader.UsedBitmap>(cache.values());
         if (recycleMap == true)
         {
           // First, we clean up the references to all garbage-collected bitmaps
           final Iterator<UsedBitmap> iterator = toBeDiscardedUsedBitmaps.iterator();
           while (iterator.hasNext())
           {
-            final BasisImageDownloader.UsedBitmap usedBitmap = (BasisImageDownloader.UsedBitmap) iterator.next();
+            final BasisBitmapDownloader.UsedBitmap usedBitmap = (BasisBitmapDownloader.UsedBitmap) iterator.next();
             if (usedBitmap.getBitmap() == null)
             {
               iterator.remove();
@@ -544,7 +551,7 @@ public abstract class BasisImageDownloader
         int index = 0;
         while (memoryConsumption > lowLevelMemoryWaterMarkInBytes && index < toBeDiscardedUsedBitmaps.size())
         {
-          final BasisImageDownloader.UsedBitmap discardedUsedCache = cache.remove(toBeDiscardedUsedBitmaps.get(index).url);
+          final BasisBitmapDownloader.UsedBitmap discardedUsedCache = cache.remove(toBeDiscardedUsedBitmaps.get(index).url);
           memoryConsumption -= discardedUsedCache.getMemoryConsumption();
           // We make the bitmap as recycled, so that it is actually removed from memory, only if it not being used
           if (recycleMap == true && discardedUsedCache.bindingCount <= 0)
@@ -564,13 +571,13 @@ public abstract class BasisImageDownloader
           index++;
         }
         // We reset the remaining usages
-        for (BasisImageDownloader.UsedBitmap uriUsage : cache.values())
+        for (BasisBitmapDownloader.UsedBitmap uriUsage : cache.values())
         {
           uriUsage.accessCount = 0;
         }
         if (log.isInfoEnabled())
         {
-          log.info("The image cache '" + name+ "' has been cleaned-up (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumption + " bytes");
+          log.info("The image cache '" + name + "' has been cleaned-up (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumption + " bytes");
         }
       }
     }

@@ -356,15 +356,17 @@ This Ant buildfile requires that you have included the following Ant library ext
   >
     <property
       name="project.directoryPath"
-      location="../Smarties"
+      location="../FamilyWall"
     />
     <property
       name="excludedPath"
-      value="${droid4me.packagePath}/app/SmartMapActivity.java"
+      value="${droid4me.packagePath}/app/SmartMapActivity2.java"
     />
     <copy
       toDir="${project.directoryPath}"
       preservelastmodified="true"
+      encoding="ISO-8859-1"
+      outputencoding="ISO-8859-1"
     >
       <fileset dir=".">
         <include name="src/**/*"/>
