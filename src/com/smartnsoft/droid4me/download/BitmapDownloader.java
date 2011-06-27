@@ -36,16 +36,16 @@ import java.util.concurrent.TimeUnit;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
-import android.widget.ImageView;
+import android.view.View;
 
 /**
- * A first implementation of the {@link BasisImageDownloader} class.
+ * A first implementation of the {@link BasisBitmapDownloader} class.
  * 
  * @author Édouard Mercier
  * @since 2009.02.19
  */
-public class ImageDownloader
-    extends BasisImageDownloader
+public class BitmapDownloader
+    extends BasisBitmapDownloader
 {
 
   private static int preThreadCount;
@@ -79,7 +79,7 @@ public class ImageDownloader
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
-      thread.setName("droid4me-" + (ImageDownloader.preThreadCount < ImageDownloader.PRE_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "pre #" + ImageDownloader.preThreadCount++);
+      thread.setName("droid4me-" + (BitmapDownloader.preThreadCount < BitmapDownloader.PRE_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "pre #" + BitmapDownloader.preThreadCount++);
       return thread;
     }
   }, /*
@@ -108,7 +108,7 @@ public class ImageDownloader
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
-      thread.setName("droid4me-" + (ImageDownloader.downloadThreadCount < ImageDownloader.DOWNLOAD_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "download #" + ImageDownloader.downloadThreadCount++);
+      thread.setName("droid4me-" + (BitmapDownloader.downloadThreadCount < BitmapDownloader.DOWNLOAD_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "download #" + BitmapDownloader.downloadThreadCount++);
       return thread;
     }
   }, new ThreadPoolExecutor.AbortPolicy());
@@ -120,40 +120,40 @@ public class ImageDownloader
       implements Runnable, Comparable<PreCommand>
   {
 
-    private final int order = ImageDownloader.commandsCount++;
+    private final int order = BitmapDownloader.commandsCount++;
 
     protected final int id;
 
-    protected final ImageView imageView;
+    protected final View view;
 
-    protected final String imageUid;
+    protected final String bitmapUid;
 
     protected final Object imageSpecs;
 
     protected final Handler handler;
 
-    protected final BasisImageDownloader.Instructions instructions;
+    protected final BasisBitmapDownloader.Instructions instructions;
 
     private boolean executeEnd;
 
     private int state;
 
-    protected BasisImageDownloader.UsedBitmap usedBitmap;
+    protected BasisBitmapDownloader.UsedBitmap usedBitmap;
 
-    public PreCommand(int id, ImageView imageView, String imageUid, Object imageSpecs, Handler handler, BasisImageDownloader.Instructions instructions)
+    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
     {
       this.id = id;
-      this.imageView = imageView;
-      this.imageUid = imageUid;
+      this.view = view;
+      this.bitmapUid = bitmapUid;
       this.imageSpecs = imageSpecs;
       this.handler = handler;
       this.instructions = instructions;
     }
 
-    public PreCommand(int id, ImageView imageView, String imageUid, Object imageSpecs, Handler handler, BasisImageDownloader.Instructions instructions,
+    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions,
         boolean executeEnd)
     {
-      this(id, imageView, imageUid, imageSpecs, handler, instructions);
+      this(id, view, bitmapUid, imageSpecs, handler, instructions);
       this.executeEnd = executeEnd;
     }
 
@@ -161,7 +161,7 @@ public class ImageDownloader
      * Introduced in order to reduce the allocation of a {@link Runnable}, and for an optimization purpose.
      * 
      * <p>
-     * The {@link ImageDownloader.PreCommand#imageView} is ensured not to be null when this method is invoked.
+     * The {@link BitmapDownloader.PreCommand#view} is ensured not to be null when this method is invoked.
      * </p>
      */
     public final void run()
@@ -194,12 +194,12 @@ public class ImageDownloader
       // log.debug("Running the action in state '" + state + "'");
       // }
       // We only bind the temporary image provided there is not already another command bound to be processed
-      Integer commandId = prioritiesStack.get(imageView);
+      Integer commandId = prioritiesStack.get(view);
       if (state != 0 && (commandId == null || commandId != id))
       {
         if (log.isDebugEnabled())
         {
-          log.debug("The bitmap corresponding to the id '" + imageUid + "' will not be bound to its image, because this image has asked for another bitmap URL in the meantime");
+          log.debug("The bitmap corresponding to the id '" + bitmapUid + "' will not be bound to its image, because this image has asked for another bitmap URL in the meantime");
         }
         return;
       }
@@ -208,39 +208,41 @@ public class ImageDownloader
         switch (state)
         {
         case 0:
-          instructions.onBindLocalImage(imageView, imageUid, imageSpecs);
-          instructions.onImageBound(true, imageView, imageUid, imageSpecs);
+          instructions.onBindLocalBitmap(view, bitmapUid, imageSpecs);
+          instructions.onBitmapBound(true, view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
           // {
-          // log.debug("Set the local drawable for the image with id '" + imageUid + "'");
+          // log.debug("Set the local drawable for the image with id '" + bitmapUid + "'");
           // }
           break;
         case 1:
-          instructions.onBindTemporaryImage(imageView, imageUid, imageSpecs);
+          instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
           // {
-          // log.debug("Set the temporary drawable for the image with id '" + imageUid + "'");
+          // log.debug("Set the temporary drawable for the image with id '" + bitmapUid + "'");
           // }
           break;
         case 2:
-          if (instructions.onBindImage(false, imageView, usedBitmap.getBitmap(), imageUid, imageSpecs) == false)
+          if (instructions.onBindBitmap(false, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == false)
           {
-            imageView.setImageBitmap(usedBitmap.getBitmap());
+            // The binding is performed only if the instructions did not bind it
+            // THINK: what can we do?
+            // view.setImageBitmap(usedBitmap.getBitmap());
           }
           usedBitmap.forgetBitmap();
-          usedBitmap.rememberBinding(imageView);
-          instructions.onImageBound(true, imageView, imageUid, imageSpecs);
+          usedBitmap.rememberBinding(view);
+          instructions.onBitmapBound(true, view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
           // {
-          // log.debug("Set the cached bitmap for the image with id '" + imageUid + "'");
+          // log.debug("Set the cached bitmap for the image with id '" + bitmapUid + "'");
           // }
           break;
         }
         // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
-        commandId = prioritiesStack.get(imageView);
+        commandId = prioritiesStack.get(view);
         if (state != 1 && commandId == id)
         {
-          prioritiesStack.remove(imageView);
+          prioritiesStack.remove(view);
         }
       }
       catch (OutOfMemoryError exception)
@@ -257,12 +259,12 @@ public class ImageDownloader
     {
       // if (log.isDebugEnabled())
       // {
-      // log.debug("Starting to handle the drawable for the image with identifier '" + imageUid + "'");
+      // log.debug("Starting to handle the drawable for the image with identifier '" + bitmapUid + "'");
       // }
       // The command is removed from the priority stack
-      if (imageView != null)
+      if (view != null)
       {
-        prioritiesPreStack.remove(imageView);
+        prioritiesPreStack.remove(view);
       }
 
       // We set a local image if available
@@ -272,7 +274,7 @@ public class ImageDownloader
       }
 
       // We compute the image URL and proceed to its download if necessary
-      final String url = instructions.computeUrl(imageUid, imageSpecs);
+      final String url = instructions.computeUrl(bitmapUid, imageSpecs);
 
       // We use an image from the cache if possible
       if (setImageFromCacheIfPossible(url, isFromGuiThread) == true)
@@ -284,45 +286,45 @@ public class ImageDownloader
       setTemporaryImageIfPossible(isFromGuiThread);
 
       // And we stack the image download command
-      if (imageView != null)
+      if (view != null)
       {
         // But we test whether the download is still required
-        final Integer commandId = prioritiesStack.get(imageView);
+        final Integer commandId = prioritiesStack.get(view);
         if (commandId == null || commandId != id)
         {
           return;
         }
         // We remove a previously stacked command for the same image
-        final ImageDownloader.PreCommand alreadyStackedCommand = prioritiesDownloadStack.get(imageView);
+        final BitmapDownloader.PreCommand alreadyStackedCommand = prioritiesDownloadStack.get(view);
         if (alreadyStackedCommand != null)
         {
           if (log.isDebugEnabled())
           {
-            log.debug("Removed an already stacked download command corresponding to the image with id " + imageView.getId());
+            log.debug("Removed an already stacked download command corresponding to the image with id " + view.getId());
           }
-          if (ImageDownloader.DOWNLOAD_THREAD_POOL.remove(alreadyStackedCommand) == false)
+          if (BitmapDownloader.DOWNLOAD_THREAD_POOL.remove(alreadyStackedCommand) == false)
           {
             if (log.isErrorEnabled())
             {
-              log.error("Could not find the download command relative to the image with id '" + imageUid + "' to remove it!");
+              log.error("Could not find the download command relative to the image with id '" + bitmapUid + "' to remove it!");
             }
           }
         }
       }
-      final ImageDownloader.DownloadBitmapCommand downloadCommand = computeDownloadBitmapCommand(id, imageView, url, imageUid, imageSpecs, handler,
+      final BitmapDownloader.DownloadBitmapCommand downloadCommand = computeDownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler,
           instructions);
-      if (imageView != null)
+      if (view != null)
       {
-        prioritiesDownloadStack.put(imageView, downloadCommand);
+        prioritiesDownloadStack.put(view, downloadCommand);
       }
-      ImageDownloader.DOWNLOAD_THREAD_POOL.execute(downloadCommand);
+      BitmapDownloader.DOWNLOAD_THREAD_POOL.execute(downloadCommand);
     }
 
     private boolean setLocalImageIfPossible(boolean isFromGuiThread)
     {
-      if (instructions.hasLocalImage(imageUid, imageSpecs) == true)
+      if (instructions.hasLocalBitmap(bitmapUid, imageSpecs) == true)
       {
-        if (imageView != null)
+        if (view != null)
         {
           // We need to do that in the GUI thread!
           state = 0;
@@ -332,7 +334,7 @@ public class ImageDownloader
             {
               if (log.isWarnEnabled())
               {
-                log.warn("Failed to apply that local resource for the image with id '" + imageUid + "' from the GUI thread");
+                log.warn("Failed to apply that local resource for the image with id '" + bitmapUid + "' from the GUI thread");
               }
             }
           }
@@ -348,9 +350,9 @@ public class ImageDownloader
 
     private void setTemporaryImageIfPossible(boolean isFromGuiThread)
     {
-      if (instructions.hasTemporaryImage(imageUid, imageSpecs) == true)
+      if (instructions.hasTemporaryBitmap(bitmapUid, imageSpecs) == true)
       {
-        if (imageView != null)
+        if (view != null)
         {
           // We need to do that in the GUI thread!
           state = 1;
@@ -360,7 +362,7 @@ public class ImageDownloader
             {
               if (log.isWarnEnabled())
               {
-                log.warn("Failed to apply that temporary local resource for the image with id '" + imageUid + "' from the GUI thread");
+                log.warn("Failed to apply that temporary local resource for the image with id '" + bitmapUid + "' from the GUI thread");
               }
             }
           }
@@ -375,13 +377,13 @@ public class ImageDownloader
     private boolean setImageFromCacheIfPossible(String url, boolean isFromGuiThread)
     {
       // We check that the image is no already in the cache
-      final BasisImageDownloader.UsedBitmap otherUsedBitmap = getUsedBitmapFromCache(url);
+      final BasisBitmapDownloader.UsedBitmap otherUsedBitmap = getUsedBitmapFromCache(url);
       if (otherUsedBitmap != null)
       {
         usedBitmap = otherUsedBitmap;
         usedBitmap.rememberAccessed();
-        instructions.onImageReady(true, imageView, usedBitmap.getBitmap(), imageUid, imageSpecs);
-        if (imageView != null)
+        instructions.onBitmapReady(true, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+        if (view != null)
         {
           // if (log.isDebugEnabled())
           // {
@@ -426,8 +428,8 @@ public class ImageDownloader
 
   // TODO: when a second download for the same image UID occurs, do not run it
   protected class DownloadBitmapCommand
-      extends ImageDownloader.PreCommand
-      implements BasisImageDownloader.InputStreamDownloadInstructor
+      extends BitmapDownloader.PreCommand
+      implements BasisBitmapDownloader.InputStreamDownloadInstructor
   {
 
     protected final String url;
@@ -436,10 +438,10 @@ public class ImageDownloader
 
     private boolean inputStreamAsynchronous;
 
-    public DownloadBitmapCommand(int id, ImageView imageView, String url, String imageUid, Object imageSpecs, Handler handler,
-        BasisImageDownloader.Instructions instructions)
+    public DownloadBitmapCommand(int id, View view, String url, String bitmapUid, Object imageSpecs, Handler handler,
+        BasisBitmapDownloader.Instructions instructions)
     {
-      super(id, imageView, imageUid, imageSpecs, handler, instructions);
+      super(id, view, bitmapUid, imageSpecs, handler, instructions);
       this.url = url;
     }
 
@@ -466,30 +468,30 @@ public class ImageDownloader
       }
 
       // Indicates whether another command has been set for the image in the meantime
-      final boolean forgetTheBinding = imageView != null && asynchronousDownloadCommands.remove(imageView) == false;
+      final boolean forgetTheBinding = view != null && asynchronousDownloadCommands.remove(view) == false;
 
       final Bitmap bitmap = convertInputStream(inputStream);
       if (forgetTheBinding == false && bitmap == null)
       {
-        instructions.onImageReady(false, imageView, null, imageUid, imageSpecs);
+        instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
         return;
       }
       usedBitmap = putInCache(url, bitmap);
       if (forgetTheBinding == false)
       {
-        instructions.onImageReady(true, imageView, usedBitmap.getBitmap(), imageUid, imageSpecs);
+        instructions.onBitmapReady(true, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
         bindBitmap();
       }
     }
 
     /**
-     * The {@link ImageDownloader.PreCommand#imageView} is ensured not to be null when this method is invoked.
+     * The {@link BitmapDownloader.PreCommand#view} is ensured not to be null when this method is invoked.
      */
     @Override
     public final void executeEnd()
     {
       // We only bind the image provided there is not already another command bound to be processed
-      Integer commandId = prioritiesStack.get(imageView);
+      Integer commandId = prioritiesStack.get(view);
       if (commandId == null || commandId != id)
       {
         // if (log.isDebugEnabled())
@@ -503,20 +505,21 @@ public class ImageDownloader
       {
         if (usedBitmap != null)
         {
-          if (instructions.onBindImage(downloaded, imageView, usedBitmap.getBitmap(), imageUid, imageSpecs) == false)
+          if (instructions.onBindBitmap(downloaded, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == false)
           {
             // The binding is performed only if the instructions did not bind it
-            imageView.setImageBitmap(usedBitmap.getBitmap());
+            // THINK: what can we do?
+            // view.setImageBitmap(usedBitmap.getBitmap());
           }
           usedBitmap.forgetBitmap();
-          usedBitmap.rememberBinding(imageView);
+          usedBitmap.rememberBinding(view);
         }
-        instructions.onImageBound(usedBitmap != null, imageView, imageUid, imageSpecs);
+        instructions.onBitmapBound(usedBitmap != null, view, bitmapUid, imageSpecs);
         // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
-        commandId = prioritiesStack.get(imageView);
+        commandId = prioritiesStack.get(view);
         if (commandId != null && commandId == id)
         {
-          prioritiesStack.remove(imageView);
+          prioritiesStack.remove(view);
         }
       }
       catch (OutOfMemoryError exception)
@@ -533,12 +536,12 @@ public class ImageDownloader
     public final void executeStart(boolean isFromGuiThread)
     {
       // The command is removed from the priority stack
-      if (imageView != null)
+      if (view != null)
       {
-        prioritiesDownloadStack.remove(imageView);
+        prioritiesDownloadStack.remove(view);
       }
       // We need to check whether the same URL has not been downloaded in the meantime
-      final BasisImageDownloader.UsedBitmap otherUsedBitmap = getUsedBitmapFromCache(url);
+      final BasisBitmapDownloader.UsedBitmap otherUsedBitmap = getUsedBitmapFromCache(url);
       if (otherUsedBitmap == null)
       {
         // If the bitmap is not already in memory, we load it in memory
@@ -553,7 +556,7 @@ public class ImageDownloader
             }
           }
           // We let intentionally the 'usedBitmap' null
-          instructions.onImageReady(false, imageView, null, imageUid, imageSpecs);
+          instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
           // We cannot do anything further in that case
           return;
         }
@@ -571,7 +574,7 @@ public class ImageDownloader
 
       if (usedBitmap != null)
       {
-        instructions.onImageReady(true, imageView, usedBitmap.getBitmap(), imageUid, imageSpecs);
+        instructions.onBitmapReady(true, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
       }
       bindBitmap();
     }
@@ -585,7 +588,7 @@ public class ImageDownloader
       {
         try
         {
-          inputStream = instructions.getInputStream(imageUid, imageSpecs, url, this);
+          inputStream = instructions.getInputStream(bitmapUid, imageSpecs, url, this);
         }
         catch (IOException exception)
         {
@@ -614,14 +617,14 @@ public class ImageDownloader
       // We determine whether the input stream has turned asynchronous
       if (inputStreamAsynchronous == true)
       {
-        asynchronousDownloadCommands.add(imageView);
+        asynchronousDownloadCommands.add(view);
         return null;
       }
 
       final long start = System.currentTimeMillis();
       final URL aURL = new URL(url);
       final URLConnection connection = aURL.openConnection();
-      instructions.onBeforeImageDownloaded(imageUid, imageSpecs, connection);
+      instructions.onBeforeBitmapDownloaded(bitmapUid, imageSpecs, connection);
       // if (log.isDebugEnabled())
       // {
       // log.debug("Setting to the URL connection belonging to class '" + connection.getClass().getName() + "' a 'User-Agent' header property");
@@ -734,13 +737,13 @@ public class ImageDownloader
     private final void bindBitmap()
     {
       // We need to bind the bitmap to the image in the GUI thread!
-      if (imageView != null)
+      if (view != null)
       {
         if (handler.post(this) == false)
         {
           if (log.isWarnEnabled())
           {
-            log.warn("Failed to apply the downloaded bitmap for the image with id '" + imageUid + "' and URL '" + url + "' from the GUI thread");
+            log.warn("Failed to apply the downloaded bitmap for the image with id '" + bitmapUid + "' and URL '" + url + "' from the GUI thread");
           }
         }
       }
@@ -751,9 +754,9 @@ public class ImageDownloader
   public static int INSTANCES_COUNT = 1;
 
   /**
-   * The fully qualified name of the {@link ImageDownloader} instances implementation.
+   * The fully qualified name of the {@link BitmapDownloader} instances implementation.
    */
-  public static String IMPLEMENTATION_FQN = ImageDownloader.class.getName();
+  public static String IMPLEMENTATION_FQN = BitmapDownloader.class.getName();
 
   /**
    * Indicates the upper limit of memory that each cache is allowed to reach.
@@ -772,39 +775,39 @@ public class ImageDownloader
 
   public static boolean[] RECYCLE_BITMAP;
 
-  private static volatile ImageDownloader[] instances;
+  private static volatile BitmapDownloader[] instances;
 
   /**
    * Implements a "double-checked locking" pattern.
    */
-  public static ImageDownloader getInstance()
+  public static BitmapDownloader getInstance()
   {
-    return ImageDownloader.getInstance(0);
+    return BitmapDownloader.getInstance(0);
   }
 
   // We accept the "out-of-order writes" case
   @SuppressWarnings("unchecked")
-  public static ImageDownloader getInstance(int position)
+  public static BitmapDownloader getInstance(int position)
   {
-    if (ImageDownloader.instances == null)
+    if (BitmapDownloader.instances == null)
     {
-      synchronized (ImageDownloader.class)
+      synchronized (BitmapDownloader.class)
       {
-        if (ImageDownloader.instances == null)
+        if (BitmapDownloader.instances == null)
         {
           try
           {
-            final Class<? extends ImageDownloader> implementationClass = (Class<? extends ImageDownloader>) Class.forName(ImageDownloader.IMPLEMENTATION_FQN);
-            final ImageDownloader[] newInstances = (ImageDownloader[]) Array.newInstance(implementationClass, ImageDownloader.INSTANCES_COUNT);
-            final Constructor<? extends ImageDownloader> constructor = implementationClass.getDeclaredConstructor(String.class, long.class, long.class,
+            final Class<? extends BitmapDownloader> implementationClass = (Class<? extends BitmapDownloader>) Class.forName(BitmapDownloader.IMPLEMENTATION_FQN);
+            final BitmapDownloader[] newInstances = (BitmapDownloader[]) Array.newInstance(implementationClass, BitmapDownloader.INSTANCES_COUNT);
+            final Constructor<? extends BitmapDownloader> constructor = implementationClass.getDeclaredConstructor(String.class, long.class, long.class,
                 boolean.class, boolean.class);
-            for (int index = 0; index < ImageDownloader.INSTANCES_COUNT; index++)
+            for (int index = 0; index < BitmapDownloader.INSTANCES_COUNT; index++)
             {
-              newInstances[index] = constructor.newInstance("ImageDownloader-" + index, ImageDownloader.MAX_MEMORY_IN_BYTES[index],
-                  ImageDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[index], ImageDownloader.USE_REFERENCES[index], ImageDownloader.RECYCLE_BITMAP[index]);
+              newInstances[index] = constructor.newInstance("ImageDownloader-" + index, BitmapDownloader.MAX_MEMORY_IN_BYTES[index],
+                  BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[index], BitmapDownloader.USE_REFERENCES[index], BitmapDownloader.RECYCLE_BITMAP[index]);
             }
             // We only assign the instances class variable here, once all instances have actually been created
-            ImageDownloader.instances = newInstances;
+            BitmapDownloader.instances = newInstances;
           }
           catch (Exception exception)
           {
@@ -816,95 +819,94 @@ public class ImageDownloader
         }
       }
     }
-    return ImageDownloader.instances[position];
+    return BitmapDownloader.instances[position];
   }
 
   /**
-   * A map which handles the priorities of the {@link ImageDownloader.PreCommand pre-commands}: when a new command for an {@link ImageView} is asked
-   * for, if a {@link ImageDownloader.PreCommand} is already stacked for the same image (i.e. present in {@link #preStack stacked}), the old one will
-   * be discarded.
+   * A map which handles the priorities of the {@link BitmapDownloader.PreCommand pre-commands}: when a new command for an {@link View} is asked for,
+   * if a {@link BitmapDownloader.PreCommand} is already stacked for the same image (i.e. present in {@link #preStack stacked}), the old one will be
+   * discarded.
    */
-  private final Map<ImageView, ImageDownloader.PreCommand> prioritiesPreStack;
+  private final Map<View, BitmapDownloader.PreCommand> prioritiesPreStack;
 
   /**
-   * A map which contains all the {@link ImageDownloader.PreCommand commands} that are currently at the top of the priorities stack. When a new
-   * command for an {@link ImageView} is asked for, if a {@link ImageDownloader.PreCommand} is already stacked for the same image (i.e. present in
-   * {@link ImageDownloader#preStack stacked}), the old one will be discarded.
+   * A map which contains all the {@link BitmapDownloader.PreCommand commands} that are currently at the top of the priorities stack. When a new
+   * command for an {@link View} is asked for, if a {@link BitmapDownloader.PreCommand} is already stacked for the same image (i.e. present in
+   * {@link BitmapDownloader#preStack stacked}), the old one will be discarded.
    */
-  private final Map<ImageView, Integer> prioritiesStack;
+  private final Map<View, Integer> prioritiesStack;
 
-  private final Map<ImageView, ImageDownloader.DownloadBitmapCommand> prioritiesDownloadStack;
+  private final Map<View, BitmapDownloader.DownloadBitmapCommand> prioritiesDownloadStack;
 
-  private final Set<ImageView> asynchronousDownloadCommands = new HashSet<ImageView>();
+  private final Set<View> asynchronousDownloadCommands = new HashSet<View>();
 
   /**
    * The counter of all commands, which is incremented on every new command, so as to identify them.
    */
   private int commandIdCount = -1;
 
-  protected ImageDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  protected BitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
     super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
-    prioritiesStack = new Hashtable<ImageView, Integer>();
-    prioritiesPreStack = new Hashtable<ImageView, ImageDownloader.PreCommand>();
-    prioritiesDownloadStack = new Hashtable<ImageView, ImageDownloader.DownloadBitmapCommand>();
+    prioritiesStack = new Hashtable<View, Integer>();
+    prioritiesPreStack = new Hashtable<View, BitmapDownloader.PreCommand>();
+    prioritiesDownloadStack = new Hashtable<View, BitmapDownloader.DownloadBitmapCommand>();
   }
 
   @Override
-  public final void get(ImageView imageView, String imageUid, Object imageSpecs, Handler handler, BasisImageDownloader.Instructions instructions)
+  public final void get(View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
   {
     // if (log.isDebugEnabled())
     // {
-    // log.debug("Asking to handle the bitmap related to the image with id '" + imageUid + "'");
+    // log.debug("Asking to handle the bitmap related to the image with id '" + bitmapUid + "'");
     // }
     // try
     // {
-    if (imageView != null)
+    if (view != null)
     {
       // We indicate to the potential asynchronous input stream downloads that a new request is now set for the image
-      asynchronousDownloadCommands.remove(imageView);
+      asynchronousDownloadCommands.remove(view);
 
       // We remove a previously stacked command for the same image
-      final ImageDownloader.PreCommand alreadyStackedCommand = prioritiesPreStack.get(imageView);
+      final BitmapDownloader.PreCommand alreadyStackedCommand = prioritiesPreStack.get(view);
       if (alreadyStackedCommand != null)
       {
         if (log.isDebugEnabled())
         {
-          log.debug("Removed an already stacked command corresponding to the image with id '" + imageView.getId() + "'");
+          log.debug("Removed an already stacked command corresponding to the image with id '" + view.getId() + "'");
         }
-        if (ImageDownloader.PRE_THREAD_POOL.remove(alreadyStackedCommand) == false)
+        if (BitmapDownloader.PRE_THREAD_POOL.remove(alreadyStackedCommand) == false)
         {
           if (log.isErrorEnabled())
           {
-            log.error("Could not find the pre-command relative to the image with id '" + imageUid + "' to remove it!");
+            log.error("Could not find the pre-command relative to the image with id '" + bitmapUid + "' to remove it!");
           }
         }
       }
     }
-    final ImageDownloader.PreCommand command = new ImageDownloader.PreCommand(++commandIdCount, imageView, imageUid, imageSpecs, handler, instructions);
-    if (imageView != null)
+    final BitmapDownloader.PreCommand command = new BitmapDownloader.PreCommand(++commandIdCount, view, bitmapUid, imageSpecs, handler, instructions);
+    if (view != null)
     {
-      prioritiesStack.put(imageView, command.id);
-      prioritiesPreStack.put(imageView, command);
+      prioritiesStack.put(view, command.id);
+      prioritiesPreStack.put(view, command);
     }
-    ImageDownloader.PRE_THREAD_POOL.execute(command);
+    BitmapDownloader.PRE_THREAD_POOL.execute(command);
   }
 
   @Override
-  public final void get(boolean isBlocking, ImageView imageView, String imageUid, Object imageSpecs, Handler handler,
-      BasisImageDownloader.Instructions instructions)
+  public final void get(boolean isBlocking, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
   {
     if (isBlocking == false)
     {
-      get(imageView, imageUid, imageSpecs, handler, instructions);
+      get(view, bitmapUid, imageSpecs, handler, instructions);
     }
     else
     {
-      final ImageDownloader.PreCommand preCommand = new ImageDownloader.PreCommand(++commandIdCount, imageView, imageUid, imageSpecs, handler, instructions, true);
-      if (imageView != null)
+      final BitmapDownloader.PreCommand preCommand = new BitmapDownloader.PreCommand(++commandIdCount, view, bitmapUid, imageSpecs, handler, instructions, true);
+      if (view != null)
       {
-        prioritiesStack.put(imageView, preCommand.id);
-        prioritiesPreStack.put(imageView, preCommand);
+        prioritiesStack.put(view, preCommand.id);
+        prioritiesPreStack.put(view, preCommand);
       }
       preCommand.executeStart(true);
     }
@@ -916,8 +918,8 @@ public class ImageDownloader
     {
       log.info("Clearing the cache '" + name + "'");
     }
-    ImageDownloader.PRE_THREAD_POOL.getQueue().clear();
-    ImageDownloader.DOWNLOAD_THREAD_POOL.getQueue().clear();
+    BitmapDownloader.PRE_THREAD_POOL.getQueue().clear();
+    BitmapDownloader.DOWNLOAD_THREAD_POOL.getQueue().clear();
     asynchronousDownloadCommands.clear();
     prioritiesStack.clear();
     prioritiesPreStack.clear();
@@ -925,10 +927,10 @@ public class ImageDownloader
     cache.clear();
   }
 
-  protected DownloadBitmapCommand computeDownloadBitmapCommand(int id, ImageView imageView, String url, String imageUid, Object imageSpecs, Handler handler,
-      BasisImageDownloader.Instructions instructions)
+  protected DownloadBitmapCommand computeDownloadBitmapCommand(int id, View view, String url, String bitmapUid, Object imageSpecs, Handler handler,
+      BasisBitmapDownloader.Instructions instructions)
   {
-    return new ImageDownloader.DownloadBitmapCommand(id, imageView, url, imageUid, imageSpecs, handler, instructions);
+    return new BitmapDownloader.DownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
   }
 
 }

@@ -21,16 +21,16 @@ package com.smartnsoft.droid4me.download;
 import java.io.InputStream;
 
 import android.os.Handler;
-import android.widget.ImageView;
+import android.view.View;
 
 /**
- * Responsible for downloading the bitmaps in dedicated threads and to bind them to Android {@link ImageView ImageViews}.
+ * Responsible for downloading the bitmaps in dedicated threads and to bind them to Android {@link View Views}.
  * 
  * @author Édouard Mercier
  * @since 2010.07.09
  */
-public final class AdvancedImageDownloader
-    extends ImageDownloader
+public final class AdvancedBitmapDownloader
+    extends BitmapDownloader
 {
 
   /**
@@ -80,7 +80,7 @@ public final class AdvancedImageDownloader
    * Enables to express an image specification, with a size and a default image resource id, in case the URL does not correspond to an image.
    */
   public static class DefaultImageSpecs
-      extends AdvancedImageDownloader.TemporaryImageSpecs
+      extends AdvancedBitmapDownloader.TemporaryImageSpecs
   {
 
     public final int size;
@@ -115,7 +115,7 @@ public final class AdvancedImageDownloader
    * Enables to express an image specification, which indicates its size and a temporary image resource identification.
    */
   public static class SizedImageSpecs
-      extends AdvancedImageDownloader.TemporaryImageSpecs
+      extends AdvancedBitmapDownloader.TemporaryImageSpecs
   {
 
     public final int width;
@@ -132,7 +132,7 @@ public final class AdvancedImageDownloader
   }
 
   public static interface AdvancedInstructions
-      extends BasisImageDownloader.Instructions
+      extends BasisBitmapDownloader.Instructions
   {
 
     /**
@@ -144,16 +144,16 @@ public final class AdvancedImageDownloader
      * 
      * @return the provided inputStream or a tweaked version of that stream
      */
-    InputStream onInputStreamDownloaded(String imageUid, Object imageSpecs, String url, InputStream inputStream);
+    InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream);
 
   }
 
   public static class AdvancedAbstractInstructions
-      extends BasisImageDownloader.AbstractInstructions
-      implements AdvancedImageDownloader.AdvancedInstructions
+      extends BasisBitmapDownloader.AbstractInstructions
+      implements AdvancedBitmapDownloader.AdvancedInstructions
   {
 
-    public InputStream onInputStreamDownloaded(String imageUid, Object imageSpecs, String url, InputStream inputStream)
+    public InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream)
     {
       return inputStream;
     }
@@ -161,36 +161,36 @@ public final class AdvancedImageDownloader
   }
 
   private final class AdvancedDownloadBitmapCommand
-      extends ImageDownloader.DownloadBitmapCommand
+      extends BitmapDownloader.DownloadBitmapCommand
   {
 
-    public AdvancedDownloadBitmapCommand(int id, ImageView image, String url, String imageUid, Object imageSpecs, Handler handler, Instructions instructions)
+    public AdvancedDownloadBitmapCommand(int id, View view, String url, String bitmapUid, Object imageSpecs, Handler handler, Instructions instructions)
     {
-      super(id, image, url, imageUid, imageSpecs, handler, instructions);
+      super(id, view, url, bitmapUid, imageSpecs, handler, instructions);
     }
 
     @Override
     protected InputStream onInputStreamDownloaded(InputStream inputStream)
     {
-      if (instructions instanceof AdvancedImageDownloader.AdvancedInstructions)
+      if (instructions instanceof AdvancedBitmapDownloader.AdvancedInstructions)
       {
-        return ((AdvancedImageDownloader.AdvancedInstructions) instructions).onInputStreamDownloaded(imageUid, imageSpecs, url, inputStream);
+        return ((AdvancedBitmapDownloader.AdvancedInstructions) instructions).onInputStreamDownloaded(bitmapUid, imageSpecs, url, inputStream);
       }
       return inputStream;
     }
 
   }
 
-  protected AdvancedImageDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  protected AdvancedBitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
     super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
   }
 
   @Override
-  protected DownloadBitmapCommand computeDownloadBitmapCommand(int id, ImageView imageView, String url, String imageUid, Object imageSpecs, Handler handler,
+  protected DownloadBitmapCommand computeDownloadBitmapCommand(int id, View view, String url, String bitmapUid, Object imageSpecs, Handler handler,
       Instructions instructions)
   {
-    return new AdvancedImageDownloader.AdvancedDownloadBitmapCommand(id, imageView, url, imageUid, imageSpecs, handler, instructions);
+    return new AdvancedBitmapDownloader.AdvancedDownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
   }
 
 }

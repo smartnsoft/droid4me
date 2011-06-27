@@ -176,7 +176,7 @@ public abstract class Persistence
         {
           if (Persistence.IMPLEMENTATION_FQN == null)
           {
-            throw new Persistence.PersistenceException("The persistance implementation has not been set!");
+            throw new Persistence.PersistenceException("The persistence implementation class has not been set!");
           }
           try
           {
