@@ -301,7 +301,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   @Override
   void refreshBusinessObjectsAndDisplayInternal(boolean retrieveBusinessObjects, final Runnable onOver, final boolean businessObjectCountAndSortingUnchanged)
   {
-    super.refreshBusinessObjectsAndDisplayInternal(true, new Runnable()
+    super.refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, new Runnable()
     {
       public void run()
       {
