@@ -406,7 +406,7 @@ public abstract class Persistence
     }
     for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
     {
-      Persistence.instances[index].clear();
+      Persistence.getInstance(index).clear();
     }
   }
 
