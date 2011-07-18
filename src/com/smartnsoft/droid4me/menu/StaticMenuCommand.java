@@ -30,9 +30,19 @@ public final class StaticMenuCommand
     extends MenuCommand<Void>
 {
 
+  public StaticMenuCommand(CharSequence text, char numericalShortcut, char characterShortcut, Commands.StaticExecutable executable)
+  {
+    super(text, numericalShortcut, characterShortcut, -1, executable);
+  }
+
   public StaticMenuCommand(CharSequence text, char numericalShortcut, char characterShortcut, int icon, Commands.StaticExecutable executable)
   {
     super(text, numericalShortcut, characterShortcut, icon, executable);
+  }
+
+  public StaticMenuCommand(int textId, char numericalShortcut, char characterShortcut, Commands.StaticExecutable executable)
+  {
+    super(textId, numericalShortcut, characterShortcut, -1, executable);
   }
 
   public StaticMenuCommand(int textId, char numericalShortcut, char characterShortcut, int icon, Commands.StaticExecutable executable)

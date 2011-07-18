@@ -18,10 +18,6 @@
 
 package com.smartnsoft.droid4me.menu;
 
-import com.smartnsoft.droid4me.framework.Commands;
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,6 +26,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.smartnsoft.droid4me.framework.Commands;
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * In order to collect all the custom commands that are available for a business object.
@@ -78,13 +78,26 @@ public class MenuCommand<BusinessObjectClass>
 
   public final char characterShortcut;
 
+  /**
+   * When set to a negative value, no icon is set.
+   */
   public final int icon;
 
   public final Commands.Executable<BusinessObjectClass> executable;
 
+  public MenuCommand(int textId, char numericalShortcut, char characterShortcut, Commands.Executable<BusinessObjectClass> executable)
+  {
+    this(null, textId, numericalShortcut, characterShortcut, -1, executable);
+  }
+
   public MenuCommand(int textId, char numericalShortcut, char characterShortcut, int icon, Commands.Executable<BusinessObjectClass> executable)
   {
     this(null, textId, numericalShortcut, characterShortcut, icon, executable);
+  }
+
+  public MenuCommand(CharSequence text, char numericalShortcut, char characterShortcut, Commands.Executable<BusinessObjectClass> executable)
+  {
+    this(text, -1, numericalShortcut, characterShortcut, -1, executable);
   }
 
   public MenuCommand(CharSequence text, char numericalShortcut, char characterShortcut, int icon, Commands.Executable<BusinessObjectClass> executable)
@@ -92,7 +105,8 @@ public class MenuCommand<BusinessObjectClass>
     this(text, -1, numericalShortcut, characterShortcut, icon, executable);
   }
 
-  public MenuCommand(CharSequence text, int textId, char numericalShortcut, char characterShortcut, int icon, Commands.Executable<BusinessObjectClass> executable)
+  public MenuCommand(CharSequence text, int textId, char numericalShortcut, char characterShortcut, int icon,
+      Commands.Executable<BusinessObjectClass> executable)
   {
     this.text = text;
     this.textId = textId;
@@ -125,8 +139,11 @@ public class MenuCommand<BusinessObjectClass>
       menuEntry = menu.add(0, theMenuId, Menu.NONE, text);
     }
     menuEntry.setShortcut(numericalShortcut, characterShortcut);
-    // menuEntry.setIcon(Action.resizeIcon(context, icon));
-    menuEntry.setIcon(icon);
+    if (icon >= 0)
+    {
+      // menuEntry.setIcon(Action.resizeIcon(context, icon));
+      menuEntry.setIcon(icon);
+    }
     if (log.isDebugEnabled())
     {
       log.debug("Added to the menu the entry with id '" + theMenuId + "'");
