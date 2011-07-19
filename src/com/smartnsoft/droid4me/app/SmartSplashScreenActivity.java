@@ -69,6 +69,8 @@ public abstract class SmartSplashScreenActivity
 
   private boolean stopActivity;
 
+  private boolean pauseActivity;
+
   private boolean hasStopped;
 
   /**
@@ -127,8 +129,11 @@ public abstract class SmartSplashScreenActivity
 
   /**
    * Indicates to the splash screen to stop doing anything, prevents the calling Intent from being executed, and considers the splash-screen as
-   * {@link #markAsUnitialized(Class) uninitialized}. Invoke this method during the {@link #onRetrieveBusinessObjectsCustom() method}. May be called
-   * from any thread.
+   * {@link #markAsUnitialized(Class) uninitialized}. Once this method has been invoked, the splash screen will never be able to resume.
+   * 
+   * <p>
+   * Invoke this method during the {@link #onRetrieveBusinessObjectsCustom() method}. It may be called from any thread.
+   * </p>
    * 
    * <p>
    * This may be extremely useful if you to integrate a licensing mechanism, for instance.
@@ -138,6 +143,37 @@ public abstract class SmartSplashScreenActivity
   {
     this.stopActivity = true;
     markAsUnitialized(getClass());
+  }
+
+  /**
+   * Indicates to the splash screen to pause, and prevents the calling Intent from being executed, and the current {@link Activity} from
+   * {@link Activity#finish() finishing}.
+   * 
+   * <p>
+   * Invoke this method during the {@link #onRetrieveBusinessObjectsCustom() method}. It may be called from any thread.
+   * <p/>
+   * 
+   * @see #resumeActivity()
+   */
+  protected final void pauseActivity()
+  {
+    this.pauseActivity = true;
+  }
+
+  /**
+   * Indicates to the splash screen to resume: the calling Intent will be executed, and the current {@link Activity} will {@link Activity#finish()
+   * finish}.
+   * 
+   * <p>
+   * Invoke this method during the {@link #onRetrieveBusinessObjectsCustom() method}. It may be called from any thread.
+   * </p>
+   * 
+   * @see #pauseActivity()
+   */
+  protected final void resumeActivity()
+  {
+    this.pauseActivity = false;
+    finishActivity();
   }
 
   private boolean canWriteOnExternalStorage()
@@ -153,6 +189,7 @@ public abstract class SmartSplashScreenActivity
     {
       stopActivity = true;
       onNoExternalStorage();
+      return;
     }
     onRetrieveDisplayObjectsCustom();
   }
@@ -181,11 +218,21 @@ public abstract class SmartSplashScreenActivity
   }
 
   /**
-   * Redirects to the initial activity when a redirection is ongoing. The activity finishes anyway.
+   * Redirects to the initial activity when a redirection is ongoing. The activity finishes anyway if has not been {@link #stopActivity stopped} nor
+   * {@link #pauseActivity paused}.
    */
   public final void onFulfillDisplayObjects()
   {
     if (stopActivity == true)
+    {
+      return;
+    }
+    finishActivity();
+  }
+
+  private void finishActivity()
+  {
+    if (pauseActivity == true)
     {
       return;
     }
