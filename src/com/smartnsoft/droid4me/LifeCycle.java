@@ -85,6 +85,10 @@ public interface LifeCycle
    * <p>
    * It is ensured that this method will be invoked from the UI thread!
    * </p>
+   * 
+   * <p>
+   * Never invoke this method, only the framework should, because this is a callback!
+   * </p>
    */
   void onRetrieveDisplayObjects();
 
@@ -93,6 +97,10 @@ public interface LifeCycle
    * 
    * <p>
    * It is NOT ensured that this method will be invoked from the UI thread!
+   * </p>
+   * 
+   * <p>
+   * Never invoke this method, only the framework should, because this is a callback!
    * </p>
    */
   void onRetrieveBusinessObjects()
@@ -106,6 +114,10 @@ public interface LifeCycle
    * It is NOT ensured that this method will be invoked from the UI thread! If the {@link Activity} implements the
    * {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy} interface, this method will be invoked from a high-priority worker thread.
    * </p>
+   * 
+   * <p>
+   * Never invoke this method, only the framework should, because this is a callback!
+   * </p>
    */
   void onBusinessObjectsRetrieved();
 
@@ -116,6 +128,10 @@ public interface LifeCycle
    * <p>
    * It is ensured that this method will be invoked from the UI thread!
    * </p>
+   * 
+   * <p>
+   * Never invoke this method, only the framework should, because this is a callback!
+   * </p>
    */
   void onFulfillDisplayObjects();
 
@@ -125,6 +141,10 @@ public interface LifeCycle
    * 
    * <p>
    * It is ensured that this method will be invoked from the UI thread!
+   * </p>
+   * 
+   * <p>
+   * Never invoke this method, only the framework should, because this is a callback!
    * </p>
    */
   void onSynchronizeDisplayObjects();

@@ -30,6 +30,7 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
+import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.ServiceLifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
@@ -111,6 +112,12 @@ final class AppInternals
     boolean doNotCallOnActivityDestroyed;
 
     boolean firstLifeCycle = true;
+
+    /**
+     * A flag which indicates whether the underlying {@link LifeCycle} is executing a
+     * {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} call.
+     */
+    private boolean refreshingBusinessObjectsAndDisplay;
 
     private boolean beingRedirected;
 
@@ -195,7 +202,8 @@ final class AppInternals
       }
     }
 
-    void registerBroadcastListeners(Activity activity, AppPublics.BroadcastListener[] broadcastListeners)
+    void registerBroadcastListeners(Activity activity,
+        AppPublics.BroadcastListener[] broadcastListeners)
     {
       final int startIndex = enrichBroadCastListeners(broadcastListeners.length);
       for (int index = 0; index < broadcastListeners.length; index++)
@@ -204,7 +212,8 @@ final class AppInternals
       }
     }
 
-    private void registerBroadcastListeners(Activity activity, int index, final AppPublics.BroadcastListener broadcastListener)
+    private void registerBroadcastListeners(Activity activity, int index,
+        final AppPublics.BroadcastListener broadcastListener)
     {
       if (index == 0 && log.isDebugEnabled())
       {
@@ -239,7 +248,8 @@ final class AppInternals
           log.error("An exception occurred while computing the intent filter!", throwable);
         }
       }
-      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter() : intentFilter);
+      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter()
+          : intentFilter);
     }
 
     private int enrichBroadCastListeners(int count)
@@ -338,6 +348,21 @@ final class AppInternals
       }
     }
 
+    void onRefreshingBusinessObjectsAndDisplayStart()
+    {
+      refreshingBusinessObjectsAndDisplay = true;
+    }
+
+    void onRefreshingBusinessObjectsAndDisplayStop()
+    {
+      refreshingBusinessObjectsAndDisplay = false;
+    }
+
+    boolean isRefreshingBusinessObjectsAndDisplay()
+    {
+      return refreshingBusinessObjectsAndDisplay;
+    }
+
     /**
      * Invoked when the provided activity enters the {@link Activity#onStop()} method. We check whether to invoke the {@link ServiceLifeCycle}
      * methods.
@@ -397,7 +422,8 @@ final class AppInternals
       return activity instanceof ServiceLifeCycle.ForServicesAsynchronousPolicy;
     }
 
-    private void internalPrepareServices(Activity activity, ServiceLifeCycle forServices)
+    private void internalPrepareServices(Activity activity,
+        ServiceLifeCycle forServices)
     {
       try
       {
@@ -409,7 +435,8 @@ final class AppInternals
       }
     }
 
-    private void internalDisposeServices(Activity activity, ServiceLifeCycle forServices)
+    private void internalDisposeServices(Activity activity,
+        ServiceLifeCycle forServices)
     {
       try
       {
@@ -421,7 +448,9 @@ final class AppInternals
       }
     }
 
-    private void onInternalServiceException(Activity activity, ServiceLifeCycle forServices, ServiceLifeCycle.ServiceException exception)
+    private void onInternalServiceException(Activity activity,
+        ServiceLifeCycle forServices,
+        ServiceLifeCycle.ServiceException exception)
     {
       if (log.isErrorEnabled())
       {

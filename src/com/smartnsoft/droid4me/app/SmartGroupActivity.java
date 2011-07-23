@@ -107,7 +107,8 @@ public abstract class SmartGroupActivity<AggregateClass>
      * @param reverse
      *          true if the translation should be reversed, false otherwise
      */
-    public Rotate3dAnimation(float fromDegrees, float toDegrees, float centerX, float centerY, float depthZ, boolean reverse)
+    public Rotate3dAnimation(float fromDegrees, float toDegrees, float centerX,
+        float centerY, float depthZ, boolean reverse)
     {
       mFromDegrees = fromDegrees;
       mToDegrees = toDegrees;
@@ -177,8 +178,7 @@ public abstract class SmartGroupActivity<AggregateClass>
                                                                                                                        * &&
                                                                                                                        * (frameLayout.isRootNamespace
                                                                                                                        * ())
-                                                                                                                       */&& (contentView.hasFocus()) && (contentView.findFocus().focusSearch(
-          View.FOCUS_UP) == null))
+                                                                                                                       */&& (contentView.hasFocus()) && (contentView.findFocus().focusSearch(View.FOCUS_UP) == null))
       {
         if (headerView != null)
         {
@@ -585,6 +585,11 @@ public abstract class SmartGroupActivity<AggregateClass>
     refreshBusinessObjectsAndDisplay(retrieveBusinessObjects);
   }
 
+  public boolean isRefreshingBusinessObjectsAndDisplay()
+  {
+    return stateContainer.isRefreshingBusinessObjectsAndDisplay();
+  }
+
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, Runnable)} with parameters <code>true</code> and <code>null<code>.
    * 
@@ -607,6 +612,12 @@ public abstract class SmartGroupActivity<AggregateClass>
 
   public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver)
   {
+    refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, onOver, false);
+  }
+
+  private void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, final boolean businessObjectCountAndSortingUnchanged)
+  {
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
     if (!(this instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
     {
@@ -647,6 +658,9 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
   }
 
+  /**
+   * This method should not trigger any exception!
+   */
   private boolean onRetrieveBusinessObjectsInternal(boolean retrieveBusinessObjects)
   {
     onBeforeRefreshBusinessObjectsAndDisplay();
@@ -658,6 +672,7 @@ public abstract class SmartGroupActivity<AggregateClass>
       }
       catch (Throwable throwable)
       {
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
         onInternalBusinessObjectAvailableException(throwable);
         return false;
       }
@@ -676,7 +691,9 @@ public abstract class SmartGroupActivity<AggregateClass>
       }
       catch (Throwable throwable)
       {
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
         onException(throwable, true);
+        stateContainer.onStopLoading(this);
         return;
       }
       ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
@@ -688,6 +705,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
     catch (Throwable throwable)
     {
+      stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
       onException(throwable, true);
       return;
     }
@@ -701,6 +719,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     {
       onOver.run();
     }
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
   }
 
   @Override
