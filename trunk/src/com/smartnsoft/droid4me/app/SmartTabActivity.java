@@ -264,6 +264,11 @@ public abstract class SmartTabActivity<AggregateClass>
     refreshBusinessObjectsAndDisplay(retrieveBusinessObjects);
   }
 
+  public boolean isRefreshingBusinessObjectsAndDisplay()
+  {
+    return stateContainer.isRefreshingBusinessObjectsAndDisplay();
+  }
+
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, Runnable)} with parameters <code>true</code> and <code>null<code>.
    * 
@@ -286,6 +291,12 @@ public abstract class SmartTabActivity<AggregateClass>
 
   public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver)
   {
+    refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, onOver, false);
+  }
+
+  private void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, final boolean businessObjectCountAndSortingUnchanged)
+  {
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
     if (!(this instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
     {
@@ -326,6 +337,9 @@ public abstract class SmartTabActivity<AggregateClass>
     }
   }
 
+  /**
+   * This method should not trigger any exception!
+   */
   private boolean onRetrieveBusinessObjectsInternal(boolean retrieveBusinessObjects)
   {
     onBeforeRefreshBusinessObjectsAndDisplay();
@@ -337,6 +351,7 @@ public abstract class SmartTabActivity<AggregateClass>
       }
       catch (Throwable throwable)
       {
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
         onInternalBusinessObjectAvailableException(throwable);
         return false;
       }
@@ -355,7 +370,9 @@ public abstract class SmartTabActivity<AggregateClass>
       }
       catch (Throwable throwable)
       {
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
         onException(throwable, true);
+        stateContainer.onStopLoading(this);
         return;
       }
       ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
@@ -367,6 +384,7 @@ public abstract class SmartTabActivity<AggregateClass>
     }
     catch (Throwable throwable)
     {
+      stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
       onException(throwable, true);
       return;
     }
@@ -380,6 +398,7 @@ public abstract class SmartTabActivity<AggregateClass>
     {
       onOver.run();
     }
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
   }
 
   @Override

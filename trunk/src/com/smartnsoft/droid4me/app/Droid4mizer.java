@@ -99,8 +99,14 @@ public final class Droid4mizer<AggregateClass>
   {
   }
 
+  public boolean isRefreshingBusinessObjectsAndDisplay()
+  {
+    return stateContainer.isRefreshingBusinessObjectsAndDisplay();
+  }
+
   public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver)
   {
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
     if (!(activity instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
     {
@@ -475,6 +481,9 @@ public final class Droid4mizer<AggregateClass>
    * The specific methods.
    */
 
+  /**
+   * This method should not trigger any exception!
+   */
   private boolean onRetrieveBusinessObjectsInternal(boolean retrieveBusinessObjects)
   {
     onBeforeRefreshBusinessObjectsAndDisplay();
@@ -486,6 +495,7 @@ public final class Droid4mizer<AggregateClass>
       }
       catch (Throwable throwable)
       {
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
         onInternalBusinessObjectAvailableException(throwable);
         return false;
       }
@@ -509,7 +519,9 @@ public final class Droid4mizer<AggregateClass>
       }
       catch (Throwable throwable)
       {
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
         onException(throwable, true);
+        stateContainer.onStopLoading(activity);
         return;
       }
       ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
@@ -521,6 +533,7 @@ public final class Droid4mizer<AggregateClass>
     }
     catch (Throwable throwable)
     {
+      stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
       onException(throwable, true);
       return;
     }
@@ -534,6 +547,7 @@ public final class Droid4mizer<AggregateClass>
     {
       onOver.run();
     }
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
   }
 
   private void businessObjectRetrievalAndResultHandlers()
