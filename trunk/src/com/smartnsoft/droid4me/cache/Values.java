@@ -131,7 +131,7 @@ public final class Values
      * 
      * @param cachingEvent
      *          the interface that will be used to notify the caller about the loading workflow ; may be <code>null</code>
-     * @return the wrapped business object
+     * @return the wrapped business object that should be attempted to be requested from another place than the cache
      */
     Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)
         throws ExceptionType, ProblemExceptionType;
@@ -480,7 +480,7 @@ public final class Values
 
     public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return (fromCache == true || (info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1)) ? Values.Instructions.Result.Accepted
+      return (fromCache == true || (info.source == Values.Info.Source.URIStreamer || assessments.size() >= 1)) ? Values.Instructions.Result.Accepted
           : Values.Instructions.Result.Rejected;
     }
 
@@ -538,7 +538,7 @@ public final class Values
       }
       else
       {
-        return (info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+        return (info.source == Values.Info.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
             : Values.Instructions.Result.Rejected;
       }
     }
@@ -868,7 +868,7 @@ public final class Values
     /**
      * This implementation does not empty the {@link Values.CacheableValue} values.
      * 
-     *@see Values.Caching#empty()
+     * @see Values.Caching#empty()
      */
     @Override
     public final void empty()
@@ -1078,6 +1078,22 @@ public final class Values
         throws Values.CacheException
     {
       final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromCache, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(
+          new Values.MemoryAndCacheInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>(cacher, parameter, fromMemory, fromCache),
+          cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType getMemoryValue(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromMemory, fromCache, cachingEvent, parameter);
       return infoValue == null ? null : infoValue.value;
     }
 
