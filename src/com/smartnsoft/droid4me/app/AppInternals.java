@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
@@ -202,8 +203,7 @@ final class AppInternals
       }
     }
 
-    void registerBroadcastListeners(Activity activity,
-        AppPublics.BroadcastListener[] broadcastListeners)
+    void registerBroadcastListeners(Activity activity, AppPublics.BroadcastListener[] broadcastListeners)
     {
       final int startIndex = enrichBroadCastListeners(broadcastListeners.length);
       for (int index = 0; index < broadcastListeners.length; index++)
@@ -212,8 +212,7 @@ final class AppInternals
       }
     }
 
-    private void registerBroadcastListeners(Activity activity, int index,
-        final AppPublics.BroadcastListener broadcastListener)
+    private void registerBroadcastListeners(Activity activity, int index, final AppPublics.BroadcastListener broadcastListener)
     {
       if (index == 0 && log.isDebugEnabled())
       {
@@ -248,8 +247,7 @@ final class AppInternals
           log.error("An exception occurred while computing the intent filter!", throwable);
         }
       }
-      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter()
-          : intentFilter);
+      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter() : intentFilter);
     }
 
     private int enrichBroadCastListeners(int count)
@@ -422,8 +420,7 @@ final class AppInternals
       return activity instanceof ServiceLifeCycle.ForServicesAsynchronousPolicy;
     }
 
-    private void internalPrepareServices(Activity activity,
-        ServiceLifeCycle forServices)
+    private void internalPrepareServices(Activity activity, ServiceLifeCycle forServices)
     {
       try
       {
@@ -435,8 +432,7 @@ final class AppInternals
       }
     }
 
-    private void internalDisposeServices(Activity activity,
-        ServiceLifeCycle forServices)
+    private void internalDisposeServices(Activity activity, ServiceLifeCycle forServices)
     {
       try
       {
@@ -448,9 +444,7 @@ final class AppInternals
       }
     }
 
-    private void onInternalServiceException(Activity activity,
-        ServiceLifeCycle forServices,
-        ServiceLifeCycle.ServiceException exception)
+    private void onInternalServiceException(Activity activity, ServiceLifeCycle forServices, ServiceLifeCycle.ServiceException exception)
     {
       if (log.isErrorEnabled())
       {
