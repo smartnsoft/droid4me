@@ -137,8 +137,7 @@ public final class AppPublics
     static interface ProblemHandler
     {
 
-      void onProblem(LifeCycle aggregate, Throwable throwable,
-          boolean fromUIThread);
+      void onProblem(LifeCycle aggregate, Throwable throwable, boolean fromUIThread);
 
     }
 
@@ -204,8 +203,7 @@ public final class AppPublics
 
     }
 
-    public void refreshBusinessObjectsAndDisplay(
-        boolean retrieveBusinessObjects, Runnable onOver)
+    public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver)
     {
       // TODO Auto-generated method stub
 
@@ -315,11 +313,10 @@ public final class AppPublics
      * @param addCategory
      *          whether the broadcast intent should contain the target category
      */
-    public static void broadcastLoading(Context context,
-        Class<? extends Activity> targetActivityClass, boolean isLoading,
-        boolean addCategory)
+    public static void broadcastLoading(Context context, Class<? extends Activity> targetActivityClass, boolean isLoading, boolean addCategory)
     {
-      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_LOADING, isLoading).putExtra(AppPublics.ACTION_ACTIVITY, targetActivityClass.getName());
+      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_LOADING, isLoading).putExtra(AppPublics.ACTION_ACTIVITY,
+          targetActivityClass.getName());
       if (addCategory == true)
       {
         intent.addCategory(targetActivityClass.getName());
@@ -336,8 +333,7 @@ public final class AppPublics
      * @param restrictToActivity
      *          indicates whether the listener should restrict to the {@link Intent} sent by the provided {@link Activity}
      */
-    public LoadingBroadcastListener(Activity activity,
-        boolean restrictToActivity)
+    public LoadingBroadcastListener(Activity activity, boolean restrictToActivity)
     {
       this.activity = activity;
       this.restrictToActivity = restrictToActivity;
@@ -361,12 +357,12 @@ public final class AppPublics
 
     public void onReceive(Intent intent)
     {
-      if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.ACTION_ACTIVITY) == true && intent.getStringExtra(AppPublics.ACTION_ACTIVITY).equals(activity.getClass().getName()) == true)
+      if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.ACTION_ACTIVITY) == true && intent.getStringExtra(
+          AppPublics.ACTION_ACTIVITY).equals(activity.getClass().getName()) == true)
       {
         final int previousCounter = counter;
         // We only take into account the loading event coming from the activity itself
-        counter += (intent.getBooleanExtra(AppPublics.UI_LOAD_ACTION_LOADING, true) == true ? 1
-            : -1);
+        counter += (intent.getBooleanExtra(AppPublics.UI_LOAD_ACTION_LOADING, true) == true ? 1 : -1);
 
         // We only trigger an event provided the cumulative loading status has changed
         if (previousCounter == 0 && counter >= 1)
@@ -420,8 +416,7 @@ public final class AppPublics
        * @param selectedObjects
        *          the business objects that are currently selected
        */
-      void onSelectionChanged(boolean previouslyAtLeastOneSelected,
-          boolean atLeastOneSelected, List<BusinessObjectClass> selectedObjects);
+      void onSelectionChanged(boolean previouslyAtLeastOneSelected, boolean atLeastOneSelected, List<BusinessObjectClass> selectedObjects);
     }
 
     /**
@@ -479,9 +474,7 @@ public final class AppPublics
      * @return <code>true</code> if the intent has been handled ; <code>false</code> otherwise
      */
     @SuppressWarnings("unchecked")
-    public boolean onSelection(
-        Intent intent,
-        @SuppressWarnings("rawtypes") MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
+    public boolean onSelection(Intent intent, MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
     {
       if (intent.getAction().equals(AppPublics.MultiSelectionHandler.ACTION_SELECTION) == false)
       {
@@ -503,8 +496,7 @@ public final class AppPublics
      * @param selected
      *          whether the business object should be considered as selected
      */
-    public void setSelection(BusinessObjectClass businessObject,
-        boolean selected)
+    public void setSelection(BusinessObjectClass businessObject, boolean selected)
     {
       selectedCount += (selected == true ? 1 : -1);
       if (businessObject != null)
@@ -614,8 +606,7 @@ public final class AppPublics
      * @param message
      *          an optional message that will be passed to the {@link ProgressHandler} when the command starts
      */
-    public ProgressGuardedCommand(Activity activity,
-        ProgressHandler progressHandler, String message)
+    public ProgressGuardedCommand(Activity activity, ProgressHandler progressHandler, String message)
     {
       super(activity);
       this.progressHandler = progressHandler;
@@ -657,8 +648,7 @@ public final class AppPublics
       extends ThreadPoolExecutor
   {
 
-    private SmartThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
-        long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue,
+    private SmartThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue,
         ThreadFactory threadFactory)
     {
       super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);

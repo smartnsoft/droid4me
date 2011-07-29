@@ -20,12 +20,12 @@ package com.smartnsoft.droid4me.app;
 
 import java.util.List;
 
-import com.smartnsoft.droid4me.framework.DetailsProvider;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-
 import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.smartnsoft.droid4me.framework.DetailsProvider;
+import com.smartnsoft.droid4me.menu.MenuCommand;
 
 /**
  * Uses wrapped business objects for simplifying the handling of heterogeneous business objects.
@@ -40,21 +40,13 @@ public abstract class AbstractWrappedSmartListActivity<AggregateClass, ListViewC
   @Override
   protected final Intent computeIntent(View view, DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, DetailsProvider.ObjectEvent objectEvent)
   {
-    if (businessViewWrapper != null)
-    {
-      return businessViewWrapper.computeIntent(this, view, objectEvent);
-    }
-    return null;
+    return businessViewWrapper.computeIntent(this, view, objectEvent);
   }
 
   @Override
   protected final boolean onObjectEvent(View view, DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, DetailsProvider.ObjectEvent objectEvent)
   {
-    if (businessViewWrapper != null)
-    {
-      return businessViewWrapper.onObjectEvent(this, view, objectEvent);
-    }
-    return false;
+    return businessViewWrapper.onObjectEvent(this, view, objectEvent);
   }
 
   @Override

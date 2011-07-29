@@ -215,7 +215,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
           {
             smartListView.setFilterText(constraint.toString());
             final FilterResults results = new FilterResults();
-            final List<? extends BusinessObjectClass> resultFilteredObjects = smartListView.getForListProvider().getFilteredObjects(smartListView.getObjects());
+            final List<? extends BusinessObjectClass> resultFilteredObjects = smartListView.getForListProvider().getFilteredObjects(smartListView.objects);
             results.values = resultFilteredObjects;
             results.count = resultFilteredObjects.size();
             return results;
@@ -477,10 +477,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     return null;
   }
 
-  protected void customizeFooter(LinearLayout middleLayout)
-  {
-  }
-
   public final void filterHasChanged(boolean recomputeFilteredObjects)
   {
     if (recomputeFilteredObjects == true)
@@ -519,11 +515,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     this.onEventObjectListener = onEventObjectListener;
   }
 
-  private List<? extends BusinessObjectClass> getObjects()
-  {
-    return objects;
-  }
-
   public List<? extends BusinessObjectClass> getFilteredObjects()
   {
     return filteredObjects;
@@ -544,7 +535,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   protected final void recomputeFilterObjectsList()
   {
-    filteredObjects = getForListProvider().getFilteredObjects(getObjects());
+    filteredObjects = getForListProvider().getFilteredObjects(objects);
   }
 
 }

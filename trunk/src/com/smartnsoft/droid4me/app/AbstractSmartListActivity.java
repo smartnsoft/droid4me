@@ -215,12 +215,6 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
       {
         return AbstractSmartListActivity.this.getContextualMenuCommands(businessObject);
       }
-
-      @Override
-      protected void customizeFooter(LinearLayout middleLayout)
-      {
-        AbstractSmartListActivity.this.customizeFooter(middleLayout);
-      }
     };
   }
 
@@ -261,10 +255,6 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   protected List<MenuCommand<BusinessObjectClass>> getContextualMenuCommands(BusinessObjectClass businessObject)
   {
     return null;
-  }
-
-  protected void customizeFooter(LinearLayout middleLayout)
-  {
   }
 
   public void onFulfillDisplayObjects()
