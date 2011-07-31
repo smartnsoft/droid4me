@@ -430,7 +430,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   {
   }
 
-  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver)
+  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
   {
   }
 

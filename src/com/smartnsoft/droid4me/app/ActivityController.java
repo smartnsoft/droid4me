@@ -344,7 +344,7 @@ public final class ActivityController
               {
                 public void onClick(DialogInterface dialog, int which)
                 {
-                  ((LifeCycle) activity).refreshBusinessObjectsAndDisplay(true, null);
+                  ((LifeCycle) activity).refreshBusinessObjectsAndDisplay(true, null, false);
                   dialog.dismiss();
                 }
               }).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener()

@@ -289,7 +289,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   }
 
   @Override
-  void refreshBusinessObjectsAndDisplayInternal(boolean retrieveBusinessObjects, final Runnable onOver, final boolean businessObjectCountAndSortingUnchanged)
+  void refreshBusinessObjectsAndDisplayInternal(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately, final boolean businessObjectCountAndSortingUnchanged)
   {
     super.refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, new Runnable()
     {
@@ -301,7 +301,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
           onOver.run();
         }
       }
-    }, businessObjectCountAndSortingUnchanged);
+    }, immediately, businessObjectCountAndSortingUnchanged);
   }
 
   /**
@@ -314,7 +314,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
    */
   public final void refreshBusinessObjectsAndDisplayAndNotifyBusinessObjectsChanged(final boolean businessObjectCountAndSortingUnchanged)
   {
-    refreshBusinessObjectsAndDisplayInternal(true, null, businessObjectCountAndSortingUnchanged);
+    refreshBusinessObjectsAndDisplayInternal(true, null, true, businessObjectCountAndSortingUnchanged);
   }
 
   public final List<? extends BusinessObjectClass> getFilteredObjects(List<? extends BusinessObjectClass> fullObjectsList)

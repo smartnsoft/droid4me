@@ -104,8 +104,12 @@ public final class Droid4mizer<AggregateClass>
     return stateContainer.isRefreshingBusinessObjectsAndDisplay();
   }
 
-  public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver)
+  public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
+    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
+    {
+      return;
+    }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
     if (!(activity instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
@@ -500,7 +504,7 @@ public final class Droid4mizer<AggregateClass>
         return false;
       }
     }
-    stateContainer.businessObjectsRetrieved = true;
+    stateContainer.setBusinessObjectsRetrieved();
     return true;
   }
 
@@ -552,7 +556,7 @@ public final class Droid4mizer<AggregateClass>
 
   private void businessObjectRetrievalAndResultHandlers()
   {
-    smartableActivity.refreshBusinessObjectsAndDisplay(!stateContainer.businessObjectsRetrieved, null);
+    smartableActivity.refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), false);
     if (stateContainer.actionResultsRetrieved == false)
     {
       onRegisterResultHandlers(stateContainer.compositeActivityResultHandler);

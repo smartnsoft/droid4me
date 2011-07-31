@@ -119,6 +119,7 @@ public final class AppPublics
      * 
      * <p>
      * It is very handy when it comes to disable certain things, like menu entries, while an {@link Activity} is loading.
+     * </p>
      * 
      * @return <code>true</code> if and only if the {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} is being executed.
      */
@@ -203,7 +204,7 @@ public final class AppPublics
 
     }
 
-    public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver)
+    public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
     {
       // TODO Auto-generated method stub
 
