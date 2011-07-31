@@ -92,6 +92,21 @@ final class AppInternals
   final static class StateContainer<AggregateClass>
   {
 
+    private final static class RefreshBusinessObjectsAndDisplay
+    {
+
+      private final boolean retrieveBusinessObjects;
+
+      private final Runnable onOver;
+
+      private RefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver)
+      {
+        this.retrieveBusinessObjects = retrieveBusinessObjects;
+        this.onOver = onOver;
+      }
+
+    }
+
     private static final Logger log = LoggerFactory.getInstance(StateContainer.class);
 
     boolean resumedForTheFirstTime = true;
@@ -108,7 +123,7 @@ final class AppInternals
 
     boolean actionResultsRetrieved;
 
-    boolean businessObjectsRetrieved;
+    private boolean businessObjectsRetrieved;
 
     boolean doNotCallOnActivityDestroyed;
 
@@ -127,6 +142,10 @@ final class AppInternals
     private int onSynchronizeDisplayObjectsCount = -1;
 
     private boolean stopHandling;
+
+    private boolean isVisible;
+
+    private AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay refreshBusinessObjectsAndDisplayNextTime;
 
     boolean isFirstLifeCycle()
     {
@@ -326,6 +345,7 @@ final class AppInternals
      */
     void onStart(final Activity activity)
     {
+      isVisible = true;
       if (activity instanceof ServiceLifeCycle)
       {
         final ServiceLifeCycle forServices = (ServiceLifeCycle) activity;
@@ -344,6 +364,21 @@ final class AppInternals
           });
         }
       }
+    }
+
+    void setBusinessObjectsRetrieved()
+    {
+      businessObjectsRetrieved = true;
+    }
+
+    boolean isRetrieveBusinessObjects()
+    {
+      return businessObjectsRetrieved == false || (refreshBusinessObjectsAndDisplayNextTime != null && refreshBusinessObjectsAndDisplayNextTime.retrieveBusinessObjects == true);
+    }
+
+    Runnable getRetrieveBusinessObjectsOver()
+    {
+      return refreshBusinessObjectsAndDisplayNextTime == null ? null : refreshBusinessObjectsAndDisplayNextTime.onOver;
     }
 
     void onRefreshingBusinessObjectsAndDisplayStart()
@@ -385,6 +420,7 @@ final class AppInternals
           });
         }
       }
+      isVisible = false;
     }
 
     void onSynchronizeDisplayObjects()
@@ -413,6 +449,17 @@ final class AppInternals
     boolean shouldKeepOn()
     {
       return stopHandling == false && beingRedirected == false;
+    }
+
+    boolean shouldDelayRefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
+    {
+      if (isVisible == false && immediately == false)
+      {
+        refreshBusinessObjectsAndDisplayNextTime = new AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver);
+        return true;
+      }
+      refreshBusinessObjectsAndDisplayNextTime = null;
+      return false;
     }
 
     private boolean areServicesAsynchronous(Activity activity)

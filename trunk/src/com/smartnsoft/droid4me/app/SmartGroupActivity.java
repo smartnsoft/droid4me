@@ -107,8 +107,7 @@ public abstract class SmartGroupActivity<AggregateClass>
      * @param reverse
      *          true if the translation should be reversed, false otherwise
      */
-    public Rotate3dAnimation(float fromDegrees, float toDegrees, float centerX,
-        float centerY, float depthZ, boolean reverse)
+    public Rotate3dAnimation(float fromDegrees, float toDegrees, float centerX, float centerY, float depthZ, boolean reverse)
     {
       mFromDegrees = fromDegrees;
       mToDegrees = toDegrees;
@@ -178,7 +177,8 @@ public abstract class SmartGroupActivity<AggregateClass>
                                                                                                                        * &&
                                                                                                                        * (frameLayout.isRootNamespace
                                                                                                                        * ())
-                                                                                                                       */&& (contentView.hasFocus()) && (contentView.findFocus().focusSearch(View.FOCUS_UP) == null))
+                                                                                                                       */&& (contentView.hasFocus()) && (contentView.findFocus().focusSearch(
+          View.FOCUS_UP) == null))
       {
         if (headerView != null)
         {
@@ -572,7 +572,7 @@ public abstract class SmartGroupActivity<AggregateClass>
 
   private void businessObjectRetrievalAndResultHandlers()
   {
-    refreshBusinessObjectsAndDisplay(!stateContainer.businessObjectsRetrieved);
+    refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), false);
     if (stateContainer.actionResultsRetrieved == false)
     {
       onRegisterResultHandlers(stateContainer.compositeActivityResultHandler);
@@ -591,32 +591,37 @@ public abstract class SmartGroupActivity<AggregateClass>
   }
 
   /**
-   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, Runnable)} with parameters <code>true</code> and <code>null<code>.
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()
   {
-    refreshBusinessObjectsAndDisplay(true, null);
+    refreshBusinessObjectsAndDisplay(true, null, false);
   }
 
   /**
-   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, Runnable)} with second parameter <code>null<code>.
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
   {
-    refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null);
+    refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null, true);
   }
 
-  public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver)
+  public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
-    refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, onOver, false);
+    refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, onOver, immediately, false);
   }
 
-  private void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, final boolean businessObjectCountAndSortingUnchanged)
+  void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately,
+      final boolean businessObjectCountAndSortingUnchanged)
   {
+    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
+    {
+      return;
+    }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
     if (!(this instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
@@ -677,7 +682,7 @@ public abstract class SmartGroupActivity<AggregateClass>
         return false;
       }
     }
-    stateContainer.businessObjectsRetrieved = true;
+    stateContainer.setBusinessObjectsRetrieved();
     return true;
   }
 
