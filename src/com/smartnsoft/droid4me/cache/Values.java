@@ -82,12 +82,12 @@ public final class Values
     /**
      * Is invoked when the wrapped business object is bound to be retrieved from an {@link IOStreamer}, i.e. from the persistence layer.
      */
-    void onFromIOStreamer();
+    void onIOStreamer(Cacher.Status status);
 
     /**
      * Is invoked when the wrapped business object is bound to be retrieved from an {@link UriStreamParser}, i.e. not locally.
      */
-    void onFromUriStreamParser();
+    void onUriStreamParser(Cacher.Status status);
 
   }
 
@@ -419,19 +419,19 @@ public final class Values
             return assessFromCacher(false, lastUpdate);
           }
 
-          public void onFetchingFromIOStreamer()
+          public void onIOStreamer(Cacher.Status status)
           {
             if (cachingEvent != null)
             {
-              cachingEvent.onFromIOStreamer();
+              cachingEvent.onIOStreamer(status);
             }
           }
 
-          public void onFetchingFromUriStreamParser()
+          public void onUriStreamParser(Cacher.Status status)
           {
             if (cachingEvent != null)
             {
-              cachingEvent.onFromUriStreamParser();
+              cachingEvent.onUriStreamParser(status);
             }
           }
         }, parameter);
@@ -454,19 +454,19 @@ public final class Values
               return true;
             }
 
-            public void onFetchingFromIOStreamer()
+            public void onIOStreamer(Cacher.Status status)
             {
               if (cachingEvent != null)
               {
-                cachingEvent.onFromIOStreamer();
+                cachingEvent.onIOStreamer(status);
               }
             }
 
-            public void onFetchingFromUriStreamParser()
+            public void onUriStreamParser(Cacher.Status status)
             {
               if (cachingEvent != null)
               {
-                cachingEvent.onFromUriStreamParser();
+                cachingEvent.onUriStreamParser(status);
               }
             }
           }, parameter);
