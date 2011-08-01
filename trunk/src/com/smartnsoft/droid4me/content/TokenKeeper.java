@@ -175,12 +175,40 @@ public class TokenKeeper<Token extends Enum<Token>>
   }
 
   /**
+   * Invokes successively the {@link #rememberToken(Enum)} method on each provided token.
+   * 
+   * @param tokens
+   *          the list of tokens to set and remember
+   */
+  public void rememberTokens(Token... tokens)
+  {
+    for (Token token : tokens)
+    {
+      rememberToken(token);
+    }
+  }
+
+  /**
    * Invokes consequently the {@link #rememberToken(Enum)} and {@link #broadcast(Enum)} methods.
    */
   public void rememberTokenAndBroadcast(Token token)
   {
     rememberToken(token);
     broadcast(token);
+  }
+
+  /**
+   * Invokes successively the {@link #rememberTokenAndBroadcast(Enum)} method for each provided token.
+   * 
+   * @param tokens
+   *          the list of tokens to handle
+   */
+  public void rememberTokensAndBroadcast(Token... tokens)
+  {
+    for (Token token : tokens)
+    {
+      rememberTokenAndBroadcast(token);
+    }
   }
 
   /**
@@ -198,6 +226,20 @@ public class TokenKeeper<Token extends Enum<Token>>
   {
     final Intent intent = new Intent(computeIntentAction(token));
     context.sendBroadcast(intent);
+  }
+
+  /**
+   * Invokes successively the {@link #broadcast(Enum)} method for each provided token.
+   * 
+   * @param tokens
+   *          the list of tokens to handle
+   */
+  public void broadcast(Token... tokens)
+  {
+    for (Token token : tokens)
+    {
+      broadcast(token);
+    }
   }
 
   /**
