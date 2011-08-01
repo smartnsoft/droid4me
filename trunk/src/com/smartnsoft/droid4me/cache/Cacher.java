@@ -23,6 +23,7 @@ import java.util.Date;
 
 import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.bo.Business.IOStreamer;
+import com.smartnsoft.droid4me.bo.Business.UriInputStreamer;
 import com.smartnsoft.droid4me.bo.Business.UriStreamParser;
 import com.smartnsoft.droid4me.bo.Business.UriStreamParserSerializer;
 import com.smartnsoft.droid4me.log.Logger;
@@ -42,13 +43,24 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
 {
 
   /**
+   * Defines some common statuses.
+   * 
+   * @since 2011.07.31
+   */
+  public static enum Status
+  {
+    Attempt, Success
+    /* , Failure */
+  }
+
+  /**
    * Indicates whether the current cached data should be taken from the cache.
    */
   public static interface Instructions
   {
 
     /**
-     * Is invoked to determine whether the persistence timestamp field should be requested.
+     * Is invoked to determine whether the persistence timestamp field should be requested, on the {@link IOStreamer} layer.
      * 
      * @return <code>true</code> if and only if the timestamp of the underlying business object should be requested on the persistence layer
      */
@@ -65,14 +77,22 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     boolean takeFromCache(Date timestamp);
 
     /**
-     * Invoked every time the underlying business object is bound to be fetched from the {@link IOStreamer}.
+     * Invoked every time the underlying business object is bound to be fetched from the {@link IOStreamer}, or when it has actually been retrieved.
+     * from it.
+     * 
+     * @param status
+     *          indicates the status: {@link Cacher.Status#Attempt} when first attempting, {@link Cacher.Status#Success} when successfully retrieved
      */
-    void onFetchingFromIOStreamer();
+    void onIOStreamer(Cacher.Status status);
 
     /**
-     * Invoked every time the underlying business object is bound to be fetched from the {@link UriStreamParser}.
+     * Invoked every time the underlying business object is bound to be fetched from the {@link UriStreamParser}, or when it has actually been
+     * retrieved.
+     * 
+     * @param status
+     *          indicates the status: {@link Cacher.Status#Attempt} when first attempting, {@link Cacher.Status#Success} when successfully retrieved
      */
-    void onFetchingFromUriStreamParser();
+    void onUriStreamParser(Cacher.Status status);
 
   }
 
@@ -111,6 +131,25 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     return uriStreamParser.computeUri(parameter);
   }
 
+  /**
+   * Retrieves the business object corresponding to the provided parameter, by specifying the routing instructions.
+   * 
+   * @param instructions
+   *          enables to control the source where the business object should be retrieved: either from a {@link UriInputStreamer} or from an
+   *          {@link IOStreamer}.
+   * @param parameter
+   *          the URI corresponding to the business object
+   * @return a wrapper around the extracted business object, along with a retrieval timestamp and a {@link Values.Info.Source origin}.
+   * @throws InputExceptionType
+   *           if a problem occurred while attempting to extract the business object raw data {@link Business.InputAtom} from the
+   *           {@link UriInputStreamer}, via the {@link UriInputStreamer#getInputStream(Object)} method
+   * @throws StreamerExceptionType
+   *           if a problem occurred while attempting to extract the business object raw data {@link Business.InputAtom} from the {@link IOStreamer},
+   *           via the {@link IOStreamer#readInputStream(Object)} method
+   * @throws ParseExceptionType
+   *           if a problem occurred while parsing the business object from its {@link Business.InputAtom} raw data from the {@link UriStreamParser},
+   *           via the {@link UriStreamParser#parse} method
+   */
   public final Values.Info<BusinessObjectType> getValue(Cacher.Instructions instructions, ParameterType parameter)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
@@ -130,16 +169,24 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     {
       try
       {
-        // We notify the instructions that the business object is bound to be read from the persistence layer
-        instructions.onFetchingFromIOStreamer();
+        // We notify the instructions that the business object is bound to be read from the IO streamer
+        if (instructions != null)
+        {
+          instructions.onIOStreamer(Cacher.Status.Attempt);
+        }
         final Values.Info<BusinessObjectType> cachedValue = getCachedValue(parameter);
         if (cachedValue != null)
         {
+          // We notify the instructions that the business object has been successfully extract from the IO streamer
+          if (instructions != null)
+          {
+            instructions.onIOStreamer(Cacher.Status.Success);
+          }
           return cachedValue;
         }
         if (log.isDebugEnabled())
         {
-          log.debug("The data corresponding to the URI '" + uri + "' was eventually not present on the cache: a new request will be attempted again!");
+          log.debug("The data corresponding to the URI '" + uri + "' was eventually not present in the cache: a new request will be attempted again!");
         }
       }
       catch (Exception exception)
@@ -158,9 +205,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         log.debug("The data corresponding to the URI '" + uri + "' in the cache has not been accepted: attempting to retrieve it from the IO streamer");
       }
     }
-    // We notify the instructions that the business object is bound to be read not locally
-    instructions.onFetchingFromUriStreamParser();
-    return fetchValueFromUriStreamParser(parameter, uri);
+    return fetchValueFromUriStreamParser(instructions, parameter, uri);
   }
 
   /**
@@ -172,9 +217,9 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     final UriType uri = uriStreamParser.computeUri(parameter);
     try
     {
-      return fetchValueFromUriStreamParser(parameter, uri);
+      return fetchValueFromUriStreamParser(null, parameter, uri);
     }
-    // This is for the ' InputExceptionType', 'StreamerExceptionType', 'ParseExceptionType' exceptions
+    // This is for the 'InputExceptionType', 'StreamerExceptionType', 'ParseExceptionType' exceptions
     catch (Exception exception)
     {
       // The data cannot be taken from the UriStreamParser: we get it from the cache
@@ -197,21 +242,27 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
   public final Values.Info<BusinessObjectType> fetchValueFromUriStreamParser(ParameterType parameter)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
-    return fetchValueFromUriStreamParser(parameter, uriStreamParser.computeUri(parameter));
+    return fetchValueFromUriStreamParser(null, parameter, uriStreamParser.computeUri(parameter));
   }
 
-  private Values.Info<BusinessObjectType> fetchValueFromUriStreamParser(ParameterType parameter, final UriType uri)
+  private Values.Info<BusinessObjectType> fetchValueFromUriStreamParser(Cacher.Instructions instructions, ParameterType parameter, final UriType uri)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
-    final Values.Info<BusinessObjectType> info = retrieveRemoteBusinessObject(parameter, uri);
+    final Values.Info<BusinessObjectType> info = retrieveRemoteBusinessObject(instructions, parameter, uri);
     onNewBusinessObject(uri, info);
     return info;
   }
 
   @SuppressWarnings("unchecked")
-  private Values.Info<BusinessObjectType> retrieveRemoteBusinessObject(ParameterType parameter, UriType uri)
+  private Values.Info<BusinessObjectType> retrieveRemoteBusinessObject(Cacher.Instructions instructions, ParameterType parameter, UriType uri)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
+    // We notify the instructions that the business object is bound to be read from the URI streamer
+    if (instructions != null)
+    {
+      instructions.onUriStreamParser(Cacher.Status.Attempt);
+    }
+
     final Business.InputAtom atom = uriInputStreamer.getInputStream(uri);
     if (atom == null && uriInputStreamer instanceof Business.NullableUriInputStreamer)
     {
@@ -235,6 +286,13 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     }
     final InputStream inputStream = onNewInputStream(parameter, uri, atom);
     final BusinessObjectType businessObject = uriStreamParser.parse(parameter, inputStream);
+
+    // We notify the instructions that the business object has been read from the URI streamer
+    if (instructions != null)
+    {
+      instructions.onUriStreamParser(Cacher.Status.Success);
+    }
+
     return new Values.Info<BusinessObjectType>(businessObject, atom.timestamp, Values.Info.Source.URIStreamer);
   }
 
