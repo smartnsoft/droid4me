@@ -556,6 +556,7 @@ public abstract class SmartGroupActivity<AggregateClass>
       return;
     }
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onResume);
+    stateContainer.onResume(this);
     businessObjectRetrievalAndResultHandlers();
   }
 
@@ -779,6 +780,7 @@ public abstract class SmartGroupActivity<AggregateClass>
       else
       {
         ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onPause);
+        stateContainer.onPause(this);
       }
     }
     finally

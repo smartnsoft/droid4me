@@ -235,6 +235,7 @@ public abstract class SmartTabActivity<AggregateClass>
       return;
     }
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onResume);
+    stateContainer.onResume(this);
     businessObjectRetrievalAndResultHandlers();
   }
 
@@ -458,6 +459,7 @@ public abstract class SmartTabActivity<AggregateClass>
       else
       {
         ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onPause);
+        stateContainer.onPause(this);
       }
     }
     finally

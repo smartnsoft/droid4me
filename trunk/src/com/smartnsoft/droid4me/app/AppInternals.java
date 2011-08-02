@@ -99,7 +99,8 @@ final class AppInternals
 
       private final Runnable onOver;
 
-      private RefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver)
+      private RefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects,
+          Runnable onOver)
       {
         this.retrieveBusinessObjects = retrieveBusinessObjects;
         this.onOver = onOver;
@@ -143,7 +144,7 @@ final class AppInternals
 
     private boolean stopHandling;
 
-    private boolean isVisible;
+    private boolean isInteracting;
 
     private AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay refreshBusinessObjectsAndDisplayNextTime;
 
@@ -222,7 +223,8 @@ final class AppInternals
       }
     }
 
-    void registerBroadcastListeners(Activity activity, AppPublics.BroadcastListener[] broadcastListeners)
+    void registerBroadcastListeners(Activity activity,
+        AppPublics.BroadcastListener[] broadcastListeners)
     {
       final int startIndex = enrichBroadCastListeners(broadcastListeners.length);
       for (int index = 0; index < broadcastListeners.length; index++)
@@ -231,7 +233,8 @@ final class AppInternals
       }
     }
 
-    private void registerBroadcastListeners(Activity activity, int index, final AppPublics.BroadcastListener broadcastListener)
+    private void registerBroadcastListeners(Activity activity, int index,
+        final AppPublics.BroadcastListener broadcastListener)
     {
       if (index == 0 && log.isDebugEnabled())
       {
@@ -266,7 +269,8 @@ final class AppInternals
           log.error("An exception occurred while computing the intent filter!", throwable);
         }
       }
-      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter() : intentFilter);
+      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter()
+          : intentFilter);
     }
 
     private int enrichBroadCastListeners(int count)
@@ -345,7 +349,6 @@ final class AppInternals
      */
     void onStart(final Activity activity)
     {
-      isVisible = true;
       if (activity instanceof ServiceLifeCycle)
       {
         final ServiceLifeCycle forServices = (ServiceLifeCycle) activity;
@@ -366,6 +369,14 @@ final class AppInternals
       }
     }
 
+    /**
+     * Invoked when the provided activity enters the {@link Activity#onResume()} method.
+     */
+    void onResume(Activity activity)
+    {
+      isInteracting = true;
+    }
+
     void setBusinessObjectsRetrieved()
     {
       businessObjectsRetrieved = true;
@@ -378,7 +389,8 @@ final class AppInternals
 
     Runnable getRetrieveBusinessObjectsOver()
     {
-      return refreshBusinessObjectsAndDisplayNextTime == null ? null : refreshBusinessObjectsAndDisplayNextTime.onOver;
+      return refreshBusinessObjectsAndDisplayNextTime == null ? null
+          : refreshBusinessObjectsAndDisplayNextTime.onOver;
     }
 
     void onRefreshingBusinessObjectsAndDisplayStart()
@@ -394,6 +406,14 @@ final class AppInternals
     boolean isRefreshingBusinessObjectsAndDisplay()
     {
       return refreshingBusinessObjectsAndDisplay;
+    }
+
+    /**
+     * Invoked when the provided activity enters the {@link Activity#onPause()} method.
+     */
+    void onPause(Activity activity)
+    {
+      isInteracting = false;
     }
 
     /**
@@ -420,7 +440,6 @@ final class AppInternals
           });
         }
       }
-      isVisible = false;
     }
 
     void onSynchronizeDisplayObjects()
@@ -451,11 +470,16 @@ final class AppInternals
       return stopHandling == false && beingRedirected == false;
     }
 
-    boolean shouldDelayRefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
+    boolean shouldDelayRefreshBusinessObjectsAndDisplay(
+        boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
     {
-      if (isVisible == false && immediately == false)
+      if (isInteracting == false && immediately == false)
       {
         refreshBusinessObjectsAndDisplayNextTime = new AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver);
+        if (log.isDebugEnabled())
+        {
+          log.debug("The refresh of the business objects and display is delayed");
+        }
         return true;
       }
       refreshBusinessObjectsAndDisplayNextTime = null;
@@ -467,7 +491,8 @@ final class AppInternals
       return activity instanceof ServiceLifeCycle.ForServicesAsynchronousPolicy;
     }
 
-    private void internalPrepareServices(Activity activity, ServiceLifeCycle forServices)
+    private void internalPrepareServices(Activity activity,
+        ServiceLifeCycle forServices)
     {
       try
       {
@@ -479,7 +504,8 @@ final class AppInternals
       }
     }
 
-    private void internalDisposeServices(Activity activity, ServiceLifeCycle forServices)
+    private void internalDisposeServices(Activity activity,
+        ServiceLifeCycle forServices)
     {
       try
       {
@@ -491,7 +517,9 @@ final class AppInternals
       }
     }
 
-    private void onInternalServiceException(Activity activity, ServiceLifeCycle forServices, ServiceLifeCycle.ServiceException exception)
+    private void onInternalServiceException(Activity activity,
+        ServiceLifeCycle forServices,
+        ServiceLifeCycle.ServiceException exception)
     {
       if (log.isErrorEnabled())
       {
