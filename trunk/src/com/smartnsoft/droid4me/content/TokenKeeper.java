@@ -63,6 +63,29 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public class TokenKeeper<Token extends Enum<Token>>
 {
 
+  /**
+   * An interface, which enables to "multiply" a token.
+   */
+  public static interface TokenMultiplier<Token>
+  {
+
+    /**
+     * Is invoked only by the {@link TokenKeeper#rememberToken(Enum)}, in order to determine the tokens that should be remembered along with the
+     * provided one.
+     * 
+     * <p>
+     * This method will not be run recursively on each returned token.
+     * </p>
+     * 
+     * @param token
+     *          the token that should be analyzed
+     * @return the tokens related to the provided token. If <code>null</code>, it will be considered that no sub-token is available for the given
+     *         token. The array should not contain the provided token (for better performances)
+     */
+    Token[] getSubTokens(Token token);
+
+  }
+
   protected final static Logger log = LoggerFactory.getInstance(TokenKeeper.class);
 
   protected final Context context;
@@ -70,6 +93,10 @@ public class TokenKeeper<Token extends Enum<Token>>
   protected final String prefix;
 
   protected final SharedPreferences preferences;
+
+  protected TokenMultiplier<Token> tokenMultiplier;
+
+  protected boolean enabled = true;
 
   /**
    * Builds a notifier. It is very likely that a single instance of the {@link TokenKeeper} should be created.
@@ -86,6 +113,58 @@ public class TokenKeeper<Token extends Enum<Token>>
     this.context = context;
     this.prefix = prefix;
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
+  }
+
+  /**
+   * @return <code>true</code> if and only if the token keeper is currently enabled
+   * @see #setEnabled(boolean)
+   */
+  public final boolean isEnabled()
+  {
+    return enabled;
+  }
+
+  /**
+   * It is possible to totally disable the token keeper. By default, the token keeper is enabled/turned on. This is especially useful when you want to
+   * turn it off, while running tests.
+   * 
+   * <p>
+   * When turned-off, no token will be remembered not broadcast.
+   * <p>
+   * 
+   * @param enabled
+   *          whether the token keeper should be on or off
+   */
+  public final void setEnabled(boolean enabled)
+  {
+    this.enabled = enabled;
+  }
+
+  /**
+   * @return the currently registered token multiplier; may be <code>null</code>
+   * @see #setTokenMultiplier(TokenMultiplier)
+   */
+  public final TokenMultiplier<Token> getTokenMultiplier()
+  {
+    return tokenMultiplier;
+  }
+
+  /**
+   * When {@link #rememberToken(Enum) remembering a token}, it may be useful to remember other tokens which depend on it. By default, no token
+   * multiplier is registered. This method enables to register an interface, which enables to remember other tokens than the provided one at the same
+   * time.
+   * 
+   * <p>
+   * This method has no impact on the {@link #broadcast(Enum) token broadcasting}.
+   * </p>
+   * 
+   * @param tokenMultiplier
+   *          the interface that will be used to "multiply" the remembered token; it should be set to <code>null</code>, if that feature needs to be
+   *          disabled
+   */
+  public final void setTokenMultiplier(TokenMultiplier<Token> tokenMultiplier)
+  {
+    this.tokenMultiplier = tokenMultiplier;
   }
 
   /**
@@ -172,6 +251,17 @@ public class TokenKeeper<Token extends Enum<Token>>
   public void rememberToken(Token token)
   {
     setToken(token, true);
+    if (tokenMultiplier != null)
+    {
+      final Token[] subTokens = tokenMultiplier.getSubTokens(token);
+      if (subTokens != null)
+      {
+        for (Token subToken : subTokens)
+        {
+          setToken(subToken, true);
+        }
+      }
+    }
   }
 
   /**
@@ -224,6 +314,10 @@ public class TokenKeeper<Token extends Enum<Token>>
    */
   public void broadcast(Token token)
   {
+    if (enabled == false)
+    {
+      return;
+    }
     final Intent intent = new Intent(computeIntentAction(token));
     context.sendBroadcast(intent);
   }
@@ -260,6 +354,10 @@ public class TokenKeeper<Token extends Enum<Token>>
     if (log.isDebugEnabled())
     {
       log.debug("Setting the notification token '" + key + "' to " + value);
+    }
+    if (enabled == false)
+    {
+      return;
     }
     final Editor editor = preferences.edit();
     if (value == false)
