@@ -720,7 +720,7 @@ public abstract class WebServiceCaller
   /**
    * We cannot use the same object because of the multi-threading.
    */
-  protected final DefaultHttpClient getHttpClient()
+  protected DefaultHttpClient getHttpClient()
   {
     return new DefaultHttpClient();
   }
