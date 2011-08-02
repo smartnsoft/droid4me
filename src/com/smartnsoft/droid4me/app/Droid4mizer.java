@@ -289,6 +289,7 @@ public final class Droid4mizer<AggregateClass>
       return;
     }
     ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onResume);
+    stateContainer.onResume(activity);
     businessObjectRetrievalAndResultHandlers();
   }
 
@@ -335,6 +336,7 @@ public final class Droid4mizer<AggregateClass>
     else
     {
       ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onPause);
+      stateContainer.onPause(activity);
     }
   }
 

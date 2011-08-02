@@ -457,6 +457,7 @@ public abstract class SmartMapActivity<AggregateClass>
       return;
     }
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onResume);
+    stateContainer.onResume(this);
     businessObjectRetrievalAndResultHandlers();
   }
 
@@ -680,6 +681,7 @@ public abstract class SmartMapActivity<AggregateClass>
       else
       {
         ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onPause);
+        stateContainer.onPause(this);
       }
     }
     finally

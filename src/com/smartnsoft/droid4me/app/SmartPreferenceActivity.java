@@ -249,6 +249,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
       return;
     }
     ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onResume);
+    stateContainer.onResume(this);
     businessObjectRetrievalAndResultHandlers();
   }
 
@@ -472,6 +473,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
       else
       {
         ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onPause);
+        stateContainer.onPause(this);
       }
     }
     finally
