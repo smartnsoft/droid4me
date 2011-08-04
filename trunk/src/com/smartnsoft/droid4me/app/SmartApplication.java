@@ -339,6 +339,7 @@ public abstract class SmartApplication
   @Override
   public final void onCreate()
   {
+    final long start = System.currentTimeMillis();
     if (shouldBeSilent() == true)
     {
       return;
@@ -398,6 +399,11 @@ public abstract class SmartApplication
     preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
     onCreateCustom();
+
+    if (log.isInfoEnabled())
+    {
+      log.info("The application has started in " + (System.currentTimeMillis() - start) + " ms");
+    }
   }
 
   /**
