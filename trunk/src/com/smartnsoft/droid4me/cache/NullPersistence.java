@@ -41,6 +41,11 @@ public class NullPersistence
     super(null, instanceIndex);
   }
 
+  public NullPersistence(String storageDirectoryPath, int instanceIndex)
+  {
+    super(storageDirectoryPath, instanceIndex);
+  }
+
   @Override
   protected void initialize()
   {
