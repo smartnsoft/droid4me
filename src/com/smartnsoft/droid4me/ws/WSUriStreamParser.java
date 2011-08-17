@@ -19,7 +19,6 @@
 package com.smartnsoft.droid4me.ws;
 
 import java.util.Date;
-import java.util.Map;
 
 import org.apache.http.entity.AbstractHttpEntity;
 
@@ -69,22 +68,22 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
 
   }
 
-  private final WebServiceCaller webServiceCaller;
+  private final WebServiceClient webServiceClient;
 
-  public WSUriStreamParser(WebServiceCaller webServiceCaller)
+  public WSUriStreamParser(WebServiceClient webServiceClient)
   {
-    this.webServiceCaller = webServiceCaller;
+    this.webServiceClient = webServiceClient;
   }
 
-  protected final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
-  {
-    return webServiceCaller.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
-  }
+//  protected final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
+//  {
+//    return webServiceCaller.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
+//  }
 
   public final Business.InputAtom getInputStream(WSUriStreamParser.UrlWithCallTypeAndBody uri)
       throws WebServiceCaller.CallException
   {
-    return new Business.InputAtom(new Date(), webServiceCaller.getInputStream(uri.url, uri.callType, uri.body));
+    return new Business.InputAtom(new Date(), webServiceClient.getInputStream(uri.url, uri.callType, uri.body));
   }
 
   public final BusinessObjectType rawGetValue(ParameterType parameter)

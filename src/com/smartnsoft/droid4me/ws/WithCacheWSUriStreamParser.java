@@ -37,14 +37,14 @@ public final class WithCacheWSUriStreamParser
   public static abstract class CacheableWebUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
       extends WSUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType>
       implements
-      Business.Cacheable<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceCaller.CallException>
+      Business.Cacheable<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
   {
 
     private final Business.IOStreamer<String, StreamerExceptionType> ioStreamer;
 
-    public CacheableWebUriStreamParser(Business.IOStreamer<String, StreamerExceptionType> ioStreamer, WebServiceCaller webServiceCaller)
+    public CacheableWebUriStreamParser(Business.IOStreamer<String, StreamerExceptionType> ioStreamer, WebServiceClient webServiceClient)
     {
-      super(webServiceCaller);
+      super(webServiceClient);
       this.ioStreamer = ioStreamer;
     }
 
@@ -75,36 +75,36 @@ public final class WithCacheWSUriStreamParser
 
   public static abstract class CachedWebUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
       extends
-      Business.Cached<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceCaller.CallException>
+      Business.Cached<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
   {
 
-    private final WebServiceCaller webServiceCaller;
+    private final WebServiceClient webServiceClient;
 
-    public CachedWebUriStreamParser(Business.IOStreamer<String, StreamerExceptionType> ioStreamer, WebServiceCaller webServiceCaller)
+    public CachedWebUriStreamParser(Business.IOStreamer<String, StreamerExceptionType> ioStreamer, WebServiceClient webServiceClient)
     {
       super(ioStreamer);
-      this.webServiceCaller = webServiceCaller;
+      this.webServiceClient = webServiceClient;
     }
 
     protected final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
     {
-      return webServiceCaller.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
+      return webServiceClient.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
     }
 
     public Business.InputAtom getInputStream(WSUriStreamParser.UrlWithCallTypeAndBody uri)
-        throws WebServiceCaller.CallException
+        throws WebServiceClient.CallException
     {
-      return new Business.InputAtom(new Date(), webServiceCaller.getInputStream(uri.url, uri.callType, uri.body));
+      return new Business.InputAtom(new Date(), webServiceClient.getInputStream(uri.url, uri.callType, uri.body));
     }
 
     public final BusinessObjectType rawGetValue(ParameterType parameter)
-        throws ParseExceptionType, WebServiceCaller.CallException, Business.BusinessException
+        throws ParseExceptionType, WebServiceClient.CallException, Business.BusinessException
     {
       return parse(parameter, getInputStream(computeUri(parameter)).inputStream);
     }
 
     public final BusinessObjectType getValue(ParameterType parameter)
-        throws WebServiceCaller.CallException
+        throws WebServiceClient.CallException
     {
       try
       {
@@ -112,11 +112,11 @@ public final class WithCacheWSUriStreamParser
       }
       catch (Exception exception)
       {
-        if (exception instanceof WebServiceCaller.CallException)
+        if (exception instanceof WebServiceClient.CallException)
         {
-          throw (WebServiceCaller.CallException) exception;
+          throw (WebServiceClient.CallException) exception;
         }
-        throw new WebServiceCaller.CallException(exception);
+        throw new WebServiceClient.CallException(exception);
       }
     }
 
