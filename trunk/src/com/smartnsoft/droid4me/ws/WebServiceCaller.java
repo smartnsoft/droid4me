@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.SocketException;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.Map;
@@ -82,139 +81,8 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * @since 2009.03.26
  */
 public abstract class WebServiceCaller
+    implements WebServiceClient
 {
-
-  /**
-   * An HTTP method type.
-   */
-  public static enum Verb
-  {
-    Get, Post, Put, Delete;
-  }
-
-  /**
-   * Defines the way the HTTP method is run, and enables to link a call code with it.
-   */
-  public final static class CallType
-  {
-
-    /**
-     * The call code when not defined.
-     */
-    public final static int NO_CALL_CODE = -1;
-
-    public final static WebServiceCaller.CallType Get = new WebServiceCaller.CallType(WebServiceCaller.Verb.Get, WebServiceCaller.CallType.NO_CALL_CODE);
-
-    public final static WebServiceCaller.CallType Post = new WebServiceCaller.CallType(WebServiceCaller.Verb.Post, WebServiceCaller.CallType.NO_CALL_CODE);
-
-    public final static WebServiceCaller.CallType Put = new WebServiceCaller.CallType(WebServiceCaller.Verb.Put, WebServiceCaller.CallType.NO_CALL_CODE);
-
-    public final static WebServiceCaller.CallType Delete = new WebServiceCaller.CallType(WebServiceCaller.Verb.Delete, WebServiceCaller.CallType.NO_CALL_CODE);
-
-    /**
-     * The HTTP method.
-     */
-    public final WebServiceCaller.Verb verb;
-
-    /**
-     * A code that may associated with the call.
-     */
-    public final int callCode;
-
-    public CallType(WebServiceCaller.Verb verb, int callCode)
-    {
-      this.verb = verb;
-      this.callCode = callCode;
-    }
-
-    @Override
-    public String toString()
-    {
-      return verb.toString();
-    }
-
-  }
-
-  /**
-   * The exception that will be thrown if any problem occurs during a web service call.
-   */
-  public static class CallException
-      extends Exception
-  {
-
-    private static final long serialVersionUID = 4869741128441615773L;
-
-    private int statusCode;
-
-    public CallException(String message, Throwable throwable)
-    {
-      super(message, throwable);
-    }
-
-    public CallException(String message)
-    {
-      super(message);
-    }
-
-    public CallException(Throwable throwable)
-    {
-      super(throwable);
-    }
-
-    public CallException(String message, int statusCode)
-    {
-      this(message, null, statusCode);
-    }
-
-    public CallException(Throwable throwable, int statusCode)
-    {
-      this(null, throwable, statusCode);
-    }
-
-    public CallException(String message, Throwable throwable, int statusCode)
-    {
-      super(message, throwable);
-      this.statusCode = statusCode;
-    }
-
-    public int getStatusCode()
-    {
-      return statusCode;
-    }
-
-    /**
-     * @return <code>true</code> is the current exception is linked to a connectivity problem with Internet.
-     * @see #isConnectivityProblem(Throwable)
-     */
-    public final boolean isConnectivityProblem()
-    {
-      return WebServiceCaller.CallException.isConnectivityProblem(this);
-    }
-
-    /**
-     * Indicates whether the cause of the provided exception is due to a connectivity problem.
-     * 
-     * @param throwable
-     *          the exception to test
-     * @return <code>true</code> if the {@link Throwable} was triggered because of a connectivity problem with Internet
-     */
-    public static boolean isConnectivityProblem(Throwable throwable)
-    {
-      Throwable cause;
-      Throwable newThrowable = throwable;
-      // We investigate over the whole cause stack
-      while ((cause = newThrowable.getCause()) != null)
-      {
-        if (cause instanceof UnknownHostException || cause instanceof SocketException)
-        {
-          return true;
-        }
-        newThrowable = cause;
-      }
-      return false;
-    }
-
-  }
 
   protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
 
@@ -657,16 +525,6 @@ public abstract class WebServiceCaller
     return response.getEntity().getContent();
   }
 
-  /**
-   * @param methodUriPrefix
-   *          the prefix of the URI
-   * @param methodUriSuffix
-   *          the suffix of the URI, not containing the query parameters. A <code>/</code> will split the methodUriPrefix and methodUriSuffix
-   *          parameters in the final URI
-   * @param uriParameters
-   *          a map of key/values that will be used as query parameters in the final URI
-   * @return a properly encoded URI
-   */
   public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
   {
     return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, getUrlEncoding());
