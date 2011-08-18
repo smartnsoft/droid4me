@@ -563,7 +563,7 @@ public final class Values
     {
       if (fromCache == false)
       {
-        return (info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+        return (info.source == Values.Info.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
             : Values.Instructions.Result.Rejected;
       }
       else
@@ -574,7 +574,7 @@ public final class Values
         }
         else
         {
-          return (info.source == Values.Info.Source.URIStreamer && assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+          return (info.source == Values.Info.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
               : Values.Instructions.Result.Rejected;
         }
       }
