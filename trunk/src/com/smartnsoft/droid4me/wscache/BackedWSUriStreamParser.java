@@ -34,8 +34,6 @@ import com.smartnsoft.droid4me.ws.WSUriStreamParser.UrlWithCallTypeAndBody;
 public final class BackedWSUriStreamParser
 {
 
-  // private final static Logger log = LoggerFactory.getInstance(BackedWSUriStreamParser.class);
-
   public abstract static class BackedUriStreamedValue<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
       extends WithCacheWSUriStreamParser.CacheableWebUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType, StreamerExceptionType>
   {
