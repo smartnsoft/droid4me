@@ -19,6 +19,7 @@
 package com.smartnsoft.droid4me.ws;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.apache.http.entity.AbstractHttpEntity;
 
@@ -75,10 +76,10 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
     this.webServiceClient = webServiceClient;
   }
 
-//  protected final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
-//  {
-//    return webServiceCaller.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
-//  }
+  protected final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
+  {
+    return webServiceClient.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
+  }
 
   public final Business.InputAtom getInputStream(WSUriStreamParser.UrlWithCallTypeAndBody uri)
       throws WebServiceCaller.CallException
