@@ -41,12 +41,16 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.HttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -84,11 +88,17 @@ public abstract class WebServiceCaller
     implements WebServiceClient
 {
 
+  public static interface ReuseHttpClient
+  {
+  }
+
   protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
 
   private static DocumentBuilder builder;
 
   private boolean isConnected = true;
+
+  private HttpClient httpClient;
 
   public static InputStream createInputStreamFromJson(JSONObject jsonObject)
   {
@@ -436,7 +446,7 @@ public abstract class WebServiceCaller
     {
       log.debug("Running the HTTP " + callType + " query '" + uri + "'");
     }
-    final DefaultHttpClient httpClient = getHttpClient();
+    final HttpClient httpClient = getHttpClient();
     onBeforeHttpRequestExecution(httpClient, request);
     final HttpResponse response = httpClient.execute(request);
     final long stop = System.currentTimeMillis();
@@ -497,7 +507,7 @@ public abstract class WebServiceCaller
    * @throws WebServiceCaller.CallException
    *           in case the HTTP request cannot be eventually invoked properly
    */
-  protected void onBeforeHttpRequestExecution(DefaultHttpClient httpClient, HttpRequestBase request)
+  protected void onBeforeHttpRequestExecution(HttpClient httpClient, HttpRequestBase request)
       throws WebServiceCaller.CallException
   {
   }
@@ -576,11 +586,31 @@ public abstract class WebServiceCaller
   }
 
   /**
-   * We cannot use the same object because of the multi-threading.
+   * Is responsible for returning an HTTP client instance, used for actually running the HTTP request.
+   * 
+   * @return a valid HTTP client
    */
-  protected DefaultHttpClient getHttpClient()
+  protected HttpClient getHttpClient()
   {
-    return new DefaultHttpClient();
+    if (this instanceof WebServiceCaller.ReuseHttpClient)
+    {
+      if (httpClient == null)
+      {
+        // Taken from http://foo.jasonhudgins.com/2010/03/http-connections-revisited.html
+        httpClient = new DefaultHttpClient();
+        final ClientConnectionManager clientConnectionManager = httpClient.getConnectionManager();
+        final HttpParams params = httpClient.getParams();
+        // final ThreadSafeClientConnManager threadSafeClientConnectionManager = new
+        // ThreadSafeClientConnManager(clientConnectionManager.getSchemeRegistry());
+        final ThreadSafeClientConnManager threadSafeClientConnectionManager = new ThreadSafeClientConnManager(params, clientConnectionManager.getSchemeRegistry());
+        httpClient = new DefaultHttpClient(threadSafeClientConnectionManager, params);
+      }
+      return httpClient;
+    }
+    else
+    {
+      return new DefaultHttpClient();
+    }
   }
 
 }
