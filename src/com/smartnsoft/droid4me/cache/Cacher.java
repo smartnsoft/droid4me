@@ -177,7 +177,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         final Values.Info<BusinessObjectType> cachedValue = getCachedValue(parameter);
         if (cachedValue != null)
         {
-          // We notify the instructions that the business object has been successfully extract from the IO streamer
+          // We notify the instructions that the business object has been successfully extracted from the IO streamer
           if (instructions != null)
           {
             instructions.onIOStreamer(Cacher.Status.Success);

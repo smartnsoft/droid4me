@@ -144,7 +144,10 @@ public final class FilePersistence
       {
         properties.store(outputStream, "The cache index file");
         fileIndexNeedsSaving = false;
-        // log.debug("Saved the index file");
+        if (log.isDebugEnabled())
+        {
+          log.debug("Saved the index file");
+        }
       }
       finally
       {
@@ -175,14 +178,26 @@ public final class FilePersistence
     return indexFile;
   }
 
-  // TODO: implement that method
   public Date getLastUpdate(String uri)
   {
     if (storageBackendAvailable == false)
     {
       return null;
     }
-    throw new UnsupportedOperationException("FilePersistence::getLastUpdate() is not implemented!");
+
+    final Persistence.UriUsage uriUsage;
+    synchronized (uriUsages)
+    {
+      uriUsage = uriUsages.get(uri);
+    }
+    if (uriUsage == null)
+    {
+      return null;
+    }
+    else
+    {
+      return new Date(new File(uriUsage.storageFilePath).lastModified());
+    }
   }
 
   public Business.InputAtom extractInputStream(String uri)
@@ -191,11 +206,13 @@ public final class FilePersistence
     return readInputStream(uri);
   }
 
-  // TODO: put the URI usage in the parent class
   public Business.InputAtom readInputStream(String uri)
       throws Persistence.PersistenceException
   {
-    // log.debug("Asking for the input stream related to the URI '" + uri + "'");
+    if (log.isDebugEnabled())
+    {
+      log.debug("Asking for the input stream related to the URI '" + uri + "'");
+    }
     final Persistence.UriUsage uriUsage;
     synchronized (uriUsages)
     {
@@ -231,12 +248,16 @@ public final class FilePersistence
     {
       try
       {
-        // log.debug("Reusing the cached data for the URI '" + uri + "', stored in the file '" + uriUsage.storageFilePath + "'");
+        if (log.isDebugEnabled())
+        {
+          log.debug("Reusing the cached data for the URI '" + uri + "', stored in the file '" + uriUsage.storageFilePath + "'");
+        }
         rememberUriUsed(uri);
         if (storageBackendAvailable == true)
         {
-          // TODO: compute the time stamp via the file last modification date
-          return new Business.InputAtom(new Date(), new FileInputStream(uriUsage.storageFilePath));
+          final File file = new File(uriUsage.storageFilePath);
+          final long lastModified = file.lastModified();
+          return new Business.InputAtom(new Date(lastModified), new FileInputStream(file));
         }
         else
         {
@@ -276,7 +297,27 @@ public final class FilePersistence
 
   public void remove(String uri)
   {
-    throw new UnsupportedOperationException("FilePersistence::remove() is not implemented!");
+    if (log.isDebugEnabled())
+    {
+      log.debug("Removing from the persistence the contents related to the URI '" + uri + "'");
+    }
+    if (storageBackendAvailable == false)
+    {
+      return;
+    }
+    final Persistence.UriUsage uriUsage;
+    synchronized (uriUsages)
+    {
+      uriUsage = uriUsages.get(uri);
+    }
+    if (uriUsage == null)
+    {
+      return;
+    }
+    else
+    {
+      unregisterUri(uriUsage);
+    }
   }
 
   public InputStream writeInputStream(String uri, Business.InputAtom inputAtom)
@@ -296,6 +337,7 @@ public final class FilePersistence
       new File(properties.getProperty(uri)).delete();
     }
     getIndexFile().delete();
+    properties.clear();
   }
 
   // TODO: think of making the processing in another thread
@@ -325,10 +367,10 @@ public final class FilePersistence
       if (storageBackendAvailable == true)
       {
         final String filePath = computeUriFilePath(uri);
-        // if (log.isDebugEnabled())
-        // {
-        // log.debug("Caching the stream for the URI '" + uri + "' to the file '" + filePath + "'");
-        // }
+        if (log.isDebugEnabled())
+        {
+          log.debug("Caching the stream for the URI '" + uri + "' to the file '" + filePath + "'");
+        }
         // We store the contents of the input stream on the SD card
         final InputStream newInputStream = FilePersistence.storeInputStreamToFile(filePath, inputAtom, closeInput);
         rememberUriUsed(uri);
@@ -379,7 +421,29 @@ public final class FilePersistence
         uriUsage.accessCount++;
         uriUsages.put(uri, uriUsage);
         properties.put(uri, filePath);
-        // log.debug("Registered the URI '" + uri + "' with the file '" + filePath + "'");
+        fileIndexNeedsSaving = true;
+        if (log.isDebugEnabled())
+        {
+          log.debug("Registered the URI '" + uri + "' with the file '" + filePath + "'");
+        }
+      }
+    }
+  }
+
+  private void unregisterUri(Persistence.UriUsage uriUsage)
+  {
+    synchronized (uriUsages)
+    {
+      new File(uriUsage.storageFilePath).delete();
+      synchronized (uriUsages)
+      {
+        uriUsages.remove(uriUsage.uri);
+      }
+      properties.remove(uriUsage.uri);
+      fileIndexNeedsSaving = true;
+      if (log.isDebugEnabled())
+      {
+        log.debug("Unregistered the URI '" + uriUsage.uri + "' with the file '" + uriUsage.storageFilePath + "'");
       }
     }
   }
@@ -390,7 +454,10 @@ public final class FilePersistence
     {
       final Persistence.UriUsage uriUsage = uriUsages.get(uri);
       uriUsage.accessCount++;
-      // log.debug("The URI '" + uri + "' has been accessed " + uriUsage.accessCount + " time(s)");
+      if (log.isDebugEnabled())
+      {
+        log.debug("The URI '" + uri + "' has been accessed " + uriUsage.accessCount + " time(s)");
+      }
     }
   }
 
@@ -420,7 +487,6 @@ public final class FilePersistence
     {
       final String filePath = getStorageDirectoryPath() + "/" + uriUsages.size();
       registerUri(uri, filePath);
-      fileIndexNeedsSaving = true;
       return filePath;
     }
   }
@@ -436,8 +502,10 @@ public final class FilePersistence
       {
         final Persistence.UriUsage discardedUriUsage = uriUsages.remove(toBeDiscardedUriUsages.get(index).uri);
         properties.remove(discardedUriUsage.uri);
-        // log.debug("Removed from the cache the URI " + discardedUriUsage.uri + "' accessed " + discardedUriUsage.accessCount +
-        // " time(s), corresponding to the file '" + discardedUriUsage.storageFilePath);
+        if (log.isDebugEnabled())
+        {
+          log.debug("Removed from the cache the URI " + discardedUriUsage.uri + "' accessed " + discardedUriUsage.accessCount + " time(s), corresponding to the file '" + discardedUriUsage.storageFilePath);
+        }
       }
       // We reset the remaining usages
       for (Persistence.UriUsage uriUsage : uriUsages.values())
