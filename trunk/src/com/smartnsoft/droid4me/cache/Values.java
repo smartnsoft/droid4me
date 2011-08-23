@@ -60,13 +60,18 @@ public final class Values
 
     public final Date timestamp;
 
-    public final Values.Info.Source source;
+    private Values.Info.Source source;
 
     public Info(BusinessObjectType value, Date timestamp, Values.Info.Source source)
     {
       this.value = value;
       this.timestamp = timestamp;
       this.source = source;
+    }
+
+    public Values.Info.Source getSource()
+    {
+      return source;
     }
 
   }
@@ -256,6 +261,7 @@ public final class Values
       // The business object is first attempted to be retrieved from memory
       if (isEmpty() == false)
       {
+        info.source = Values.Info.Source.Memory;
         final Values.Instructions.Result result = instructions.assess(info);
         instructions.remember(info.source, result);
         if (result == Values.Instructions.Result.Accepted)
@@ -847,12 +853,15 @@ public final class Values
         Values.CachingEvent cachingEvent, KeyType key)
         throws ExceptionType
     {
-      Values.CachedValue<BusinessObjectType, ExceptionType> cached;
-      cached = map.get(key);
+      final Values.CachedValue<BusinessObjectType, ExceptionType> cached;
       if (map.containsKey(key) == false)
       {
         cached = new Values.CachedValue<BusinessObjectType, ExceptionType>();
         map.put(key, cached);
+      }
+      else
+      {
+        cached = map.get(key);
       }
       return cached.getInfoValue(ifValueNotCached, cachingEvent);
     }
