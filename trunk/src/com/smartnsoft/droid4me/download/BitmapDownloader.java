@@ -115,9 +115,8 @@ public class BitmapDownloader
 
   private static int commandsCount;
 
-  // TODO: define a pool of Command objects, so as to minimize GC, if possible
-  private class PreCommand
-      implements Runnable, Comparable<PreCommand>
+  private abstract class BasisCommand
+      implements Runnable, Comparable<BitmapDownloader.BasisCommand>
   {
 
     private final int order = BitmapDownloader.commandsCount++;
@@ -134,13 +133,17 @@ public class BitmapDownloader
 
     protected final BasisBitmapDownloader.Instructions instructions;
 
-    private boolean executeEnd;
-
-    private int state;
-
     protected BasisBitmapDownloader.UsedBitmap usedBitmap;
 
-    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
+    private boolean executeEnd;
+
+    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
+    {
+      this(id, view, bitmapUid, imageSpecs, handler, instructions, false);
+    }
+
+    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions,
+        boolean executeEnd)
     {
       this.id = id;
       this.view = view;
@@ -148,14 +151,12 @@ public class BitmapDownloader
       this.imageSpecs = imageSpecs;
       this.handler = handler;
       this.instructions = instructions;
-    }
-
-    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions,
-        boolean executeEnd)
-    {
-      this(id, view, bitmapUid, imageSpecs, handler, instructions);
       this.executeEnd = executeEnd;
     }
+
+    protected abstract void executeEnd();
+
+    protected abstract void executeStart(boolean isFromGuiThread);
 
     /**
      * Introduced in order to reduce the allocation of a {@link Runnable}, and for an optimization purpose.
@@ -187,6 +188,39 @@ public class BitmapDownloader
       }
     }
 
+    public int compareTo(BitmapDownloader.BasisCommand other)
+    {
+      return other.order - order;
+    }
+
+  }
+
+  // TODO: define a pool of Command objects, so as to minimize GC, if possible
+  private class PreCommand
+      extends BitmapDownloader.BasisCommand
+  {
+
+    /**
+     * <ol>
+     * <li><code>0</code>: the bitmap is taken from the local resources,</li>
+     * <li><code>1</code>: the bitmap needs to be downloaded,</li>
+     * <li><code>2</code>: the bitmap was already in the memory cache.</li>
+     * </ol>
+     */
+    private int state;
+
+    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
+    {
+      super(id, view, bitmapUid, imageSpecs, handler, instructions);
+    }
+
+    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions,
+        boolean executeEnd)
+    {
+      super(id, view, bitmapUid, imageSpecs, handler, instructions, executeEnd);
+    }
+
+    @Override
     protected void executeEnd()
     {
       // if (log.isDebugEnabled())
@@ -255,7 +289,8 @@ public class BitmapDownloader
       }
     }
 
-    public void executeStart(boolean isFromGuiThread)
+    @Override
+    protected void executeStart(boolean isFromGuiThread)
     {
       // if (log.isDebugEnabled())
       // {
@@ -311,8 +346,7 @@ public class BitmapDownloader
           }
         }
       }
-      final BitmapDownloader.DownloadBitmapCommand downloadCommand = computeDownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler,
-          instructions);
+      final BitmapDownloader.DownloadBitmapCommand downloadCommand = computeDownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
       if (view != null)
       {
         prioritiesDownloadStack.put(view, downloadCommand);
@@ -419,11 +453,6 @@ public class BitmapDownloader
       return false;
     }
 
-    public int compareTo(PreCommand other)
-    {
-      return other.order - order;
-    }
-
   }
 
   // TODO: when a second download for the same image UID occurs, do not run it
@@ -488,7 +517,7 @@ public class BitmapDownloader
      * The {@link BitmapDownloader.PreCommand#view} is ensured not to be null when this method is invoked.
      */
     @Override
-    public final void executeEnd()
+    protected void executeEnd()
     {
       // We only bind the image provided there is not already another command bound to be processed
       Integer commandId = prioritiesStack.get(view);
@@ -533,7 +562,7 @@ public class BitmapDownloader
     }
 
     @Override
-    public final void executeStart(boolean isFromGuiThread)
+    protected void executeStart(boolean isFromGuiThread)
     {
       // The command is removed from the priority stack
       if (view != null)
@@ -824,14 +853,14 @@ public class BitmapDownloader
 
   /**
    * A map which handles the priorities of the {@link BitmapDownloader.PreCommand pre-commands}: when a new command for an {@link View} is asked for,
-   * if a {@link BitmapDownloader.PreCommand} is already stacked for the same image (i.e. present in {@link #preStack stacked}), the old one will be
+   * if a {@link BitmapDownloader.PreCommand} is already stacked for the same view (i.e. present in {@link #preStack stacked}), the old one will be
    * discarded.
    */
   private final Map<View, BitmapDownloader.PreCommand> prioritiesPreStack;
 
   /**
    * A map which contains all the {@link BitmapDownloader.PreCommand commands} that are currently at the top of the priorities stack. When a new
-   * command for an {@link View} is asked for, if a {@link BitmapDownloader.PreCommand} is already stacked for the same image (i.e. present in
+   * command for an {@link View} is asked for, if a {@link BitmapDownloader.PreCommand} is already stacked for the same view (i.e. present in
    * {@link BitmapDownloader#preStack stacked}), the old one will be discarded.
    */
   private final Map<View, Integer> prioritiesStack;
