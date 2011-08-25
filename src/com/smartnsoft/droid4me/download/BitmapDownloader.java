@@ -251,33 +251,6 @@ public class BitmapDownloader
       // We set a temporary bitmap, if available
       setTemporaryBitmapIfPossible(isFromGuiThread);
 
-      // We want to remove any pending download command for the view
-      if (view != null)
-      {
-        // But we test whether the download is still required
-        final Integer commandId = prioritiesStack.get(view);
-        if (commandId == null || commandId != id)
-        {
-          return;
-        }
-        // We remove a previously stacked command for the same view
-        final BitmapDownloader.PreCommand alreadyStackedCommand = prioritiesDownloadStack.get(view);
-        if (alreadyStackedCommand != null)
-        {
-          if (log.isDebugEnabled())
-          {
-            log.debug("Removed an already stacked download command corresponding to the view with id '" + view.getId() + "'");
-          }
-          if (BitmapDownloader.DOWNLOAD_THREAD_POOL.remove(alreadyStackedCommand) == false)
-          {
-            if (log.isErrorEnabled())
-            {
-              log.error("Could not find the download command relative to the view with id '" + bitmapUid + "' when attempting to remove it!");
-            }
-          }
-        }
-      }
-
       // TODO: handle the special case of the null imageUid is more clever and optimized way
       // if (url == null)
       // {
@@ -285,14 +258,7 @@ public class BitmapDownloader
       // return;
       // }
 
-      // We need to download the bitmap or take it from a local persistence place
-      // Hence, we stack the bitmap download command
-      final BitmapDownloader.DownloadBitmapCommand downloadCommand = computeDownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
-      if (view != null)
-      {
-        prioritiesDownloadStack.put(view, downloadCommand);
-      }
-      BitmapDownloader.DOWNLOAD_THREAD_POOL.execute(downloadCommand);
+      downloadBitmap(url);
     }
 
     @Override
@@ -302,7 +268,8 @@ public class BitmapDownloader
       // {
       // log.debug("Running the action in state '" + state + "'");
       // }
-      // We only continue the process (and the temporary or local bitmap view binding) provided there is not already another command bound to be processed
+      // We only continue the process (and the temporary or local bitmap view binding) provided there is not already another command bound to be
+      // processed
       // for the same view
       Integer commandId = prioritiesStack.get(view);
       if (state != 2 && (commandId == null || commandId != id))
@@ -353,7 +320,6 @@ public class BitmapDownloader
         if (state != 2 && commandId == id)
         {
           prioritiesStack.remove(view);
-          log.warn("prioritiesStack=" + prioritiesStack.size());
         }
       }
       catch (OutOfMemoryError exception)
@@ -471,6 +437,45 @@ public class BitmapDownloader
       return false;
     }
 
+    private void downloadBitmap(final String url)
+    {
+      // We want to remove any pending download command for the view
+      if (view != null)
+      {
+        // But we test whether the download is still required
+        final Integer commandId = prioritiesStack.get(view);
+        if (commandId == null || commandId != id)
+        {
+          return;
+        }
+        // We remove a previously stacked command for the same view
+        final BitmapDownloader.PreCommand alreadyStackedCommand = prioritiesDownloadStack.get(view);
+        if (alreadyStackedCommand != null)
+        {
+          if (log.isDebugEnabled())
+          {
+            log.debug("Removed an already stacked download command corresponding to the view with id '" + view.getId() + "'");
+          }
+          if (BitmapDownloader.DOWNLOAD_THREAD_POOL.remove(alreadyStackedCommand) == false)
+          {
+            if (log.isErrorEnabled())
+            {
+              log.error("Could not find the download command relative to the view with id '" + bitmapUid + "' when attempting to remove it!");
+            }
+          }
+        }
+      }
+
+      // We need to download the bitmap or take it from a local persistence place
+      // Hence, we stack the bitmap download command
+      final BitmapDownloader.DownloadBitmapCommand downloadCommand = computeDownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
+      if (view != null)
+      {
+        prioritiesDownloadStack.put(view, downloadCommand);
+      }
+      BitmapDownloader.DOWNLOAD_THREAD_POOL.execute(downloadCommand);
+    }
+
   }
 
   // TODO: when a second download for the same bitmap UID occurs, do not run it
@@ -573,7 +578,6 @@ public class BitmapDownloader
         if (commandId != null && commandId == id)
         {
           prioritiesStack.remove(view);
-          log.warn("prioritiesStack=" + prioritiesStack.size());
         }
       }
       catch (OutOfMemoryError exception)
@@ -945,7 +949,6 @@ public class BitmapDownloader
     if (view != null)
     {
       prioritiesStack.put(view, command.id);
-      log.warn("prioritiesStack=" + prioritiesStack.size());
       prioritiesPreStack.put(view, command);
     }
     BitmapDownloader.PRE_THREAD_POOL.execute(command);
@@ -964,7 +967,6 @@ public class BitmapDownloader
       if (view != null)
       {
         prioritiesStack.put(view, preCommand.id);
-        log.warn("prioritiesStack=" + prioritiesStack.size());
         prioritiesPreStack.put(view, preCommand);
       }
       preCommand.executeStart(true);
