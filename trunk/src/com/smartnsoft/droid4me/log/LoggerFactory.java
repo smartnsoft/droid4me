@@ -148,7 +148,7 @@ public class LoggerFactory
     {
       if (theClass != null)
       {
-        return new AndroidLogger(category);
+        return new AndroidLogger(theClass);
       }
       else
       {
