@@ -128,8 +128,17 @@ public class LoggerFactory
 
   }
 
-  @SuppressWarnings("unchecked")
-  public static Logger getInstance(Class theClass)
+  public static Logger getInstance(String category)
+  {
+    return getInstance(category, null);
+  }
+
+  public static Logger getInstance(Class<?> theClass)
+  {
+    return getInstance(null, theClass);
+  }
+
+  private static Logger getInstance(String category, Class<?> theClass)
   {
     if (LoggerFactory.enabled == null)
     {
@@ -137,7 +146,14 @@ public class LoggerFactory
     }
     if (LoggerFactory.enabled == true)
     {
-      return new AndroidLogger(theClass);
+      if (theClass != null)
+      {
+        return new AndroidLogger(category);
+      }
+      else
+      {
+        return new AndroidLogger(category);
+      }
     }
     else
     {
