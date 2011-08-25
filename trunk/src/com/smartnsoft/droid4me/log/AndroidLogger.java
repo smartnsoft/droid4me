@@ -32,10 +32,15 @@ public class AndroidLogger
 
   private String category;
 
-  @SuppressWarnings("unchecked")
-  public AndroidLogger(Class theClass)
+  public AndroidLogger(String category)
   {
-    category = theClass.getSimpleName();
+    this.category = category;
+    ;
+  }
+
+  public AndroidLogger(Class<?> theClass)
+  {
+    this(theClass.getSimpleName());
   }
 
   public void debug(String message)

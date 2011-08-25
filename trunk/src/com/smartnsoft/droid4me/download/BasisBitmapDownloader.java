@@ -47,7 +47,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public abstract class BasisBitmapDownloader
 {
 
-  protected static final Logger log = LoggerFactory.getInstance(BasisBitmapDownloader.class);
+  protected static final Logger log = LoggerFactory.getInstance("BitmapDownloader");
 
   /**
    * When the input stream related to an bitmap needs to be downloaded asynchronously, this interface enables to indicate it, and to notify the owner
@@ -501,10 +501,11 @@ public abstract class BasisBitmapDownloader
 
   protected final BasisBitmapDownloader.UsedBitmap putInCache(String url, Bitmap bitmap)
   {
-//    if (log.isDebugEnabled())
-//    {
-//      log.debug("The thread '" + Thread.currentThread().getName() + "' put in cache the bitmap with the URL '" + url + "' (size=" + cache.size() + ")");
-//    }
+    // if (log.isDebugEnabled())
+    // {
+    // log.debug("The thread '" + Thread.currentThread().getName() + "' put in cache the bitmap with the URL '" + url + "' (size=" + cache.size() +
+    // ")");
+    // }
     final BasisBitmapDownloader.UsedBitmap usedBitmap = new BasisBitmapDownloader.UsedBitmap(bitmap, url);
     synchronized (cache)
     {
