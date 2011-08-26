@@ -160,10 +160,6 @@ public class BitmapDownloader
 
     /**
      * Introduced in order to reduce the allocation of a {@link Runnable}, and for an optimization purpose.
-     * 
-     * <p>
-     * The {@link BitmapDownloader.PreCommand#view} is ensured not to be null when this method is invoked.
-     * </p>
      */
     public final void run()
     {
@@ -195,6 +191,11 @@ public class BitmapDownloader
 
   }
 
+  // private static enum FinalState
+  // {
+  // Local, Temporary, Null, ToDownload
+  // }
+
   // TODO: define a pool of Command objects, so as to minimize GC, if possible
   private class PreCommand
       extends BitmapDownloader.BasisCommand
@@ -204,7 +205,8 @@ public class BitmapDownloader
      * <ol>
      * <li><code>0</code>: the bitmap is taken from the local resources, and the command is over;</li>
      * <li><code>1</code>: the bitmap was already in the memory cache, and the command is over;</li>
-     * <li><code>2</code>: the bitmap needs to be downloaded, and a download-command will be triggered.</li>
+     * <li><code>2</code>: the bitmap imageUid is <code>null</code>, and the command is over;</li>
+     * <li><code>3</code>: the bitmap needs to be downloaded, and a download-command will be triggered.</li>
      * </ol>
      */
     private int state;
@@ -251,16 +253,37 @@ public class BitmapDownloader
       // We set a temporary bitmap, if available
       setTemporaryBitmapIfPossible(isFromGuiThread);
 
-      // TODO: handle the special case of the null imageUid is more clever and optimized way
-      // if (url == null)
-      // {
-      // // We do not want to go any further, since the URL is null
-      // return;
-      // }
+      if (url == null)
+      {
+        if (view != null)
+        {
+          // We need to do that in the GUI thread!
+          state = 2;
+          if (isFromGuiThread == false)
+          {
+            if (handler.post(this) == false)
+            {
+              if (log.isWarnEnabled())
+              {
+                log.warn("Failed to notify the instructions regarding a bitmap with null id from the GUI thread");
+              }
+            }
+          }
+          else
+          {
+            run();
+          }
+        }
+        // We do not want to go any further, since the URL is null, and the work is complete
+        return;
+      }
 
       downloadBitmap(url);
     }
 
+    /**
+     * The {@link BitmapDownloader.PreCommand#view} is ensured not to be null when this method is invoked.
+     */
     @Override
     protected void executeEnd()
     {
@@ -272,7 +295,7 @@ public class BitmapDownloader
       // processed
       // for the same view
       Integer commandId = prioritiesStack.get(view);
-      if (state != 2 && (commandId == null || commandId != id))
+      if (state != 3 && (commandId == null || commandId != id))
       {
         if (log.isDebugEnabled())
         {
@@ -304,20 +327,27 @@ public class BitmapDownloader
           instructions.onBitmapBound(true, view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
           // {
-          // log.debug("Set the cached bitmap for the bitmap with id '" + bitmapUid + "'");
+          // log.debug("Set the cached bitmap with id '" + bitmapUid + "'");
           // }
           break;
         case 2:
+          instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
+          // if (log.isDebugEnabled())
+          // {
+          // log.debug("Set the temporary bitmap for a null bitmap id");
+          // }
+          break;
+        case 3:
           instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
           // {
-          // log.debug("Set the temporary drawable for the bitmap with id '" + bitmapUid + "'");
+          // log.debug("Set the temporary bitmap with id '" + bitmapUid + "'");
           // }
           break;
         }
         // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
         commandId = prioritiesStack.get(view);
-        if (state != 2 && commandId == id)
+        if (state != 3 && commandId == id)
         {
           prioritiesStack.remove(view);
         }
@@ -367,7 +397,7 @@ public class BitmapDownloader
         if (view != null)
         {
           // We need to do that in the GUI thread!
-          state = 2;
+          state = 3;
           if (isFromGuiThread == false)
           {
             if (handler.post(this) == false)
