@@ -399,7 +399,7 @@ public abstract class BasisBitmapDownloader
   /**
    * The name of the instance, mostly useful for the logs.
    */
-  public String name;
+  public final String name;
 
   /**
    * Indicates the upper limit of memory that the cache is allowed to reach.
