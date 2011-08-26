@@ -148,7 +148,8 @@ public final class ActivityController
      * 
      * The method blocks the caller thread, hence the method should last a very short time!
      */
-    void onLifeCycleEvent(Activity activity, ActivityController.Interceptor.InterceptorEvent event);
+    void onLifeCycleEvent(Activity activity,
+        ActivityController.Interceptor.InterceptorEvent event);
 
   }
 
@@ -174,7 +175,8 @@ public final class ActivityController
      * @return <code>true</code> if the handler has actually handled the exception: this indicates to the framework that it does not need to
      *         investigate for a further exception handler anymore
      */
-    boolean onBusinessObjectAvailableException(Activity activity, BusinessObjectUnavailableException exception);
+    boolean onBusinessObjectAvailableException(Activity activity,
+        BusinessObjectUnavailableException exception);
 
     /**
      * Is invoked whenever the {@link LifeCycle#onRetrieveBusinessObjects()} throws an exception.
@@ -234,7 +236,8 @@ public final class ActivityController
       this.i18n = i18n;
     }
 
-    public boolean onBusinessObjectAvailableException(final Activity activity, BusinessObjectUnavailableException exception)
+    public boolean onBusinessObjectAvailableException(final Activity activity,
+        BusinessObjectUnavailableException exception)
     {
       if (checkConnectivityProblemInCause(activity, exception, true) == true)
       {
@@ -245,8 +248,7 @@ public final class ActivityController
       {
         public void run()
         {
-          new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-              i18n.businessObjectAvailabilityProblemHint).setPositiveButton(android.R.string.ok, new OnClickListener()
+          new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(i18n.businessObjectAvailabilityProblemHint).setPositiveButton(android.R.string.ok, new OnClickListener()
           {
             public void onClick(DialogInterface dialogInterface, int which)
             {
@@ -259,7 +261,8 @@ public final class ActivityController
       return true;
     }
 
-    public boolean onServiceException(final Activity activity, ServiceException exception)
+    public boolean onServiceException(final Activity activity,
+        ServiceException exception)
     {
       if (checkConnectivityProblemInCause(activity, exception, false) == true)
       {
@@ -270,15 +273,14 @@ public final class ActivityController
       {
         public void run()
         {
-          new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(i18n.serviceProblemHint).setPositiveButton(
-              android.R.string.ok, new OnClickListener()
-              {
-                public void onClick(DialogInterface dialogInterface, int which)
-                {
-                  // We leave the activity, because we cannot go any further
-                  activity.finish();
-                }
-              }).setCancelable(false).show();
+          new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(i18n.serviceProblemHint).setPositiveButton(android.R.string.ok, new OnClickListener()
+          {
+            public void onClick(DialogInterface dialogInterface, int which)
+            {
+              // We leave the activity, because we cannot go any further
+              activity.finish();
+            }
+          }).setCancelable(false).show();
         }
       });
       return true;
@@ -295,15 +297,14 @@ public final class ActivityController
       {
         public void run()
         {
-          new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(i18n.otherProblemHint).setPositiveButton(
-              android.R.string.ok, new OnClickListener()
-              {
-                public void onClick(DialogInterface dialogInterface, int i)
-                {
-                  // We leave the activity, because we cannot go any further
-                  activity.finish();
-                }
-              }).setCancelable(false).show();
+          new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(i18n.otherProblemHint).setPositiveButton(android.R.string.ok, new OnClickListener()
+          {
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+              // We leave the activity, because we cannot go any further
+              activity.finish();
+            }
+          }).setCancelable(false).show();
         }
       });
       return true;
@@ -326,18 +327,18 @@ public final class ActivityController
      *          when set to <code>true</code, the dialog box displayed will present an additional "Retry" action
      * @return <code>true</code> if and only a connection issue has been detected
      */
-    @SuppressWarnings("unchecked")
-    protected final boolean checkConnectivityProblemInCause(final Activity activity, Throwable throwable, final boolean proposeRetry)
+    protected final boolean checkConnectivityProblemInCause(
+        final Activity activity, Throwable throwable, final boolean proposeRetry)
     {
-      if (searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class) != null)
+      if (isAConnectivityProblem(throwable) == true)
       {
         activity.runOnUiThread(new Runnable()
         {
           public void run()
           {
             final boolean retry = proposeRetry == true && activity instanceof LifeCycle;
-            final Builder builder = new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-                retry == true ? i18n.connectivityProblemRetryHint : i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null);
+            final Builder builder = new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(retry == true ? i18n.connectivityProblemRetryHint
+                : i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null);
             if (retry == true)
             {
               builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
@@ -379,6 +380,17 @@ public final class ActivityController
     }
 
     /**
+     * @param throwable
+     *          the exception to investigate
+     * @return <code>true</code> if and only if the exception results from a connectivity issue by inspecting its causes tree
+     */
+    @SuppressWarnings("unchecked")
+    protected final boolean isAConnectivityProblem(Throwable throwable)
+    {
+      return searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class) != null;
+    }
+
+    /**
      * Attempts to find a specific exception in the provided exception by iterating over the causes.
      * 
      * @param throwable
@@ -387,7 +399,8 @@ public final class ActivityController
      *          a list of exception classes to look after
      * @return <code>null</code> if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
-    protected final Throwable searchForCause(Throwable throwable, Class<? extends Throwable>... exceptionClass)
+    protected final Throwable searchForCause(Throwable throwable,
+        Class<? extends Throwable>... exceptionClass)
     {
       Throwable newThrowable = throwable;
       Throwable cause = newThrowable.getCause();
@@ -464,17 +477,20 @@ public final class ActivityController
     return exceptionHandler;
   }
 
-  public synchronized void registerRedirector(ActivityController.Redirector redirector)
+  public synchronized void registerRedirector(
+      ActivityController.Redirector redirector)
   {
     this.redirector = redirector;
   }
 
-  public synchronized void registerInterceptor(ActivityController.Interceptor interceptor)
+  public synchronized void registerInterceptor(
+      ActivityController.Interceptor interceptor)
   {
     this.interceptor = interceptor;
   }
 
-  public synchronized void registerExceptionHandler(ActivityController.ExceptionHandler exceptionHandler)
+  public synchronized void registerExceptionHandler(
+      ActivityController.ExceptionHandler exceptionHandler)
   {
     this.exceptionHandler = exceptionHandler;
   }
@@ -496,7 +512,8 @@ public final class ActivityController
     }
     activity.finish();
     // We consider the parent activity in case it is embedded (like in a TabActivity)
-    intent.putExtra(ActivityController.CALLING_INTENT, (activity.getParent() != null ? activity.getParent().getIntent() : activity.getIntent()));
+    intent.putExtra(ActivityController.CALLING_INTENT, (activity.getParent() != null ? activity.getParent().getIntent()
+        : activity.getIntent()));
     // Disables the fact that the new started activity should belong to the tasks history and from the recent tasks
     // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
     // intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
@@ -509,7 +526,8 @@ public final class ActivityController
    * 
    * Note that the method is synchronized, which means that the previous call will block the next one, if no thread is spawn.
    */
-  public synchronized void onLifeCycleEvent(Activity activity, ActivityController.Interceptor.InterceptorEvent event)
+  public synchronized void onLifeCycleEvent(Activity activity,
+      ActivityController.Interceptor.InterceptorEvent event)
   {
     if (interceptor == null)
     {
@@ -528,7 +546,8 @@ public final class ActivityController
    * @return <code>true</code> if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception
    *         handled has been set}, returns <code>false</code>
    */
-  public synchronized boolean handleException(Context context, Throwable throwable)
+  public synchronized boolean handleException(Context context,
+      Throwable throwable)
   {
     if (exceptionHandler == null)
     {
@@ -536,8 +555,8 @@ public final class ActivityController
       {
         if (log.isWarnEnabled())
         {
-          log.warn("Caught an exception during the processing of the context with name '" + (context == null ? "null" : context.getClass().getName()) + "'",
-              throwable);
+          log.warn("Caught an exception during the processing of the context with name '" + (context == null ? "null"
+              : context.getClass().getName()) + "'", throwable);
         }
       }
       return false;
@@ -589,8 +608,8 @@ public final class ActivityController
       {
         if (log.isWarnEnabled())
         {
-          log.warn("Caught an exception during the processing of the context with name '" + (context == null ? "null" : context.getClass().getName()) + "'",
-              throwable);
+          log.warn("Caught an exception during the processing of the context with name '" + (context == null ? "null"
+              : context.getClass().getName()) + "'", throwable);
         }
         // We do nothing if the activity is dying
         if (activity != null && activity.isFinishing() == true)
