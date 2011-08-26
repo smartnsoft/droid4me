@@ -611,11 +611,7 @@ public final class ActivityController
           log.warn("Caught an exception during the processing of the context with name '" + (context == null ? "null"
               : context.getClass().getName()) + "'", throwable);
         }
-        // We do nothing if the activity is dying
-        if (activity != null && activity.isFinishing() == true)
-        {
-          return true;
-        }
+        // For this special case, we ignore the case when the activity is dying
         if (activity != null)
         {
           return exceptionHandler.onOtherException(activity, throwable);
