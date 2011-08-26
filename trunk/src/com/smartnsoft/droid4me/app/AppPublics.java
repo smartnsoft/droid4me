@@ -628,21 +628,21 @@ public final class AppPublics
         throws Exception;
 
     /**
-     * A callback which will be triggered if a {@link Throwable} is thrown during the {@link #runGuarded()} method, so as to let the caller a chance
+     * A fallback method which will be triggered if a {@link Throwable} is thrown during the {@link #runGuarded()} method, so as to let the caller a chance
      * to handle locally the exception.
      * 
      * <p>
-     * By default, the method does nothing and returns <code>false</code>.
+     * By default, the method does nothing and returns the provided <code>throwable</code>.
      * </p>
      * 
      * @param throwable
      *          the exception that has been thrown during the {@link #runGuarded()} execution
-     * @return <code>true</code> if and only if the method has handled the exception and that the {@link ActivityController.ExceptionHandler} should
-     *         not be invoked
+     * @return <code>null</code> if and only if the method has handled the exception and that the {@link ActivityController.ExceptionHandler} should
+     *         not be invoked ; otherwise, the {@link Throwable} that should be submitted to the {@link ActivityController.ExceptionHandler}
      */
-    protected boolean handle(Throwable throwable)
+    protected Throwable handle(Throwable throwable)
     {
-      return false;
+      return throwable;
     }
 
     /**
@@ -657,13 +657,14 @@ public final class AppPublics
       catch (Throwable throwable)
       {
         // We let a chance to the caller to handle the exception
-        if (handle(throwable) == true)
+        final Throwable modifiedThrowable = handle(throwable);
+        if (modifiedThrowable == null)
         {
           // In that case, the exception has been handled locally
           return;
         }
         // We handle the exception
-        ActivityController.getInstance().handleException(context, throwable);
+        ActivityController.getInstance().handleException(context, modifiedThrowable);
       }
     }
 
