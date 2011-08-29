@@ -155,6 +155,8 @@ public abstract class BasisBitmapDownloader
      * 
      * @param downloaded
      *          indicates whether the bitmap has actually been downloaded from the network or retrieved locally
+     * @param bitmap
+     *          will never be <code>null</code>
      * @return <code>false</code> if and only if the current instance did not perform the binding
      */
     boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
