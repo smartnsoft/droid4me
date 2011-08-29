@@ -82,8 +82,7 @@ public class BitmapDownloader
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
-      thread.setName("droid4me-" + (BitmapDownloader.preThreadCount < BitmapDownloader.PRE_THREAD_POOL.getCorePoolSize() ? "core-"
-          : "") + "pre #" + BitmapDownloader.preThreadCount++);
+      thread.setName("droid4me-" + (BitmapDownloader.preThreadCount < BitmapDownloader.PRE_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "pre #" + BitmapDownloader.preThreadCount++);
       return thread;
     }
   }, /*
@@ -112,8 +111,7 @@ public class BitmapDownloader
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
-      thread.setName("droid4me-" + (BitmapDownloader.downloadThreadCount < BitmapDownloader.DOWNLOAD_THREAD_POOL.getCorePoolSize() ? "core-"
-          : "") + "download #" + BitmapDownloader.downloadThreadCount++);
+      thread.setName("droid4me-" + (BitmapDownloader.downloadThreadCount < BitmapDownloader.DOWNLOAD_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "download #" + BitmapDownloader.downloadThreadCount++);
       return thread;
     }
   }, new ThreadPoolExecutor.AbortPolicy());
@@ -142,14 +140,12 @@ public class BitmapDownloader
 
     private boolean executeEnd;
 
-    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs,
-        Handler handler, BasisBitmapDownloader.Instructions instructions)
+    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
     {
       this(id, view, bitmapUid, imageSpecs, handler, instructions, false);
     }
 
-    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs,
-        Handler handler, BasisBitmapDownloader.Instructions instructions,
+    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions,
         boolean executeEnd)
     {
       this.id = id;
@@ -212,20 +208,19 @@ public class BitmapDownloader
      * <ol>
      * <li><code>0</code>: the bitmap is taken from the local resources, and the command is over;</li>
      * <li><code>1</code>: the bitmap was already in the memory cache, and the command is over;</li>
-     * <li><code>2</code>: the bitmap imageUid is <code>null</code>, and the command is over;</li>
-     * <li><code>3</code>: the bitmap needs to be downloaded, and a download-command will be triggered.</li>
+     * <li><code>2</code>: the bitmap imageUid is <code>null</code>, there is no temporary bitmap, and the command is over;</li>
+     * <li><code>3</code>: the bitmap imageUid is <code>null</code>, there is a temporary bitmap, and the command is over;</li>
+     * <li><code>4</code>: the bitmap needs to be downloaded, and a download-command will be triggered.</li>
      * </ol>
      */
     private int state;
 
-    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs,
-        Handler handler, BasisBitmapDownloader.Instructions instructions)
+    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
     {
       super(id, view, bitmapUid, imageSpecs, handler, instructions);
     }
 
-    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs,
-        Handler handler, BasisBitmapDownloader.Instructions instructions,
+    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions,
         boolean executeEnd)
     {
       super(id, view, bitmapUid, imageSpecs, handler, instructions, executeEnd);
@@ -268,7 +263,7 @@ public class BitmapDownloader
         if (view != null)
         {
           // We need to do that in the GUI thread!
-          state = 2;
+          state = state == 4 ? 3 : 2;
           if (isFromGuiThread == false)
           {
             if (handler.post(this) == false)
@@ -305,7 +300,7 @@ public class BitmapDownloader
       // processed
       // for the same view
       Integer commandId = prioritiesStack.get(view);
-      if (state != 3 && (commandId == null || commandId != id))
+      if (state != 4 && (commandId == null || commandId != id))
       {
         if (log.isDebugEnabled())
         {
@@ -349,6 +344,14 @@ public class BitmapDownloader
           break;
         case 3:
           instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
+          instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
+          // if (log.isDebugEnabled())
+          // {
+          // log.debug("Set the temporary bitmap for a null bitmap id");
+          // }
+          break;
+        case 4:
+          instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
           // {
           // log.debug("Set the temporary bitmap with id '" + bitmapUid + "'");
@@ -357,7 +360,7 @@ public class BitmapDownloader
         }
         // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
         commandId = prioritiesStack.get(view);
-        if (state != 3 && commandId == id)
+        if (state != 4 && commandId == id)
         {
           prioritiesStack.remove(view);
           dump();
@@ -408,7 +411,7 @@ public class BitmapDownloader
         if (view != null)
         {
           // We need to do that in the GUI thread!
-          state = 3;
+          state = 4;
           if (isFromGuiThread == false)
           {
             if (handler.post(this) == false)
@@ -427,8 +430,7 @@ public class BitmapDownloader
       }
     }
 
-    private boolean setBitmapFromCacheIfPossible(String url,
-        boolean isFromGuiThread)
+    private boolean setBitmapFromCacheIfPossible(String url, boolean isFromGuiThread)
     {
       // There is a special case when the bitmap URL is null
       if (url == null)
@@ -533,8 +535,7 @@ public class BitmapDownloader
 
     private boolean inputStreamAsynchronous;
 
-    public DownloadBitmapCommand(int id, View view, String url,
-        String bitmapUid, Object imageSpecs, Handler handler,
+    public DownloadBitmapCommand(int id, View view, String url, String bitmapUid, Object imageSpecs, Handler handler,
         BasisBitmapDownloader.Instructions instructions)
     {
       super(id, view, bitmapUid, imageSpecs, handler, instructions);
@@ -583,8 +584,7 @@ public class BitmapDownloader
         usedBitmap.rememberAccessed();
       }
 
-      instructions.onBitmapReady(true, view, usedBitmap == null ? null
-          : usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+      instructions.onBitmapReady(true, view, usedBitmap == null ? null : usedBitmap.getBitmap(), bitmapUid, imageSpecs);
       bindBitmap();
     }
 
@@ -907,10 +907,12 @@ public class BitmapDownloader
           {
             final Class<? extends BitmapDownloader> implementationClass = (Class<? extends BitmapDownloader>) Class.forName(BitmapDownloader.IMPLEMENTATION_FQN);
             final BitmapDownloader[] newInstances = (BitmapDownloader[]) Array.newInstance(implementationClass, BitmapDownloader.INSTANCES_COUNT);
-            final Constructor<? extends BitmapDownloader> constructor = implementationClass.getDeclaredConstructor(String.class, long.class, long.class, boolean.class, boolean.class);
+            final Constructor<? extends BitmapDownloader> constructor = implementationClass.getDeclaredConstructor(String.class, long.class, long.class,
+                boolean.class, boolean.class);
             for (int index = 0; index < BitmapDownloader.INSTANCES_COUNT; index++)
             {
-              newInstances[index] = constructor.newInstance("BitmapDownloader-" + index, BitmapDownloader.MAX_MEMORY_IN_BYTES[index], BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[index], BitmapDownloader.USE_REFERENCES[index], BitmapDownloader.RECYCLE_BITMAP[index]);
+              newInstances[index] = constructor.newInstance("BitmapDownloader-" + index, BitmapDownloader.MAX_MEMORY_IN_BYTES[index],
+                  BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[index], BitmapDownloader.USE_REFERENCES[index], BitmapDownloader.RECYCLE_BITMAP[index]);
             }
             // We only assign the instances class variable here, once all instances have actually been created
             BitmapDownloader.instances = newInstances;
@@ -951,9 +953,7 @@ public class BitmapDownloader
    */
   private int commandIdCount = -1;
 
-  protected BitmapDownloader(String name, long maxMemoryInBytes,
-      long lowLevelMemoryWaterMarkInBytes, boolean useReferences,
-      boolean recycleMap)
+  protected BitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
     super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
     prioritiesStack = new Hashtable<View, Integer>();
@@ -962,8 +962,7 @@ public class BitmapDownloader
   }
 
   @Override
-  public final void get(View view, String bitmapUid, Object imageSpecs,
-      Handler handler, BasisBitmapDownloader.Instructions instructions)
+  public final void get(View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
   {
     // if (log.isDebugEnabled())
     // {
@@ -1004,9 +1003,7 @@ public class BitmapDownloader
   }
 
   @Override
-  public final void get(boolean isBlocking, View view, String bitmapUid,
-      Object imageSpecs, Handler handler,
-      BasisBitmapDownloader.Instructions instructions)
+  public final void get(boolean isBlocking, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
   {
     if (isBlocking == false)
     {
@@ -1041,9 +1038,8 @@ public class BitmapDownloader
     dump();
   }
 
-  protected DownloadBitmapCommand computeDownloadBitmapCommand(int id,
-      View view, String url, String bitmapUid, Object imageSpecs,
-      Handler handler, BasisBitmapDownloader.Instructions instructions)
+  protected DownloadBitmapCommand computeDownloadBitmapCommand(int id, View view, String url, String bitmapUid, Object imageSpecs, Handler handler,
+      BasisBitmapDownloader.Instructions instructions)
   {
     return new BitmapDownloader.DownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
   }
