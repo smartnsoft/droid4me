@@ -134,18 +134,18 @@ public class BitmapDownloader
 
     protected final Handler handler;
 
-    protected final BasisBitmapDownloader.Instructions instructions;
+    protected final DownloadInstructions.Instructions instructions;
 
     protected BasisBitmapDownloader.UsedBitmap usedBitmap;
 
     private boolean executeEnd;
 
-    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
+    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions)
     {
       this(id, view, bitmapUid, imageSpecs, handler, instructions, false);
     }
 
-    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions,
+    public BasisCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions,
         boolean executeEnd)
     {
       this.id = id;
@@ -233,12 +233,12 @@ public class BitmapDownloader
      */
     private BitmapDownloader.FinalState state;
 
-    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
+    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions)
     {
       super(id, view, bitmapUid, imageSpecs, handler, instructions);
     }
 
-    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions,
+    public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions,
         boolean executeEnd)
     {
       super(id, view, bitmapUid, imageSpecs, handler, instructions, executeEnd);
@@ -544,7 +544,7 @@ public class BitmapDownloader
   // TODO: when a second download for the same bitmap UID occurs, do not run it
   protected class DownloadBitmapCommand
       extends BitmapDownloader.PreCommand
-      implements BasisBitmapDownloader.InputStreamDownloadInstructor
+      implements DownloadInstructions.InputStreamDownloadInstructor
   {
 
     protected final String url;
@@ -554,7 +554,7 @@ public class BitmapDownloader
     private boolean inputStreamAsynchronous;
 
     public DownloadBitmapCommand(int id, View view, String url, String bitmapUid, Object imageSpecs, Handler handler,
-        BasisBitmapDownloader.Instructions instructions)
+        DownloadInstructions.Instructions instructions)
     {
       super(id, view, bitmapUid, imageSpecs, handler, instructions);
       this.url = url;
@@ -827,7 +827,7 @@ public class BitmapDownloader
 
     protected InputStream onInputStreamDownloaded(InputStream inputStream)
     {
-      return inputStream;
+      return instructions.onInputStreamDownloaded(bitmapUid, imageSpecs, url, inputStream);
     }
 
     private final Bitmap convertInputStream(InputStream inputStream)
@@ -873,6 +873,26 @@ public class BitmapDownloader
           }
         }
       }
+    }
+
+  }
+
+  /**
+   * Enables to express an image specification, which indicates its size and a temporary image resource identification.
+   */
+  public static class SizedImageSpecs
+      extends DownloadSpecs.TemporaryImageSpecs
+  {
+
+    public final int width;
+
+    public final int height;
+
+    public SizedImageSpecs(int imageResourceId, int width, int height)
+    {
+      super(imageResourceId);
+      this.width = width;
+      this.height = height;
     }
 
   }
@@ -984,7 +1004,7 @@ public class BitmapDownloader
   }
 
   @Override
-  public final void get(View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
+  public final void get(View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions)
   {
     // if (log.isDebugEnabled())
     // {
@@ -1025,7 +1045,7 @@ public class BitmapDownloader
   }
 
   @Override
-  public final void get(boolean isBlocking, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
+  public final void get(boolean isBlocking, View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions)
   {
     if (isBlocking == false)
     {
@@ -1061,7 +1081,7 @@ public class BitmapDownloader
   }
 
   protected DownloadBitmapCommand computeDownloadBitmapCommand(int id, View view, String url, String bitmapUid, Object imageSpecs, Handler handler,
-      BasisBitmapDownloader.Instructions instructions)
+      DownloadInstructions.Instructions instructions)
   {
     return new BitmapDownloader.DownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
   }
