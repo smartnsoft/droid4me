@@ -18,358 +18,1003 @@
 
 package com.smartnsoft.droid4me.download;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-import android.graphics.Bitmap;
-import android.os.Handler;
-import android.view.View;
-
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
+import com.smartnsoft.droid4me.download.BasisDownloadInstructions.InputStreamDownloadInstructor;
+import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
+import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
+import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
 
 /**
- * Responsible for downloading the bitmaps in dedicated threads and to bind them to Android {@link View Views}.
+ * A first implementation of the {@link CoreBitmapDownloader} class, which is independent from the Android platform.
  * 
  * @author Édouard Mercier
  * @since 2009.02.19
  */
-public abstract class BasisBitmapDownloader
-    extends DownloadInstructions
+public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass extends Viewable, HandlerClass extends Handlerable>
+    extends CoreBitmapDownloader<BitmapClass, ViewClass, HandlerClass>
 {
 
-  protected static final Logger log = LoggerFactory.getInstance("BitmapDownloader");
+  // Enables to get debug information: only defined for the current component development
+  private static final boolean IS_DEBUG_TRACE = "a".equals("a");
 
-  public final static DownloadInstructions.Instructions ABSTRACT_INSTRUCTIONS = new DownloadInstructions.AbstractInstructions();
+  private static int preThreadCount;
 
-  protected final class UsedBitmap
-      implements Comparable<BasisBitmapDownloader.UsedBitmap>
+  // private final static class ImagePriorityBlockingQueue
+  // extends PriorityBlockingQueue<Runnable>
+  // {
+  // @Override
+  // public boolean offer(Runnable runnable)
+  // {
+  // // final int activePoolSize = BitmapDownloader.PRE_THREAD_POOL.getActiveCount();
+  // // if (activePoolSize >= BitmapDownloader.PRE_THREAD_POOL.getCorePoolSize() && activePoolSize <
+  // // BitmapDownloader.PRE_THREAD_POOL.getMaximumPoolSize())
+  // // {
+  // // return false;
+  // // }
+  // // return super.offer(runnable);
+  // return false;
+  // }
+  //
+  // public void add(Runnable runnable, boolean forceAddition)
+  // {
+  // super.offer(runnable);
+  // }
+  // };
+
+  // private final static BitmapDownloader.ImagePriorityBlockingQueue PRE_BLOCKING_QUEUE = new BitmapDownloader.ImagePriorityBlockingQueue();
+
+  private final static ThreadPoolExecutor PRE_THREAD_POOL = new ThreadPoolExecutor(2, 3, 5l, TimeUnit.SECONDS, new PriorityBlockingQueue<Runnable>(), new ThreadFactory()
+  {
+    public Thread newThread(Runnable runnable)
+    {
+      final Thread thread = new Thread(runnable);
+      thread.setName("droid4me-" + (BasisBitmapDownloader.preThreadCount < BasisBitmapDownloader.PRE_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "pre #" + BasisBitmapDownloader.preThreadCount++);
+      return thread;
+    }
+  }, /*
+      * new RejectedExecutionHandler() { public void rejectedExecution(Runnable command, ThreadPoolExecutor executor) {
+      * BitmapDownloader.PRE_BLOCKING_QUEUE.add(command, true); } }
+      */new ThreadPoolExecutor.AbortPolicy());
+
+  private static int downloadThreadCount;
+
+  @SuppressWarnings("serial")
+  private final static ThreadPoolExecutor DOWNLOAD_THREAD_POOL = new ThreadPoolExecutor(2, 4, 5l, TimeUnit.SECONDS, new PriorityBlockingQueue<Runnable>()
+  {
+    // @Override
+    // public boolean offer(Runnable runnable)
+    // {
+    // final int activePoolSize = BitmapDownloader.DOWNLOAD_THREAD_POOL.getActiveCount();
+    // if (activePoolSize >= BitmapDownloader.DOWNLOAD_THREAD_POOL.getCorePoolSize() && activePoolSize <
+    // BitmapDownloader.DOWNLOAD_THREAD_POOL.getMaximumPoolSize())
+    // {
+    // return false;
+    // }
+    // return super.offer(runnable);
+    // }
+  }, new ThreadFactory()
+  {
+    public Thread newThread(Runnable runnable)
+    {
+      final Thread thread = new Thread(runnable);
+      thread.setName("droid4me-" + (BasisBitmapDownloader.downloadThreadCount < BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "download #" + BasisBitmapDownloader.downloadThreadCount++);
+      return thread;
+    }
+  }, new ThreadPoolExecutor.AbortPolicy());
+
+  private static int commandsCount;
+
+  private abstract class BasisCommand
+      implements Runnable, Comparable<BasisCommand>
   {
 
-    private final Reference<Bitmap> bitmapReference;
+    private final int order = BasisBitmapDownloader.commandsCount++;
 
-    private Bitmap bitmap;
+    protected final int id;
 
-    private final int memoryConsumption;
+    protected final ViewClass view;
 
-    private int accessCount = 0;
+    protected final String bitmapUid;
 
-    private int bindingCount = 0;
+    protected final Object imageSpecs;
+
+    protected final HandlerClass handler;
+
+    protected final BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions;
+
+    protected UsedBitmap usedBitmap;
+
+    private boolean executeEnd;
+
+    public BasisCommand(int id, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+        BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
+    {
+      this(id, view, bitmapUid, imageSpecs, handler, instructions, false);
+    }
+
+    public BasisCommand(int id, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+        BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions, boolean executeEnd)
+    {
+      this.id = id;
+      this.view = view;
+      this.bitmapUid = bitmapUid;
+      this.imageSpecs = imageSpecs;
+      this.handler = handler;
+      this.instructions = instructions;
+      this.executeEnd = executeEnd;
+    }
+
+    protected abstract void executeStart(boolean isFromGuiThread);
+
+    protected abstract void executeEnd();
 
     /**
-     * Redundant but there for optimization reasons.
+     * Introduced in order to reduce the allocation of a {@link Runnable}, and for an optimization purpose.
      */
-    public final String url;
-
-    public UsedBitmap(Bitmap bitmap, String url)
+    public final void run()
     {
-      if (useReferences == true)
+      try
       {
-        // We use a soft reference, because we do not want our reference to be garbaged automatically at next garbage collection (which is the case
-        // with the WeakReference)
-        bitmapReference = new SoftReference<Bitmap>(bitmap);
-        keepBitmap();
-      }
-      else
-      {
-        bitmapReference = null;
-        this.bitmap = bitmap;
-      }
-      this.url = url;
-      memoryConsumption = (bitmap == null ? 0 : bitmap.getWidth() * bitmap.getHeight() * 4);
-    }
-
-    public Bitmap getBitmap()
-    {
-      if (useReferences == true)
-      {
-        return bitmapReference.get();
-      }
-      else
-      {
-        return bitmap;
-      }
-    }
-
-    public void keepBitmap()
-    {
-      if (useReferences == true)
-      {
-        bitmap = bitmapReference.get();
-      }
-    }
-
-    public void forgetBitmap()
-    {
-      if (useReferences == true)
-      {
-        bitmap = null;
-      }
-    }
-
-    public void rememberBinding(View view)
-    {
-      if (recycleMap == false)
-      {
-        return;
-      }
-      final BasisBitmapDownloader.UsedBitmap otherUsedBitmap = (BasisBitmapDownloader.UsedBitmap) view.getTag();
-      if (otherUsedBitmap != null)
-      {
-        otherUsedBitmap.bindingCount--;
-        // if (log.isDebugEnabled())
-        // {
-        // log.debug("The bitmap corresponding to the URL '" + url + "' has not been bound for the first time with a view");
-        // }
-      }
-      else
-      {
-        // if (log.isDebugEnabled())
-        // {
-        // log.debug("The bitmap corresponding to the URL '" + url + "' is bound for the first time with an view");
-        // }
-      }
-      bindingCount++;
-      view.setTag(this);
-    }
-
-    public void rememberAccessed()
-    {
-      accessCount++;
-    }
-
-    public int compareTo(BasisBitmapDownloader.UsedBitmap another)
-    {
-      if (accessCount > another.accessCount)
-      {
-        return -1;
-      }
-      else if (accessCount < another.accessCount)
-      {
-        return 1;
-      }
-      return 0;
-    }
-
-    public int getMemoryConsumption()
-    {
-      return memoryConsumption;
-    }
-
-  }
-
-  /**
-   * The name of the instance, mostly useful for the logs.
-   */
-  public final String name;
-
-  /**
-   * Indicates the upper limit of memory that the cache is allowed to reach.
-   */
-  public final long maxMemoryInBytes;
-
-  /**
-   * When the cache is being cleaned-up, indicates the lower limit of memory that the cache is allowed to reach.
-   */
-  public final long lowLevelMemoryWaterMarkInBytes;
-
-  /**
-   * Indicates whether the instance should let the Java garbage collector handle bitmap soft references.
-   */
-  public final boolean useReferences;
-
-  public final boolean recycleMap;
-
-  /**
-   * A {@link HashMap} is used instead of a {@link java.util.Hashtable}, because we want to allow null values.
-   */
-  protected final Map<String, BasisBitmapDownloader.UsedBitmap> cache = new HashMap<String, BasisBitmapDownloader.UsedBitmap>();
-
-  private long memoryConsumption = 0;
-
-  private boolean cleanUpInProgress;
-
-  protected BasisBitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
-  {
-    this.name = name;
-    this.recycleMap = recycleMap;
-    this.maxMemoryInBytes = maxMemoryInBytes;
-    this.useReferences = useReferences;
-    this.lowLevelMemoryWaterMarkInBytes = lowLevelMemoryWaterMarkInBytes;
-  }
-
-  /**
-   * This method will retrieve the bitmap corresponding to the provided identifier along with the provided instructions, and bind it to the provided
-   * {@link View}.
-   * 
-   * <p>
-   * Can be invoked from any thread, not only the GUI's! The method is non-blocking.
-   * </p>
-   * 
-   * @param view
-   *          the view that will be bound with the retrieved {@link Bitmap}
-   * @param bitmapUid
-   *          the identifier of the bitmap to retrieve. Most of the time, this is the URL of the bitmap on Internet, but it can serve as a basis to
-   *          {@link BasisBitmapDownloader.Instructions#computeUrl(String, Object) compute} the actual URL
-   * @param imageSpecs
-   *          a free object that will be passed along during the bitmap retrieval workflow
-   * @param handler
-   *          will be used for performing GUI-thread operations
-   * @param instructions
-   *          the instructions that will be invoked during the retrieval workflow
-   */
-  public abstract void get(View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions);
-
-  /**
-   * Provides the same feature as {@link #computeAndGetUrl(View, String, Object, Handler, BasisBitmapDownloader.Instructions)}, except that it may be
-   * called from the GUI thread and blocking.
-   * 
-   * @param isBlocking
-   *          indicates whether the call is blocking. It <code>true</code>, the call must be done from the GUI thread!
-   */
-  public abstract void get(boolean isBlocking, View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions);
-
-  /**
-   * Empties the cache, so that no more bitmap is available in memory.
-   * 
-   * <p>
-   * All operations in progress should be canceled.
-   * </p>
-   */
-  public abstract void empty();
-
-  protected final BasisBitmapDownloader.UsedBitmap getUsedBitmapFromCache(String url)
-  {
-    synchronized (cache)
-    {
-      final BasisBitmapDownloader.UsedBitmap usedBitmap = cache.get(url);
-      if (usedBitmap != null)
-      {
-        if (usedBitmap.getBitmap() != null)
+        if (executeEnd == false)
         {
-          usedBitmap.keepBitmap();
-          return usedBitmap;
+          executeEnd = true;
+          executeStart(false);
         }
         else
         {
-          // The underlying bitmap has been garbaged, and we discard it
-          memoryConsumption -= usedBitmap.getMemoryConsumption();
-          cache.remove(url);
+          executeEnd();
+        }
+      }
+      catch (Throwable throwable)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("An unhandled exception has been raised during the processing of a command", throwable);
         }
       }
     }
-    return null;
+
+    public int compareTo(BasisCommand other)
+    {
+      return other.order - order;
+    }
+
   }
 
-  protected final BasisBitmapDownloader.UsedBitmap putInCache(String url, Bitmap bitmap)
+  /**
+   * Indicates to the command what it should do eventually.
+   * 
+   * @since 2011.09.02
+   */
+  private static enum FinalState
   {
-    // if (log.isDebugEnabled())
-    // {
-    // log.debug("The thread '" + Thread.currentThread().getName() + "' put in cache the bitmap with the URL '" + url + "' (size=" + cache.size() +
-    // ")");
-    // }
-    final BasisBitmapDownloader.UsedBitmap usedBitmap = new BasisBitmapDownloader.UsedBitmap(bitmap, url);
-    synchronized (cache)
+    /**
+     * The bitmap is taken from the local resources, and the command is over.
+     */
+    Local,
+    /**
+     * The bitmap was already in the memory cache, and the command is over.
+     */
+    InCache,
+    /**
+     * The bitmap imageUid is <code>null</code>, there is no temporary bitmap, and the command is over.
+     */
+    NullUriNoTemporary,
+    /**
+     * The bitmap imageUid is <code>null</code>, there is a temporary bitmap, and the command is over.
+     */
+    NullUriTemporary,
+    /**
+     * The bitmap needs to be downloaded, and a download-command will be triggered.
+     */
+    NotInCache
+  }
+
+  // TODO: define a pool of Command objects, so as to minimize GC, if possible
+  private class PreCommand
+      extends BasisCommand
+  {
+
+    /**
+     * This flag will be used when executing the {@link #run} method the second time.
+     */
+    private BasisBitmapDownloader.FinalState state;
+
+    public PreCommand(int id, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+        BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
     {
-      final UsedBitmap previousUsedBitmap = cache.put(url, usedBitmap);
-      if (previousUsedBitmap != null)
+      super(id, view, bitmapUid, imageSpecs, handler, instructions);
+    }
+
+    public PreCommand(int id, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+        BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions, boolean executeEnd)
+    {
+      super(id, view, bitmapUid, imageSpecs, handler, instructions, executeEnd);
+    }
+
+    @Override
+    protected void executeStart(boolean isFromGuiThread)
+    {
+      // if (log.isDebugEnabled())
+      // {
+      // log.debug("Starting to handle the bitmap with identifier '" + bitmapUid + "'");
+      // }
+      // The command is removed from the priority stack
+      if (view != null)
+      {
+        prioritiesPreStack.remove(view);
+        dump();
+      }
+
+      // We set a local bitmap if available
+      if (setLocalBitmapIfPossible(isFromGuiThread) == true)
+      {
+        return;
+      }
+
+      // We compute the bitmap URL and proceed
+      final String url = instructions.computeUrl(bitmapUid, imageSpecs);
+
+      // We use a bitmap from the cache if possible
+      if (setBitmapFromCacheIfPossible(url, isFromGuiThread) == true)
+      {
+        return;
+      }
+
+      // We set a temporary bitmap, if available
+      setTemporaryBitmapIfPossible(isFromGuiThread);
+
+      if (url == null)
+      {
+        if (view != null)
+        {
+          // We need to do that in the GUI thread!
+          state = state == FinalState.NotInCache ? FinalState.NullUriTemporary : FinalState.NullUriNoTemporary;
+          if (isFromGuiThread == false)
+          {
+            if (handler.post(this) == false)
+            {
+              if (log.isWarnEnabled())
+              {
+                log.warn("Failed to notify the instructions regarding a bitmap with null id from the GUI thread");
+              }
+            }
+          }
+          else
+          {
+            run();
+          }
+        }
+        // We do not want to go any further, since the URL is null, and the work is complete
+        return;
+      }
+
+      downloadBitmap(url);
+    }
+
+    /**
+     * The {@link BasisBitmapDownloader.PreCommand#view} is ensured not to be null when this method is invoked.
+     */
+    @Override
+    protected void executeEnd()
+    {
+      // if (log.isDebugEnabled())
+      // {
+      // log.debug("Running the action in state '" + state + "'");
+      // }
+      // We only continue the process (and the temporary or local bitmap view binding) provided there is not already another command bound to be
+      // processed
+      // for the same view
+      Integer commandId = prioritiesStack.get(view);
+      if (state != FinalState.NotInCache && (commandId == null || commandId != id))
+      {
+        if (log.isDebugEnabled())
+        {
+          log.debug("The bitmap corresponding to the id '" + bitmapUid + "' will not be bound to its view, because this bitmap has asked for another bitmap URL in the meantime");
+        }
+        return;
+      }
+      try
+      {
+        switch (state)
+        {
+        case Local:
+          instructions.onBindLocalBitmap(view, bitmapUid, imageSpecs);
+          instructions.onBitmapBound(true, view, bitmapUid, imageSpecs);
+          // if (log.isDebugEnabled())
+          // {
+          // log.debug("Set the local drawable for the bitmap with id '" + bitmapUid + "'");
+          // }
+          break;
+        case InCache:
+          if (instructions.onBindBitmap(false, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == false)
+          {
+            // The binding is performed only if the instructions did not bind it
+            // THINK: what can we do?
+            // view.setImageBitmap(usedBitmap.getBitmap());
+          }
+          usedBitmap.forgetBitmap();
+          usedBitmap.rememberBinding(view);
+          instructions.onBitmapBound(true, view, bitmapUid, imageSpecs);
+          // if (log.isDebugEnabled())
+          // {
+          // log.debug("Set the cached bitmap with id '" + bitmapUid + "'");
+          // }
+          break;
+        case NullUriNoTemporary:
+          instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
+          // if (log.isDebugEnabled())
+          // {
+          // log.debug("Did not set any temporary bitmap for a null bitmap id");
+          // }
+          break;
+        case NullUriTemporary:
+          instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
+          instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
+          // if (log.isDebugEnabled())
+          // {
+          // log.debug("Set the temporary bitmap for a null bitmap id");
+          // }
+          break;
+        case NotInCache:
+          instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
+          // if (log.isDebugEnabled())
+          // {
+          // log.debug("Set the temporary bitmap with id '" + bitmapUid + "'");
+          // }
+          break;
+        }
+        // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
+        commandId = prioritiesStack.get(view);
+        if (state != FinalState.NotInCache && commandId == id)
+        {
+          prioritiesStack.remove(view);
+          dump();
+        }
+      }
+      catch (OutOfMemoryError exception)
       {
         if (log.isWarnEnabled())
         {
-          log.warn("Putting twice in cache the bitmap corresponding to the URL '" + url + "'!");
+          log.warn("Process exceeding available memory", exception);
         }
-        // We can consider the previous entry as released
-        memoryConsumption -= previousUsedBitmap.getMemoryConsumption();
+        cleanUpCache();
       }
     }
-    final int bitmapSize = usedBitmap.getMemoryConsumption();
-    // log.debug("The bitmap consumes " + bitmapSize + " (" + memoryConsumption + ") bytes and corresponds to the url '" + url + "'");
-    memoryConsumption += bitmapSize;
-    usedBitmap.rememberAccessed();
-    cleanUpCacheIfNecessary();
-    return usedBitmap;
-  }
 
-  private final void cleanUpCacheIfNecessary()
-  {
-    if (memoryConsumption > maxMemoryInBytes)
+    private boolean setLocalBitmapIfPossible(boolean isFromGuiThread)
     {
-      cleanUpCache();
-    }
-  }
-
-  protected final void cleanUpCache()
-  {
-    if (cleanUpInProgress == true)
-    {
-      // This cancels all the forthcoming calls, as long as the clean-up is not over, and we do not want the caller to be hanging
-      return;
-    }
-    cleanUpInProgress = true;
-    try
-    {
-      synchronized (cache)
+      if (instructions.hasLocalBitmap(bitmapUid, imageSpecs) == true)
       {
-        int discardedCount = 0;
-        int recycledCount = 0;
-        final List<BasisBitmapDownloader.UsedBitmap> toBeDiscardedUsedBitmaps = new ArrayList<BasisBitmapDownloader.UsedBitmap>(cache.values());
-        if (recycleMap == true)
+        if (view != null)
         {
-          // First, we clean up the references to all garbage-collected bitmaps
-          final Iterator<UsedBitmap> iterator = toBeDiscardedUsedBitmaps.iterator();
-          while (iterator.hasNext())
+          // We need to do that in the GUI thread!
+          state = FinalState.Local;
+          if (isFromGuiThread == false)
           {
-            final BasisBitmapDownloader.UsedBitmap usedBitmap = (BasisBitmapDownloader.UsedBitmap) iterator.next();
-            if (usedBitmap.getBitmap() == null)
+            if (handler.post(this) == false)
             {
-              iterator.remove();
+              if (log.isWarnEnabled())
+              {
+                log.warn("Failed to apply that local resource for the bitmap with id '" + bitmapUid + "'");
+              }
             }
+          }
+          else
+          {
+            run();
+          }
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private void setTemporaryBitmapIfPossible(boolean isFromGuiThread)
+    {
+      if (instructions.hasTemporaryBitmap(bitmapUid, imageSpecs) == true)
+      {
+        if (view != null)
+        {
+          // We need to do that in the GUI thread!
+          state = FinalState.NotInCache;
+          if (isFromGuiThread == false)
+          {
+            if (handler.post(this) == false)
+            {
+              if (log.isWarnEnabled())
+              {
+                log.warn("Failed to apply the temporary for the bitmap with id '" + bitmapUid + "'");
+              }
+            }
+          }
+          else
+          {
+            run();
           }
         }
-        Collections.sort(toBeDiscardedUsedBitmaps);
-        int index = 0;
-        while (memoryConsumption > lowLevelMemoryWaterMarkInBytes && index < toBeDiscardedUsedBitmaps.size())
+      }
+    }
+
+    private boolean setBitmapFromCacheIfPossible(String url, boolean isFromGuiThread)
+    {
+      // There is a special case when the bitmap URL is null
+      if (url == null)
+      {
+        // We do not want to attempt retrieving a cached bitmap corresponding to a null URL
+        return false;
+      }
+      // We check that the bitmap is no already in the cache
+      final UsedBitmap otherUsedBitmap = getUsedBitmapFromCache(url);
+      if (otherUsedBitmap != null)
+      {
+        usedBitmap = otherUsedBitmap;
+        usedBitmap.rememberAccessed();
+        instructions.onBitmapReady(true, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+        if (view != null)
         {
-          final BasisBitmapDownloader.UsedBitmap discardedUsedCache = cache.remove(toBeDiscardedUsedBitmaps.get(index).url);
-          memoryConsumption -= discardedUsedCache.getMemoryConsumption();
-          // We make the bitmap as recycled, so that it is actually removed from memory, only if it not being used
-          if (recycleMap == true && discardedUsedCache.bindingCount <= 0)
-          {
-            if (discardedUsedCache.getBitmap() != null)
-            {
-              discardedUsedCache.getBitmap().recycle();
-              recycledCount++;
-            }
-          }
-          discardedCount++;
           // if (log.isDebugEnabled())
           // {
-          // log.debug("Removed from the cache the URL " + discardedUsedCache.url + "' accessed " + discardedUsedCache.accessCount +
-          // " time(s) and currently bound " + discardedUsedCache.bindingCount + " time(s)");
+          // log.debug("Re-using the cached bitmap for the URL '" + url + "'");
           // }
-          index++;
+          // It is possible that no bitmap exists for that URL
+          // We need to do that in the GUI thread!
+          state = FinalState.InCache;
+          if (isFromGuiThread == false)
+          {
+            if (handler.post(this) == false)
+            {
+              if (log.isWarnEnabled())
+              {
+                log.warn("Failed to apply that cached bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
+              }
+            }
+          }
+          else
+          {
+            run();
+          }
         }
-        // We reset the remaining usages
-        for (BasisBitmapDownloader.UsedBitmap uriUsage : cache.values())
+        else
         {
-          uriUsage.accessCount = 0;
+          // if (log.isDebugEnabled())
+          // {
+          // log.debug("The bitmap corresponding to the URL '" + url + "' is null: no need to apply its cached bitmap");
+          // }
         }
-        if (log.isInfoEnabled())
+        return true;
+      }
+      return false;
+    }
+
+    private void downloadBitmap(final String url)
+    {
+      // We want to remove any pending download command for the view
+      if (view != null)
+      {
+        // But we test whether the download is still required
+        final Integer commandId = prioritiesStack.get(view);
+        if (commandId == null || commandId != id)
         {
-          log.info("The bitmap cache '" + name + "' has been cleaned-up (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumption + " bytes");
+          return;
+        }
+        // We remove a previously stacked command for the same view
+        final PreCommand alreadyStackedCommand = prioritiesDownloadStack.get(view);
+        if (alreadyStackedCommand != null)
+        {
+          if (log.isDebugEnabled())
+          {
+            log.debug("Removing an already stacked download command corresponding to the view with id '" + view.getId() + "'");
+          }
+          if (BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.remove(alreadyStackedCommand) == false)
+          {
+            if (log.isErrorEnabled())
+            {
+              log.error("Could not find the download command relative to the view with id '" + bitmapUid + "' when attempting to remove it!");
+            }
+          }
+        }
+      }
+
+      // We need to download the bitmap or take it from a local persistence place
+      // Hence, we stack the bitmap download command
+      final DownloadBitmapCommand downloadCommand = computeDownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
+      if (view != null)
+      {
+        prioritiesDownloadStack.put(view, downloadCommand);
+        dump();
+      }
+      BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.execute(downloadCommand);
+    }
+
+  }
+
+  // TODO: when a second download for the same bitmap UID occurs, do not run it
+  protected class DownloadBitmapCommand
+      extends PreCommand
+      implements InputStreamDownloadInstructor
+  {
+
+    protected final String url;
+
+    private boolean downloaded;
+
+    private boolean inputStreamAsynchronous;
+
+    public DownloadBitmapCommand(int id, ViewClass view, String url, String bitmapUid, Object imageSpecs, HandlerClass handler,
+        BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
+    {
+      super(id, view, bitmapUid, imageSpecs, handler, instructions);
+      this.url = url;
+    }
+
+    @Override
+    protected void executeStart(boolean isFromGuiThread)
+    {
+      // The command is removed from the priority stack
+      if (view != null)
+      {
+        prioritiesDownloadStack.remove(view);
+        dump();
+      }
+      // We need to check whether the same URL has not been downloaded in the meantime
+      final UsedBitmap otherUsedBitmap = getUsedBitmapFromCache(url);
+      if (otherUsedBitmap == null)
+      {
+        // If the bitmap is not already in memory, we load it in memory
+        final BitmapClass bitmap = retrieveBitmap();
+        if (bitmap == null)
+        {
+          // This happens either when the bitmap URL is null, or when the bitmap retrieval failed
+          if (inputStreamAsynchronous == false)
+          {
+            if (url != null && url.length() >= 1)
+            {
+              if (log.isWarnEnabled())
+              {
+                log.warn("The bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "' is null");
+              }
+            }
+          }
+          // We let intentionally the 'usedBitmap' null
+        }
+        else
+        {
+          usedBitmap = putInCache(url, bitmap);
+        }
+      }
+      else
+      {
+        // Otherwise, we reuse it
+        usedBitmap = otherUsedBitmap;
+        usedBitmap.rememberAccessed();
+      }
+
+      instructions.onBitmapReady(true, view, usedBitmap == null ? null : usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+      bindBitmap();
+    }
+
+    /**
+     * The {@link BasisBitmapDownloader.PreCommand#view} is ensured not to be null when this method is invoked.
+     */
+    @Override
+    protected void executeEnd()
+    {
+      // We only bind the bitmap to the view provided there is not already another command bound to be processed
+      Integer commandId = prioritiesStack.get(view);
+      if (commandId == null || commandId != id)
+      {
+        // if (log.isDebugEnabled())
+        // {
+        // log.debug("The bitmap corresponding to the URL '" + url +
+        // "' will not be bound to its view, because this view has asked for another bitmap URL in the meantime");
+        // }
+        return;
+      }
+      try
+      {
+        if (usedBitmap != null)
+        {
+          if (instructions.onBindBitmap(downloaded, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == false)
+          {
+            // The binding is performed only if the instructions did not bind it
+            // THINK: what can we do?
+            // view.setImageBitmap(usedBitmap.getBitmap());
+          }
+          usedBitmap.forgetBitmap();
+          usedBitmap.rememberBinding(view);
+        }
+        instructions.onBitmapBound(usedBitmap != null, view, bitmapUid, imageSpecs);
+        // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
+        commandId = prioritiesStack.get(view);
+        if (commandId != null && commandId == id)
+        {
+          prioritiesStack.remove(view);
+          dump();
+        }
+      }
+      catch (OutOfMemoryError exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Process exceeding available memory", exception);
+        }
+        cleanUpCache();
+      }
+    }
+
+    public final void setAsynchronous()
+    {
+      inputStreamAsynchronous = true;
+    }
+
+    public final void onDownloaded(InputStream inputStream)
+    {
+      try
+      {
+        inputStream = onInputStreamDownloaded(inputStream);
+        downloaded = true;
+      }
+      catch (OutOfMemoryError exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Process exceeding available memory", exception);
+        }
+        cleanUpCache();
+        return;
+      }
+
+      // Indicates whether another command has been set for the view in the meantime
+      final boolean forgetTheBinding = view != null && asynchronousDownloadCommands.remove(view) == false;
+
+      final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
+      if (forgetTheBinding == false && bitmap == null)
+      {
+        instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
+        return;
+      }
+      usedBitmap = putInCache(url, bitmap);
+      if (forgetTheBinding == false)
+      {
+        instructions.onBitmapReady(true, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+        bindBitmap();
+      }
+    }
+
+    /**
+     * @return <code>null</code>, in particular, when either if the URL is null or empty
+     * @throws IOException
+     *           if an IO problem occurred while retrieving the bitmap stream
+     */
+    private final InputStream fetchInputStream()
+        throws IOException
+    {
+      InputStream inputStream = null;
+      // We do not event attempt to request for the input stream if the bitmap URI is null or empty
+      if (url != null && url.length() >= 1)
+      {
+        try
+        {
+          inputStream = instructions.getInputStream(bitmapUid, imageSpecs, url, this);
+        }
+        catch (IOException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.warn("Could not get the provided input stream for the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'", exception);
+          }
+          // In that case, we consider that the input stream custom download was a failure
+          throw exception;
+        }
+      }
+      else
+      {
+        return null;
+      }
+
+      if (inputStream != null)
+      {
+        // if (log.isDebugEnabled())
+        // {
+        // log.debug("Using the provided input stream corresponding to the URL '" + url + "'");
+        // }
+        return inputStream;
+      }
+
+      // We determine whether the input stream has turned asynchronous
+      if (inputStreamAsynchronous == true)
+      {
+        asynchronousDownloadCommands.add(view);
+        return null;
+      }
+
+      final long start = System.currentTimeMillis();
+      final URL aURL = new URL(url);
+      final URLConnection connection = aURL.openConnection();
+      instructions.onBeforeBitmapDownloaded(bitmapUid, imageSpecs, connection);
+      // if (log.isDebugEnabled())
+      // {
+      // log.debug("Setting to the URL connection belonging to class '" + connection.getClass().getName() + "' a 'User-Agent' header property");
+      // }
+      connection.connect();
+      final long stop = System.currentTimeMillis();
+      inputStream = connection.getInputStream();
+      if (log.isDebugEnabled())
+      {
+        log.debug("The thread '" + Thread.currentThread().getName() + "' downloaded in " + (stop - start) + " ms the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
+      }
+      try
+      {
+        inputStream = onInputStreamDownloaded(inputStream);
+        downloaded = true;
+        return inputStream;
+      }
+      catch (OutOfMemoryError exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Process exceeding available memory", exception);
+        }
+        cleanUpCache();
+        return null;
+      }
+    }
+
+    /**
+     * @return <code>null</code>, in particular, if the underlying bitmap URL is null or empty
+     */
+    private final BitmapClass retrieveBitmap()
+    {
+      final InputStream inputStream;
+      try
+      {
+        inputStream = fetchInputStream();
+      }
+      catch (IOException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Could not access to the bitmap with id '" + bitmapUid + "  ' relative to the URL '" + url + "'");
+        }
+        return null;
+      }
+      if (inputStream == null)
+      {
+        if (inputStreamAsynchronous == false)
+        {
+          if (url != null && url.length() >= 1)
+          {
+            if (log.isWarnEnabled())
+            {
+              log.warn("The input stream used to build the bitmap with id '" + bitmapUid + "' relative to to the URL '" + url + "' is null");
+            }
+          }
+        }
+        return null;
+      }
+      try
+      {
+        return fromInputStreamToBitmap(inputStream);
+      }
+      finally
+      {
+        if (inputStream != null)
+        {
+          try
+          {
+            inputStream.close();
+          }
+          catch (IOException exception)
+          {
+            // Does not matter
+          }
         }
       }
     }
-    finally
+
+    protected InputStream onInputStreamDownloaded(InputStream inputStream)
     {
-      cleanUpInProgress = false;
-      System.gc();
+      return instructions.onInputStreamDownloaded(bitmapUid, imageSpecs, url, inputStream);
+    }
+
+    protected BitmapClass fromInputStreamToBitmap(InputStream inputStream)
+    {
+      try
+      {
+        return instructions.convert(inputStream, bitmapUid, imageSpecs);
+      }
+      catch (OutOfMemoryError exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Cannot decode the downloaded bitmap because it exceeds the allowed memory", exception);
+        }
+        cleanUpCache();
+        return null;
+      }
+    }
+
+    private final void bindBitmap()
+    {
+      // We need to bind the bitmap to the view in the GUI thread!
+      if (view != null)
+      {
+        if (handler.post(this) == false)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.warn("Failed to apply the downloaded bitmap for the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
+          }
+        }
+      }
+    }
+
+  }
+
+  /**
+   * Enables to express an image specification, which indicates its size and a temporary image resource identification.
+   */
+  public static class SizedImageSpecs
+      extends DownloadSpecs.TemporaryImageSpecs
+  {
+
+    public final int width;
+
+    public final int height;
+
+    public SizedImageSpecs(int imageResourceId, int width, int height)
+    {
+      super(imageResourceId);
+      this.width = width;
+      this.height = height;
+    }
+
+  }
+
+  /**
+   * A map which handles the priorities of the {@link BasisBitmapDownloader.PreCommand pre-commands}: when a new command for an {@link View} is asked
+   * for, if a {@link BasisBitmapDownloader.PreCommand} is already stacked for the same view (i.e. present in {@link #preStack stacked}), the old one
+   * will be discarded.
+   */
+  private final Map<ViewClass, PreCommand> prioritiesPreStack;
+
+  /**
+   * A map which contains all the {@link BasisBitmapDownloader.PreCommand commands} that are currently at the top of the priorities stack. When a new
+   * command for an {@link View} is asked for, if a {@link BasisBitmapDownloader.PreCommand} is already stacked for the same view (i.e. present in
+   * {@link BasisBitmapDownloader#preStack stacked}), the old one will be discarded.
+   */
+  private final Map<ViewClass, Integer> prioritiesStack;
+
+  /**
+   * A map which remembers the {@link BasisBitmapDownloader.DownloadBitmapCommand download command} which have been registered. This map allows to
+   * discard some commands if a new one has been registered for the same {@link View} later on.
+   */
+  private final Map<ViewClass, DownloadBitmapCommand> prioritiesDownloadStack;
+
+  private final Set<ViewClass> asynchronousDownloadCommands = new HashSet<ViewClass>();
+
+  /**
+   * The counter of all commands, which is incremented on every new command, so as to identify them.
+   */
+  private int commandIdCount = -1;
+
+  public BasisBitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  {
+    super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
+    prioritiesStack = new Hashtable<ViewClass, Integer>();
+    prioritiesPreStack = new Hashtable<ViewClass, PreCommand>();
+    prioritiesDownloadStack = new Hashtable<ViewClass, DownloadBitmapCommand>();
+  }
+
+  @Override
+  public final void get(ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+      BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
+  {
+    // if (log.isDebugEnabled())
+    // {
+    // log.debug("Asking to handle the bitmap with id '" + bitmapUid + "'");
+    // }
+    // try
+    // {
+    if (view != null)
+    {
+      // We indicate to the potential asynchronous input stream downloads that a new request is now set for the bitmap
+      asynchronousDownloadCommands.remove(view);
+
+      // We remove a previously stacked command for the same view
+      final PreCommand alreadyStackedCommand = prioritiesPreStack.get(view);
+      if (alreadyStackedCommand != null)
+      {
+        if (log.isDebugEnabled())
+        {
+          log.debug("Removed an already stacked command corresponding to the view with id '" + view.getId() + "'");
+        }
+        if (BasisBitmapDownloader.PRE_THREAD_POOL.remove(alreadyStackedCommand) == false)
+        {
+          if (log.isErrorEnabled())
+          {
+            log.error("Could not find the pre-command relative to the view with id '" + bitmapUid + "' to remove it!");
+          }
+        }
+      }
+    }
+    final PreCommand command = new PreCommand(++commandIdCount, view, bitmapUid, imageSpecs, handler, instructions);
+    if (view != null)
+    {
+      prioritiesStack.put(view, command.id);
+      prioritiesPreStack.put(view, command);
+      dump();
+    }
+    BasisBitmapDownloader.PRE_THREAD_POOL.execute(command);
+  }
+
+  @Override
+  public final void get(boolean isBlocking, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+      BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
+  {
+    if (isBlocking == false)
+    {
+      get(view, bitmapUid, imageSpecs, handler, instructions);
+    }
+    else
+    {
+      final PreCommand preCommand = new PreCommand(++commandIdCount, view, bitmapUid, imageSpecs, handler, instructions, true);
+      if (view != null)
+      {
+        prioritiesStack.put(view, preCommand.id);
+        prioritiesPreStack.put(view, preCommand);
+        dump();
+      }
+      preCommand.executeStart(true);
+    }
+  }
+
+  public synchronized void empty()
+  {
+    if (log.isInfoEnabled())
+    {
+      log.info("Clearing the cache '" + name + "'");
+    }
+    BasisBitmapDownloader.PRE_THREAD_POOL.getQueue().clear();
+    BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.getQueue().clear();
+    asynchronousDownloadCommands.clear();
+    prioritiesStack.clear();
+    prioritiesPreStack.clear();
+    prioritiesDownloadStack.clear();
+    cache.clear();
+    dump();
+  }
+
+  protected DownloadBitmapCommand computeDownloadBitmapCommand(int id, ViewClass view, String url, String bitmapUid, Object imageSpecs, HandlerClass handler,
+      BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
+  {
+    return new DownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
+  }
+
+  /**
+   * Dumps the statistics about the current state of the instance.
+   */
+  protected void dump()
+  {
+    if (BasisBitmapDownloader.IS_DEBUG_TRACE == true)
+    {
+      if (log.isDebugEnabled())
+      {
+        log.debug("'" + name + "' statistics: " + "prioritiesStack.size()=" + prioritiesStack.size() + " - " + "prioritiesPreStack.size()=" + prioritiesPreStack.size() + " - " + "prioritiesDownloadStack.size()=" + prioritiesDownloadStack.size() + " - " + "cache.size()=" + cache.size());
+      }
     }
   }
 
