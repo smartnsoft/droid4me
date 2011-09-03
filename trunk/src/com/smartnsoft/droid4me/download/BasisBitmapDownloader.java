@@ -530,7 +530,6 @@ public abstract class BasisBitmapDownloader
     return usedBitmap;
   }
 
-  // TODO: think of doing that in another thread, because this is blocking
   private final void cleanUpCacheIfNecessary()
   {
     if (memoryConsumption > maxMemoryInBytes)
@@ -543,7 +542,7 @@ public abstract class BasisBitmapDownloader
   {
     if (cleanUpInProgress == true)
     {
-      // This cancels all the forthcoming calls, as long as the clean-up is not over
+      // This cancels all the forthcoming calls, as long as the clean-up is not over, and we do not want the caller to be hanging
       return;
     }
     cleanUpInProgress = true;

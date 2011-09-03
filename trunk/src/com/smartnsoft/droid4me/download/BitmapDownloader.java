@@ -194,10 +194,34 @@ public class BitmapDownloader
 
   }
 
-  // private static enum FinalState
-  // {
-  // Local, Temporary, Null, ToDownload
-  // }
+  /**
+   * Indicates to the command what it should do eventually.
+   * 
+   * @since 2011.09.02
+   */
+  private static enum FinalState
+  {
+    /**
+     * The bitmap is taken from the local resources, and the command is over.
+     */
+    Local,
+    /**
+     * The bitmap was already in the memory cache, and the command is over.
+     */
+    InCache,
+    /**
+     * The bitmap imageUid is <code>null</code>, there is no temporary bitmap, and the command is over.
+     */
+    NullUriNoTemporary,
+    /**
+     * The bitmap imageUid is <code>null</code>, there is a temporary bitmap, and the command is over.
+     */
+    NullUriTemporary,
+    /**
+     * The bitmap needs to be downloaded, and a download-command will be triggered.
+     */
+    NotInCache
+  }
 
   // TODO: define a pool of Command objects, so as to minimize GC, if possible
   private class PreCommand
@@ -205,15 +229,9 @@ public class BitmapDownloader
   {
 
     /**
-     * <ol>
-     * <li><code>0</code>: the bitmap is taken from the local resources, and the command is over;</li>
-     * <li><code>1</code>: the bitmap was already in the memory cache, and the command is over;</li>
-     * <li><code>2</code>: the bitmap imageUid is <code>null</code>, there is no temporary bitmap, and the command is over;</li>
-     * <li><code>3</code>: the bitmap imageUid is <code>null</code>, there is a temporary bitmap, and the command is over;</li>
-     * <li><code>4</code>: the bitmap needs to be downloaded, and a download-command will be triggered.</li>
-     * </ol>
+     * This flag will be used when executing the {@link #run} method the second time.
      */
-    private int state;
+    private BitmapDownloader.FinalState state;
 
     public PreCommand(int id, View view, String bitmapUid, Object imageSpecs, Handler handler, BasisBitmapDownloader.Instructions instructions)
     {
@@ -231,7 +249,7 @@ public class BitmapDownloader
     {
       // if (log.isDebugEnabled())
       // {
-      // log.debug("Starting to handle the drawable for the bitmap with identifier '" + bitmapUid + "'");
+      // log.debug("Starting to handle the bitmap with identifier '" + bitmapUid + "'");
       // }
       // The command is removed from the priority stack
       if (view != null)
@@ -263,7 +281,7 @@ public class BitmapDownloader
         if (view != null)
         {
           // We need to do that in the GUI thread!
-          state = state == 4 ? 3 : 2;
+          state = state == FinalState.NotInCache ? FinalState.NullUriTemporary : FinalState.NullUriNoTemporary;
           if (isFromGuiThread == false)
           {
             if (handler.post(this) == false)
@@ -300,7 +318,7 @@ public class BitmapDownloader
       // processed
       // for the same view
       Integer commandId = prioritiesStack.get(view);
-      if (state != 4 && (commandId == null || commandId != id))
+      if (state != FinalState.NotInCache && (commandId == null || commandId != id))
       {
         if (log.isDebugEnabled())
         {
@@ -312,7 +330,7 @@ public class BitmapDownloader
       {
         switch (state)
         {
-        case 0:
+        case Local:
           instructions.onBindLocalBitmap(view, bitmapUid, imageSpecs);
           instructions.onBitmapBound(true, view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
@@ -320,7 +338,7 @@ public class BitmapDownloader
           // log.debug("Set the local drawable for the bitmap with id '" + bitmapUid + "'");
           // }
           break;
-        case 1:
+        case InCache:
           if (instructions.onBindBitmap(false, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == false)
           {
             // The binding is performed only if the instructions did not bind it
@@ -335,14 +353,14 @@ public class BitmapDownloader
           // log.debug("Set the cached bitmap with id '" + bitmapUid + "'");
           // }
           break;
-        case 2:
+        case NullUriNoTemporary:
           instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
           // {
-          // log.debug("Set the temporary bitmap for a null bitmap id");
+          // log.debug("Did not set any temporary bitmap for a null bitmap id");
           // }
           break;
-        case 3:
+        case NullUriTemporary:
           instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
           instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
@@ -350,7 +368,7 @@ public class BitmapDownloader
           // log.debug("Set the temporary bitmap for a null bitmap id");
           // }
           break;
-        case 4:
+        case NotInCache:
           instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
           // if (log.isDebugEnabled())
           // {
@@ -360,7 +378,7 @@ public class BitmapDownloader
         }
         // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
         commandId = prioritiesStack.get(view);
-        if (state != 4 && commandId == id)
+        if (state != FinalState.NotInCache && commandId == id)
         {
           prioritiesStack.remove(view);
           dump();
@@ -383,14 +401,14 @@ public class BitmapDownloader
         if (view != null)
         {
           // We need to do that in the GUI thread!
-          state = 0;
+          state = FinalState.Local;
           if (isFromGuiThread == false)
           {
             if (handler.post(this) == false)
             {
               if (log.isWarnEnabled())
               {
-                log.warn("Failed to apply that local resource for the bitmap with id '" + bitmapUid + "' from the GUI thread");
+                log.warn("Failed to apply that local resource for the bitmap with id '" + bitmapUid + "'");
               }
             }
           }
@@ -411,14 +429,14 @@ public class BitmapDownloader
         if (view != null)
         {
           // We need to do that in the GUI thread!
-          state = 4;
+          state = FinalState.NotInCache;
           if (isFromGuiThread == false)
           {
             if (handler.post(this) == false)
             {
               if (log.isWarnEnabled())
               {
-                log.warn("Failed to apply that temporary local resource for the bitmap with id '" + bitmapUid + "' from the GUI thread");
+                log.warn("Failed to apply the temporary for the bitmap with id '" + bitmapUid + "'");
               }
             }
           }
@@ -453,14 +471,14 @@ public class BitmapDownloader
           // }
           // It is possible that no bitmap exists for that URL
           // We need to do that in the GUI thread!
-          state = 1;
+          state = FinalState.InCache;
           if (isFromGuiThread == false)
           {
             if (handler.post(this) == false)
             {
               if (log.isWarnEnabled())
               {
-                log.warn("Failed to apply that cached bitmap for the URL '" + url + "' from the GUI thread");
+                log.warn("Failed to apply that cached bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
               }
             }
           }
@@ -498,7 +516,7 @@ public class BitmapDownloader
         {
           if (log.isDebugEnabled())
           {
-            log.debug("Removed an already stacked download command corresponding to the view with id '" + view.getId() + "'");
+            log.debug("Removing an already stacked download command corresponding to the view with id '" + view.getId() + "'");
           }
           if (BitmapDownloader.DOWNLOAD_THREAD_POOL.remove(alreadyStackedCommand) == false)
           {
@@ -566,7 +584,7 @@ public class BitmapDownloader
             {
               if (log.isWarnEnabled())
               {
-                log.warn("The bitmap relative to the URL '" + url + "' is null");
+                log.warn("The bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "' is null");
               }
             }
           }
@@ -696,7 +714,7 @@ public class BitmapDownloader
         {
           if (log.isWarnEnabled())
           {
-            log.warn("Could not get the provided input stream corresponding to the URL '" + url + "'", exception);
+            log.warn("Could not get the provided input stream for the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'", exception);
           }
           // In that case, we consider that the input stream custom download was a failure
           throw exception;
@@ -736,7 +754,7 @@ public class BitmapDownloader
       inputStream = connection.getInputStream();
       if (log.isDebugEnabled())
       {
-        log.debug("The thread '" + Thread.currentThread().getName() + "' downloaded in " + (stop - start) + " ms the bitmap relative to the URL '" + url + "'");
+        log.debug("The thread '" + Thread.currentThread().getName() + "' downloaded in " + (stop - start) + " ms the bitmap with id '" + bitmapUid + " ' relative to the URL '" + url + "'");
       }
       try
       {
@@ -769,7 +787,7 @@ public class BitmapDownloader
       {
         if (log.isWarnEnabled())
         {
-          log.warn("Could not access to the bitmap URL '" + url + "'");
+          log.warn("Could not access to the bitmap with id '" + bitmapUid + "  ' relative to the URL '" + url + "'");
         }
         return null;
       }
@@ -781,7 +799,7 @@ public class BitmapDownloader
           {
             if (log.isWarnEnabled())
             {
-              log.warn("The input stream used to build the bitmap corresponding to the URL '" + url + "' is null");
+              log.warn("The input stream used to build the bitmap with id '" + bitmapUid + "' relative to to the URL '" + url + "' is null");
             }
           }
         }
@@ -851,7 +869,7 @@ public class BitmapDownloader
         {
           if (log.isWarnEnabled())
           {
-            log.warn("Failed to apply the downloaded bitmap for the bitmap with id '" + bitmapUid + "' and URL '" + url + "' from the GUI thread");
+            log.warn("Failed to apply the downloaded bitmap for the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
           }
         }
       }
@@ -944,6 +962,10 @@ public class BitmapDownloader
    */
   private final Map<View, Integer> prioritiesStack;
 
+  /**
+   * A map which remembers the {@link BitmapDownloader.DownloadBitmapCommand download command} which have been registered. This map allows to discard
+   * some commands if a new one has been registered for the same {@link View} later on.
+   */
   private final Map<View, BitmapDownloader.DownloadBitmapCommand> prioritiesDownloadStack;
 
   private final Set<View> asynchronousDownloadCommands = new HashSet<View>();

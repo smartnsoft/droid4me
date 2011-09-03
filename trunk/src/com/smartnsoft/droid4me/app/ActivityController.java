@@ -383,7 +383,6 @@ public final class ActivityController
      *          the exception to investigate
      * @return <code>true</code> if and only if the exception results from a connectivity issue by inspecting its causes tree
      */
-    @SuppressWarnings("unchecked")
     public static boolean isAConnectivityProblem(Throwable throwable)
     {
       return searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class) != null;
@@ -398,7 +397,8 @@ public final class ActivityController
      *          a list of exception classes to look after
      * @return <code>null</code> if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
-    public static final Throwable searchForCause(Throwable throwable, Class<? extends Throwable>... exceptionClass)
+    @SuppressWarnings("unchecked")
+    public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
     {
       Throwable newThrowable = throwable;
       Throwable cause = newThrowable.getCause();
