@@ -39,95 +39,6 @@ public class LoggerFactory
 
   private static Boolean enabled;
 
-  /**
-   * An implementation which uses the Java standard output and error streams.
-   */
-  private final static class NullLogger
-      implements Logger
-  {
-
-    public boolean isDebugEnabled()
-    {
-      return LoggerFactory.logLevel <= Log.DEBUG;
-    }
-
-    public boolean isInfoEnabled()
-    {
-      return LoggerFactory.logLevel <= Log.INFO;
-    }
-
-    public boolean isWarnEnabled()
-    {
-      return LoggerFactory.logLevel <= Log.WARN;
-    }
-
-    public boolean isErrorEnabled()
-    {
-      return LoggerFactory.logLevel <= Log.ERROR;
-    }
-
-    public boolean isFatalEnabled()
-    {
-      return LoggerFactory.logLevel <= Log.ERROR;
-    }
-
-    public void debug(String message)
-    {
-      System.out.println(message);
-    }
-
-    public void error(String message)
-    {
-      System.err.println(message);
-    }
-
-    public void error(String message, Throwable throwable)
-    {
-      System.err.println(message);
-      throwable.printStackTrace(System.err);
-    }
-
-    public void error(StringBuffer message, Throwable throwable)
-    {
-      System.err.println(message);
-      throwable.printStackTrace(System.err);
-    }
-
-    public void fatal(String message)
-    {
-      System.err.println(message);
-    }
-
-    public void fatal(String message, Throwable throwable)
-    {
-      System.err.println(message);
-      throwable.printStackTrace(System.err);
-    }
-
-    public void info(String message)
-    {
-      System.out.println(message);
-    }
-
-    public void warn(String message)
-    {
-      System.out.println(message);
-    }
-
-    public void warn(String message, Throwable throwable)
-    {
-      System.out.println(message);
-      throwable.printStackTrace(System.out);
-    }
-
-    public void warn(StringBuffer message, Throwable throwable)
-    {
-      System.out.println(message);
-      throwable.printStackTrace(System.out);
-    }
-
-  }
-
   public static Logger getInstance(String category)
   {
     return getInstance(category, null);
@@ -157,7 +68,14 @@ public class LoggerFactory
     }
     else
     {
-      return new NullLogger();
+      if (theClass != null)
+      {
+        return new NativeLogger(theClass);
+      }
+      else
+      {
+        return new NativeLogger(category);
+      }
     }
   }
 

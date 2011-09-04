@@ -23,19 +23,23 @@ import android.util.Log;
 /**
  * The logger implementation for Android.
  * 
+ * <p>
+ * This implementation can be used when the code integrating the library runs environment with the Android runtime.
+ * </p>
+ * 
  * @author Édouard Mercier
  * @since 2007.12.23
+ * @see LoggerFactory
  */
 public class AndroidLogger
-    implements com.smartnsoft.droid4me.log.Logger
+    implements Logger
 {
 
-  private String category;
+  private final String category;
 
   public AndroidLogger(String category)
   {
     this.category = category;
-    ;
   }
 
   public AndroidLogger(Class<?> theClass)
