@@ -7,6 +7,7 @@ import java.net.URLConnection;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import android.util.Log;
@@ -229,6 +230,8 @@ public final class Tests
 
   }
 
+  private final String VALID_BITMAP_URL = "http://www.smartnsoft.com/images/site_en_construction.png";
+
   @Before
   public void setup()
   {
@@ -242,25 +245,24 @@ public final class Tests
     final BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable> bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>("0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
     final DummyHandlerable handler = new DummyHandlerable();
     final Expectations expectations = new Expectations();
-    bitmapDownloader.get(new DummyViewable(1234), "http://www.smartnsoft.com/images/site_en_construction.png", null, handler,
-        new ExpectedInstructions(expectations)
-        {
+    bitmapDownloader.get(new DummyViewable(1234), VALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations)
+    {
 
-          @Override
-          public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
-          {
-            super.hasLocalBitmap(bitmapUid, imageSpecs);
-            return true;
-          }
+      @Override
+      public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
+      {
+        super.hasLocalBitmap(bitmapUid, imageSpecs);
+        return true;
+      }
 
-          @Override
-          public void onBindLocalBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
-          {
-            super.onBindLocalBitmap(view, bitmapUid, imageSpecs);
-            expectations.onOver();
-          }
+      @Override
+      public void onBindLocalBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
+      {
+        super.onBindLocalBitmap(view, bitmapUid, imageSpecs);
+        expectations.onOver();
+      }
 
-        });
+    });
 
     expectations.waitForOnOver();
     final int computeUrl = 0;
@@ -286,8 +288,7 @@ public final class Tests
     final BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable> bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>("0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
     final DummyHandlerable handler = new DummyHandlerable();
     final Expectations expectations = new Expectations();
-    bitmapDownloader.get(new DummyViewable(1234), "http://www.smartnsoft.com/images/site_en_construction.png", null, handler,
-        new ExpectedInstructions(expectations));
+    bitmapDownloader.get(new DummyViewable(1234), VALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations));
 
     expectations.waitForOnOver();
     final int computeUrl = 1;
@@ -313,16 +314,15 @@ public final class Tests
     final BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable> bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>("0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
     final DummyHandlerable handler = new DummyHandlerable();
     final Expectations expectations = new Expectations();
-    bitmapDownloader.get(new DummyViewable(1234), "http://www.smartnsoft.com/images/site_en_construction.png", null, handler,
-        new ExpectedInstructions(expectations)
-        {
-          @Override
-          public boolean hasTemporaryBitmap(String bitmapUid, Object imageSpecs)
-          {
-            super.hasTemporaryBitmap(bitmapUid, imageSpecs);
-            return true;
-          }
-        });
+    bitmapDownloader.get(new DummyViewable(1234), VALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations)
+    {
+      @Override
+      public boolean hasTemporaryBitmap(String bitmapUid, Object imageSpecs)
+      {
+        super.hasTemporaryBitmap(bitmapUid, imageSpecs);
+        return true;
+      }
+    });
 
     expectations.waitForOnOver();
     final int computeUrl = 1;
@@ -399,6 +399,21 @@ public final class Tests
     final int convert = 0;
     assertExpectations(expectations, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, getInputStream,
         onInputStreamDownloaded, onBitmapReady, onBindBitmap, onBitmapBound, onBitmapBoundResult, convert);
+  }
+
+  @Test
+  @Ignore
+  public void sameBitmapTwice()
+      throws InterruptedException
+  {
+    final BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable> bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>("0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
+    final DummyHandlerable handler = new DummyHandlerable();
+    final Expectations expectations = new Expectations();
+    final DummyViewable view = new DummyViewable(1234);
+    bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations));
+    bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations));
+//    expectations.waitForOnOver();
+    Thread.sleep(2000);
   }
 
   private void assertExpectations(final Expectations expectations, final int computeUrl, final int hasLocalBitmap, final int hasTemporaryBitmap,
