@@ -148,6 +148,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       accessCount++;
     }
 
+    public void rememberAccessed(UsedBitmap otherUsedBitmap)
+    {
+      accessCount += otherUsedBitmap.accessCount;
+    }
+
     public int compareTo(UsedBitmap another)
     {
       if (accessCount > another.accessCount)
@@ -275,23 +280,21 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   protected final UsedBitmap putInCache(String url, BitmapClass bitmap)
   {
-    if (IS_DEBUG_TRACE && log.isDebugEnabled())
-    {
-      log.debug("The thread '" + Thread.currentThread().getName() + "' put in cache the bitmap with the URL '" + url + "' (size=" + cache.size() + ")");
-    }
     final UsedBitmap usedBitmap = new UsedBitmap(bitmap, url);
     synchronized (cache)
     {
       final UsedBitmap previousUsedBitmap = cache.put(url, usedBitmap);
       if (previousUsedBitmap != null)
       {
-        if (log.isWarnEnabled())
-        {
-          log.warn("Putting twice in cache the bitmap corresponding to the URL '" + url + "'!");
-        }
+        // This may happen if the same bitmap URL has been asked several times while being downloaded
         // We can consider the previous entry as released
         memoryConsumption -= previousUsedBitmap.getMemoryConsumption();
+        usedBitmap.rememberAccessed(previousUsedBitmap);
       }
+    }
+    if (IS_DEBUG_TRACE && log.isDebugEnabled())
+    {
+      log.debug("The thread '" + Thread.currentThread().getName() + "' put in cache the bitmap with the URL '" + url + "'");
     }
     final int bitmapSize = usedBitmap.getMemoryConsumption();
     if (IS_DEBUG_TRACE && log.isDebugEnabled())

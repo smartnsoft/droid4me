@@ -104,6 +104,26 @@ public class DownloadSpecs
   }
 
   /**
+   * Enables to express an image specification, which indicates its size and a temporary image resource identification.
+   */
+  public static class SizedImageSpecs
+      extends TemporaryImageSpecs
+  {
+  
+    public final int width;
+  
+    public final int height;
+  
+    public SizedImageSpecs(int imageResourceId, int width, int height)
+    {
+      super(imageResourceId);
+      this.width = width;
+      this.height = height;
+    }
+  
+  }
+
+  /**
    * We do not want that container class to be instantiated.
    */
   protected DownloadSpecs()
