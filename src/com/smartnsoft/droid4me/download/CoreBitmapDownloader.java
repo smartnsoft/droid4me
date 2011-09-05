@@ -43,10 +43,12 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * @since 2009.02.19
  */
 public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewClass extends Viewable, HandlerClass extends Handlerable>
-    extends DownloadInstructions
 {
 
   protected static final Logger log = LoggerFactory.getInstance("BitmapDownloader");
+
+  // Enables to get debug information: only defined for the current component development
+  protected static final boolean IS_DEBUG_TRACE = "b".equals("a");
 
   public final static DownloadInstructions.Instructions ABSTRACT_INSTRUCTIONS = new DownloadInstructions.AbstractInstructions();
 
@@ -125,17 +127,17 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       if (otherUsedBitmap != null)
       {
         otherUsedBitmap.bindingCount--;
-        // if (log.isDebugEnabled())
-        // {
-        // log.debug("The bitmap corresponding to the URL '" + url + "' has not been bound for the first time with a view");
-        // }
+        if (IS_DEBUG_TRACE && log.isDebugEnabled())
+        {
+          log.debug("The bitmap corresponding to the URL '" + url + "' has not been bound for the first time with a view");
+        }
       }
       else
       {
-        // if (log.isDebugEnabled())
-        // {
-        // log.debug("The bitmap corresponding to the URL '" + url + "' is bound for the first time with an view");
-        // }
+        if (IS_DEBUG_TRACE && log.isDebugEnabled())
+        {
+          log.debug("The bitmap corresponding to the URL '" + url + "' is bound for the first time with an view");
+        }
       }
       bindingCount++;
       view.setTag(this);
@@ -273,11 +275,10 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   protected final UsedBitmap putInCache(String url, BitmapClass bitmap)
   {
-    // if (log.isDebugEnabled())
-    // {
-    // log.debug("The thread '" + Thread.currentThread().getName() + "' put in cache the bitmap with the URL '" + url + "' (size=" + cache.size() +
-    // ")");
-    // }
+    if (IS_DEBUG_TRACE && log.isDebugEnabled())
+    {
+      log.debug("The thread '" + Thread.currentThread().getName() + "' put in cache the bitmap with the URL '" + url + "' (size=" + cache.size() + ")");
+    }
     final UsedBitmap usedBitmap = new UsedBitmap(bitmap, url);
     synchronized (cache)
     {
@@ -293,7 +294,10 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       }
     }
     final int bitmapSize = usedBitmap.getMemoryConsumption();
-    // log.debug("The bitmap consumes " + bitmapSize + " (" + memoryConsumption + ") bytes and corresponds to the url '" + url + "'");
+    if (IS_DEBUG_TRACE && log.isDebugEnabled())
+    {
+      log.debug("The bitmap consumes " + bitmapSize + " (" + memoryConsumption + ") bytes and corresponds to the url '" + url + "'");
+    }
     memoryConsumption += bitmapSize;
     usedBitmap.rememberAccessed();
     cleanUpCacheIfNecessary();
@@ -352,11 +356,10 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
             }
           }
           discardedCount++;
-          // if (log.isDebugEnabled())
-          // {
-          // log.debug("Removed from the cache the URL " + discardedUsedCache.url + "' accessed " + discardedUsedCache.accessCount +
-          // " time(s) and currently bound " + discardedUsedCache.bindingCount + " time(s)");
-          // }
+          if (IS_DEBUG_TRACE && log.isDebugEnabled())
+          {
+            log.debug("Removed from the cache the URL " + discardedUsedCache.url + "' accessed " + discardedUsedCache.accessCount + " time(s) and currently bound " + discardedUsedCache.bindingCount + " time(s)");
+          }
           index++;
         }
         // We reset the remaining usages
