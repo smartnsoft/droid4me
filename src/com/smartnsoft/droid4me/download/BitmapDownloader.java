@@ -36,7 +36,8 @@ import com.smartnsoft.droid4me.download.DownloadInstructions.ViewableView;
  */
 // TODO: introduce a pool of BitmapableBitmap, ViewableView and HandlerableHandler, so as to minimize GC
 public class BitmapDownloader
-    extends BasisBitmapDownloader<BitmapableBitmap, ViewableView, HandlerableHander>
+    extends
+    BasisBitmapDownloader<BitmapableBitmap, ViewableView, HandlerableHander>
 {
 
   /**
@@ -94,12 +95,10 @@ public class BitmapDownloader
           {
             final Class<? extends BitmapDownloader> implementationClass = (Class<? extends BitmapDownloader>) Class.forName(BitmapDownloader.IMPLEMENTATION_FQN);
             final BitmapDownloader[] newInstances = (BitmapDownloader[]) Array.newInstance(implementationClass, BitmapDownloader.INSTANCES_COUNT);
-            final Constructor<? extends BitmapDownloader> constructor = implementationClass.getDeclaredConstructor(String.class, long.class, long.class,
-                boolean.class, boolean.class);
+            final Constructor<? extends BitmapDownloader> constructor = implementationClass.getDeclaredConstructor(String.class, long.class, long.class, boolean.class, boolean.class);
             for (int index = 0; index < BitmapDownloader.INSTANCES_COUNT; index++)
             {
-              newInstances[index] = constructor.newInstance("BitmapDownloader-" + index, BitmapDownloader.MAX_MEMORY_IN_BYTES[index],
-                  BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[index], BitmapDownloader.USE_REFERENCES[index], BitmapDownloader.RECYCLE_BITMAP[index]);
+              newInstances[index] = constructor.newInstance("BitmapDownloader-" + index, BitmapDownloader.MAX_MEMORY_IN_BYTES[index], BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[index], BitmapDownloader.USE_REFERENCES[index], BitmapDownloader.RECYCLE_BITMAP[index]);
             }
             // We only assign the instances class variable here, once all instances have actually been created
             BitmapDownloader.instances = newInstances;
@@ -117,19 +116,26 @@ public class BitmapDownloader
     return BitmapDownloader.instances[position];
   }
 
-  protected BitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  protected BitmapDownloader(String name, long maxMemoryInBytes,
+      long lowLevelMemoryWaterMarkInBytes, boolean useReferences,
+      boolean recycleMap)
   {
     super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
   }
 
-  public final void get(View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions)
+  public final void get(View view, String bitmapUid, Object imageSpecs,
+      Handler handler, DownloadInstructions.Instructions instructions)
   {
-    get(new ViewableView(view), bitmapUid, imageSpecs, new HandlerableHander(handler), instructions);
+    get(view != null ? new ViewableView(view) : null, bitmapUid, imageSpecs, handler != null ? new HandlerableHander(handler)
+        : null, instructions);
   }
 
-  public final void get(boolean isBlocking, View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions)
+  public final void get(boolean isBlocking, View view, String bitmapUid,
+      Object imageSpecs, Handler handler,
+      DownloadInstructions.Instructions instructions)
   {
-    get(isBlocking, new ViewableView(view), bitmapUid, imageSpecs, new HandlerableHander(handler), instructions);
+    get(isBlocking, view != null ? new ViewableView(view) : null, bitmapUid, imageSpecs, handler != null ? new HandlerableHander(handler)
+        : null, instructions);
   }
 
 }

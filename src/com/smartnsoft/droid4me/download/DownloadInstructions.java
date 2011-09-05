@@ -130,42 +130,53 @@ public class DownloadInstructions
    * @since 2009.03.04
    */
   public static abstract class Instructions
-      implements BasisDownloadInstructions.Instructions<DownloadInstructions.BitmapableBitmap, DownloadInstructions.ViewableView>
+      implements
+      BasisDownloadInstructions.Instructions<DownloadInstructions.BitmapableBitmap, DownloadInstructions.ViewableView>
   {
 
-    public abstract void onBindLocalBitmap(View view, String bitmapUid, Object imageSpecs);
+    public abstract void onBindLocalBitmap(View view, String bitmapUid,
+        Object imageSpecs);
 
-    public abstract void onBindTemporaryBitmap(View view, String bitmapUid, Object imageSpecs);
+    public abstract void onBindTemporaryBitmap(View view, String bitmapUid,
+        Object imageSpecs);
 
-    public abstract void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+    public abstract void onBitmapReady(boolean allright, View view,
+        Bitmap bitmap, String bitmapUid, Object imageSpecs);
 
-    public abstract boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+    public abstract boolean onBindBitmap(boolean downloaded, View view,
+        Bitmap bitmap, String bitmapUid, Object imageSpecs);
 
-    public abstract void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
+    public abstract void onBitmapBound(boolean result, View view,
+        String bitmapUid, Object imageSpecs);
 
-    public void onBindLocalBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
+    public void onBindLocalBitmap(ViewableView view, String bitmapUid,
+        Object imageSpecs)
     {
-      onBindLocalBitmap(view.getView(), bitmapUid, imageSpecs);
+      onBindLocalBitmap(view != null ? view.getView() : null, bitmapUid, imageSpecs);
     }
 
-    public void onBindTemporaryBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
+    public void onBindTemporaryBitmap(ViewableView view, String bitmapUid,
+        Object imageSpecs)
     {
-      onBindTemporaryBitmap(view.getView(), bitmapUid, imageSpecs);
+      onBindTemporaryBitmap(view != null ? view.getView() : null, bitmapUid, imageSpecs);
     }
 
-    public void onBitmapReady(boolean allright, ViewableView view, BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
+    public void onBitmapReady(boolean allright, ViewableView view,
+        BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
     {
-      onBitmapReady(allright, view.getView(), bitmap.getBitmap(), bitmapUid, imageSpecs);
+      onBitmapReady(allright, view != null ? view.getView() : null, bitmap.getBitmap(), bitmapUid, imageSpecs);
     }
 
-    public final boolean onBindBitmap(boolean downloaded, ViewableView view, BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
+    public final boolean onBindBitmap(boolean downloaded, ViewableView view,
+        BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
     {
-      return onBindBitmap(downloaded, view.getView(), bitmap.getBitmap(), bitmapUid, imageSpecs);
+      return onBindBitmap(downloaded, view != null ? view.getView() : null, bitmap.getBitmap(), bitmapUid, imageSpecs);
     }
 
-    public void onBitmapBound(boolean result, ViewableView view, String bitmapUid, Object imageSpecs)
+    public void onBitmapBound(boolean result, ViewableView view,
+        String bitmapUid, Object imageSpecs)
     {
-      onBitmapBound(result, view.getView(), bitmapUid, imageSpecs);
+      onBitmapBound(result, view != null ? view.getView() : null, bitmapUid, imageSpecs);
     }
 
   }
@@ -174,13 +185,15 @@ public class DownloadInstructions
       extends Instructions
   {
 
-    public InputStream getInputStream(String bitmapUid, Object imageSpecs, String url, InputStreamDownloadInstructor instructor)
+    public InputStream getInputStream(String bitmapUid, Object imageSpecs,
+        String url, InputStreamDownloadInstructor instructor)
         throws IOException
     {
       return null;
     }
 
-    public InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream)
+    public InputStream onInputStreamDownloaded(String bitmapUid,
+        Object imageSpecs, String url, InputStream inputStream)
     {
       return inputStream;
     }
@@ -210,7 +223,8 @@ public class DownloadInstructions
       return false;
     }
 
-    public void onBindTemporaryBitmap(View view, String bitmapUid, Object imageSpecs)
+    public void onBindTemporaryBitmap(View view, String bitmapUid,
+        Object imageSpecs)
     {
     }
 
@@ -223,11 +237,13 @@ public class DownloadInstructions
     {
     }
 
-    public void onBeforeBitmapDownloaded(String bitmapUid, Object imageSpecs, URLConnection urlConnection)
+    public void onBeforeBitmapDownloaded(String bitmapUid, Object imageSpecs,
+        URLConnection urlConnection)
     {
     }
 
-    public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
+    public DownloadInstructions.BitmapableBitmap convert(
+        InputStream inputStream, String bitmapUid, Object imageSpecs)
     {
       // final long start = System.currentTimeMillis();
       final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -244,17 +260,20 @@ public class DownloadInstructions
       return new BitmapableBitmap(theBitmap);
     }
 
-    public void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
+    public void onBitmapReady(boolean allright, View view, Bitmap bitmap,
+        String bitmapUid, Object imageSpecs)
     {
     }
 
-    public boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
+    public boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap,
+        String bitmapUid, Object imageSpecs)
     {
       ((ImageView) (view)).setImageBitmap(bitmap);
       return true;
     }
 
-    public void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs)
+    public void onBitmapBound(boolean result, View view, String bitmapUid,
+        Object imageSpecs)
     {
     }
 
