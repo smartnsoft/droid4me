@@ -47,6 +47,11 @@ final class NativeLogger
     this(theClass.getSimpleName());
   }
 
+  protected final String getPrefix()
+  {
+    return "[" + System.currentTimeMillis() + "] " + prefix + " [" + Thread.currentThread().getName() + "] ";
+  }
+
   public boolean isDebugEnabled()
   {
     return LoggerFactory.logLevel <= Log.DEBUG;
@@ -74,56 +79,56 @@ final class NativeLogger
 
   public void debug(String message)
   {
-    System.out.println(prefix + "[D] " + message);
+    System.out.println(getPrefix() + "[D] " + message);
   }
 
   public void error(String message)
   {
-    System.err.println(prefix + "[E] " + message);
+    System.err.println(getPrefix() + "[E] " + message);
   }
 
   public void error(String message, Throwable throwable)
   {
-    System.err.println(prefix + "[E] " + message);
+    System.err.println(getPrefix() + "[E] " + message);
     throwable.printStackTrace(System.err);
   }
 
   public void error(StringBuffer message, Throwable throwable)
   {
-    System.err.println(prefix + message);
+    System.err.println(getPrefix() + message);
     throwable.printStackTrace(System.err);
   }
 
   public void fatal(String message)
   {
-    System.err.println(prefix + "[F] " + message);
+    System.err.println(getPrefix() + "[F] " + message);
   }
 
   public void fatal(String message, Throwable throwable)
   {
-    System.err.println(prefix + "[F] " + message);
+    System.err.println(getPrefix() + "[F] " + message);
     throwable.printStackTrace(System.err);
   }
 
   public void info(String message)
   {
-    System.out.println(prefix + "[I] " + message);
+    System.out.println(getPrefix() + "[I] " + message);
   }
 
   public void warn(String message)
   {
-    System.out.println(prefix + "[W] " + message);
+    System.out.println(getPrefix() + "[W] " + message);
   }
 
   public void warn(String message, Throwable throwable)
   {
-    System.out.println(prefix + "[W] " + message);
+    System.out.println(getPrefix() + "[W] " + message);
     throwable.printStackTrace(System.out);
   }
 
   public void warn(StringBuffer message, Throwable throwable)
   {
-    System.out.println(prefix + "[W] " + message);
+    System.out.println(getPrefix() + "[W] " + message);
     throwable.printStackTrace(System.out);
   }
 
