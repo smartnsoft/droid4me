@@ -248,7 +248,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     {
       if (IS_DEBUG_TRACE && log.isDebugEnabled())
       {
-        log.debug("Starting to handle the pre-command for the bitmap with identifier '" + bitmapUid + "'");
+        log.debug("Starting to handle the pre-command for the bitmap with identifier '" + bitmapUid + "'" + (view != null ? " corresponding to the view with id '" + view.getId() + "'"
+            : ""));
       }
       // The command is removed from the priority stack
       if (view != null)
@@ -518,10 +519,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           if (BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.remove(alreadyStackedCommand) == false)
           {
-            if (log.isErrorEnabled())
-            {
-              log.error("Could not find the download command relative to the view with id '" + bitmapUid + "' when attempting to remove it!");
-            }
+            // This may happen if the download command has already started
           }
         }
       }
@@ -539,7 +537,6 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   }
 
-  // TODO: when a second download for the same bitmap UID occurs, do not run it
   protected class DownloadBitmapCommand
       extends PreCommand
       implements InputStreamDownloadInstructor
@@ -563,7 +560,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     {
       if (IS_DEBUG_TRACE && log.isDebugEnabled())
       {
-        log.debug("Starting to handle the download command for the bitmap with identifier '" + bitmapUid + "'");
+        log.debug("Starting to handle the download command for the bitmap with identifier '" + bitmapUid + "'" + (view != null ? " corresponding to the view with id '" + view.getId() + "'"
+            : ""));
       }
       // The command is removed from the priority stack
       if (view != null)
@@ -576,7 +574,78 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       if (otherUsedBitmap == null)
       {
         // If the bitmap is not already in memory, we retrieve it
-        final BitmapClass bitmap = retrieveBitmap();
+        // But, before that, we check whether the same bitmap would not be currently downloading
+        final BitmapClass bitmap;
+        final DownloadingBitmap downloadingBitmap;
+        synchronized (inProgressDownloads)
+        {
+          downloadingBitmap = inProgressDownloads.get(url);
+        }
+        if (downloadingBitmap != null)
+        {
+          downloadingBitmap.referencesCount++;
+          if (IS_DEBUG_TRACE && log.isDebugEnabled())
+          {
+            log.debug("Waiting for the bitmap corresponding to the URL '" + url + "' to be downloaded" + (view != null ? " regarding the view with id '" + view.getId() + "'"
+                : ""));
+          }
+          synchronized (downloadingBitmap)
+          {
+            if (downloadingBitmap.bitmap == null)
+            {
+              try
+              {
+                downloadingBitmap.wait();
+              }
+              catch (InterruptedException exception)
+              {
+                if (log.isWarnEnabled())
+                {
+                  log.warn("An unexpected interruption occurred while waiting for the bitmap with URL '" + url + "' to be downloaded", exception);
+                }
+              }
+              bitmap = inProgressDownloads.get(url).bitmap;
+            }
+            else
+            {
+              bitmap = downloadingBitmap.bitmap;
+            }
+            downloadingBitmap.referencesCount--;
+            if (downloadingBitmap.referencesCount <= 0)
+            {
+              inProgressDownloads.remove(url);
+            }
+          }
+        }
+        else
+        {
+          final DownloadingBitmap newDownloadingBitmap;
+          synchronized (inProgressDownloads)
+          {
+            newDownloadingBitmap = new DownloadingBitmap();
+            inProgressDownloads.put(url, newDownloadingBitmap);
+          }
+          synchronized (newDownloadingBitmap)
+          {
+            try
+            {
+              bitmap = retrieveBitmap();
+              if (newDownloadingBitmap.referencesCount <= 0)
+              {
+                inProgressDownloads.remove(url);
+              }
+              else
+              {
+                newDownloadingBitmap.bitmap = bitmap;
+              }
+            }
+            finally
+            {
+              newDownloadingBitmap.notifyAll();
+            }
+          }
+        }
+
         if (bitmap == null)
         {
           // This happens either when the bitmap URL is null, or when the bitmap retrieval failed
@@ -594,6 +663,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         }
         else
         {
+          // TODO: invoke the 'putInCache()' only once when the same URL is asked for multiple times
           usedBitmap = putInCache(url, bitmap);
         }
       }
@@ -620,7 +690,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         if (IS_DEBUG_TRACE && log.isDebugEnabled())
         {
-          log.debug("The bitmap corresponding to the URL '" + url + "' will not be bound to its view, because this view has asked for another bitmap URL in the meantime");
+          log.debug("The bitmap corresponding to the URL '" + url + "' will not be bound to its view" + (view != null ? " with id '" + view.getId() + "'" : "") + ", because its related view has been requested again in the meantime");
         }
         return;
       }
@@ -635,6 +705,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           usedBitmap.forgetBitmap();
           usedBitmap.rememberBinding(view);
+          if (IS_DEBUG_TRACE && log.isDebugEnabled())
+          {
+            log.debug("Binded the bitmap with id '" + bitmapUid + "' to the view with id '" + view.getId() + "'");
+          }
         }
         instructions.onBitmapBound(usedBitmap != null, view, bitmapUid, imageSpecs);
         // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
@@ -864,23 +938,12 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   }
 
-  /**
-   * Enables to express an image specification, which indicates its size and a temporary image resource identification.
-   */
-  public static class SizedImageSpecs
-      extends DownloadSpecs.TemporaryImageSpecs
+  private final class DownloadingBitmap
   {
 
-    public final int width;
+    private BitmapClass bitmap;
 
-    public final int height;
-
-    public SizedImageSpecs(int imageResourceId, int width, int height)
-    {
-      super(imageResourceId);
-      this.width = width;
-      this.height = height;
-    }
+    private int referencesCount;
 
   }
 
@@ -904,6 +967,12 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
    */
   private final Map<ViewClass, DownloadBitmapCommand> prioritiesDownloadStack;
 
+  /**
+   * Contains the URL of the bitmap being currently downloaded. The key is the URL, the value is a {@link DownloadingBitmap} used for the
+   * synchronization.
+   */
+  private Map<String, DownloadingBitmap> inProgressDownloads;
+
   private final Set<ViewClass> asynchronousDownloadCommands;
 
   /**
@@ -917,6 +986,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     prioritiesStack = new Hashtable<ViewClass, Integer>();
     prioritiesPreStack = new Hashtable<ViewClass, PreCommand>();
     prioritiesDownloadStack = new Hashtable<ViewClass, DownloadBitmapCommand>();
+    inProgressDownloads = new Hashtable<String, DownloadingBitmap>();
     asynchronousDownloadCommands = new HashSet<ViewClass>();
   }
 
@@ -993,6 +1063,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     prioritiesStack.clear();
     prioritiesPreStack.clear();
     prioritiesDownloadStack.clear();
+    inProgressDownloads.clear();
     cache.clear();
     dump();
   }
@@ -1010,7 +1081,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   {
     if (IS_DEBUG_TRACE && log.isDebugEnabled())
     {
-      log.debug("'" + name + "' statistics: " + "prioritiesStack.size()=" + prioritiesStack.size() + " - " + "prioritiesPreStack.size()=" + prioritiesPreStack.size() + " - " + "prioritiesDownloadStack.size()=" + prioritiesDownloadStack.size() + " - " + "cache.size()=" + cache.size());
+      log.debug("'" + name + "' statistics: " + "prioritiesStack.size()=" + prioritiesStack.size() + " - " + "prioritiesPreStack.size()=" + prioritiesPreStack.size() + " - " + "prioritiesDownloadStack.size()=" + prioritiesDownloadStack.size() + " - " + "inProgressDownloads.size()=" + inProgressDownloads.size() + " - " + "cache.size()=" + cache.size());
     }
   }
 
