@@ -25,8 +25,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -106,6 +108,65 @@ public abstract class Persistence
 
   }
 
+  protected static final class UriUsages
+  {
+
+    private final Map<String, Persistence.UriUsage> uriUsages = new HashMap<String, Persistence.UriUsage>();
+
+    private int index = 0;
+
+    public int getIndex()
+    {
+      return index;
+    }
+
+    public void setIndex(int index)
+    {
+      this.index = index;
+    }
+
+    public void clear()
+    {
+      uriUsages.clear();
+      index = 0;
+    }
+
+    public void put(String uri, UriUsage uriUsage)
+    {
+      uriUsages.put(uri, uriUsage);
+      index++;
+    }
+
+    public UriUsage get(String uri)
+    {
+      return uriUsages.get(uri);
+    }
+
+    public UriUsage remove(String uri)
+    {
+      return uriUsages.remove(uri);
+    }
+
+    public int size()
+    {
+      return uriUsages.size();
+    }
+
+    public void resetAccessCount()
+    {
+      for (Persistence.UriUsage uriUsage : uriUsages.values())
+      {
+        uriUsage.accessCount = 0;
+      }
+    }
+
+    public List<UriUsage> getUriUsages()
+    {
+      return new ArrayList<Persistence.UriUsage>(uriUsages.values());
+    }
+
+  }
+
   protected final static Logger log = LoggerFactory.getInstance(Persistence.class);
 
   private static volatile Persistence[] instances;
@@ -142,7 +203,7 @@ public abstract class Persistence
 
   private final String storageDirectoryPath;
 
-  protected final Map<String, Persistence.UriUsage> uriUsages;
+  protected final UriUsages uriUsages;
 
   protected final Set<String> beingProcessed = new HashSet<String>();
 
@@ -318,13 +379,17 @@ public abstract class Persistence
   protected Persistence(String storageDirectoryPath, int instanceIndex)
   {
     this.storageDirectoryPath = storageDirectoryPath;
-    uriUsages = new HashMap<String, Persistence.UriUsage>();
+    uriUsages = new UriUsages();
   }
 
   /**
-   * Invoked when the object is used for the first time.
+   * Initializes the persistence instance.
+   * 
+   * <p>
+   * It will be Invoked when the object is used for the first time when using the {@link #getInstance(int)} method.
+   * </p>
    */
-  protected abstract void initialize();
+  public abstract void initialize();
 
   /**
    * Is responsible for extracting an input stream from the persistence related to the provided URI.

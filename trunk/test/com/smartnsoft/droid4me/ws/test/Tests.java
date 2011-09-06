@@ -15,8 +15,6 @@ import org.apache.http.protocol.HTTP;
 import org.junit.Before;
 import org.junit.Test;
 
-import android.util.Log;
-
 import com.smartnsoft.droid4me.cache.FilePersistence;
 import com.smartnsoft.droid4me.cache.Persistence;
 import com.smartnsoft.droid4me.cache.Cacher.Status;
@@ -25,7 +23,7 @@ import com.smartnsoft.droid4me.cache.Values.CacheException;
 import com.smartnsoft.droid4me.cache.Values.CachingEvent;
 import com.smartnsoft.droid4me.cache.Values.Info;
 import com.smartnsoft.droid4me.cache.Values.Info.Source;
-import com.smartnsoft.droid4me.log.LoggerFactory;
+import com.smartnsoft.droid4me.test.BasisTests;
 import com.smartnsoft.droid4me.ws.WebServiceCaller;
 import com.smartnsoft.droid4me.ws.WebServiceClient;
 import com.smartnsoft.droid4me.ws.WSUriStreamParser.UrlWithCallTypeAndBody;
@@ -37,6 +35,7 @@ import com.smartnsoft.droid4me.wscache.BackedWSUriStreamParser;
  * @since 2011.08.16
  */
 public final class Tests
+    extends BasisTests
 {
 
   private final static class StreamParameter
@@ -99,8 +98,8 @@ public final class Tests
   @Before
   public void setup()
   {
-    LoggerFactory.logLevel = Log.DEBUG;
-    final File contentsDirectory = new File("tmp");
+    super.setup();
+    final File contentsDirectory = getTemporaryDirectory();
     Persistence.CACHE_DIRECTORY_PATHS = new String[] { contentsDirectory.getAbsolutePath() };
     // DbPersistence.FILE_NAMES = new String[] { DbPersistence.DEFAULT_FILE_NAME };
     // DbPersistence.TABLE_NAMES = new String[] { DbPersistence.DEFAULT_TABLE_NAME };
