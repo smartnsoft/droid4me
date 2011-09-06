@@ -165,7 +165,7 @@ public final class DbPersistence
 
   // TODO: think of minimizing this start-up process
   @Override
-  protected synchronized void initialize()
+  public synchronized void initialize()
   {
     final String dbFilePath = getStorageDirectoryPath() + "/" + fileName;
     try

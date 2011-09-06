@@ -10,21 +10,20 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import android.util.Log;
-
 import com.smartnsoft.droid4me.download.BasisBitmapDownloader;
 import com.smartnsoft.droid4me.download.BasisDownloadInstructions;
 import com.smartnsoft.droid4me.download.BasisDownloadInstructions.InputStreamDownloadInstructor;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
-import com.smartnsoft.droid4me.log.LoggerFactory;
+import com.smartnsoft.droid4me.test.BasisTests;
 
 /**
  * @author Édouard Mercier
  * @since 2011.09.03
  */
 public final class Tests
+    extends BasisTests
 {
 
   private final static class DummyBitmapable
@@ -241,7 +240,7 @@ public final class Tests
   @Before
   public void setup()
   {
-    LoggerFactory.logLevel = Log.DEBUG;
+    super.setup();
     bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>("0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
   }
 

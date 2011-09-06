@@ -47,7 +47,7 @@ public class NullPersistence
   }
 
   @Override
-  protected void initialize()
+  public void initialize()
   {
   }
 

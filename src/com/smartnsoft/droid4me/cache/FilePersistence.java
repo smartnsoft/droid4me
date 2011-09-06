@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -42,6 +41,8 @@ import com.smartnsoft.droid4me.bo.Business;
 public final class FilePersistence
     extends Persistence
 {
+
+  private static final String INDEX_KEY = "index";
 
   public static int[] CACHE_FILE_COUNT_LIMITS = new int[] { Integer.MAX_VALUE };
 
@@ -67,7 +68,7 @@ public final class FilePersistence
   }
 
   @Override
-  protected void initialize()
+  public synchronized void initialize()
   {
     properties = new Properties();
     indexFile = new File(getStorageDirectoryPath(), CACHE_INDEX_FILE_NAME);
@@ -104,7 +105,14 @@ public final class FilePersistence
       while (propertyNames.hasMoreElements() == true)
       {
         final String uri = (String) propertyNames.nextElement();
-        uriUsages.put(uri, new Persistence.UriUsage(properties.getProperty(uri), uri));
+        if (uri.equals(FilePersistence.INDEX_KEY) == true)
+        {
+          uriUsages.setIndex(Integer.parseInt(properties.getProperty(uri)));
+        }
+        else
+        {
+          uriUsages.put(uri, new Persistence.UriUsage(properties.getProperty(uri), uri));
+        }
       }
     }
     catch (Exception exception)
@@ -142,6 +150,7 @@ public final class FilePersistence
       final FileOutputStream outputStream = new FileOutputStream(indexFile);
       try
       {
+        properties.setProperty(FilePersistence.INDEX_KEY, Integer.toString(uriUsages.getIndex()));
         properties.store(outputStream, "The cache index file");
         fileIndexNeedsSaving = false;
         if (log.isDebugEnabled())
@@ -317,6 +326,7 @@ public final class FilePersistence
     else
     {
       unregisterUri(uriUsage);
+      saveIndexFileIfNecessary();
     }
   }
 
@@ -485,7 +495,7 @@ public final class FilePersistence
     }
     synchronized (uriUsages)
     {
-      final String filePath = getStorageDirectoryPath() + "/" + uriUsages.size();
+      final String filePath = getStorageDirectoryPath() + "/" + uriUsages.getIndex();
       registerUri(uri, filePath);
       return filePath;
     }
@@ -495,7 +505,7 @@ public final class FilePersistence
   {
     synchronized (uriUsages)
     {
-      final List<Persistence.UriUsage> toBeDiscardedUriUsages = new ArrayList<Persistence.UriUsage>(uriUsages.values());
+      final List<Persistence.UriUsage> toBeDiscardedUriUsages = uriUsages.getUriUsages();
       Collections.sort(toBeDiscardedUriUsages);
       final int toBeDiscardedCount = toBeDiscardedUriUsages.size() / 2;
       for (int index = 0; index < toBeDiscardedCount; index++)
@@ -508,10 +518,7 @@ public final class FilePersistence
         }
       }
       // We reset the remaining usages
-      for (Persistence.UriUsage uriUsage : uriUsages.values())
-      {
-        uriUsage.accessCount = 0;
-      }
+      uriUsages.resetAccessCount();
       if (log.isInfoEnabled())
       {
         log.info("The web cache has been cleaned-up and it now contains " + uriUsages.size() + " item(s)");
