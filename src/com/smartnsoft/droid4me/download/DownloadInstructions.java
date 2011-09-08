@@ -58,12 +58,15 @@ public class DownloadInstructions
 
     public int getSizeInBytes()
     {
-      return bitmap.getWidth() * bitmap.getHeight() * 4;
+      return bitmap == null ? 0 : bitmap.getWidth() * bitmap.getHeight() * 4;
     }
 
     public void recycle()
     {
-      bitmap.recycle();
+      if (bitmap != null)
+      {
+        bitmap.recycle();
+      }
     }
 
   }
