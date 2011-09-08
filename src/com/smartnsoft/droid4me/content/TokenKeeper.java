@@ -17,6 +17,8 @@
 
 package com.smartnsoft.droid4me.content;
 
+import java.io.Serializable;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -30,11 +32,11 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 /**
  * A utility class which enables to remember persistently of token associated to a string: those tokens can
  * <ul>
- * <li>be {@link #rememberToken(Enum) remembered},</li>
- * <li>be even more {@link #rememberTokenAndBroadcast(Enum) remembered and broadcast},</li>
- * <li>be simply {@link #broadcast(Enum) broadcast},</li>
- * <li>be {@link #discardToken(Enum) discarded},</li>
- * <li>be requested through the {@link #hasToken(Enum)} and {@link #missesToken(Enum)} methods.</li>
+ * <li>be {@link #rememberToken()) remembered},</li>
+ * <li>be even more {@link #rememberTokenAndBroadcast() remembered and broadcast},</li>
+ * <li>be simply {@link #broadcast() broadcast},</li>
+ * <li>be {@link #discardToken() discarded},</li>
+ * <li>be requested through the {@link #hasToken()} and {@link #missesToken()} methods.</li>
  * </ul>
  * 
  * <p>
@@ -43,7 +45,8 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * 
  * <p>
  * The implementation uses the Android {@link SharedPreferences} to store persistently the tokens, and it resorts to {@link Intent intents} when it
- * comes to {@link #broadcast(Enum)} a token to the rest of the application.
+ * comes to {@link #broadcast(Enum)} a token to the rest of the application: this is the reason why the template class must carefully implement the
+ * {@link #toString()} method.
  * </p>
  * 
  * <p>
@@ -57,10 +60,12 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * required.
  * </p>
  * 
- * @author Édouard Mercier
+ * @param <Token>
+ *          a serializable type which implements properly the {@link #toString()} method
+ * @author ï¿½douard Mercier
  * @since 2011.07.27
  */
-public class TokenKeeper<Token extends Enum<Token>>
+public class TokenKeeper<Token extends Serializable>
 {
 
   /**
