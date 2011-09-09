@@ -674,7 +674,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         usedBitmap.rememberAccessed();
       }
 
-      instructions.onBitmapReady(true, view, usedBitmap == null ? null : usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+      instructions.onBitmapReady(usedBitmap.getBitmap() != null, view, usedBitmap == null ? null : usedBitmap.getBitmap(), bitmapUid, imageSpecs);
       bindBitmap();
     }
 
