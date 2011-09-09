@@ -248,7 +248,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     {
       if (IS_DEBUG_TRACE && log.isDebugEnabled())
       {
-        log.debug("Starting to handle the pre-command for the bitmap with identifier '" + bitmapUid + "'" + (view != null ? " corresponding to the view with id '" + view.getId() + "'"
+        log.debug("Starting to handle the pre-command for the bitmap with id '" + bitmapUid + "'" + (view != null ? " corresponding to the view with id '" + view.getId() + "'"
             : ""));
       }
       // The command is removed from the priority stack
@@ -674,7 +674,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         usedBitmap.rememberAccessed();
       }
 
-      instructions.onBitmapReady(usedBitmap.getBitmap() != null, view, usedBitmap == null ? null : usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+      instructions.onBitmapReady(usedBitmap != null && usedBitmap.getBitmap() != null, view, usedBitmap == null ? null : usedBitmap.getBitmap(), bitmapUid, imageSpecs);
       bindBitmap();
     }
 
