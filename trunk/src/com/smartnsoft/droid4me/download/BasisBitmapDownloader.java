@@ -591,25 +591,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           synchronized (downloadingBitmap)
           {
-            if (downloadingBitmap.bitmap == null)
-            {
-              try
-              {
-                downloadingBitmap.wait();
-              }
-              catch (InterruptedException exception)
-              {
-                if (log.isWarnEnabled())
-                {
-                  log.warn("An unexpected interruption occurred while waiting for the bitmap with URL '" + url + "' to be downloaded", exception);
-                }
-              }
-              bitmap = inProgressDownloads.get(url).bitmap;
-            }
-            else
-            {
-              bitmap = downloadingBitmap.bitmap;
-            }
+            bitmap = downloadingBitmap.bitmap;
             downloadingBitmap.referencesCount--;
             if (downloadingBitmap.referencesCount <= 0)
             {
@@ -627,21 +609,14 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           synchronized (newDownloadingBitmap)
           {
-            try
+            bitmap = retrieveBitmap();
+            if (newDownloadingBitmap.referencesCount <= 0)
             {
-              bitmap = retrieveBitmap();
-              if (newDownloadingBitmap.referencesCount <= 0)
-              {
-                inProgressDownloads.remove(url);
-              }
-              else
-              {
-                newDownloadingBitmap.bitmap = bitmap;
-              }
+              inProgressDownloads.remove(url);
             }
-            finally
+            else
             {
-              newDownloadingBitmap.notifyAll();
+              newDownloadingBitmap.bitmap = bitmap;
             }
           }
         }
@@ -674,7 +649,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         usedBitmap.rememberAccessed();
       }
 
-      instructions.onBitmapReady(usedBitmap != null && usedBitmap.getBitmap() != null, view, usedBitmap == null ? null : usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+      instructions.onBitmapReady(usedBitmap != null && usedBitmap.getBitmap() != null, view, usedBitmap == null ? null : usedBitmap.getBitmap(), bitmapUid,
+          imageSpecs);
       bindBitmap();
     }
 
