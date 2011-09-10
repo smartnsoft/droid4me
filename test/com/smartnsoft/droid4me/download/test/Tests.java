@@ -235,6 +235,8 @@ public final class Tests
 
   private final String VALID_BITMAP_URL = "http://www.smartnsoft.com/images/site_en_construction.png";
 
+  private final String INVALID_BITMAP_URL = "http://abcd.smartnsoft.com";
+
   private BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable> bitmapDownloader;
 
   @Before
@@ -315,7 +317,6 @@ public final class Tests
   public void bitmapWithTemporaryValidUrl()
       throws InterruptedException
   {
-    final BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable> bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>("0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
     final DummyHandlerable handler = new DummyHandlerable();
     final Expectations expectations = new Expectations();
     bitmapDownloader.get(new DummyViewable(1234), VALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations)
@@ -351,7 +352,7 @@ public final class Tests
   {
     final DummyHandlerable handler = new DummyHandlerable();
     final Expectations expectations = new Expectations();
-    bitmapDownloader.get(new DummyViewable(1234), "http://abcd.smartnsoft.com", null, handler, new ExpectedInstructions(expectations)
+    bitmapDownloader.get(new DummyViewable(1234), INVALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations)
     {
       @Override
       public boolean hasTemporaryBitmap(String bitmapUid, Object imageSpecs)
@@ -438,7 +439,7 @@ public final class Tests
   }
 
   @Test
-  public void sameBitmapMultipleTimes()
+  public void sameAvailabkeBitmapMultipleTimes()
       throws InterruptedException
   {
     final DummyHandlerable handler = new DummyHandlerable();
@@ -479,6 +480,45 @@ public final class Tests
         expectations1.getInputStream + expectations2.getInputStream + expectations3.getInputStream);
     Assert.assertEquals("The 'onBindBitmap()' method has not been invoked the expected number of times", 2,
         expectations1.onBindBitmap + expectations2.onBindBitmap + expectations3.onBindBitmap);
+  }
+
+  @Test
+  public void sameUnavailableBitmapMultipleTimesOnSameView()
+      throws InterruptedException
+  {
+    final DummyHandlerable handler = new DummyHandlerable();
+    final Expectations expectations1 = new Expectations();
+    final Expectations expectations2 = new Expectations();
+    final Expectations expectations3 = new Expectations();
+    final DummyViewable view = new DummyViewable(1234);
+    bitmapDownloader.get(view, INVALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations1)
+    {
+
+      @Override
+      public InputStream getInputStream(String bitmapUid, Object imageSpecs, String url, InputStreamDownloadInstructor instructor)
+          throws IOException
+      {
+        super.getInputStream(bitmapUid, imageSpecs, url, instructor);
+        try
+        {
+          Thread.sleep(200);
+        }
+        catch (InterruptedException exception)
+        {
+        }
+        // We simulate that the bitmap cannot be downloaded
+        return null;
+      }
+
+    });
+    bitmapDownloader.get(view, INVALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations2));
+    bitmapDownloader.get(view, INVALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations3));
+
+    expectations3.waitForOnOver();
+    assertPreExpectations(expectations1, 1, 1, 1, 0, 0);
+    assertPreExpectations(expectations2, 1, 1, 1, 0, 0);
+    assertPreExpectations(expectations3, 1, 1, 1, 0, 0);
+    assertBindingExpectations(expectations3, 1, 0, 1, Boolean.FALSE);
   }
 
   private void assertAllExpectations(final Expectations expectations, final int computeUrl, final int hasLocalBitmap, final int hasTemporaryBitmap,
