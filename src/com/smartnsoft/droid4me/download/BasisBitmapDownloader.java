@@ -610,6 +610,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           synchronized (newDownloadingBitmap)
           {
             bitmap = retrieveBitmap();
+            // A minor optimization
             if (newDownloadingBitmap.referencesCount <= 0)
             {
               inProgressDownloads.remove(url);
@@ -617,6 +618,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
             else
             {
               newDownloadingBitmap.bitmap = bitmap;
+            }
+            if (inputStreamAsynchronous == true)
+            {
+              return;
             }
           }
         }
@@ -727,19 +732,29 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         return;
       }
 
-      // Indicates whether another command has been set for the view in the meantime
-      final boolean forgetTheBinding = view != null && asynchronousDownloadCommands.remove(view) == false;
-
-      final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
-      if (forgetTheBinding == false && bitmap == null)
+      // We first check for the input stream
+      if (inputStream == null)
       {
         instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
         return;
       }
-      usedBitmap = putInCache(url, bitmap);
-      if (forgetTheBinding == false)
+
+      // We attempt to convert the input stream into a bitmap
+      final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
+      if (bitmap == null)
       {
-        instructions.onBitmapReady(true, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+        instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
+        return;
+      }
+
+      // We put in cache the bitmap
+      usedBitmap = putInCache(url, bitmap);
+
+      instructions.onBitmapReady(true, view, bitmap, bitmapUid, imageSpecs);
+
+      // Indicates whether another command has been set for the view in the meantime
+      if (view != null && asynchronousDownloadCommands.remove(view) == true)
+      {
         bindBitmap();
       }
     }
@@ -897,6 +912,9 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       }
     }
 
+    /**
+     * The method will do nothing if the {@link #view} is <code>null</code>.
+     */
     private final void bindBitmap()
     {
       // We need to bind the bitmap to the view in the GUI thread!
