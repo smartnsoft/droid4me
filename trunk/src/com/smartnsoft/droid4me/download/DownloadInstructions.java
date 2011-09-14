@@ -231,7 +231,7 @@ public class DownloadInstructions
     }
 
     public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
-    {
+    { 
       // final long start = System.currentTimeMillis();
       final BitmapFactory.Options options = new BitmapFactory.Options();
       options.inScaled = false;
@@ -244,7 +244,7 @@ public class DownloadInstructions
       // log.debug("The thread '" + Thread.currentThread().getName() + "' decoded in " + (stop - start) + " ms the bitmap with density " +
       // theBitmap.getDensity() + " relative to the URL '" + url + "'");
       // }
-      return new BitmapableBitmap(theBitmap);
+      return theBitmap == null ? null : new BitmapableBitmap(theBitmap);
     }
 
     public void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)

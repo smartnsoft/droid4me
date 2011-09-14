@@ -161,6 +161,9 @@ public class BasisDownloadInstructions
      * <p>
      * It is not ensured that this method will be invoked from the GUI thread.
      * </p>
+     * 
+     * @param the
+     *          input stream that should be converted. It is ensured that this method will not be invoked with a <code>null</code> input stream
      */
     BitmapClass convert(InputStream inputStream, String bitmapUid, Object imageSpecs);
 

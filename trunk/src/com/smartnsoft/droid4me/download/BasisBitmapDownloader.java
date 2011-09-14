@@ -767,36 +767,38 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     private final InputStream fetchInputStream()
         throws IOException
     {
-      InputStream inputStream = null;
-      // We do not event attempt to request for the input stream if the bitmap URI is null or empty
-      if (url != null && url.length() >= 1)
       {
-        try
+        final InputStream inputStream;
+        // We do not event attempt to request for the input stream if the bitmap URI is null or empty
+        if (url != null && url.length() >= 1)
         {
-          inputStream = instructions.getInputStream(bitmapUid, imageSpecs, url, this);
-        }
-        catch (IOException exception)
-        {
-          if (log.isWarnEnabled())
+          try
           {
-            log.warn("Could not get the provided input stream for the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'", exception);
+            inputStream = instructions.getInputStream(bitmapUid, imageSpecs, url, this);
           }
-          // In that case, we consider that the input stream custom download was a failure
-          throw exception;
+          catch (IOException exception)
+          {
+            if (log.isWarnEnabled())
+            {
+              log.warn("Could not get the provided input stream for the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'", exception);
+            }
+            // In that case, we consider that the input stream custom download was a failure
+            throw exception;
+          }
         }
-      }
-      else
-      {
-        return null;
-      }
-
-      if (inputStream != null)
-      {
-        if (IS_DEBUG_TRACE && log.isDebugEnabled())
+        else
         {
-          log.debug("Using the provided input stream corresponding to the URL '" + url + "'");
+          return null;
         }
-        return inputStream;
+
+        if (inputStream != null)
+        {
+          if (IS_DEBUG_TRACE && log.isDebugEnabled())
+          {
+            log.debug("Using the provided input stream corresponding to the URL '" + url + "'");
+          }
+          return inputStream;
+        }
       }
 
       // We determine whether the input stream has turned asynchronous
@@ -806,35 +808,37 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         return null;
       }
 
-      final long start = System.currentTimeMillis();
-      final URL aURL = new URL(url);
-      final URLConnection connection = aURL.openConnection();
-      instructions.onBeforeBitmapDownloaded(bitmapUid, imageSpecs, connection);
-      // if (log.isDebugEnabled())
-      // {
-      // log.debug("Setting to the URL connection belonging to class '" + connection.getClass().getName() + "' a 'User-Agent' header property");
-      // }
-      connection.connect();
-      final long stop = System.currentTimeMillis();
-      inputStream = connection.getInputStream();
-      if (log.isDebugEnabled())
       {
-        log.debug("The thread '" + Thread.currentThread().getName() + "' downloaded in " + (stop - start) + " ms the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
-      }
-      try
-      {
-        inputStream = onInputStreamDownloaded(inputStream);
-        downloaded = true;
-        return inputStream;
-      }
-      catch (OutOfMemoryError exception)
-      {
-        if (log.isWarnEnabled())
+        final long start = System.currentTimeMillis();
+        final URL aURL = new URL(url);
+        final URLConnection connection = aURL.openConnection();
+        instructions.onBeforeBitmapDownloaded(bitmapUid, imageSpecs, connection);
+        // if (log.isDebugEnabled())
+        // {
+        // log.debug("Setting to the URL connection belonging to class '" + connection.getClass().getName() + "' a 'User-Agent' header property");
+        // }
+        connection.connect();
+        final long stop = System.currentTimeMillis();
+        final InputStream inputStream = connection.getInputStream();
+        if (log.isDebugEnabled())
         {
-          log.warn("Process exceeding available memory", exception);
+          log.debug("The thread '" + Thread.currentThread().getName() + "' downloaded in " + (stop - start) + " ms the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
         }
-        cleanUpCache();
-        return null;
+        try
+        {
+          final InputStream downloadedInputStream = onInputStreamDownloaded(inputStream);
+          downloaded = true;
+          return downloadedInputStream;
+        }
+        catch (OutOfMemoryError exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.warn("Process exceeding available memory", exception);
+          }
+          cleanUpCache();
+          return null;
+        }
       }
     }
 
@@ -895,11 +899,26 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       return instructions.onInputStreamDownloaded(bitmapUid, imageSpecs, url, inputStream);
     }
 
+    /**
+     * This method assumes that the provided <code>inputStream</code> is not <code>null</code>.
+     * 
+     * @param inputStream
+     *          an input stream corresponding to a bitmap
+     * @return <code>null</code> if the input stream could not be properly converted ; a valid bitmap otherwise
+     */
     protected BitmapClass fromInputStreamToBitmap(InputStream inputStream)
     {
       try
       {
-        return instructions.convert(inputStream, bitmapUid, imageSpecs);
+        final BitmapClass bitmap = instructions.convert(inputStream, bitmapUid, imageSpecs);
+        if (bitmap == null)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.warn("Could not turn properly into a valid bitmap the input stream corresponding to the bitmap with id '" + bitmapUid + "', related to the URL '" + url + "'");
+          }
+        }
+        return bitmap;
       }
       catch (OutOfMemoryError exception)
       {
