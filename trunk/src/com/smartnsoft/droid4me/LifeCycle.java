@@ -41,29 +41,58 @@ public interface LifeCycle
   /**
    * This exception should be triggered on the framework methods which allow to throw it, when a business object is not accessible.
    */
-  public final class BusinessObjectUnavailableException
+  public class BusinessObjectUnavailableException
       extends Exception
   {
 
     private static final long serialVersionUID = -6764122467050013650L;
 
+    /**
+     * The error code associated with the exception. Is equal to <code>0</code>.
+     */
+    public final int code;
+
     public BusinessObjectUnavailableException()
     {
+      this(0);
+    }
+
+    public BusinessObjectUnavailableException(int code)
+    {
+      this.code = code;
     }
 
     public BusinessObjectUnavailableException(String message, Throwable cause)
     {
+      this(message, cause, 0);
+    }
+
+    public BusinessObjectUnavailableException(String message, Throwable cause, int code)
+    {
       super(message, cause);
+      this.code = code;
     }
 
     public BusinessObjectUnavailableException(String message)
     {
+      this(message, 0);
+    }
+
+    public BusinessObjectUnavailableException(String message, int code)
+    {
       super(message);
+      this.code = code;
     }
 
     public BusinessObjectUnavailableException(Throwable cause)
     {
+      this(cause, 0);
+    }
+
+    public BusinessObjectUnavailableException(Throwable cause, int code)
+    {
       super(cause);
+      this.code = code;
     }
 
   }
