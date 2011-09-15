@@ -42,6 +42,9 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 /**
  * The basis class for all activities available in the framework.
  * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * 
  * @author Édouard Mercier
  * @since 2008.04.11
  */
@@ -300,7 +303,7 @@ public abstract class SmartActivity<AggregateClass>
   void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately,
       final boolean businessObjectCountAndSortingUnchanged)
   {
-    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver,immediately) == true)
+    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
     {
       return;
     }

@@ -24,6 +24,13 @@ import android.widget.ListView;
 /**
  * An instantiation of the {@link AbstractSmartListActivity} bound to the native {@link ListView}.
  * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * @param <BusinessObjectClass>
+ *          the business objects being handled
+ * @param <ViewClass>
+ *          the {@link View} representation of the business objects
+ * 
  * @author Édouard Mercier
  * @since 2011.06.15
  */

@@ -40,6 +40,15 @@ import com.smartnsoft.droid4me.ui.WrappedListView;
 /**
  * In order to propose a list activity which automates many things regarding its underlying business objects.
  * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * @param <BusinessObjectClass>
+ *          the business objects being handled
+ * @param <ListViewClass>
+ *          the @{link ViewGroup} implementation class for the list view widget
+ * @param <ViewClass>
+ *          the {@link View} representation of the business objects
+ * 
  * @author Édouard Mercier
  * @since 2008.04.04
  */
@@ -289,7 +298,8 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   }
 
   @Override
-  void refreshBusinessObjectsAndDisplayInternal(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately, final boolean businessObjectCountAndSortingUnchanged)
+  void refreshBusinessObjectsAndDisplayInternal(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately,
+      final boolean businessObjectCountAndSortingUnchanged)
   {
     super.refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, new Runnable()
     {
