@@ -18,16 +18,18 @@
 
 package com.smartnsoft.droid4me.app;
 
-import android.view.ViewGroup;
 import android.widget.ListView;
 
 /**
  * An instantiation of the {@link AbstractWrappedSmartListActivity} bound to the native {@link ListView}.
  * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * 
  * @author Édouard Mercier
  * @since 2011.06.15
  */
-public abstract class WrappedSmartListActivity<AggregateClass, ListViewClass extends ViewGroup>
+public abstract class WrappedSmartListActivity<AggregateClass>
     extends AbstractWrappedSmartListActivity<AggregateClass, ListView>
 {
 }

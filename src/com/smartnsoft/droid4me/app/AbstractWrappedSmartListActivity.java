@@ -30,6 +30,11 @@ import com.smartnsoft.droid4me.menu.MenuCommand;
 /**
  * Uses wrapped business objects for simplifying the handling of heterogeneous business objects.
  * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * @param <ListViewClass>
+ *          the @{link ViewGroup} implementation class for the list view widget
+ * 
  * @author Édouard Mercier
  * @since 2009.04.29
  */

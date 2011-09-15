@@ -48,6 +48,9 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 /**
  * A basis class for an activity that holds a map.
  * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * 
  * @author Édouard Mercier
  * @since 2009.02.16
  */

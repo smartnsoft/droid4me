@@ -41,6 +41,9 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 /**
  * Makes the Android {@link PreferenceActivity} compatible with the framework.
  * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * 
  * @author Édouard Mercier
  * @since 2010.09.23
  */
