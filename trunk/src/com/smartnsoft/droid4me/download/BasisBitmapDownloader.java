@@ -20,8 +20,6 @@ package com.smartnsoft.droid4me.download;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
@@ -760,89 +758,6 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
 
     /**
-     * @return <code>null</code>, in particular, when either if the URL is null or empty
-     * @throws IOException
-     *           if an IO problem occurred while retrieving the bitmap stream
-     */
-    private final InputStream fetchInputStream()
-        throws IOException
-    {
-      {
-        final InputStream inputStream;
-        // We do not event attempt to request for the input stream if the bitmap URI is null or empty
-        if (url != null && url.length() >= 1)
-        {
-          try
-          {
-            inputStream = instructions.getInputStream(bitmapUid, imageSpecs, url, this);
-          }
-          catch (IOException exception)
-          {
-            if (log.isWarnEnabled())
-            {
-              log.warn("Could not get the provided input stream for the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'", exception);
-            }
-            // In that case, we consider that the input stream custom download was a failure
-            throw exception;
-          }
-        }
-        else
-        {
-          return null;
-        }
-
-        if (inputStream != null)
-        {
-          if (IS_DEBUG_TRACE && log.isDebugEnabled())
-          {
-            log.debug("Using the provided input stream corresponding to the URL '" + url + "'");
-          }
-          return inputStream;
-        }
-      }
-
-      // We determine whether the input stream has turned asynchronous
-      if (inputStreamAsynchronous == true)
-      {
-        asynchronousDownloadCommands.add(view);
-        return null;
-      }
-
-      {
-        final long start = System.currentTimeMillis();
-        final URL aURL = new URL(url);
-        final URLConnection connection = aURL.openConnection();
-        instructions.onBeforeBitmapDownloaded(bitmapUid, imageSpecs, connection);
-        // if (log.isDebugEnabled())
-        // {
-        // log.debug("Setting to the URL connection belonging to class '" + connection.getClass().getName() + "' a 'User-Agent' header property");
-        // }
-        connection.connect();
-        final long stop = System.currentTimeMillis();
-        final InputStream inputStream = connection.getInputStream();
-        if (log.isDebugEnabled())
-        {
-          log.debug("The thread '" + Thread.currentThread().getName() + "' downloaded in " + (stop - start) + " ms the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
-        }
-        try
-        {
-          final InputStream downloadedInputStream = onInputStreamDownloaded(inputStream);
-          downloaded = true;
-          return downloadedInputStream;
-        }
-        catch (OutOfMemoryError exception)
-        {
-          if (log.isWarnEnabled())
-          {
-            log.warn("Process exceeding available memory", exception);
-          }
-          cleanUpCache();
-          return null;
-        }
-      }
-    }
-
-    /**
      * @return <code>null</code>, in particular, if the underlying bitmap URL is null or empty
      */
     private final BitmapClass retrieveBitmap()
@@ -929,6 +844,93 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         cleanUpCache();
         return null;
       }
+    }
+
+    /**
+     * @return <code>null</code>, in particular, when either if the URL is null or empty
+     * @throws IOException
+     *           if an IO problem occurred while retrieving the bitmap stream
+     */
+    private final InputStream fetchInputStream()
+        throws IOException
+    {
+      {
+        final InputStream inputStream;
+        // We do not event attempt to request for the input stream if the bitmap URI is null or empty
+        if (url != null && url.length() >= 1)
+        {
+          try
+          {
+            inputStream = instructions.getInputStream(bitmapUid, imageSpecs, url, this);
+          }
+          catch (IOException exception)
+          {
+            if (log.isWarnEnabled())
+            {
+              log.warn("Could not get the provided input stream for the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'", exception);
+            }
+            // In that case, we consider that the input stream custom download was a failure
+            throw exception;
+          }
+        }
+        else
+        {
+          return null;
+        }
+
+        if (inputStream != null)
+        {
+          if (IS_DEBUG_TRACE && log.isDebugEnabled())
+          {
+            log.debug("Using the provided input stream corresponding to the URL '" + url + "'");
+          }
+          return inputStream;
+        }
+      }
+
+      // We determine whether the input stream has turned asynchronous
+      if (inputStreamAsynchronous == true)
+      {
+        asynchronousDownloadCommands.add(view);
+        return null;
+      }
+
+      try
+      {
+        return downloadInputStream();
+      }
+      catch (OutOfMemoryError exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Process exceeding available memory", exception);
+        }
+        cleanUpCache();
+        return null;
+      }
+    }
+
+    /**
+     * Is responsible for actually downloading the input stream corresponding to the bitmap.
+     * 
+     * @return the input stream corresponding to the bitmap ; should not return <code>null</code> but throw an exception instead when the input stream
+     *         cannot be downloaded
+     * @throws IOException
+     *           if a problem occurred during the download
+     */
+    private InputStream downloadInputStream()
+        throws IOException
+    {
+      final long start = System.currentTimeMillis();
+      final InputStream inputStream = instructions.downloadInputStream(bitmapUid, imageSpecs, url);
+      final long stop = System.currentTimeMillis();
+      if (log.isDebugEnabled())
+      {
+        log.debug("The thread '" + Thread.currentThread().getName() + "' downloaded in " + (stop - start) + " ms the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
+      }
+      final InputStream downloadedInputStream = onInputStreamDownloaded(inputStream);
+      downloaded = true;
+      return downloadedInputStream;
     }
 
     /**
