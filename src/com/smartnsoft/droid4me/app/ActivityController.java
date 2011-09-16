@@ -389,7 +389,7 @@ public final class ActivityController
     }
 
     /**
-     * Attempts to find a specific exception in the provided exception by iterating over the causes.
+     * Attempts to find a specific exception in the provided exception by iterating over the causes, starting with the provided exception itself.
      * 
      * @param throwable
      *          the exception to be inspected
@@ -401,7 +401,7 @@ public final class ActivityController
     public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
     {
       Throwable newThrowable = throwable;
-      Throwable cause = newThrowable.getCause();
+      Throwable cause = throwable;
       // We investigate over the whole causes stack
       while (cause != null)
       {
