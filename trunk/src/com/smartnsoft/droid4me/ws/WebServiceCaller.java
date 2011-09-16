@@ -47,10 +47,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,7 +80,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * <li>if a connection issue arises (connection time-out, socket time-out, lost of connectivity), a {@link WebServiceCaller.CallException} exception
  * will be thrown, and it will {@link Throwable#getCause() embed} the reason for the connection issue ;</li>
  * <li>if the status code of the HTTP response does not belong to the [{@link HttpStatus.SC_OK}, {@link HttpStatus.SC_MULTI_STATUS}] range, the
- * {@link #onStatusCodeNotOk(String, CallType, HttpEntity, HttpResponse, int, int)} method will be invoked.</li>
+ * {@link #onStatusCodeNotOk(String, WebServiceClient.CallType, HttpEntity, HttpResponse, int, int)} method will be invoked.</li>
  * </ol>
  * </p>
  * 
@@ -88,8 +91,53 @@ public abstract class WebServiceCaller
     implements WebServiceClient
 {
 
+  /**
+   * An empty interface which states that the underlying {@link HttpClient} instance should be reused for all HTTP request, instead of creating a new
+   * one each time.
+   */
   public static interface ReuseHttpClient
   {
+  }
+
+  /**
+   * Overrides the default {@link DefaultHttpClient} by disabling the cookies storing.
+   * 
+   * <p>
+   * The code is inspired from http://code.google.com/p/zxing/source/browse/trunk/android/src/com/google/zxing/client/android/AndroidHttpClient.java.
+   * </p>
+   * 
+   * @since 2011.09.16
+   */
+  protected static class SensibleHttpClient
+      extends DefaultHttpClient
+  {
+
+    public SensibleHttpClient()
+    {
+      super();
+    }
+
+    public SensibleHttpClient(ClientConnectionManager connectionManager, HttpParams params)
+    {
+      super(connectionManager, params);
+    }
+
+    public SensibleHttpClient(HttpParams params)
+    {
+      super(params);
+    }
+
+    @Override
+    protected HttpContext createHttpContext()
+    {
+      // Same as DefaultHttpClient.createHttpContext() minus the cookie store
+      HttpContext context = new BasicHttpContext();
+      context.setAttribute(ClientContext.AUTHSCHEME_REGISTRY, getAuthSchemes());
+      context.setAttribute(ClientContext.COOKIESPEC_REGISTRY, getCookieSpecs());
+      context.setAttribute(ClientContext.CREDS_PROVIDER, getCredentialsProvider());
+      return context;
+    }
+
   }
 
   protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
@@ -588,6 +636,10 @@ public abstract class WebServiceCaller
   /**
    * Is responsible for returning an HTTP client instance, used for actually running the HTTP request.
    * 
+   * <p>
+   * The current implementation returns a {@link SensibleHttpClient} instance, which is thread-safe.
+   * </p>
+   * 
    * @return a valid HTTP client
    */
   protected HttpClient getHttpClient()
@@ -597,19 +649,17 @@ public abstract class WebServiceCaller
       if (httpClient == null)
       {
         // Taken from http://foo.jasonhudgins.com/2010/03/http-connections-revisited.html
-        httpClient = new DefaultHttpClient();
-        final ClientConnectionManager clientConnectionManager = httpClient.getConnectionManager();
-        final HttpParams params = httpClient.getParams();
-        // final ThreadSafeClientConnManager threadSafeClientConnectionManager = new
-        // ThreadSafeClientConnManager(clientConnectionManager.getSchemeRegistry());
+        final DefaultHttpClient initialHttpClient = new DefaultHttpClient();
+        final ClientConnectionManager clientConnectionManager = initialHttpClient.getConnectionManager();
+        final HttpParams params = initialHttpClient.getParams();
         final ThreadSafeClientConnManager threadSafeClientConnectionManager = new ThreadSafeClientConnManager(params, clientConnectionManager.getSchemeRegistry());
-        httpClient = new DefaultHttpClient(threadSafeClientConnectionManager, params);
+        httpClient = new SensibleHttpClient(threadSafeClientConnectionManager, params);
       }
       return httpClient;
     }
     else
     {
-      return new DefaultHttpClient();
+      return new SensibleHttpClient();
     }
   }
 
