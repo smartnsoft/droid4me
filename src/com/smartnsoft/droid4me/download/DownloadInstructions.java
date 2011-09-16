@@ -18,6 +18,7 @@ package com.smartnsoft.droid4me.download;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLConnection;
 
 import android.graphics.Bitmap;
@@ -26,7 +27,6 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.smartnsoft.droid4me.download.BasisDownloadInstructions.InputStreamDownloadInstructor;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
@@ -38,6 +38,7 @@ import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
  * @since 2011.07.03
  */
 public class DownloadInstructions
+    extends BasisDownloadInstructions
 {
 
   public final static class BitmapableBitmap
@@ -226,12 +227,18 @@ public class DownloadInstructions
     {
     }
 
-    public void onBeforeBitmapDownloaded(String bitmapUid, Object imageSpecs, URLConnection urlConnection)
+    public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
+        throws IOException
     {
+      final URL aURL = new URL(url);
+      final URLConnection connection = aURL.openConnection();
+      connection.connect();
+      final InputStream inputStream = connection.getInputStream();
+      return inputStream;
     }
 
     public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
-    { 
+    {
       // final long start = System.currentTimeMillis();
       final BitmapFactory.Options options = new BitmapFactory.Options();
       options.inScaled = false;

@@ -3,6 +3,7 @@ package com.smartnsoft.droid4me.download.test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLConnection;
 
 import junit.framework.Assert;
@@ -113,6 +114,8 @@ public final class Tests
 
     public int getInputStream;
 
+    public int downloadInputStream;
+
     public int onInputStreamDownloaded;
 
     public int onBitmapReady;
@@ -197,8 +200,16 @@ public final class Tests
       return null;
     }
 
-    public void onBeforeBitmapDownloaded(String bitmapUid, Object imageSpecs, URLConnection urlConnection)
+    public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
+        throws IOException
     {
+      expectations.downloadInputStream++;
+
+      final URL aURL = new URL(url);
+      final URLConnection connection = aURL.openConnection();
+      connection.connect();
+      final InputStream inputStream = connection.getInputStream();
+      return inputStream;
     }
 
     public InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream)
@@ -233,7 +244,7 @@ public final class Tests
 
   }
 
-  private final String VALID_BITMAP_URL = "http://www.smartnsoft.com/images/site_en_construction.png";
+  private final String VALID_BITMAP_URL = "http://www.smartnsoft.com/images/home/illu.png";
 
   private final String INVALID_BITMAP_URL = "http://abcd.smartnsoft.com";
 
