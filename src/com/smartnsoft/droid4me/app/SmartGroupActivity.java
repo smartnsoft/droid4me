@@ -332,7 +332,7 @@ public abstract class SmartGroupActivity<AggregateClass>
       decorView.requestFocus();
     }
     currentActivityId = activityId;
-    if (headerView.hasFocus() == false)
+    if (headerView != null && headerView.hasFocus() == false)
     {
       contentView.requestFocus();
     }
@@ -876,7 +876,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
     boolean result = super.onOptionsItemSelected(item);
 
-    if (stateContainer.compositeActionHandler.onOptionsItemSelected(item) == true)
+    if (result == false && stateContainer.compositeActionHandler.onOptionsItemSelected(item) == true)
     {
       return true;
     }
@@ -892,7 +892,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
     boolean result = super.onContextItemSelected(item);
 
-    if (stateContainer.compositeActionHandler.onContextItemSelected(item) == true)
+    if (result == false && stateContainer.compositeActionHandler.onContextItemSelected(item) == true)
     {
       return true;
     }
