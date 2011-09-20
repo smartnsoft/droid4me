@@ -507,7 +507,7 @@ public final class DbPersistence
       }
       catch (IOException exception)
       {
-        throw new Persistence.PersistenceException();
+        throw new Persistence.PersistenceException("Could not persist the input stream corresponding to the URI '" + uri + "'", exception);
       }
       finally
       {
