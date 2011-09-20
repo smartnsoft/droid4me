@@ -607,7 +607,20 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           synchronized (newDownloadingBitmap)
           {
-            bitmap = retrieveBitmap();
+            BitmapClass retrievedBitmap = null;
+            try
+            {
+              retrievedBitmap = retrieveBitmap();
+            }
+            catch (Throwable throwable)
+            {
+              // We want to make sure that the process resumes if a problem occurred during the retrieval of the bitmap
+              if (log.isWarnEnabled())
+              {
+                log.warn("An unattended problem occured while retrieving the bitmap with id '" + bitmapUid + "' corresponding to the URL '" + url + "'");
+              }
+            }
+            bitmap = retrievedBitmap;
             // A minor optimization
             if (newDownloadingBitmap.referencesCount <= 0)
             {
