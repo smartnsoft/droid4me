@@ -55,16 +55,16 @@ public abstract class Persistence
 
     private static final long serialVersionUID = -5246441820601050842L;
 
-    public PersistenceException()
+    PersistenceException()
     {
     }
 
-    private PersistenceException(String message)
+    PersistenceException(String message)
     {
       super(message);
     }
 
-    private PersistenceException(String message, Throwable throwable)
+    PersistenceException(String message, Throwable throwable)
     {
       super(message, throwable);
     }
@@ -424,7 +424,8 @@ public abstract class Persistence
    * 
    * When called, the persistence storage is ensured to be available.
    * 
-   * @throws if any problem occurs while emptying the persistence
+   * @throws if
+   *           any problem occurs while emptying the persistence
    * @see #clear()
    */
   protected abstract void empty()
@@ -441,7 +442,8 @@ public abstract class Persistence
   /**
    * Totally clears the cache related to the current instance.
    * 
-   * @throws if any problem occurs while clearing the persistence
+   * @throws if
+   *           any problem occurs while clearing the persistence
    * @see #clear()
    */
   public final synchronized void clear()
