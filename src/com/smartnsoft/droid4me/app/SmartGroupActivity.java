@@ -214,6 +214,16 @@ public abstract class SmartGroupActivity<AggregateClass>
 
   private FrameLayout contentView;
 
+  public SmartGroupActivity()
+  {
+    super();
+  }
+
+  public SmartGroupActivity(boolean singleActivityMode)
+  {
+    super(singleActivityMode);
+  }
+
   /**
    * @return the top view ; can be <code>null</code>
    */
