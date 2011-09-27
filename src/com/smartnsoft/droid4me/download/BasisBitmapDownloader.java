@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +37,7 @@ import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
 
 /**
- * A first implementation of the {@link CoreBitmapDownloader} class, which is independent from the Android platform.
+ * An implementation of the {@link CoreBitmapDownloader} class, which is independent from the Android platform.
  * 
  * @author Édouard Mercier
  * @since 2009.02.19
@@ -46,33 +46,27 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     extends CoreBitmapDownloader<BitmapClass, ViewClass, HandlerClass>
 {
 
+  /**
+   * The default number of authorized threads available in the "pre" threads pool.
+   * 
+   * @see #setPreThreadPoolSize(int)
+   */
+  public final static int PRE_THREAD_POOL_DEFAULT_SIZE = 3;
+
   private static int preThreadCount;
 
-  // private final static class ImagePriorityBlockingQueue
-  // extends PriorityBlockingQueue<Runnable>
-  // {
-  // @Override
-  // public boolean offer(Runnable runnable)
-  // {
-  // // final int activePoolSize = BitmapDownloader.PRE_THREAD_POOL.getActiveCount();
-  // // if (activePoolSize >= BitmapDownloader.PRE_THREAD_POOL.getCorePoolSize() && activePoolSize <
-  // // BitmapDownloader.PRE_THREAD_POOL.getMaximumPoolSize())
-  // // {
-  // // return false;
-  // // }
-  // // return super.offer(runnable);
-  // return false;
-  // }
-  //
-  // public void add(Runnable runnable, boolean forceAddition)
-  // {
-  // super.offer(runnable);
-  // }
-  // };
+  /**
+   * Enables to tune how many threads at most will be available in the "pre" threads pool.
+   * 
+   * @param poolSize
+   *          the maximum of threads will created for handling incoming commands ; defaults to {@link #PRE_THREAD_POOL_DEFAULT_SIZE}
+   */
+  public static void setPreThreadPoolSize(int poolSize)
+  {
+    BasisBitmapDownloader.PRE_THREAD_POOL.setCorePoolSize(poolSize);
+  }
 
-  // private final static BitmapDownloader.ImagePriorityBlockingQueue PRE_BLOCKING_QUEUE = new BitmapDownloader.ImagePriorityBlockingQueue();
-
-  private final static ThreadPoolExecutor PRE_THREAD_POOL = new ThreadPoolExecutor(2, 3, 5l, TimeUnit.SECONDS, new PriorityBlockingQueue<Runnable>(), new ThreadFactory()
+  private final static ThreadPoolExecutor PRE_THREAD_POOL = new ThreadPoolExecutor(BasisBitmapDownloader.PRE_THREAD_POOL_DEFAULT_SIZE, BasisBitmapDownloader.PRE_THREAD_POOL_DEFAULT_SIZE, 5l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory()
   {
     public Thread newThread(Runnable runnable)
     {
@@ -80,28 +74,29 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       thread.setName("droid4me-" + (BasisBitmapDownloader.preThreadCount < BasisBitmapDownloader.PRE_THREAD_POOL.getCorePoolSize() ? "core-" : "") + "pre #" + BasisBitmapDownloader.preThreadCount++);
       return thread;
     }
-  }, /*
-      * new RejectedExecutionHandler() { public void rejectedExecution(Runnable command, ThreadPoolExecutor executor) {
-      * BitmapDownloader.PRE_BLOCKING_QUEUE.add(command, true); } }
-      */new ThreadPoolExecutor.AbortPolicy());
+  }, new ThreadPoolExecutor.AbortPolicy());
+
+  /**
+   * The default number of authorized threads available in the "download" threads pool.
+   * 
+   * @see #setDownloadhreadPoolSize(int)
+   */
+  public final static int DOWNLOAD_THREAD_POOL_DEFAULT_SIZE = 4;
 
   private static int downloadThreadCount;
 
-  @SuppressWarnings("serial")
-  private final static ThreadPoolExecutor DOWNLOAD_THREAD_POOL = new ThreadPoolExecutor(2, 4, 5l, TimeUnit.SECONDS, new PriorityBlockingQueue<Runnable>()
+  /**
+   * Enables to tune how many threads at most will be available in the "download" threads pool.
+   * 
+   * @param poolSize
+   *          the maximum of threads will created for handling incoming commands ; defaults to {@link #DOWNLOAD_THREAD_POOL_DEFAULT_SIZE}
+   */
+  public static void setDownloadhreadPoolSize(int poolSize)
   {
-    // @Override
-    // public boolean offer(Runnable runnable)
-    // {
-    // final int activePoolSize = BitmapDownloader.DOWNLOAD_THREAD_POOL.getActiveCount();
-    // if (activePoolSize >= BitmapDownloader.DOWNLOAD_THREAD_POOL.getCorePoolSize() && activePoolSize <
-    // BitmapDownloader.DOWNLOAD_THREAD_POOL.getMaximumPoolSize())
-    // {
-    // return false;
-    // }
-    // return super.offer(runnable);
-    // }
-  }, new ThreadFactory()
+    BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.setCorePoolSize(poolSize);
+  }
+
+  private final static ThreadPoolExecutor DOWNLOAD_THREAD_POOL = new ThreadPoolExecutor(BasisBitmapDownloader.DOWNLOAD_THREAD_POOL_DEFAULT_SIZE, BasisBitmapDownloader.DOWNLOAD_THREAD_POOL_DEFAULT_SIZE, 5l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory()
   {
     public Thread newThread(Runnable runnable)
     {

@@ -822,6 +822,10 @@ public final class AppPublics
   /**
    * Indicates how many threads at most will be available in the {@link #LOW_PRIORITY_THREAD_POOL low-priority threads pool}, by default. It needs to
    * be sent at the application start-up.
+   * 
+   * <p>
+   * You may change that pool size by invoking the {@link ThreadPoolExecutor#setCorePoolSize(int)} method.
+   * </p>
    */
   public final static int LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE = 3;
 
