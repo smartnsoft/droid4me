@@ -45,7 +45,6 @@ import android.widget.LinearLayout.LayoutParams;
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.framework.Events.OnCompletion;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
@@ -194,7 +193,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
   }
 
-  protected static final Logger log = LoggerFactory.getInstance(SmartGroupActivity.class);
+  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
 
   private final List<String> activitiesIds = new ArrayList<String>();
 
@@ -607,7 +606,7 @@ public abstract class SmartGroupActivity<AggregateClass>
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()
   {
@@ -617,7 +616,7 @@ public abstract class SmartGroupActivity<AggregateClass>
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
   {

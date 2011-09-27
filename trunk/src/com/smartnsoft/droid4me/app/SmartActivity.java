@@ -32,7 +32,6 @@ import android.view.MenuItem;
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.framework.Events.OnCompletion;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
@@ -54,7 +53,7 @@ public abstract class SmartActivity<AggregateClass>
     implements SmartableActivity<AggregateClass>
 {
 
-  protected static final Logger log = LoggerFactory.getInstance(SmartActivity.class);
+  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
 
   public void onBusinessObjectsRetrieved()
   {
@@ -278,7 +277,7 @@ public abstract class SmartActivity<AggregateClass>
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()
   {
@@ -288,7 +287,7 @@ public abstract class SmartActivity<AggregateClass>
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
   {

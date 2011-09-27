@@ -31,7 +31,6 @@ import android.view.MenuItem;
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.framework.Events.OnCompletion;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
@@ -52,7 +51,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     implements SmartableActivity<AggregateClass>
 {
 
-  protected static final Logger log = LoggerFactory.getInstance(SmartPreferenceActivity.class);
+  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
 
   /**
    * Does nothing, but we can overload it in derived classes.
@@ -290,7 +289,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()
   {
@@ -300,7 +299,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
   {

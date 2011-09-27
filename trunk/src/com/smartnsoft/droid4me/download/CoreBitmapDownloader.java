@@ -123,6 +123,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       {
         return;
       }
+      @SuppressWarnings("unchecked")
       final UsedBitmap otherUsedBitmap = (UsedBitmap) view.getTag();
       if (otherUsedBitmap != null)
       {

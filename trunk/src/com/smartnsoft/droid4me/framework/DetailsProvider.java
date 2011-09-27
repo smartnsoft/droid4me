@@ -24,10 +24,6 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.View;
-import android.widget.Adapter;
-import android.widget.GridView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.menu.MenuCommand;
@@ -35,9 +31,9 @@ import com.smartnsoft.droid4me.menu.MenuCommand;
 /**
  * Introduced in order to define various contract between:
  * <ul>
- * <li>a {@link ListView list view} and its {@link ListAdapter adapter},
+ * <li>a {@link android.widget.ListView list view} and its {@link android.widget.ListAdapter adapter},
  * <li>
- * <li>a {@link GridView grid view} and its {@link Adapter adapter}.
+ * <li>a {@link android.widget.GridView grid view} and its {@link android.widget.ListAdapter adapter}.
  * <li>
  * </ul>
  * 
@@ -48,7 +44,7 @@ public abstract class DetailsProvider
 {
 
   /**
-   * Introduced in order to define the contract between a {@link ListView list view} and its {@link ListAdapter adapter}.
+   * Introduced in order to define the contract between a {@link android.widget.ListView list view} and its {@link android.widget.ListAdapter adapter}.
    * 
    * @author Edouard Mercier
    * @since 2008.05.13
@@ -93,7 +89,7 @@ public abstract class DetailsProvider
   }
 
   /**
-   * Wraps a business object and its underlying Android {@link View} in a list or a grid.
+   * Wraps a business object and its underlying Android {@link android.view.View} in a list or a grid.
    * 
    * @since 2009.04.29
    */
@@ -352,7 +348,7 @@ public abstract class DetailsProvider
   }
 
   /**
-   * The default value that will be returned by {@link ListAdapter#getItemId(int)} method.
+   * The default value that will be returned by {@link android.widget.ListAdapter#getItemId(int)} method.
    */
   public static final long DEFAULT_ITEM_ID = 0;
 
