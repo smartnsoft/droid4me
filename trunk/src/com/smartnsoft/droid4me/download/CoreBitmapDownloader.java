@@ -47,10 +47,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   protected static final Logger log = LoggerFactory.getInstance("BitmapDownloader");
 
-  // Enables to get debug information: only defined for the current component development
-  protected static final boolean IS_DEBUG_TRACE = "b".equals("a");
-
-  public final static DownloadInstructions.Instructions ABSTRACT_INSTRUCTIONS = new DownloadInstructions.AbstractInstructions();
+  /**
+   * A flag which enables to get debug information for the "BitmapDownloader" component: only defined for development purposes. Defaults to
+   * <code>false</code>.
+   */
+  public static boolean IS_DEBUG_TRACE = false;
 
   protected final class UsedBitmap
       implements Comparable<UsedBitmap>
