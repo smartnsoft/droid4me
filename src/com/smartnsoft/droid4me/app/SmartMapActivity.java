@@ -38,7 +38,6 @@ import com.google.android.maps.MapView;
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.framework.Events.OnCompletion;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
@@ -59,7 +58,7 @@ public abstract class SmartMapActivity<AggregateClass>
     implements SmartableActivity<AggregateClass>
 {
 
-  protected final static Logger log = LoggerFactory.getInstance(SmartMapActivity.class);
+  protected final static Logger log = LoggerFactory.getInstance("SmartableActivity");
 
   private final static float MILLION_AS_FLOAT = 1E6f;
 
@@ -130,6 +129,7 @@ public abstract class SmartMapActivity<AggregateClass>
         layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         getMapWrapperLayout().addView(zoomLayout, layoutParams);
         {
+          @SuppressWarnings("deprecation")
           final ZoomControls zoomView = (ZoomControls) mapView.getZoomControls();
           zoomView.setGravity(Gravity.CENTER_HORIZONTAL);
           zoomView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
@@ -498,7 +498,7 @@ public abstract class SmartMapActivity<AggregateClass>
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()
   {
@@ -508,7 +508,7 @@ public abstract class SmartMapActivity<AggregateClass>
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, null, false)}.
    * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, OnCompletion, boolean)
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
   {

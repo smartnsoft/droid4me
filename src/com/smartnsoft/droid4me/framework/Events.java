@@ -32,26 +32,4 @@ public interface Events
     void done(BusinessObjectClass businessObject);
   }
 
-  public static interface OnCompletion// extends Events.OnBusinessCompletion<Void>
-  {
-    void done();
-  }
-
-  //
-  // public static class DoNothing
-  // implements OnCompletionEvent
-  // {
-  //
-  // private DoNothing()
-  // {
-  // }
-  //
-  // public void done()
-  // {
-  // }
-  //
-  // }
-  //
-  // public static final DoNothing DO_NOTHING = new DoNothing();
-
 }

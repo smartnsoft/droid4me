@@ -531,7 +531,7 @@ public final class AppPublics
      *          the interface that will be callbacked depending on the overall multi-selection state
      * @return <code>true</code> if the intent has been handled ; <code>false</code> otherwise
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public boolean onSelection(Intent intent, MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
     {
       if (intent.getAction().equals(AppPublics.MultiSelectionHandler.ACTION_SELECTION) == false)
@@ -628,8 +628,8 @@ public final class AppPublics
         throws Exception;
 
     /**
-     * A fallback method which will be triggered if a {@link Throwable} is thrown during the {@link #runGuarded()} method, so as to let the caller a chance
-     * to handle locally the exception.
+     * A fallback method which will be triggered if a {@link Throwable} is thrown during the {@link #runGuarded()} method, so as to let the caller a
+     * chance to handle locally the exception.
      * 
      * <p>
      * By default, the method does nothing and returns the provided <code>throwable</code>.

@@ -24,15 +24,13 @@ import java.util.List;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.LinearLayout;
 
 import com.smartnsoft.droid4me.framework.DetailsProvider;
 import com.smartnsoft.droid4me.framework.DetailsProvider.ObjectEvent;
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.ui.SimpleWrappedListView;
 import com.smartnsoft.droid4me.ui.WrappedListView;
@@ -56,8 +54,6 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
     extends SmartActivity<AggregateClass>
     implements DetailsProvider.ForList<BusinessObjectClass, ViewClass>, WrappedListView.OnEventObjectListener<BusinessObjectClass>
 {
-
-  protected final static Logger log = LoggerFactory.getInstance(AbstractSmartListActivity.class);
 
   private WrappedListView<BusinessObjectClass, ListViewClass, ViewClass> wrappedListView;
 

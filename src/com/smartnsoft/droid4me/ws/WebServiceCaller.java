@@ -652,6 +652,7 @@ public abstract class WebServiceCaller
         final DefaultHttpClient initialHttpClient = new DefaultHttpClient();
         final ClientConnectionManager clientConnectionManager = initialHttpClient.getConnectionManager();
         final HttpParams params = initialHttpClient.getParams();
+        @SuppressWarnings("deprecation")
         final ThreadSafeClientConnManager threadSafeClientConnectionManager = new ThreadSafeClientConnManager(params, clientConnectionManager.getSchemeRegistry());
         httpClient = new SensibleHttpClient(threadSafeClientConnectionManager, params);
       }

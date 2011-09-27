@@ -335,8 +335,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
         // forListProvider.getObjectId(getSelectedObject()) + "'");
       }
 
-      @SuppressWarnings("unchecked")
-      public void onNothingSelected(AdapterView adapterView)
+      public void onNothingSelected(AdapterView<?> adapterView)
       {
         setSelectedObject(null);
       }

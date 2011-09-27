@@ -48,7 +48,7 @@ public final class Droid4mizer<AggregateClass>
     implements SmartableActivity<AggregateClass>, Droid4mizerInterface
 {
 
-  private static final Logger log = LoggerFactory.getInstance(Droid4mizer.class);
+  private static final Logger log = LoggerFactory.getInstance("SmartableActivity");
 
   private final Activity activity;
 

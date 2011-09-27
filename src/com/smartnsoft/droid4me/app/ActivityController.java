@@ -28,8 +28,8 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.view.Window;
 
 import com.smartnsoft.droid4me.LifeCycle;
@@ -397,7 +397,7 @@ public final class ActivityController
      *          a list of exception classes to look after
      * @return <code>null</code> if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
     {
       Throwable newThrowable = throwable;
