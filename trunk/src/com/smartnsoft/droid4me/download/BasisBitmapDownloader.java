@@ -546,6 +546,11 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     private boolean inputStreamAsynchronous;
 
+    /**
+     * When not negative, the timestamp corresponding to the time when the underlying bitmap started to be downloaded.
+     */
+    private long downloadStartTimestamp = -1;
+
     public DownloadBitmapCommand(int id, ViewClass view, String url, String bitmapUid, Object imageSpecs, HandlerClass handler,
         BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
     {
@@ -804,7 +809,16 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       }
       try
       {
-        return fromInputStreamToBitmap(inputStream);
+        final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
+        if (downloadStartTimestamp >= 0)
+        {
+          final long stop = System.currentTimeMillis();
+          if (log.isDebugEnabled())
+          {
+            log.debug("The thread '" + Thread.currentThread().getName() + "' downloaded and transformed in " + (stop - downloadStartTimestamp) + " ms the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
+          }
+        }
+        return bitmap;
       }
       finally
       {
@@ -934,13 +948,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     private InputStream downloadInputStream()
         throws IOException
     {
-      final long start = System.currentTimeMillis();
+      downloadStartTimestamp = System.currentTimeMillis();
       final InputStream inputStream = instructions.downloadInputStream(bitmapUid, imageSpecs, url);
-      final long stop = System.currentTimeMillis();
-      if (log.isDebugEnabled())
-      {
-        log.debug("The thread '" + Thread.currentThread().getName() + "' downloaded in " + (stop - start) + " ms the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
-      }
       final InputStream downloadedInputStream = onInputStreamDownloaded(inputStream);
       downloaded = true;
       return downloadedInputStream;
