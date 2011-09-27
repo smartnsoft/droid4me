@@ -18,6 +18,7 @@
 
 package com.smartnsoft.droid4me.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
@@ -30,13 +31,13 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.TextView;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
-import com.smartnsoft.droid4me.framework.DetailsProvider;
 import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
+import com.smartnsoft.droid4me.framework.SmartAdapters.BusinessViewWrapper;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
@@ -101,7 +102,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
         {
           log.warn("Asking for an item at position " + position + " greater than that the filtered list size which is " + smartListView.getFilteredObjects().size());
         }
-        return DetailsProvider.DEFAULT_ITEM_ID;
+        return BusinessViewWrapper.DEFAULT_ITEM_ID;
       }
       try
       {
@@ -113,7 +114,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
         {
           log.error("Cannot compute properly the identifier of a list view row", exception);
         }
-        return DetailsProvider.DEFAULT_ITEM_ID;
+        return BusinessViewWrapper.DEFAULT_ITEM_ID;
       }
     }
 
@@ -463,6 +464,12 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   {
     // We can safely retrieve the business objects
     objects = getForListProvider().retrieveBusinessObjectsList();
+
+    if (objects == null)
+    {
+      // If the returned business objects is null, we consider it as an empty list
+      objects = new ArrayList<BusinessObjectClass>();
+    }
 
     // Only now, we apply the filter
     recomputeFilterObjectsList();

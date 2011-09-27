@@ -24,7 +24,7 @@ import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.smartnsoft.droid4me.framework.DetailsProvider;
+import com.smartnsoft.droid4me.framework.SmartAdapters;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 
 /**
@@ -39,61 +39,61 @@ import com.smartnsoft.droid4me.menu.MenuCommand;
  * @since 2009.04.29
  */
 public abstract class AbstractWrappedSmartListActivity<AggregateClass, ListViewClass extends ViewGroup>
-    extends AbstractSmartListActivity<AggregateClass, DetailsProvider.BusinessViewWrapper<?>, ListViewClass, View>
+    extends AbstractSmartListActivity<AggregateClass, SmartAdapters.BusinessViewWrapper<?>, ListViewClass, View>
 {
 
   @Override
-  protected final Intent computeIntent(View view, DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, DetailsProvider.ObjectEvent objectEvent)
+  protected final Intent computeIntent(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, SmartAdapters.ObjectEvent objectEvent)
   {
     return businessViewWrapper.computeIntent(this, view, objectEvent);
   }
 
   @Override
-  protected final boolean onObjectEvent(View view, DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, DetailsProvider.ObjectEvent objectEvent)
+  protected final boolean onObjectEvent(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, SmartAdapters.ObjectEvent objectEvent)
   {
     return businessViewWrapper.onObjectEvent(this, view, objectEvent);
   }
 
   @Override
-  protected final boolean containsText(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, String lowerText)
+  protected final boolean containsText(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, String lowerText)
   {
     return businessViewWrapper.containsText(lowerText);
   }
 
-  public final String getBusinessObjectName(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
+  public final String getBusinessObjectName(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
   {
     return businessViewWrapper.getName();
   }
 
-  public final long getObjectId(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
+  public final long getObjectId(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
   {
     return businessViewWrapper.getId();
   }
 
   @Override
-  public final boolean isEnabled(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
+  public final boolean isEnabled(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
   {
     return businessViewWrapper.isEnabled();
   }
 
   @Override
-  public final int getViewType(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, int position)
+  public final int getViewType(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, int position)
   {
     return businessViewWrapper.getType(position);
   }
 
-  public final View getNewView(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
+  public final View getNewView(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
   {
     return businessViewWrapper.getNewView(this);
   }
 
-  public final void updateView(View view, DetailsProvider.BusinessViewWrapper<?> businessViewWrapper, int position)
+  public final void updateView(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, int position)
   {
     businessViewWrapper.updateView(this, view, position);
   }
 
   @Override
-  protected final List<MenuCommand<DetailsProvider.BusinessViewWrapper<?>>> getContextualMenuCommands(DetailsProvider.BusinessViewWrapper<?> businessViewWrapper)
+  protected final List<MenuCommand<SmartAdapters.BusinessViewWrapper<?>>> getContextualMenuCommands(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
   {
     return businessViewWrapper.getMenuCommands(this);
   }
