@@ -18,15 +18,11 @@
 
 package com.smartnsoft.droid4me.framework;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.view.View;
 
 import com.smartnsoft.droid4me.LifeCycle;
-import com.smartnsoft.droid4me.menu.MenuCommand;
 
 /**
  * Introduced in order to define various contract between:
@@ -44,7 +40,8 @@ public abstract class DetailsProvider
 {
 
   /**
-   * Introduced in order to define the contract between a {@link android.widget.ListView list view} and its {@link android.widget.ListAdapter adapter}.
+   * Introduced in order to define the contract between a {@link android.widget.ListView list view} and its {@link android.widget.ListAdapter adapter}
+   * .
    * 
    * @author Edouard Mercier
    * @since 2008.05.13
@@ -59,6 +56,8 @@ public abstract class DetailsProvider
 
     /**
      * This is specific to the smart list.
+     * 
+     * @return the list of business objects handled; a <code>null</code> is authorized and means an empty list
      */
     List<? extends BusinessObjectClass> retrieveBusinessObjectsList()
         throws LifeCycle.BusinessObjectUnavailableException;
@@ -79,278 +78,6 @@ public abstract class DetailsProvider
     boolean isEnabled(BusinessObjectClass businessObject);
 
   }
-
-  /**
-   * Indicates the type of action on the underlying business object.
-   */
-  public static enum ObjectEvent
-  {
-    Clicked, Selected, WipedLeftToRight, WipedRightToLeft
-  }
-
-  /**
-   * Wraps a business object and its underlying Android {@link android.view.View} in a list or a grid.
-   * 
-   * @since 2009.04.29
-   */
-  public static abstract class BusinessViewWrapper<BusinessObjectClass>
-  {
-
-    private final BusinessObjectClass businessObject;
-
-    public BusinessViewWrapper(BusinessObjectClass businessObject)
-    {
-      this.businessObject = businessObject;
-    }
-
-    /**
-     * @return the underlying business object
-     */
-    public final BusinessObjectClass getBusinessObject()
-    {
-      return businessObject;
-    }
-
-//    final void updateBusinessObject(BusinessObjectClass businessObject)
-//    {
-//      this.businessObject = businessObject;
-//    }
-
-    public final int getType(int position)
-    {
-      return getType(position, getBusinessObject());
-    }
-
-    public int getType(int position, BusinessObjectClass businessObjectClass)
-    {
-      return 0;
-    }
-
-    protected abstract View createNewView(Activity activity, BusinessObjectClass businessObjectClass);
-
-    protected abstract Object extractNewViewAttributes(Activity activity, View view, BusinessObjectClass businessObjectClass);
-
-    protected abstract void updateView(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObjectClass, int position);
-
-    /**
-     * @return the {@link Object#hashCode()} value, by default
-     */
-    protected long getId(BusinessObjectClass businessObject)
-    {
-      return businessObject == null ? DetailsProvider.DEFAULT_ITEM_ID : businessObject.hashCode();
-    }
-
-    public final long getId()
-    {
-      return getId(getBusinessObject());
-    }
-
-    public final boolean isEnabled()
-    {
-      return isEnabled(getBusinessObject());
-    }
-
-    public boolean isEnabled(BusinessObjectClass businessObject)
-    {
-      return true;
-    }
-
-    public String getName(BusinessObjectClass businessObject)
-    {
-      return "";
-    }
-
-    public final String getName()
-    {
-      return getName(getBusinessObject());
-    }
-
-    public final boolean containsText(String lowerText)
-    {
-      return containsText(getBusinessObject(), lowerText);
-    }
-
-    public boolean containsText(BusinessObjectClass businessObject, String lowerText)
-    {
-      return true;
-    }
-
-    public final Intent computeIntent(Activity activity, View view, DetailsProvider.ObjectEvent objectEvent)
-    {
-      return computeIntent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent);
-    }
-
-    public Intent computeIntent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject, DetailsProvider.ObjectEvent objectEvent)
-    {
-      return null;
-    }
-
-    public final boolean onObjectEvent(Activity activity, View view, DetailsProvider.ObjectEvent objectEvent)
-    {
-      return onObjectEvent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent);
-    }
-
-    public boolean onObjectEvent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject,
-        DetailsProvider.ObjectEvent objectEvent)
-    {
-      return false;
-    }
-
-    // TODO: rework on that!
-    public final List<MenuCommand<BusinessViewWrapper<?>>> getMenuCommands(Activity activity)
-    {
-      final List<MenuCommand<BusinessObjectClass>> objectMenuCommands = getMenuCommands(activity, getBusinessObject());
-      if (objectMenuCommands == null)
-      {
-        return null;
-      }
-      final List<MenuCommand<BusinessViewWrapper<?>>> menuCommands = new ArrayList<MenuCommand<BusinessViewWrapper<?>>>();
-      for (final MenuCommand<BusinessObjectClass> objectMenuCommand : objectMenuCommands)
-      {
-        menuCommands.add(new MenuCommand<BusinessViewWrapper<?>>(objectMenuCommand.text, objectMenuCommand.textId, objectMenuCommand.numericalShortcut, objectMenuCommand.characterShortcut, objectMenuCommand.icon, new Commands.Executable<BusinessViewWrapper<?>>()
-        {
-          @SuppressWarnings("unchecked")
-          public boolean isEnabled(BusinessViewWrapper<?> businessObject)
-          {
-            return objectMenuCommand.executable.isEnabled((BusinessObjectClass) businessObject.getBusinessObject());
-          }
-
-          @SuppressWarnings("unchecked")
-          public void run(BusinessViewWrapper<?> businessObject)
-          {
-            objectMenuCommand.executable.run((BusinessObjectClass) businessObject.getBusinessObject());
-          }
-        }));
-      }
-      return menuCommands;
-    }
-
-    public List<MenuCommand<BusinessObjectClass>> getMenuCommands(Activity activity, BusinessObjectClass businessObject)
-    {
-      return null;
-    }
-
-    public final View getNewView(Activity activity)
-    {
-      final View view = createNewView(activity, getBusinessObject());
-      return setNewView(activity, view);
-    }
-
-    /**
-     * Attaches a view to the underlying business object.
-     * 
-     * @param activity
-     *          the activity the view belongs to
-     * @param view
-     *          the view to attach
-     * @return the provided view
-     */
-    final View setNewView(Activity activity, View view)
-    {
-      view.setTag(extractNewViewAttributes(activity, view, getBusinessObject()));
-      return view;
-    }
-
-    public final void updateView(Activity activity, View view, int position)
-    {
-      updateView(activity, view.getTag(), view, getBusinessObject(), position);
-    }
-
-  }
-
-  /**
-   * This class wraps the {@link DetailsProvider.BusinessViewWrapper} when not used inside a list.
-   * 
-   * @since 2010.06.23
-   */
-  public static class BusinessViewHolder<BusinessObjectClass>
-  {
-
-    private final DetailsProvider.BusinessViewWrapper<BusinessObjectClass> businessViewWrapper;
-
-    private View view;
-
-    public BusinessViewHolder(DetailsProvider.BusinessViewWrapper<BusinessObjectClass> businessViewWrapper)
-    {
-      this.businessViewWrapper = businessViewWrapper;
-    }
-
-    /**
-     * Is allowed to be invoked once the {@link #getView(Activity)} or {@link #setView(Activity, View)} method has been called.
-     * 
-     * @return the view which represents the underlying business object
-     */
-    public final View getView()
-    {
-      return view;
-    }
-
-    /**
-     * @return the wrapper passed in the constructor
-     */
-    public final DetailsProvider.BusinessViewWrapper<BusinessObjectClass> getBusinessViewWrapper()
-    {
-      return businessViewWrapper;
-    }
-
-//    public final void updateBusinessObject(BusinessObjectClass businessObject)
-//    {
-//      businessViewWrapper.updateBusinessObject(businessObject);
-//    }
-
-    /**
-     * This method should be called only once during the object life cycle.
-     * 
-     * <p>
-     * This will invoke the {@link DetailsProvider.BusinessViewWrapper#getNewView(Activity} method.
-     * </p>
-     * 
-     * @param activity
-     *          the activity on which the business object is being rendered
-     * @return the initialized view that represent the underlying business object
-     */
-    public final View getView(Activity activity)
-    {
-      view = businessViewWrapper.getNewView(activity);
-      return view;
-    }
-
-    /**
-     * Sets the view of the of the underlying business view wrapper, so that it is not necessary to invoke the {@link #getView(Activity)} method.
-     * 
-     * @param activity
-     *          the activity on which the business object is being rendered
-     * @param view
-     *          the view that will be attached to the business view wrapper
-     * @return
-     */
-    public final View setView(Activity activity, View view)
-    {
-      this.view = view;
-      return businessViewWrapper.setNewView(activity, view);
-    }
-
-    /**
-     * Synchronizes the rendering of the inner {@link View} with the state of the business object.
-     * 
-     * <p>
-     * This will invoke the {@link DetailsProvider.BusinessViewWrapper#updateView(Activity, View, int)} method with a <code>position</code> set to 0.
-     * </p>
-     * 
-     * @param activity
-     *          the activity on which the business object is being rendered
-     */
-    public final void updateView(Activity activity)
-    {
-      businessViewWrapper.updateView(activity, view, 0);
-    }
-
-  }
-
-  /**
-   * The default value that will be returned by {@link android.widget.ListAdapter#getItemId(int)} method.
-   */
-  public static final long DEFAULT_ITEM_ID = 0;
 
   public static interface ForListView<BusinessObjectClass, ViewClass>
   {

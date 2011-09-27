@@ -30,7 +30,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.smartnsoft.droid4me.framework.DetailsProvider;
-import com.smartnsoft.droid4me.framework.DetailsProvider.ObjectEvent;
+import com.smartnsoft.droid4me.framework.SmartAdapters;
+import com.smartnsoft.droid4me.framework.SmartAdapters.ObjectEvent;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.ui.SimpleWrappedListView;
 import com.smartnsoft.droid4me.ui.WrappedListView;
@@ -145,17 +146,17 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
 
   public final void onSelectedObject(View view, BusinessObjectClass selectedObject)
   {
-    onInternalEvent(view, selectedObject, DetailsProvider.ObjectEvent.Selected);
+    onInternalEvent(view, selectedObject, SmartAdapters.ObjectEvent.Selected);
   }
 
   public final void onClickedObject(View view, BusinessObjectClass clickedObject)
   {
-    onInternalEvent(view, clickedObject, DetailsProvider.ObjectEvent.Clicked);
+    onInternalEvent(view, clickedObject, SmartAdapters.ObjectEvent.Clicked);
   }
 
   public final boolean onWipedObject(View view, BusinessObjectClass wipedObject, boolean leftToRight)
   {
-    return onInternalEvent(view, wipedObject, leftToRight == true ? DetailsProvider.ObjectEvent.WipedLeftToRight : DetailsProvider.ObjectEvent.WipedRightToLeft);
+    return onInternalEvent(view, wipedObject, leftToRight == true ? SmartAdapters.ObjectEvent.WipedLeftToRight : SmartAdapters.ObjectEvent.WipedRightToLeft);
   }
 
   private boolean onInternalEvent(View view, BusinessObjectClass businessObject, ObjectEvent objectEvent)
@@ -364,12 +365,12 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   /**
    * Indicates what intent to trigger corresponding to this kind of event.
    */
-  protected abstract Intent computeIntent(View view, BusinessObjectClass businessObject, DetailsProvider.ObjectEvent objectEvent);
+  protected abstract Intent computeIntent(View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent);
 
   /**
    * Does nothing by default.
    */
-  protected boolean onObjectEvent(View view, BusinessObjectClass businessObject, DetailsProvider.ObjectEvent objectEvent)
+  protected boolean onObjectEvent(View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent)
   {
     return false;
   }
