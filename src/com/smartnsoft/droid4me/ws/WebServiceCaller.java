@@ -265,7 +265,7 @@ public abstract class WebServiceCaller
    * @see #performHttpGetDom(String, String, Map)
    */
   protected final Element performHttpGetDom(String uri)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, SAXException
+      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, SAXException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null, 0);
     return WebServiceCaller.getDom(getContent(uri, WebServiceCaller.CallType.Get, response));
@@ -279,8 +279,7 @@ public abstract class WebServiceCaller
   }
 
   protected final String performHttpGetJson(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
-      throws ClientProtocolException, IllegalStateException, IOException, FactoryConfigurationError, ParserConfigurationException, SAXException, CallException,
-      JSONException
+      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
     return performHttpGetJson(computeUri(methodUriPrefix, methodUriSuffix, uriParameters));
   }
@@ -304,28 +303,28 @@ public abstract class WebServiceCaller
   }
 
   protected final String performHttpGetJson(String uri)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, JSONException
+      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null, 0);
     return getJson(getContent(uri, WebServiceCaller.CallType.Get, response));
   }
 
   protected final String performHttpPostJson(String uri, HttpEntity body)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, JSONException
+      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Post, body, 0);
     return getJson(getContent(uri, WebServiceCaller.CallType.Post, response));
   }
 
   protected final String performHttpPutJson(String uri, HttpEntity body)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, JSONException
+      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Put, body, 0);
     return getJson(getContent(uri, WebServiceCaller.CallType.Put, response));
   }
 
   protected final String performHttpDeleteJson(String uri)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, JSONException
+      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Delete, null, 0);
     return getJson(getContent(uri, WebServiceCaller.CallType.Delete, response));
