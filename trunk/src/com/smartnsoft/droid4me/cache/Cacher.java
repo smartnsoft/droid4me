@@ -139,7 +139,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
    *          {@link IOStreamer}.
    * @param parameter
    *          the URI corresponding to the business object
-   * @return a wrapper around the extracted business object, along with a retrieval timestamp and a {@link Values.Info.Source origin}.
+   * @return a wrapper around the extracted business object, along with a retrieval timestamp and a {@link Business.Source origin}.
    * @throws InputExceptionType
    *           if a problem occurred while attempting to extract the business object raw data {@link Business.InputAtom} from the
    *           {@link UriInputStreamer}, via the {@link UriInputStreamer#getInputStream(Object)} method
@@ -268,7 +268,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     {
       final BusinessObjectType businessObject = ((Business.NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, InputExceptionType, InputExceptionType>) uriInputStreamer).onNullInputStream(
           parameter, uri);
-      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.Source.IOStreamer);
+      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Business.Source.IOStreamer);
       if (businessObject == null)
       {
         ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), null));
@@ -293,7 +293,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
       instructions.onUriStreamParser(Cacher.Status.Success);
     }
 
-    return new Values.Info<BusinessObjectType>(businessObject, atom.timestamp, Values.Info.Source.URIStreamer);
+    return new Values.Info<BusinessObjectType>(businessObject, atom.timestamp, Business.Source.URIStreamer);
   }
 
   /**
@@ -331,7 +331,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     if (atom != null)
     {
       // If the input stream is null but not the atom, we return a null business object
-      return new Values.Info<BusinessObjectType>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.inputStream), atom.timestamp, Values.Info.Source.IOStreamer);
+      return new Values.Info<BusinessObjectType>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.inputStream), atom.timestamp, Business.Source.IOStreamer);
     }
     return null;
   }

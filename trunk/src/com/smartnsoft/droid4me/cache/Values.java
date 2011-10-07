@@ -48,28 +48,20 @@ public final class Values
   public static class Info<BusinessObjectType>
   {
 
-    /**
-     * Indicates the origin of a business object.
-     */
-    public static enum Source
-    {
-      Memory, IOStreamer, URIStreamer
-    }
-
     public final BusinessObjectType value;
 
     public final Date timestamp;
 
-    private Values.Info.Source source;
+    private Business.Source source;
 
-    public Info(BusinessObjectType value, Date timestamp, Values.Info.Source source)
+    public Info(BusinessObjectType value, Date timestamp, Business.Source source)
     {
       this.value = value;
       this.timestamp = timestamp;
       this.source = source;
     }
 
-    public Values.Info.Source getSource()
+    public Business.Source getSource()
     {
       return source;
     }
@@ -129,7 +121,7 @@ public final class Values
      * @param result
      *          the result of the assessment
      */
-    void remember(Values.Info.Source source, Values.Instructions.Result result);
+    void remember(Business.Source source, Values.Instructions.Result result);
 
     /**
      * Is invoked when the underlying business object will not be taken from the memory cache, or when the cached value has been rejected.
@@ -261,7 +253,7 @@ public final class Values
       // The business object is first attempted to be retrieved from memory
       if (isEmpty() == false)
       {
-        info.source = Values.Info.Source.Memory;
+        info.source = Business.Source.Memory;
         final Values.Instructions.Result result = instructions.assess(info);
         instructions.remember(info.source, result);
         if (result == Values.Instructions.Result.Accepted)
@@ -342,7 +334,7 @@ public final class Values
       this.parameter = parameter;
     }
 
-    public void remember(Values.Info.Source source, Values.Instructions.Result result)
+    public void remember(Business.Source source, Values.Instructions.Result result)
     {
     }
 
@@ -368,7 +360,7 @@ public final class Values
 
     public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return fromMemory == false ? (info.source == Values.Info.Source.IOStreamer ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected)
+      return fromMemory == false ? (info.source == Business.Source.IOStreamer ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected)
           : Values.Instructions.Result.Accepted;
     }
 
@@ -393,7 +385,7 @@ public final class Values
 
     protected final boolean fromCache;
 
-    protected final Map<Values.Info.Source, Values.Instructions.Result> assessments = new LinkedHashMap<Values.Info.Source, Values.Instructions.Result>();
+    protected final Map<Business.Source, Values.Instructions.Result> assessments = new LinkedHashMap<Business.Source, Values.Instructions.Result>();
 
     public MemoryInstructions(Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher,
         ParameterType parameter, boolean fromCache)
@@ -403,7 +395,7 @@ public final class Values
     }
 
     @Override
-    public void remember(Values.Info.Source source, Values.Instructions.Result result)
+    public void remember(Business.Source source, Values.Instructions.Result result)
     {
       assessments.put(source, result);
     }
@@ -486,7 +478,7 @@ public final class Values
 
     public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return (fromCache == true || (info.source == Values.Info.Source.URIStreamer || assessments.size() >= 1)) ? Values.Instructions.Result.Accepted
+      return (fromCache == true || (info.source == Business.Source.URIStreamer || assessments.size() >= 1)) ? Values.Instructions.Result.Accepted
           : Values.Instructions.Result.Rejected;
     }
 
@@ -498,7 +490,7 @@ public final class Values
       }
       else
       {
-        if (assessments.containsKey(Values.Info.Source.URIStreamer) == true)
+        if (assessments.containsKey(Business.Source.URIStreamer) == true)
         {
           if (assessments.size() == 1)
           {
@@ -540,11 +532,11 @@ public final class Values
       }
       else if (fromCache == true)
       {
-        return info.source != Values.Info.Source.Memory ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected;
+        return info.source != Business.Source.Memory ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected;
       }
       else
       {
-        return (info.source == Values.Info.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+        return (info.source == Business.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
             : Values.Instructions.Result.Rejected;
       }
     }
@@ -569,7 +561,7 @@ public final class Values
     {
       if (fromCache == false)
       {
-        return (info.source == Values.Info.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+        return (info.source == Business.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
             : Values.Instructions.Result.Rejected;
       }
       else
@@ -580,7 +572,7 @@ public final class Values
         }
         else
         {
-          return (info.source == Values.Info.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+          return (info.source == Business.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
               : Values.Instructions.Result.Rejected;
         }
       }
@@ -602,7 +594,7 @@ public final class Values
       }
       else
       {
-        if (assessments.containsKey(Values.Info.Source.URIStreamer) == true)
+        if (assessments.containsKey(Business.Source.URIStreamer) == true)
         {
           if (assessments.size() == 1)
           {
@@ -634,7 +626,7 @@ public final class Values
 
     public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return info.source == Values.Info.Source.URIStreamer ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected;
+      return info.source == Business.Source.URIStreamer ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected;
     }
 
     public Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)
@@ -670,7 +662,7 @@ public final class Values
     public void setValue(ParameterType parameter, BusinessObjectType businessObject)
         throws Values.CacheException
     {
-      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.Source.Memory);
+      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Business.Source.Memory);
       // Even if cacher fails to persist the business object, the memory is up-to-date
       super.setLoadedInfoValue(info);
       try
@@ -1018,7 +1010,7 @@ public final class Values
 
     public final void safeSet(ParameterType parameter, BusinessObjectType businessObject)
     {
-      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Values.Info.Source.Memory);
+      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Business.Source.Memory);
       // We modify the memory first, so as to make sure that it is actually modified
       setLoadedValue(parameter, info);
       try

@@ -63,6 +63,14 @@ public final class Business
   }
 
   /**
+   * Indicates the origin of a business object.
+   */
+  public static enum Source
+  {
+    Memory, IOStreamer, URIStreamer
+  }
+
+  /**
    * Associates a time stamp to an object.
    * 
    * @since 2009.08.31
@@ -124,14 +132,25 @@ public final class Business
   }
 
   /**
-   * An interface which proposes to think each web service call in terms of two separate actions: compute the URI and get the corresponding input
-   * stream.
+   * Enables to define the way to reach a business object entity depending on its source.
+   * 
+   * @param <UriType>
+   *          the type of URI returned to locate the business object entity
+   * @param <ParameterType>
+   *          the type of parameter used for getting the business object entity
    * 
    * @since 2009.06.19
    */
   public static interface Urier<UriType, ParameterType>
   {
 
+    /**
+     * Is responsible for returning the URI of a business object entity.
+     * 
+     * @param parameter
+     *          the parameters which enable to compute the entity URI
+     * @return the URI which enables to access to the underlying business object entity ; should return <code>null</code> if no URI is available
+     */
     UriType computeUri(ParameterType parameter);
 
   }
@@ -346,8 +365,8 @@ public final class Business
      * @param inputAtom
      *          the wrapper that contains the data to be persisted the {@link Business.InputAtom#inputStream} is allowed to be null: in that case, a
      *          null-like object must be persisted
-     *@return a valid input stream corresponding to the persisted data; it is not allowed to be <code>null</code>
-     *@throws Exception
+     * @return a valid input stream corresponding to the persisted data; it is not allowed to be <code>null</code>
+     * @throws Exception
      *           if any problem occurs while persisting the data
      */
     InputStream writeInputStream(UriType uri, Business.InputAtom inputAtom)

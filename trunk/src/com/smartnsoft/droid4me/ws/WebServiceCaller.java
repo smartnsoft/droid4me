@@ -626,12 +626,6 @@ public abstract class WebServiceCaller
     return uri;
   }
 
-  final public WSUriStreamParser.UrlWithCallTypeAndBody computeUrlWithCallTypeAndBody(String methodUriPrefix, String methodUriSuffix,
-      Map<String, String> uriParameters)
-  {
-    return new WSUriStreamParser.UrlWithCallTypeAndBody(computeUri(methodUriPrefix, methodUriSuffix, uriParameters));
-  }
-
   /**
    * Is responsible for returning an HTTP client instance, used for actually running the HTTP request.
    * 
