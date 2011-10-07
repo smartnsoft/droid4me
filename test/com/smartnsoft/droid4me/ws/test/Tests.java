@@ -15,18 +15,20 @@ import org.apache.http.protocol.HTTP;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.bo.Business.Source;
+import com.smartnsoft.droid4me.cache.Cacher.Status;
 import com.smartnsoft.droid4me.cache.FilePersistence;
 import com.smartnsoft.droid4me.cache.Persistence;
-import com.smartnsoft.droid4me.cache.Cacher.Status;
 import com.smartnsoft.droid4me.cache.Persistence.PersistenceException;
 import com.smartnsoft.droid4me.cache.Values.CacheException;
 import com.smartnsoft.droid4me.cache.Values.CachingEvent;
 import com.smartnsoft.droid4me.cache.Values.Info;
-import com.smartnsoft.droid4me.cache.Values.Info.Source;
 import com.smartnsoft.droid4me.test.BasisTests;
+import com.smartnsoft.droid4me.ws.WSUriStreamParser.KeysAggregator;
+import com.smartnsoft.droid4me.ws.WSUriStreamParser.URISourceKey;
 import com.smartnsoft.droid4me.ws.WebServiceCaller;
 import com.smartnsoft.droid4me.ws.WebServiceClient;
-import com.smartnsoft.droid4me.ws.WSUriStreamParser.UrlWithCallTypeAndBody;
 import com.smartnsoft.droid4me.ws.WebServiceClient.CallType;
 import com.smartnsoft.droid4me.wscache.BackedWSUriStreamParser;
 
@@ -162,7 +164,7 @@ public final class Tests
         }
 
       }, parameter);
-      Assert.assertEquals("The source of the data is not the right one", Source.URIStreamer, info.getSource());
+      Assert.assertEquals("The source of the data is not the right one", Business.Source.URIStreamer, info.getSource());
       Assert.assertEquals("The returned business object is not the right one", expectedValue, info.value);
       Assert.assertEquals("'getInputStream()' has been invoked too many times", 1, getInputStreamCallsCount.get());
       Assert.assertEquals("'onUriStreamParser()' has not invoked the right number of times", 2, onUriStreamParserCallCount.get());
@@ -206,7 +208,7 @@ public final class Tests
         }
 
       }, parameter);
-      Assert.assertEquals("The source of the data is not the right one", Source.Memory, info.getSource());
+      Assert.assertEquals("The source of the data is not the right one", Business.Source.Memory, info.getSource());
       Assert.assertEquals("The returned business object is not the right one", expectedValue, info.value);
       Assert.assertEquals("'onUriStreamParser()' has not invoked the right number of times", 0, onUriStreamParserCallCount.get());
       Assert.assertEquals("'onIOStreamer()' has not invoked the right number of times", 0, onIOStreamerCallCount.get());
@@ -226,7 +228,7 @@ public final class Tests
 
     {
       final Info<String> info = streamParser.backed.getRetentionInfoValue(false, 1000000, null, new StreamParameter(System.currentTimeMillis()));
-      Assert.assertEquals("The source of the data is not the right one", Source.URIStreamer, info.getSource());
+      Assert.assertEquals("The source of the data is not the right one", Business.Source.URIStreamer, info.getSource());
       Assert.assertEquals("The returned business object is not the right one", expectedValue, info.value);
       Assert.assertEquals("'getInputStream()' has been invoked too many times", 1, getInputStreamCallsCount.get());
     }
@@ -276,7 +278,7 @@ public final class Tests
         }
 
       }, parameter);
-      Assert.assertEquals("The source of the data is not the right one", Source.URIStreamer, info.getSource());
+      Assert.assertEquals("The source of the data is not the right one", Business.Source.URIStreamer, info.getSource());
       Assert.assertEquals("The returned business object is not the right one", expectedValue, info.value);
       Assert.assertEquals("'onUriStreamParser()' has not invoked the right number of times", 2, onUriStreamParserCallCount.get());
       Assert.assertEquals("'onUriStreamParser()' has not invoked invoked with the 'Attempt' status", 1, onUriStreamParserStatusAttempt.get());
@@ -313,9 +315,10 @@ public final class Tests
     final BackedWSUriStreamParser.BackedUriStreamedMap<String, StreamParameter, TestException, PersistenceException> streamParser = new BackedWSUriStreamParser.BackedUriStreamedMap<String, StreamParameter, TestException, PersistenceException>(Persistence.getInstance(0), webServiceClient)
     {
 
-      public UrlWithCallTypeAndBody computeUri(StreamParameter parameters)
+      public KeysAggregator<StreamParameter> computeUri(StreamParameter parameters)
       {
-        return new UrlWithCallTypeAndBody(webServiceClient.computeUri(Tests.WEBSERVICES_BASE_URL, "method", parameters.computeUriParameters()), CallType.Get, null);
+        return new KeysAggregator<StreamParameter>(parameters).add(Source.URIStreamer,
+            new URISourceKey(webServiceClient.computeUri(Tests.WEBSERVICES_BASE_URL, "method", parameters.computeUriParameters()), CallType.Get, null));
       }
 
       public String parse(StreamParameter parameter, InputStream inputStream)

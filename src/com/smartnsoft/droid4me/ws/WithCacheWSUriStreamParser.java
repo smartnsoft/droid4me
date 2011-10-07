@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Map;
 
 import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.ws.WSUriStreamParser.URISourceKey;
 
 /**
  * @author Édouard Mercier
@@ -32,12 +33,46 @@ public final class WithCacheWSUriStreamParser
 {
 
   /**
+   * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#IOStreamer} source,
+   * i.e. through a {#link {@link Business.IOStreamer}.
+   * 
+   * @since 2011.10.06
+   */
+  public static class IOSourceKey
+      implements WSUriStreamParser.SourceKey
+  {
+
+    /**
+     * The URI to use to locate the business object entity when it needs to be located on a {@link Business.IOStreamer}.
+     */
+    public final String ioStreamerUri;
+
+    /**
+     * @param uriStreamerUri
+     *          the business object entity {@link Business.UriStreamParser} URI
+     * @param ioStreamerUri
+     *          the business object entity {@link Business.IOStreamer} URI
+     */
+    public IOSourceKey(String ioStreamerUri)
+    {
+      this.ioStreamerUri = ioStreamerUri;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <UriType, ParameterType> UriType getUri(ParameterType parameter)
+    {
+      return (UriType) ioStreamerUri;
+    }
+
+  }
+
+  /**
    * @since 2009.11.19
    */
   public static abstract class CacheableWebUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
       extends WSUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType>
       implements
-      Business.Cacheable<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
+      Business.Cacheable<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
   {
 
     private final Business.IOStreamer<String, StreamerExceptionType> ioStreamer;
@@ -48,34 +83,34 @@ public final class WithCacheWSUriStreamParser
       this.ioStreamer = ioStreamer;
     }
 
-    public final Date getLastUpdate(WSUriStreamParser.UrlWithCallTypeAndBody uri)
+    public final Date getLastUpdate(WSUriStreamParser.KeysAggregator<ParameterType> uri)
     {
-      return ioStreamer.getLastUpdate(uri.url);
+      return ioStreamer.getLastUpdate(uri.computeUri(Business.Source.IOStreamer));
     }
 
-    public final Business.InputAtom readInputStream(WSUriStreamParser.UrlWithCallTypeAndBody uri)
+    public final Business.InputAtom readInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws StreamerExceptionType
     {
-      return ioStreamer.readInputStream(uri.url);
+      return ioStreamer.readInputStream(uri.computeUri(Business.Source.IOStreamer));
     }
 
-    public final InputStream writeInputStream(WSUriStreamParser.UrlWithCallTypeAndBody uri, Business.InputAtom inputAtom)
+    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom)
         throws StreamerExceptionType
     {
-      return ioStreamer.writeInputStream(uri.url, inputAtom);
+      return ioStreamer.writeInputStream(uri.computeUri(Business.Source.IOStreamer), inputAtom);
     }
 
-    public void remove(WSUriStreamParser.UrlWithCallTypeAndBody uri)
+    public void remove(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws StreamerExceptionType
     {
-      ioStreamer.remove(uri.url);
+      ioStreamer.remove(uri.computeUri(Business.Source.IOStreamer));
     }
 
   }
 
   public static abstract class CachedWebUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
       extends
-      Business.Cached<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
+      Business.Cached<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
   {
 
     private final WebServiceClient webServiceClient;
@@ -91,10 +126,12 @@ public final class WithCacheWSUriStreamParser
       return webServiceClient.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
     }
 
-    public Business.InputAtom getInputStream(WSUriStreamParser.UrlWithCallTypeAndBody uri)
+    public Business.InputAtom getInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws WebServiceClient.CallException
     {
-      return new Business.InputAtom(new Date(), webServiceClient.getInputStream(uri.url, uri.callType, uri.body));
+      final URISourceKey sourceLocator = uri.getSourceLocator(Business.Source.URIStreamer);
+      return new Business.InputAtom(new Date(), webServiceClient.getInputStream((String) sourceLocator.getUri(Business.Source.IOStreamer),
+          sourceLocator.callType, sourceLocator.body));
     }
 
     public final BusinessObjectType rawGetValue(ParameterType parameter)
@@ -120,27 +157,27 @@ public final class WithCacheWSUriStreamParser
       }
     }
 
-    public final Date getLastUpdate(WSUriStreamParser.UrlWithCallTypeAndBody uri)
+    public final Date getLastUpdate(WSUriStreamParser.KeysAggregator<ParameterType> uri)
     {
-      return getLastUpdate(uri.url);
+      return getLastUpdate(uri.computeUri(Business.Source.IOStreamer));
     }
 
-    public final Business.InputAtom readInputStream(WSUriStreamParser.UrlWithCallTypeAndBody uri)
+    public final Business.InputAtom readInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws StreamerExceptionType
     {
-      return readInputStream(uri.url);
+      return readInputStream(uri.computeUri(Business.Source.IOStreamer));
     }
 
-    public final InputStream writeInputStream(WSUriStreamParser.UrlWithCallTypeAndBody uri, Business.InputAtom inputAtom)
+    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom)
         throws StreamerExceptionType
     {
-      return writeInputStream(uri.url, inputAtom);
+      return writeInputStream(uri.computeUri(Business.Source.IOStreamer), inputAtom);
     }
 
-    public void remove(WSUriStreamParser.UrlWithCallTypeAndBody uri)
+    public void remove(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws StreamerExceptionType
     {
-      removeUri(uri.url);
+      removeUri(uri.computeUri(Business.Source.IOStreamer));
     }
 
   }

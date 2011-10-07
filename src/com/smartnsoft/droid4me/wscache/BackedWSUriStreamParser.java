@@ -25,7 +25,6 @@ import com.smartnsoft.droid4me.cache.Values;
 import com.smartnsoft.droid4me.ws.WSUriStreamParser;
 import com.smartnsoft.droid4me.ws.WebServiceClient;
 import com.smartnsoft.droid4me.ws.WithCacheWSUriStreamParser;
-import com.smartnsoft.droid4me.ws.WSUriStreamParser.UrlWithCallTypeAndBody;
 
 /**
  * @author Édouard Mercier
@@ -43,9 +42,9 @@ public final class BackedWSUriStreamParser
       super(ioStreamer, webServiceClient);
     }
 
-    private final Cacher<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> cacher = new Cacher<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>(this);
+    private final Cacher<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> cacher = new Cacher<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>(this);
 
-    public final Values.BackedCachedValue<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> backed = new Values.BackedCachedValue<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>(cacher);
+    public final Values.BackedCachedValue<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> backed = new Values.BackedCachedValue<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>(cacher);
 
   }
 
@@ -59,9 +58,9 @@ public final class BackedWSUriStreamParser
       super(ioStreamer, webServiceClient);
     }
 
-    private final Cacher<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> cacher = new Cacher<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>((Cacheable<BusinessObjectType, UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>) this);
+    private final Cacher<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> cacher = new Cacher<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>((Cacheable<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>) this);
 
-    public final Values.BackedCachedMap<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> backed = new Values.BackedCachedMap<BusinessObjectType, WSUriStreamParser.UrlWithCallTypeAndBody, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>(cacher);
+    public final Values.BackedCachedMap<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> backed = new Values.BackedCachedMap<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>(cacher);
 
   }
 
