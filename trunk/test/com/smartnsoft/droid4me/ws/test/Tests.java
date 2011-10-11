@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
-import org.apache.http.HttpEntity;
+import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.protocol.HTTP;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,19 +18,18 @@ import org.junit.Test;
 import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.bo.Business.InputAtom;
 import com.smartnsoft.droid4me.bo.Business.Source;
-import com.smartnsoft.droid4me.cache.Cacher.Status;
 import com.smartnsoft.droid4me.cache.FilePersistence;
 import com.smartnsoft.droid4me.cache.Persistence;
+import com.smartnsoft.droid4me.cache.Cacher.Status;
 import com.smartnsoft.droid4me.cache.Persistence.PersistenceException;
 import com.smartnsoft.droid4me.cache.Values.CacheException;
 import com.smartnsoft.droid4me.cache.Values.CachingEvent;
 import com.smartnsoft.droid4me.cache.Values.Info;
 import com.smartnsoft.droid4me.test.BasisTests;
-import com.smartnsoft.droid4me.ws.WSUriStreamParser.HttpCallTypeAndBody;
-import com.smartnsoft.droid4me.ws.WSUriStreamParser.KeysAggregator;
-import com.smartnsoft.droid4me.ws.WSUriStreamParser.SimpleUriStreamerSourceKey;
 import com.smartnsoft.droid4me.ws.WebServiceCaller;
 import com.smartnsoft.droid4me.ws.WebServiceClient;
+import com.smartnsoft.droid4me.ws.WSUriStreamParser.KeysAggregator;
+import com.smartnsoft.droid4me.ws.WSUriStreamParser.SimpleUriStreamerSourceKey;
 import com.smartnsoft.droid4me.ws.WebServiceClient.CallType;
 import com.smartnsoft.droid4me.ws.WithCacheWSUriStreamParser.SimpleIOStreamerSourceKey;
 import com.smartnsoft.droid4me.wscache.BackedWSUriStreamParser;
@@ -307,7 +306,7 @@ public final class Tests
 
       public KeysAggregator<StreamParameter> computeUri(StreamParameter parameters)
       {
-        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new HttpCallTypeAndBody(uriStreamerPath, CallType.Get, null));
+        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new WebServiceClient.HttpCallTypeAndBody(uriStreamerPath, CallType.Get, null));
         final SimpleIOStreamerSourceKey<StreamParameter> ioStreamerSourceKey = new SimpleIOStreamerSourceKey<StreamParameter>(ioStreamerUri);
         return new KeysAggregator<StreamParameter>(parameters).add(Source.UriStreamer, uriStreamerSourceKey).add(Source.IOStreamer, ioStreamerSourceKey);
       }
@@ -348,7 +347,7 @@ public final class Tests
         return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, HTTP.UTF_8);
       }
 
-      public InputStream getInputStream(String uri, CallType callType, HttpEntity body)
+      public InputStream getInputStream(String uri, CallType callType, AbstractHttpEntity body)
           throws CallException
       {
         getInputStreamCallsCount.incrementAndGet();
@@ -368,7 +367,7 @@ public final class Tests
       public KeysAggregator<StreamParameter> computeUri(StreamParameter parameters)
       {
         final String methodUriSuffix = "method";
-        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new HttpCallTypeAndBody(webServiceClient.computeUri(
+        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new WebServiceClient.HttpCallTypeAndBody(webServiceClient.computeUri(
             Tests.WEBSERVICES_BASE_URL, methodUriSuffix, parameters.computeUriParameters()), CallType.Get, null));
         final SimpleIOStreamerSourceKey<StreamParameter> ioStreamerSourceKey = new SimpleIOStreamerSourceKey<StreamParameter>(methodUriSuffix);
         return new KeysAggregator<StreamParameter>(parameters).add(Source.UriStreamer, uriStreamerSourceKey).add(Source.IOStreamer, ioStreamerSourceKey);

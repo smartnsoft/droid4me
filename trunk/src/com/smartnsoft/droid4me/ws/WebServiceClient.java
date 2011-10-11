@@ -22,7 +22,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-import org.apache.http.HttpEntity;
+import org.apache.http.entity.AbstractHttpEntity;
 
 /**
  * A minimalist contract when creating a web service client.
@@ -166,6 +166,63 @@ public interface WebServiceClient
   }
 
   /**
+   * Indicates the type of HTTP request and the underlying HTTP.
+   * 
+   * @since 2009.11.10
+   */
+  public final static class HttpCallTypeAndBody
+  {
+
+    /**
+     * The actual URL of the HTTP request to execute.
+     */
+    public final String url;
+
+    /**
+     * The HTTP request method.
+     */
+    public final CallType callType;
+
+    /**
+     * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the body of the request.
+     */
+    public final AbstractHttpEntity body;
+
+    /**
+     * This will create a {@link Verb#Get} HTTP request method.
+     * 
+     * @param url
+     *          the URL to use when performing the HTTP request
+     */
+    public HttpCallTypeAndBody(String url)
+    {
+      this(url, CallType.Get, null);
+    }
+
+    /**
+     * @param url
+     *          the URL to use when performing the HTTP request
+     * @param callType
+     *          the HTTP request method
+     * @param body
+     *          the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
+     */
+    public HttpCallTypeAndBody(String url, CallType callType, AbstractHttpEntity body)
+    {
+      this.url = url;
+      this.callType = callType;
+      this.body = body;
+    }
+
+    @Override
+    public String toString()
+    {
+      return "(" + callType + ") " + url;
+    }
+
+  }
+
+  /**
    * Is responsible for converting the given URI parameters into a stringified URI.
    * 
    * @param methodUriPrefix
@@ -193,7 +250,7 @@ public interface WebServiceClient
    * @throws WebServiceClient.CallException
    *           in case an error occurred during the HTTP request execution
    */
-  public InputStream getInputStream(String uri, WebServiceClient.CallType callType, HttpEntity body)
+  public InputStream getInputStream(String uri, WebServiceClient.CallType callType, AbstractHttpEntity body)
       throws WebServiceClient.CallException;
 
 }

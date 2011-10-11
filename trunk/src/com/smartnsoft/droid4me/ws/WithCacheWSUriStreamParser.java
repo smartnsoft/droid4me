@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.Map;
 
 import com.smartnsoft.droid4me.bo.Business;
-import com.smartnsoft.droid4me.ws.WSUriStreamParser.HttpCallTypeAndBody;
 import com.smartnsoft.droid4me.ws.WSUriStreamParser.UriStreamerSourceKey;
 
 /**
@@ -163,7 +162,7 @@ public final class WithCacheWSUriStreamParser
         throws WebServiceClient.CallException
     {
       final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
-      final HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
+      final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
       return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.body));
     }
 
