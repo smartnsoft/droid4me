@@ -23,7 +23,8 @@ import java.util.Date;
 import java.util.Map;
 
 import com.smartnsoft.droid4me.bo.Business;
-import com.smartnsoft.droid4me.ws.WSUriStreamParser.URISourceKey;
+import com.smartnsoft.droid4me.ws.WSUriStreamParser.HttpCallTypeAndBody;
+import com.smartnsoft.droid4me.ws.WSUriStreamParser.UriStreamerSourceKey;
 
 /**
  * @author Édouard Mercier
@@ -36,10 +37,27 @@ public final class WithCacheWSUriStreamParser
    * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#IOStreamer} source,
    * i.e. through a {#link {@link Business.IOStreamer}.
    * 
+   * @param <ParameterType>
+   *          the kind of parameters that will be used to identify and generate the business object URI
+   * 
    * @since 2011.10.06
    */
-  public static class IOSourceKey
-      implements WSUriStreamParser.SourceKey
+  public static interface IOStreamerSourceKey<ParameterType>
+      extends WSUriStreamParser.SourceKey<String, ParameterType>
+  {
+
+  }
+
+  /**
+   * A basic implementation of the {@link WithCacheWSUriStreamParser.IOStreamerSourceKey}.
+   * 
+   * @param <ParameterType>
+   *          the kind of parameters that will be used to identify and generate the business object URI
+   * 
+   * @since 2011.10.06
+   */
+  public static class SimpleIOStreamerSourceKey<ParameterType>
+      implements WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType>
   {
 
     /**
@@ -53,15 +71,20 @@ public final class WithCacheWSUriStreamParser
      * @param ioStreamerUri
      *          the business object entity {@link Business.IOStreamer} URI
      */
-    public IOSourceKey(String ioStreamerUri)
+    public SimpleIOStreamerSourceKey(String ioStreamerUri)
     {
       this.ioStreamerUri = ioStreamerUri;
     }
 
-    @SuppressWarnings("unchecked")
-    public <UriType, ParameterType> UriType getUri(ParameterType parameter)
+    public String computeUri(ParameterType parameter)
     {
-      return (UriType) ioStreamerUri;
+      return ioStreamerUri;
+    }
+
+    @Override
+    public String toString()
+    {
+      return "IOSourceKey(" + ioStreamerUri.toString() + ")";
     }
 
   }
@@ -83,27 +106,37 @@ public final class WithCacheWSUriStreamParser
       this.ioStreamer = ioStreamer;
     }
 
+    // TODO: think on how to set that back
+    // protected WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> computeIOStreamerSourceKey(String uri)
+    // {
+    // return new WithCacheWSUriStreamParser.SimpleIOStreamerSourceKey<ParameterType>(uri);
+    // }
+
     public final Date getLastUpdate(WSUriStreamParser.KeysAggregator<ParameterType> uri)
     {
-      return ioStreamer.getLastUpdate(uri.computeUri(Business.Source.IOStreamer));
+      final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
+      return ioStreamer.getLastUpdate(ioSourceKey.computeUri(uri.getParameter()));
     }
 
     public final Business.InputAtom readInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws StreamerExceptionType
     {
-      return ioStreamer.readInputStream(uri.computeUri(Business.Source.IOStreamer));
+      final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
+      return ioStreamer.readInputStream(ioSourceKey.computeUri(uri.getParameter()));
     }
 
     public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom)
         throws StreamerExceptionType
     {
-      return ioStreamer.writeInputStream(uri.computeUri(Business.Source.IOStreamer), inputAtom);
+      final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
+      return ioStreamer.writeInputStream(ioSourceKey.computeUri(uri.getParameter()), inputAtom);
     }
 
     public void remove(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws StreamerExceptionType
     {
-      ioStreamer.remove(uri.computeUri(Business.Source.IOStreamer));
+      final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
+      ioStreamer.remove(ioSourceKey.computeUri(uri.getParameter()));
     }
 
   }
@@ -121,7 +154,7 @@ public final class WithCacheWSUriStreamParser
       this.webServiceClient = webServiceClient;
     }
 
-    protected final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
+    protected String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
     {
       return webServiceClient.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
     }
@@ -129,9 +162,9 @@ public final class WithCacheWSUriStreamParser
     public Business.InputAtom getInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws WebServiceClient.CallException
     {
-      final URISourceKey sourceLocator = uri.getSourceLocator(Business.Source.URIStreamer);
-      return new Business.InputAtom(new Date(), webServiceClient.getInputStream((String) sourceLocator.getUri(Business.Source.IOStreamer),
-          sourceLocator.callType, sourceLocator.body));
+      final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
+      final HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
+      return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.body));
     }
 
     public final BusinessObjectType rawGetValue(ParameterType parameter)
@@ -159,25 +192,29 @@ public final class WithCacheWSUriStreamParser
 
     public final Date getLastUpdate(WSUriStreamParser.KeysAggregator<ParameterType> uri)
     {
-      return getLastUpdate(uri.computeUri(Business.Source.IOStreamer));
+      final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
+      return getLastUpdate(ioSourceKey.computeUri(uri.getParameter()));
     }
 
     public final Business.InputAtom readInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws StreamerExceptionType
     {
-      return readInputStream(uri.computeUri(Business.Source.IOStreamer));
+      final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
+      return readInputStream(ioSourceKey.computeUri(uri.getParameter()));
     }
 
     public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom)
         throws StreamerExceptionType
     {
-      return writeInputStream(uri.computeUri(Business.Source.IOStreamer), inputAtom);
+      final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
+      return writeInputStream(ioSourceKey.computeUri(uri.getParameter()), inputAtom);
     }
 
     public void remove(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws StreamerExceptionType
     {
-      removeUri(uri.computeUri(Business.Source.IOStreamer));
+      final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
+      removeUri(ioSourceKey.computeUri(uri.getParameter()));
     }
 
   }
