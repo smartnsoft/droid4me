@@ -293,7 +293,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
       instructions.onUriStreamParser(Cacher.Status.Success);
     }
 
-    return new Values.Info<BusinessObjectType>(businessObject, atom.timestamp, Business.Source.URIStreamer);
+    return new Values.Info<BusinessObjectType>(businessObject, atom.timestamp, Business.Source.UriStreamer);
   }
 
   /**

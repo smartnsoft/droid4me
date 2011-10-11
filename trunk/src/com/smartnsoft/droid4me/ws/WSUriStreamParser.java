@@ -37,22 +37,18 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
 {
 
   /**
-   * Is responsible for returning a string key corresponding to a business object entity, in order to access to it.
+   * Is responsible for returning a key corresponding to a business object entity, in order to be able to access to it later on.
+   * 
+   * @param <UriType>
+   *          the kind of URI that this source will deliver, so as to locate the business object
+   * @param <ParameterType>
+   *          the kind of parameters that will be used to identify and generate the business object URI
    * 
    * @since 2011.10.06
-   * 
    */
-  public static interface SourceKey
+  public static interface SourceKey<UriType, ParameterType>
+      extends Business.Urier<UriType, ParameterType>
   {
-
-    /**
-     * The method is responsible for returning the key of a business object entity.
-     * 
-     * @param parameter
-     *          the parameters which enable to compute the key, and which are specific to the business object
-     * @return may be <code>null</code> if no key is available for the underlying business object
-     */
-    <UriType, ParameterType> UriType getUri(ParameterType parameter);
 
   }
 
@@ -63,83 +59,88 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
    * @param <ParameterType>
    *          the parameter class which identify the business object, and enable to compute its URIs
    * 
-   * @since 2009.11.10
+   * @since 2011.10.06
    */
   public static class KeysAggregator<ParameterType>
   {
 
     private final ParameterType parameter;
 
-    private final Map<Business.Source, WSUriStreamParser.SourceKey> sourceLocators = new HashMap<Business.Source, WSUriStreamParser.SourceKey>();
+    private final Map<Business.Source, WSUriStreamParser.SourceKey<?, ParameterType>> sourceLocators = new HashMap<Business.Source, WSUriStreamParser.SourceKey<?, ParameterType>>();
 
+    /**
+     * This constructor is equivalent to invoking {@link WSUriStreamParser.KeysAggregator#KeysAggregator(ParameterType, null, null)}.
+     */
     public KeysAggregator(ParameterType parameter)
     {
       this(parameter, null, null);
     }
 
-    public KeysAggregator(ParameterType parameter, WSUriStreamParser.SourceKey sourceLocator)
-    {
-      this(parameter, Business.Source.URIStreamer, sourceLocator);
-    }
-
-    public KeysAggregator(ParameterType parameter, Business.Source source, WSUriStreamParser.SourceKey sourceLocator)
+    /**
+     * Creates a keys aggregator and adds immediately a source key to it.
+     * 
+     * <p>
+     * That constructor will invoke the {@link #add(Business.Source, SourceKey)} method.
+     * </p>
+     * 
+     * @param parameter
+     *          the parameter that will be stored, so as to be able to generate the various business object URIs
+     * @param source
+     *          the source the source key is attached to
+     * @param sourceKey
+     *          the source key to register
+     */
+    public KeysAggregator(ParameterType parameter, Business.Source source, WSUriStreamParser.SourceKey<?, ParameterType> sourceKey)
     {
       this.parameter = parameter;
-      if (sourceLocator != null && source != null)
+      if (sourceKey != null && source != null)
       {
-        add(source, sourceLocator);
+        add(source, sourceKey);
       }
     }
 
-    public WSUriStreamParser.KeysAggregator<ParameterType> add(Business.Source source, WSUriStreamParser.SourceKey sourceLocator)
+    /**
+     * @return the parameter which has been provided at construction time, and which will be used so as to compute the URIs.
+     */
+    public ParameterType getParameter()
     {
-      sourceLocators.put(source, sourceLocator);
+      return parameter;
+    }
+
+    /**
+     * Registers a source key to the aggregator, for a given source.
+     * 
+     * <p>
+     * Note that invoking the method multiple times with the same <coce>source</code> parameter value will just replace the existing source key.
+     * </p>
+     * 
+     * @param source
+     *          the source the provided key belongs to
+     * @param sourceKey
+     *          a source key that will be registered for the given source
+     * @return the aggregator itself, so as to ease the usage
+     */
+    public WSUriStreamParser.KeysAggregator<ParameterType> add(Business.Source source, WSUriStreamParser.SourceKey<?, ParameterType> sourceKey)
+    {
+      sourceLocators.put(source, sourceKey);
       return this;
     }
 
     @SuppressWarnings("unchecked")
-    public <SourceKeyType extends WSUriStreamParser.SourceKey> SourceKeyType getSourceLocator(Business.Source source)
+    public <SourceKeyType extends WSUriStreamParser.SourceKey<?, ParameterType>> SourceKeyType getSourceLocator(Business.Source source)
     {
-      return (SourceKeyType) sourceLocators.get(source);
-    }
-
-    public String computeUri(Business.Source source)
-    {
-      final WSUriStreamParser.SourceKey sourceLocator = sourceLocators.get(source);
-      if (sourceLocator == null)
-      {
-        // We fall back to the URIStreamer source locator
-        final WSUriStreamParser.SourceKey uriSourceLocator = sourceLocators.get(Business.Source.URIStreamer);
-        if (uriSourceLocator == null)
-        {
-          return null;
-        }
-        else
-        {
-          final String uri = uriSourceLocator.getUri(parameter);
-          return uri;
-        }
-      }
-      else
-      {
-        return sourceLocator.getUri(parameter);
-      }
+      final SourceKey<?, ParameterType> sourceKey = sourceLocators.get(source);
+      return (SourceKeyType) sourceKey;
     }
 
   }
 
   /**
-   * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#URIStreamer} source,
-   * i.e. through a {#link {@link Business.UriStreamParser}.
-   * 
-   * <p>
-   * Indicates the type of HTTP request and the underlying HTTP body and URL.
-   * </p>
+   * Indicates the type of HTTP request and the underlying HTTP.
    * 
    * @since 2009.11.10
    */
-  public static class URISourceKey
-      implements WSUriStreamParser.SourceKey
+  public final static class HttpCallTypeAndBody
   {
 
     /**
@@ -163,7 +164,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
      * @param url
      *          the URL to use when performing the HTTP request
      */
-    public URISourceKey(String url)
+    public HttpCallTypeAndBody(String url)
     {
       this(url, WebServiceCaller.CallType.Get, null);
     }
@@ -176,7 +177,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
      * @param body
      *          the HTTP request body, if the 'callType" is a {@link WebServiceClient.Verb#Post POST} or a {@link WebServiceClient.Verb#Put PUT}
      */
-    public URISourceKey(String url, WebServiceCaller.CallType callType, AbstractHttpEntity body)
+    public HttpCallTypeAndBody(String url, WebServiceCaller.CallType callType, AbstractHttpEntity body)
     {
       this.url = url;
       this.callType = callType;
@@ -189,10 +190,59 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
       return "(" + callType + ") " + url;
     }
 
-    @SuppressWarnings("unchecked")
-    public <UriType, ParameterType> UriType getUri(ParameterType parameter)
+  }
+
+  /**
+   * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#UriStreamer} source,
+   * i.e. through a {#link {@link Business.UriStreamParser}.
+   * 
+   * <p>
+   * Indicates the type of HTTP request and the underlying HTTP body and URL.
+   * </p>
+   * 
+   * @param <ParameterType>
+   *          the kind of parameters that will be used to identify and generate the business object URI
+   * 
+   * @since 2011.10.06
+   */
+  public static interface UriStreamerSourceKey<ParameterType>
+      extends WSUriStreamParser.SourceKey<WSUriStreamParser.HttpCallTypeAndBody, ParameterType>
+  {
+
+  }
+
+  /**
+   * A basic implementation of the {@link WSUriStreamParser.UriStreamerSourceKey}.
+   * 
+   * @param <ParameterType>
+   *          the kind of parameters that will be used to identify and generate the business object URI
+   * 
+   * @since 2011.10.06
+   * 
+   */
+  public static class SimpleUriStreamerSourceKey<ParameterType>
+      implements WSUriStreamParser.UriStreamerSourceKey<ParameterType>
+  {
+
+    /**
+     * The actual URL of the HTTP request to execute.
+     */
+    public final WSUriStreamParser.HttpCallTypeAndBody httpCallTypeAndBody;
+
+    public SimpleUriStreamerSourceKey(WSUriStreamParser.HttpCallTypeAndBody httpCallTypeAndBody)
     {
-      return (UriType) url;
+      this.httpCallTypeAndBody = httpCallTypeAndBody;
+    }
+
+    public WSUriStreamParser.HttpCallTypeAndBody computeUri(ParameterType parameter)
+    {
+      return httpCallTypeAndBody;
+    }
+
+    @Override
+    public String toString()
+    {
+      return "UriSourceKey(" + httpCallTypeAndBody.toString() + ")";
     }
 
   }
@@ -204,17 +254,34 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
     this.webServiceClient = webServiceClient;
   }
 
-  protected final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
+  /**
+   * A helper method which just wraps the {@link WebServiceCaller#computeUri(String, String, Map)} method.
+   */
+  protected String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
   {
     return webServiceClient.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
   }
 
+  // TODO: think on how to set that back
+  // protected WSUriStreamParser.KeysAggregator<ParameterType> computeKeysAggregator(ParameterType parameter,
+  // WSUriStreamParser.HttpCallTypeAndBody httpCallTypeAndBody)
+  // {
+  // return new WSUriStreamParser.KeysAggregator<ParameterType>(parameter).add(Source.UriStreamer, computeUriStreamerSourceKey(httpCallTypeAndBody));
+  // }
+
+  // TODO: think on how to set that back
+  // protected WSUriStreamParser.UriStreamerSourceKey<ParameterType> computeUriStreamerSourceKey(WSUriStreamParser.HttpCallTypeAndBody
+  // httpCallTypeAndBody)
+  // {
+  // return new WSUriStreamParser.SimpleUriStreamerSourceKey<ParameterType>(httpCallTypeAndBody);
+  // }
+
   public final Business.InputAtom getInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
       throws WebServiceCaller.CallException
   {
-    final URISourceKey sourceLocator = uri.getSourceLocator(Business.Source.URIStreamer);
-    return new Business.InputAtom(new Date(), webServiceClient.getInputStream((String) sourceLocator.getUri(Business.Source.IOStreamer),
-        sourceLocator.callType, sourceLocator.body));
+    final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
+    final HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
+    return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.body));
   }
 
   public final BusinessObjectType rawGetValue(ParameterType parameter)

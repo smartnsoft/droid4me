@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.bo.Business.InputAtom;
 import com.smartnsoft.droid4me.bo.Business.Source;
 import com.smartnsoft.droid4me.cache.Cacher.Status;
 import com.smartnsoft.droid4me.cache.FilePersistence;
@@ -25,11 +26,13 @@ import com.smartnsoft.droid4me.cache.Values.CacheException;
 import com.smartnsoft.droid4me.cache.Values.CachingEvent;
 import com.smartnsoft.droid4me.cache.Values.Info;
 import com.smartnsoft.droid4me.test.BasisTests;
+import com.smartnsoft.droid4me.ws.WSUriStreamParser.HttpCallTypeAndBody;
 import com.smartnsoft.droid4me.ws.WSUriStreamParser.KeysAggregator;
-import com.smartnsoft.droid4me.ws.WSUriStreamParser.URISourceKey;
+import com.smartnsoft.droid4me.ws.WSUriStreamParser.SimpleUriStreamerSourceKey;
 import com.smartnsoft.droid4me.ws.WebServiceCaller;
 import com.smartnsoft.droid4me.ws.WebServiceClient;
 import com.smartnsoft.droid4me.ws.WebServiceClient.CallType;
+import com.smartnsoft.droid4me.ws.WithCacheWSUriStreamParser.SimpleIOStreamerSourceKey;
 import com.smartnsoft.droid4me.wscache.BackedWSUriStreamParser;
 
 /**
@@ -164,7 +167,7 @@ public final class Tests
         }
 
       }, parameter);
-      Assert.assertEquals("The source of the data is not the right one", Business.Source.URIStreamer, info.getSource());
+      Assert.assertEquals("The source of the data is not the right one", Business.Source.UriStreamer, info.getSource());
       Assert.assertEquals("The returned business object is not the right one", expectedValue, info.value);
       Assert.assertEquals("'getInputStream()' has been invoked too many times", 1, getInputStreamCallsCount.get());
       Assert.assertEquals("'onUriStreamParser()' has not invoked the right number of times", 2, onUriStreamParserCallCount.get());
@@ -228,7 +231,7 @@ public final class Tests
 
     {
       final Info<String> info = streamParser.backed.getRetentionInfoValue(false, 1000000, null, new StreamParameter(System.currentTimeMillis()));
-      Assert.assertEquals("The source of the data is not the right one", Business.Source.URIStreamer, info.getSource());
+      Assert.assertEquals("The source of the data is not the right one", Business.Source.UriStreamer, info.getSource());
       Assert.assertEquals("The returned business object is not the right one", expectedValue, info.value);
       Assert.assertEquals("'getInputStream()' has been invoked too many times", 1, getInputStreamCallsCount.get());
     }
@@ -278,13 +281,60 @@ public final class Tests
         }
 
       }, parameter);
-      Assert.assertEquals("The source of the data is not the right one", Business.Source.URIStreamer, info.getSource());
+      Assert.assertEquals("The source of the data is not the right one", Business.Source.UriStreamer, info.getSource());
       Assert.assertEquals("The returned business object is not the right one", expectedValue, info.value);
       Assert.assertEquals("'onUriStreamParser()' has not invoked the right number of times", 2, onUriStreamParserCallCount.get());
       Assert.assertEquals("'onUriStreamParser()' has not invoked invoked with the 'Attempt' status", 1, onUriStreamParserStatusAttempt.get());
       Assert.assertEquals("'onUriStreamParser()' has not invoked invoked with that 'Success' status", 1, onUriStreamParserStatusSuccess.get());
       Assert.assertEquals("'onIOStreamer()' has not invoked the right number of times", 0, onIOStreamerCallCount.get());
       Assert.assertEquals("'getInputStream()' has been invoked the right number of times", 1, getInputStreamCallsCount.get());
+    }
+  }
+
+  @Test
+  public void differentURIAndIOStreamerSourceKeys()
+      throws CacheException, IOException, PersistenceException
+  {
+    final AtomicInteger getInputStreamCallsCount = new AtomicInteger(0);
+    final String expectedValue = new String("String persisted in a different way");
+
+    final WebServiceClient webServiceClient = computeWebServiceClient(getInputStreamCallsCount, expectedValue);
+
+    final String uriStreamerPath = "http://somePath";
+    final String ioStreamerUri = "local://anotherPath";
+    final BackedWSUriStreamParser.BackedUriStreamedMap<String, StreamParameter, TestException, PersistenceException> streamParser = new BackedWSUriStreamParser.BackedUriStreamedMap<String, StreamParameter, TestException, PersistenceException>(Persistence.getInstance(0), webServiceClient)
+    {
+
+      public KeysAggregator<StreamParameter> computeUri(StreamParameter parameters)
+      {
+        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new HttpCallTypeAndBody(uriStreamerPath, CallType.Get, null));
+        final SimpleIOStreamerSourceKey<StreamParameter> ioStreamerSourceKey = new SimpleIOStreamerSourceKey<StreamParameter>(ioStreamerUri);
+        return new KeysAggregator<StreamParameter>(parameters).add(Source.UriStreamer, uriStreamerSourceKey).add(Source.IOStreamer, ioStreamerSourceKey);
+      }
+
+      public String parse(StreamParameter parameter, InputStream inputStream)
+          throws TestException
+      {
+        try
+        {
+          return WebServiceCaller.getString(inputStream);
+        }
+        catch (IOException exception)
+        {
+          throw new TestException(exception);
+        }
+      }
+
+    };
+
+    final StreamParameter parameter = new StreamParameter(System.currentTimeMillis());
+    streamParser.backed.getMemoryValue(true, null, parameter);
+    {
+      // We check that the persistence layer has been updated accordingly
+      final String ioValue = WebServiceCaller.getString(Persistence.getInstance(0).extractInputStream(ioStreamerUri).inputStream);
+      Assert.assertEquals("The persisted value has not been recorded at the right place", expectedValue, ioValue);
+      final InputAtom inputStream = Persistence.getInstance(0).extractInputStream(uriStreamerPath);
+      Assert.assertNull("The persisted value has not been recorded at the right place", inputStream);
     }
   }
 
@@ -317,8 +367,11 @@ public final class Tests
 
       public KeysAggregator<StreamParameter> computeUri(StreamParameter parameters)
       {
-        return new KeysAggregator<StreamParameter>(parameters).add(Source.URIStreamer,
-            new URISourceKey(webServiceClient.computeUri(Tests.WEBSERVICES_BASE_URL, "method", parameters.computeUriParameters()), CallType.Get, null));
+        final String methodUriSuffix = "method";
+        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new HttpCallTypeAndBody(webServiceClient.computeUri(
+            Tests.WEBSERVICES_BASE_URL, methodUriSuffix, parameters.computeUriParameters()), CallType.Get, null));
+        final SimpleIOStreamerSourceKey<StreamParameter> ioStreamerSourceKey = new SimpleIOStreamerSourceKey<StreamParameter>(methodUriSuffix);
+        return new KeysAggregator<StreamParameter>(parameters).add(Source.UriStreamer, uriStreamerSourceKey).add(Source.IOStreamer, ioStreamerSourceKey);
       }
 
       public String parse(StreamParameter parameter, InputStream inputStream)
@@ -337,5 +390,4 @@ public final class Tests
     };
     return streamParser;
   }
-
 }

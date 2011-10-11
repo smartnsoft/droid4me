@@ -148,11 +148,25 @@ public abstract class WebServiceCaller
 
   private HttpClient httpClient;
 
+  /**
+   * A helper method for generating an input stream from a {@link JSONObject} object.
+   * 
+   * @param jsonObject
+   *          the JSON object to turn into an input stream
+   * @return the input stream resulting from the JSON marshalling
+   */
   public static InputStream createInputStreamFromJson(JSONObject jsonObject)
   {
     return new ByteArrayInputStream(jsonObject.toString().getBytes());
   }
 
+  /**
+   * A helper method for generating an input stream from a {@link JSONArray} object.
+   * 
+   * @param jsonArray
+   *          the JSON array to turn into an input stream
+   * @return the input stream resulting from the JSON marshalling
+   */
   public static InputStream createInputStreamFromJson(JSONArray jsonArray)
   {
     return new ByteArrayInputStream(jsonArray.toString().getBytes());

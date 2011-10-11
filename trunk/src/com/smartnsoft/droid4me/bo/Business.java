@@ -67,7 +67,7 @@ public final class Business
    */
   public static enum Source
   {
-    Memory, IOStreamer, URIStreamer
+    Memory, IOStreamer, UriStreamer
   }
 
   /**
@@ -75,7 +75,7 @@ public final class Business
    * 
    * @since 2009.08.31
    */
-  public static class Atom
+  public static abstract class Atom
   {
 
     public final Date timestamp;

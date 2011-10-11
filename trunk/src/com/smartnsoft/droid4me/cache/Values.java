@@ -478,7 +478,7 @@ public final class Values
 
     public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return (fromCache == true || (info.source == Business.Source.URIStreamer || assessments.size() >= 1)) ? Values.Instructions.Result.Accepted
+      return (fromCache == true || (info.source == Business.Source.UriStreamer || assessments.size() >= 1)) ? Values.Instructions.Result.Accepted
           : Values.Instructions.Result.Rejected;
     }
 
@@ -490,7 +490,7 @@ public final class Values
       }
       else
       {
-        if (assessments.containsKey(Business.Source.URIStreamer) == true)
+        if (assessments.containsKey(Business.Source.UriStreamer) == true)
         {
           if (assessments.size() == 1)
           {
@@ -536,7 +536,7 @@ public final class Values
       }
       else
       {
-        return (info.source == Business.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+        return (info.source == Business.Source.UriStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
             : Values.Instructions.Result.Rejected;
       }
     }
@@ -561,7 +561,7 @@ public final class Values
     {
       if (fromCache == false)
       {
-        return (info.source == Business.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+        return (info.source == Business.Source.UriStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
             : Values.Instructions.Result.Rejected;
       }
       else
@@ -572,7 +572,7 @@ public final class Values
         }
         else
         {
-          return (info.source == Business.Source.URIStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
+          return (info.source == Business.Source.UriStreamer || assessments.size() >= 1) ? Values.Instructions.Result.Accepted
               : Values.Instructions.Result.Rejected;
         }
       }
@@ -594,7 +594,7 @@ public final class Values
       }
       else
       {
-        if (assessments.containsKey(Business.Source.URIStreamer) == true)
+        if (assessments.containsKey(Business.Source.UriStreamer) == true)
         {
           if (assessments.size() == 1)
           {
@@ -626,7 +626,7 @@ public final class Values
 
     public Values.Instructions.Result assess(Values.Info<BusinessObjectType> info)
     {
-      return info.source == Business.Source.URIStreamer ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected;
+      return info.source == Business.Source.UriStreamer ? Values.Instructions.Result.Accepted : Values.Instructions.Result.Rejected;
     }
 
     public Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)
