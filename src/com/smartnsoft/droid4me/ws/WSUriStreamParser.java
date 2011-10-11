@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.entity.AbstractHttpEntity;
-
 import com.smartnsoft.droid4me.bo.Business;
 
 /**
@@ -136,63 +134,6 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   }
 
   /**
-   * Indicates the type of HTTP request and the underlying HTTP.
-   * 
-   * @since 2009.11.10
-   */
-  public final static class HttpCallTypeAndBody
-  {
-
-    /**
-     * The actual URL of the HTTP request to execute.
-     */
-    public final String url;
-
-    /**
-     * The HTTP request method.
-     */
-    public final WebServiceCaller.CallType callType;
-
-    /**
-     * If the HTTP method is a {@link WebServiceClient.Verb#Post} or a {@link WebServiceClient.Verb#Put}, the body of the request.
-     */
-    public final AbstractHttpEntity body;
-
-    /**
-     * This will create a {@link WebServiceClient.Verb#Get} HTTP request method.
-     * 
-     * @param url
-     *          the URL to use when performing the HTTP request
-     */
-    public HttpCallTypeAndBody(String url)
-    {
-      this(url, WebServiceCaller.CallType.Get, null);
-    }
-
-    /**
-     * @param url
-     *          the URL to use when performing the HTTP request
-     * @param callType
-     *          the HTTP request method
-     * @param body
-     *          the HTTP request body, if the 'callType" is a {@link WebServiceClient.Verb#Post POST} or a {@link WebServiceClient.Verb#Put PUT}
-     */
-    public HttpCallTypeAndBody(String url, WebServiceCaller.CallType callType, AbstractHttpEntity body)
-    {
-      this.url = url;
-      this.callType = callType;
-      this.body = body;
-    }
-
-    @Override
-    public String toString()
-    {
-      return "(" + callType + ") " + url;
-    }
-
-  }
-
-  /**
    * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#UriStreamer} source,
    * i.e. through a {#link {@link Business.UriStreamParser}.
    * 
@@ -206,7 +147,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
    * @since 2011.10.06
    */
   public static interface UriStreamerSourceKey<ParameterType>
-      extends WSUriStreamParser.SourceKey<WSUriStreamParser.HttpCallTypeAndBody, ParameterType>
+      extends WSUriStreamParser.SourceKey<WebServiceClient.HttpCallTypeAndBody, ParameterType>
   {
 
   }
@@ -227,14 +168,14 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
     /**
      * The actual URL of the HTTP request to execute.
      */
-    public final WSUriStreamParser.HttpCallTypeAndBody httpCallTypeAndBody;
+    public final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody;
 
-    public SimpleUriStreamerSourceKey(WSUriStreamParser.HttpCallTypeAndBody httpCallTypeAndBody)
+    public SimpleUriStreamerSourceKey(WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody)
     {
       this.httpCallTypeAndBody = httpCallTypeAndBody;
     }
 
-    public WSUriStreamParser.HttpCallTypeAndBody computeUri(ParameterType parameter)
+    public WebServiceClient.HttpCallTypeAndBody computeUri(ParameterType parameter)
     {
       return httpCallTypeAndBody;
     }
@@ -280,7 +221,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
       throws WebServiceCaller.CallException
   {
     final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
-    final HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
+    final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
     return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.body));
   }
 
