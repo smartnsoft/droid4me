@@ -80,6 +80,32 @@ public final class WithCacheWSUriStreamParser
       return ioStreamerUri;
     }
 
+    /**
+     * A helper method, which enables to build both an {@link Business.Source#UriStreamer} and {@link Business.Source#IOStreamer} keys aggregator from
+     * an HTTP request expression.
+     * 
+     * @param httpCallTypeAndBody
+     *          the HTTP request that will be used to build the {@link WSUriStreamParser.UriStreamerSourceKey}
+     * @param parameter
+     *          the parameter that will be used to create the returned keys aggregator
+     * @return a new keys aggregator composed of a newly created {@link WSUriStreamParser.UriStreamerSourceKey}, and a
+     *         {@link WithCacheWSUriStreamParser.IOStreamerSourceKey} the URI of which will be taken from the previously created
+     *         {@link WSUriStreamParser.UriStreamerSourceKey} via its {@link WSUriStreamParser.UriStreamerSourceKey#computeUri(ParameterType)} method
+     */
+    public static <ParameterType> WSUriStreamParser.KeysAggregator<ParameterType> fromUriStreamerSourceKey(
+        WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody, ParameterType parameter)
+    {
+      final WSUriStreamParser.SimpleUriStreamerSourceKey<ParameterType> uriStreamerSourceKey = new WSUriStreamParser.SimpleUriStreamerSourceKey<ParameterType>(httpCallTypeAndBody);
+      return new WSUriStreamParser.KeysAggregator<ParameterType>(parameter).add(Business.Source.UriStreamer, uriStreamerSourceKey).add(
+          Business.Source.IOStreamer, new WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType>()
+          {
+            public String computeUri(ParameterType parameter)
+            {
+              return uriStreamerSourceKey.computeUri(parameter).url;
+            }
+          });
+    }
+
     @Override
     public String toString()
     {
