@@ -49,7 +49,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.HttpParams;
@@ -243,7 +242,7 @@ public abstract class WebServiceCaller
    *           {@link #isConnected()} method returns <code>false</code>, no request will be attempted and a {@link WebServiceCaller.CallException}
    *           exception will be thrown (embedding a {@link UnknownHostException} exception).
    */
-  public final InputStream getInputStream(String uri, WebServiceCaller.CallType callType, AbstractHttpEntity body)
+  public final InputStream getInputStream(String uri, WebServiceCaller.CallType callType, HttpEntity body)
       throws WebServiceCaller.CallException
   {
     if (isConnected == false)

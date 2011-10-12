@@ -18,8 +18,9 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -40,16 +41,17 @@ public abstract class SmartSplashScreenActivity
     extends SmartActivity<Void>
 {
 
-  private static final Set<String> initialized = new HashSet<String>();
+  private static final Map<String, Date> initialized = new HashMap<String, Date>();
 
   /**
    * @param splashScreenActivity
    *          the class of the splash screen
-   * @return whether the given splash screen has been initialized
+   * @return a non <code>null</code> date, if and only if the given splash screen has been initialized ; in that case, the returned date is the
+   *         timestamp when it has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class))}
    */
-  public static boolean isInitialized(Class<? extends SmartSplashScreenActivity> splashScreenActivity)
+  public static Date isInitialized(Class<? extends SmartSplashScreenActivity> splashScreenActivity)
   {
-    return SmartSplashScreenActivity.initialized.contains(splashScreenActivity.getName());
+    return SmartSplashScreenActivity.initialized.get(splashScreenActivity.getName());
   }
 
   /**
@@ -79,7 +81,7 @@ public abstract class SmartSplashScreenActivity
    */
   protected void markAsInitialized()
   {
-    SmartSplashScreenActivity.initialized.add(getClass().getName());
+    SmartSplashScreenActivity.initialized.put(getClass().getName(), new Date());
   }
 
   /**
@@ -249,6 +251,9 @@ public abstract class SmartSplashScreenActivity
         startActivity(computeNextIntent());
       }
     }
+    stopActivity = false;
+    pauseActivity = false;
+    hasStopped = false;
     finish();
   }
 

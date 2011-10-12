@@ -22,7 +22,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.HttpEntity;
 
 /**
  * A minimalist contract when creating a web service client.
@@ -186,7 +186,7 @@ public interface WebServiceClient
     /**
      * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the body of the request.
      */
-    public final AbstractHttpEntity body;
+    public final HttpEntity body;
 
     /**
      * This will create a {@link Verb#Get} HTTP request method.
@@ -207,7 +207,7 @@ public interface WebServiceClient
      * @param body
      *          the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
      */
-    public HttpCallTypeAndBody(String url, CallType callType, AbstractHttpEntity body)
+    public HttpCallTypeAndBody(String url, CallType callType, HttpEntity body)
     {
       this.url = url;
       this.callType = callType;
@@ -250,7 +250,7 @@ public interface WebServiceClient
    * @throws WebServiceClient.CallException
    *           in case an error occurred during the HTTP request execution
    */
-  public InputStream getInputStream(String uri, WebServiceClient.CallType callType, AbstractHttpEntity body)
+  public InputStream getInputStream(String uri, WebServiceClient.CallType callType, HttpEntity body)
       throws WebServiceClient.CallException;
 
 }
