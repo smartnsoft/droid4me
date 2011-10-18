@@ -22,10 +22,10 @@
   </organization>
 
   <scm>
-    <connection>scm:svn:http://droid4me.googlecode.com/svn/trunk/</connection>
-    <developerConnection>scm:svn:https://droid4me.googlecode.com/svn/trunk/</developerConnection>
+    <connection>scm:svn:http://droid4me.googlecode.com/svn/trunk/droid4me</connection>
+    <developerConnection>scm:svn:https://droid4me.googlecode.com/svn/trunk/droid4me</developerConnection>
     <tag>HEAD</tag>
-    <url>http://code.google.com/p/droid4me/source/browse/trunk/</url>
+    <url>http://code.google.com/p/droid4me/source/browse/trunk/droid4me</url>
   </scm>
 
   <issueManagement>
