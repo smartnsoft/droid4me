@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+ * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * Contributors:
+ *     E2M - initial API and implementation
+ *     Smart&Soft - initial API and implementation
+ -->
+
+<!--
+This Ant buildfile requires that you have included the following Ant library extensions:
+<ul>
+  <li><a href="http://ant-contrib.sourceforge.net/">Ant-Contrib</a></li>
+  <li><a href="http://www.oopsconsultancy.com/software/xmltask/">xmltask</a></li>
+</ul>
+-->
+
+<project
+  name="droid4me"
+  default="init"
+  basedir="."
+>
+
+  <description>The aim of this Ant buildfile is to propose services for the droid4me library project.</description>
+
+  <!-- The AntContrib library extends Ant. -->
+  <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+
+  <!-- The XmlTask Ant task. -->
+  <taskdef
+    name="xmltask"
+    classname="com.oopsconsultancy.xmltask.ant.XmlTask"
+  />
+
+  <target
+    name="init"
+    depends=""
+    description="Default target, which should always be called first be other targets."
+  >
+    <property
+      name="androidSDKHome.directoryPath"
+      location="/opt/android-sdk"
+    />
+    <property
+      name="androidPlatform.version"
+      value="1.6"
+    />
+    <property
+      name="androidPlatform.relativePath"
+      value="platforms/android-${androidPlatform.version}"
+    />
+    <!--property
+      name="androidJar.filePath"
+      location="${androidSDKHome.directoryPath}/${androidPlatform.relativePath}/android.jar"
+    /-->
+    <property
+      name="androidJar.filePath"
+      location="libs/android.jar"
+    />
+    <!--property
+      name="googleMapsJar.filePath"
+      location="${androidSDKHome.directoryPath}/add-ons/google_apis-4/libs/maps.jar"
+    /-->
+    <property
+      name="googleMapsJar.filePath"
+      location="libs/maps.jar"
+    />
+    <property
+      name="temporary.directoryPath"
+      location="tmp"
+    />
+    <property
+      name="classes.directoryPath"
+      location="${temporary.directoryPath}/bin"
+    />
+    <property
+      name="distribution.directoryPath"
+      location="dist"
+    />
+    <property
+      name="droid4me.top.packageName"
+      value="com.smartnsoft"
+    />
+    <property
+      name="droid4me.packageName"
+      value="${droid4me.top.packageName}.droid4me"
+    />
+    <property
+      name="droid4me.packagePath"
+      value="com/smartnsoft/droid4me"
+    />
+    <property
+      name="droid4meJar.fileName"
+      value="${droid4me.packageName}.jar"
+    />
+    <property
+      name="droid4meJar.filePath"
+      location="${distribution.directoryPath}/${droid4meJar.fileName}"
+    />
+    <property
+      name="javaDoc.filePath"
+      location="docs/api"
+    />
+    <property
+      name="tweakedSource.directoryPath"
+      location="${temporary.directoryPath}/tweaked"
+    />
+    <path id="droid4me.classpath">
+      <pathelement location="${googleMapsJar.filePath}"/>
+      <pathelement location="${androidJar.filePath}"/>
+    </path>
+  </target>
+
+  <target
+    name="clean"
+    depends="init"
+    description="Cleans up the project"
+  >
+    <delete dir="${temporary.directoryPath}"/>
+    <delete dir="${javaDoc.filePath}"/>
+  </target>
+
+  <target
+    name="build"
+    depends="init, jar"
+    description="Builds the library."
+  />
+
+  <target
+    name="jar"
+    depends="init, tweakCode"
+    description="Builds a raw jar of the library."
+  >
+    <delete dir="${classes.directoryPath}"/>
+    <mkdir dir="${classes.directoryPath}"/>
+    <echo>Compiling for Android v${androidPlatform.version}</echo>
+    <javac
+      encoding="ISO-8859-1"
+      target="1.5"
+      debug="true"
+      optimize="true"
+      extdirs=""
+      srcdir="${tweakedSource.directoryPath}"
+      destdir="${classes.directoryPath}"
+    >
+      <classpath refid="droid4me.classpath"/>
+      <include name="*/**"/>
+    </javac>
+    <mkdir dir="${distribution.directoryPath}"/>
+    <jar
+      basedir="${classes.directoryPath}"
+      destfile="${droid4meJar.filePath}"
+      update="false"
+    />
+    <delete dir="${classes.directoryPath}"/>
+    <delete dir="${tweakedSource.directoryPath}"/>
+  </target>
+
+  <target
+    name="tweakCode"
+    depends="init"
+    description="Copies and pastes the source code by modyfying it."
+  >
+    <loadfile
+      srcFile="VERSION.txt"
+      property="droid4meVersionNameRaw"
+    />
+    <input
+      message="Name of droid4me version?"
+      addproperty="droid4meVersionNameRaw"
+    />
+    <tstamp>
+      <format
+        property="timestamp"
+        pattern="yyyy.MM.dd-HH:mm"
+      />
+    </tstamp>
+    <property
+      name="droid4meVersionName"
+      value="${droid4meVersionNameRaw} built on ${timestamp}"
+    />
+    <delete dir="${tweakedSource.directoryPath}"/>
+    <mkdir dir="${tweakedSource.directoryPath}"/>
+    <copy toDir="${tweakedSource.directoryPath}">
+      <fileset dir="src">
+        <include name="**/*"/>
+      </fileset>
+      <filterchain>
+        <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
+          <param
+            type="token"
+            name="DROID4ME_VERSION_NAME"
+            value="${droid4meVersionName}"
+          />
+       </filterreader>
+      </filterchain>
+    </copy>
+  </target>
+
+  <target
+    name="generateDoc"
+    depends="init"
+    description="Generates the JavaDoc of the library source code."
+  >
+    <delete dir="${javaDoc.filePath}"/>
+    <javadoc
+      defaultexcludes="yes"
+      destdir="${javaDoc.filePath}"
+      author="true"
+      version="true"
+      use="true"
+      includenosourcepackages="true"
+      windowtitle="droid4me API"
+      overview="src/com/smartnsoft/droid4me/overview.html"
+    >
+      <classpath refid="droid4me.classpath"/>
+      <packageset dir="src">
+        <include name="**/*.java"/>
+      </packageset>
+      <fileset dir="src">
+        <include name="**/*.java"/>
+      </fileset>
+      <doctitle><![CDATA[<h1>droid4me API documentation</h1>]]></doctitle>
+      <bottom><![CDATA[<i>Copyright &#169; 2009-2010 Smart&Soft. All Rights Reserved.</i>]]></bottom>
+      <group
+        title="Core features"
+        packages="${droid4me.packageName}.app:${droid4me.packageName}.content:${droid4me.packageName}.log"
+       />
+      <group
+        title="Shared in the framework"
+        packages="${droid4me.packageName}.bo:${droid4me.packageName}.framework"
+       />
+      <group
+        title="Caching and persistence"
+        packages="${droid4me.packageName}.cache:${droid4me.packageName}.ws:${droid4me.packageName}.wscache"
+       />
+      <group
+        title="User Interface"
+        packages="${droid4me.packageName}.ui:${droid4me.packageName}.widget:${droid4me.packageName}.graphics.drawable:${droid4me.packageName}.menu"
+       />
+      <group
+        title="Utilities"
+        packages="${droid4me.packageName}.util"
+       />
+    </javadoc>
+  </target>
+
+  <target
+    name="package"
+    depends="init, build, generateDoc"
+    description="Generates a package of the framework with the binaries and the documentation."
+  >
+    <mkdir dir="${temporary.directoryPath}"/>
+    <copy
+      file="README-binary.txt"
+      tofile="${temporary.directoryPath}/README.txt"
+    />
+    <mkdir dir="${distribution.directoryPath}"/>
+    <zip
+      destfile="${distribution.directoryPath}/${droid4me.packageName}.zip"
+      update="false"
+    >
+      <zipfileset
+        dir="${javaDoc.filePath}"
+        prefix="doc"
+      />
+      <zipfileset
+        file="${droid4meJar.filePath}"
+        prefix="lib"
+      />
+      <fileset dir=".">
+        <include name="LICENSE.txt"/>
+      </fileset>
+      <fileset file="${temporary.directoryPath}/README.txt"/>
+    </zip>
+  </target>
+
+  <target
+    name="export"
+    depends="init, build, generateDoc"
+    description="Builds a zip which contains the library source code."
+  >
+    <property
+      name="exportedSource.directoryPath"
+      location="${temporary.directoryPath}/exported"
+    />
+    <mkdir dir="${temporary.directoryPath}"/>
+    <copy
+      file="README-source.txt"
+      tofile="${temporary.directoryPath}/README.txt"
+    />
+    <delete dir="${exportedSource.directoryPath}"/>
+    <copy toDir="${exportedSource.directoryPath}">
+      <fileset dir=".">
+        <include name="LICENSE.txt"/>
+      </fileset>
+      <fileset file="${temporary.directoryPath}/README.txt"/>
+    </copy>
+    <copy
+      toDir="${exportedSource.directoryPath}"
+      preservelastmodified="true"
+      includeEmptyDirs="false"
+    >
+      <fileset dir=".">
+        <include name="src/**/*.java"/>
+        <include name="src/**/*.html"/>
+      </fileset>
+    </copy>
+    <zip
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-source.zip"
+      update="false"
+    >
+      <zipfileset
+        dir="${javaDoc.filePath}"
+        prefix="doc"
+      />
+      <zipfileset
+        file="${droid4meJar.filePath}"
+        prefix="lib"
+      />
+      <fileset dir="${exportedSource.directoryPath}">
+        <include name="**/*"/>
+      </fileset>
+    </zip>
+  </target>
+
+  <target
+    name="buildAndDeploy"
+    depends="build"
+    description="Builds the library and copies it in situ."
+  >
+    <property
+      name="targetCopy.directoryPath"
+      location="../Smarties/libs"
+    />
+    <copy
+      file="${droid4meJar.filePath}"
+      toDir="${targetCopy.directoryPath}"
+    />
+  </target>
+
+  <target
+    name="embed"
+    depends="init"
+    description="Copies and pastes the library source code into another project."
+  >
+    <property
+      name="project.directoryPath"
+      location="../FamilyWall"
+    />
+    <property
+      name="excludedPath"
+      value="${droid4me.packagePath}/app/SmartMapActivity2.java"
+    />
+    <copy
+      toDir="${project.directoryPath}"
+      preservelastmodified="true"
+      encoding="ISO-8859-1"
+      outputencoding="ISO-8859-1"
+    >
+      <fileset dir=".">
+        <include name="src/**/*"/>
+        <exclude name="src/${excludedPath}"/>
+      </fileset>
+    </copy>
+    <xmltask
+      source="${project.directoryPath}/.classpath"
+      dest="${project.directoryPath}/.classpath"
+      indent="false"
+      outputter="default"
+    >
+      <remove path="/classpath/classpathentry[@kind = &quot;lib&quot; and @path = &quot;libs/${droid4meJar.fileName}&quot;]"/>
+    </xmltask>
+  </target>
+
+  <target
+    name="unembed"
+    depends="init"
+    description="Removes the library source code from another project."
+  >
+    <property
+      name="project.directoryPath"
+      location="../Smarties"
+    />
+    <delete includeEmptyDirs="true">
+      <fileset dir="${project.directoryPath}">
+        <include name="src/${droid4me.packagePath}/**"/>
+        <include name="src/${droid4me.top.packageName}"/>
+      </fileset>
+    </delete>
+    <xmltask
+      source="${project.directoryPath}/.classpath"
+      dest="${project.directoryPath}/.classpath"
+      indent="false"
+      outputter="default"
+    >
+      <insert
+        path="/classpath"
+        xml="&lt;classpathentry kind=&quot;lib&quot; path=&quot;libs/${droid4meJar.fileName}&quot;/&gt;"
+      />
+    </xmltask>
+  </target>
+
+  <target
+    name="retrieveEmbedded"
+    depends="init"
+    description="Removes the library source code from another project, while extracting the modified files."
+  >
+    <property
+      name="project.directoryPath"
+      location="../Smarties"
+    />
+    <move
+      todir="."
+      overwrite="false"
+    >
+      <fileset dir="${project.directoryPath}">
+        <include name="src/${droid4me.packagePath}/**"/>
+      </fileset>
+    </move>
+    <antcall target="unembed"/>
+  </target>
+
+</project>
