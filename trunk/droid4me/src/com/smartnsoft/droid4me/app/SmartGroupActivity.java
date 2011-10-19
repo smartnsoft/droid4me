@@ -211,6 +211,8 @@ public abstract class SmartGroupActivity<AggregateClass>
 
   private View headerView;
 
+  private View footerView;
+
   private FrameLayout contentView;
 
   public SmartGroupActivity()
@@ -224,9 +226,43 @@ public abstract class SmartGroupActivity<AggregateClass>
   }
 
   /**
-   * @return the top view ; can be <code>null</code>
+   * Gives access to the {@link ActivityGroup} content view, which contains a {@link #getHeaderView() header} and a {@link #getFooterView() footer}
+   * view.
+   * 
+   * @return the root view of the activity
    */
-  protected abstract View getHeaderView();
+  protected final ViewGroup getWrapperView()
+  {
+    return wrapperView;
+  }
+
+  /**
+   * Is responsible for providing the header view of the {@link ActivityGroup}, if any.
+   * 
+   * <p>
+   * This method will be invoked once during its content view creation.
+   * </p>
+   * 
+   * @return the top view ; can be {@code null}, which is the default implementation
+   */
+  protected View getHeaderView()
+  {
+    return null;
+  }
+
+  /**
+   * Is responsible for providing the footer view of the {@link ActivityGroup}, if any.
+   * 
+   * <p>
+   * This method will be invoked once during its content view creation.
+   * </p>
+   * 
+   * @return the bottom view ; can be {@code null}, which is the default implementation
+   */
+  protected View getFooterView()
+  {
+    return null;
+  }
 
   protected abstract Intent getSubIntent(String activityId);
 
@@ -248,14 +284,6 @@ public abstract class SmartGroupActivity<AggregateClass>
   public List<String> getActivitiesIds()
   {
     return activitiesIds;
-  }
-
-  /**
-   * @return the root view of the activity
-   */
-  protected final ViewGroup getWrapperView()
-  {
-    return wrapperView;
   }
 
   protected final ViewGroup getContentView()
@@ -383,7 +411,16 @@ public abstract class SmartGroupActivity<AggregateClass>
       wrapperView.addView(headerView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
       // headerView.setOnFocusChangeListener(this);
     }
-    wrapperView.addView(contentView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+
+    // We add the content view, and provide a layout weight, so that it takes the maximum space
+    wrapperView.addView(contentView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1f));
+
+    footerView = getFooterView();
+    if (footerView != null)
+    {
+      wrapperView.addView(footerView, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+    }
+
     // contentView.setOnFocusChangeListener(this);
     // wrapperView.setOnFocusChangeListener(this);
     setContentView(wrapperView);

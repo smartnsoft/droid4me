@@ -224,7 +224,8 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * </p>
    * 
    * @param view
-   *          the view that will be bound with the retrieved {@link Bitmap}
+   *          the view that will be bound with the retrieved {@link Bitmap}. May be <code>null</code>, which enables to simply download a bitmap and
+   *          put it into the cache
    * @param bitmapUid
    *          the identifier of the bitmap to retrieve. Most of the time, this is the URL of the bitmap on Internet, but it can serve as a basis to
    *          {@link BasisBitmapDownloader.Instructions#computeUrl(String, Object) compute} the actual URL
