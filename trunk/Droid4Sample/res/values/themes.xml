@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <style
+    name="Theme.Droid4Sample"
+    parent="android:Theme.Light"
+  >
+    <!-- The "Android 2.0" title bar -->
+    <item name="android:windowTitleBackgroundStyle">@style/titleBar</item>
+    <item name="android:windowTitleSize">@dimen/titleBarHeight</item>
+    <!--item name="android:tabWidgetStyle">@style/Widget.Button.Small.Droid4Sample</item-->
+  </style>
+
+  <style
+    name="Theme.Droid4Sample.NoTitle"
+    parent="Theme.Droid4Sample"
+  >
+    <item name="android:windowNoTitle">true</item>
+  </style>
+
+  <style
+    name="Theme.Droid4Sample.NoTitle.Fullscreen"
+    parent="Theme.Droid4Sample.NoTitle"
+  >
+    <item name="android:windowFullscreen">true</item>
+    <item name="android:windowContentOverlay">@null</item>
+  </style>
+
+  <style
+    name="Theme.Dialog.Droid4Sample"
+    parent="android:Theme.Dialog"
+  />
+
+  <style
+    name="Theme.Droid4Sample.Transparent"
+    parent="Theme.Droid4Sample"
+  >
+    <item name="android:windowBackground">@android:color/transparent</item>
+    <item name="android:windowFrame">@null</item> 
+    <item name="android:windowContentOverlay">@null</item>
+    <item name="android:backgroundDimEnabled">true</item>
+    <item name="android:windowIsTranslucent">true</item>
+    <item name="android:windowNoTitle">true</item>
+    <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+  </style>
+
+</resources>

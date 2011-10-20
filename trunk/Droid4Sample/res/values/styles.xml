@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- The "Android 2.0" title bar -->
+
+  <style
+    name="titleBar"
+    parent="android:WindowTitleBackground"
+  >
+    <item name="android:background">@color/title_bar_background</item>
+  </style>
+
+  <style name="titleBarBackground">
+    <item name="android:orientation">horizontal</item>
+    <item name="android:layout_width">fill_parent</item>
+    <item name="android:layout_height">@dimen/titleBarHeight</item>
+  </style>
+  
+  <style name="titleBarButton">
+    <item name="android:background">@drawable/title_bar_button_background</item>
+    <item name="android:layout_height">@dimen/titleBarHeight</item>
+    <item name="android:layout_width">@dimen/titleBarHeight</item>
+  </style>
+
+  <style name="titleBarSeparator">
+    <item name="android:background">@color/title_bar_separator</item>
+    <item name="android:layout_width">1px</item>
+    <item name="android:layout_height">fill_parent</item>
+  </style>
+
+  <style name="titleBarText">
+    <item name="android:textSize">@dimen/titleBarText</item>
+    <item name="android:textStyle">bold</item>
+    <item name="android:textColor">@android:color/white</item>
+    <item name="android:gravity">center_vertical</item>
+    <item name="android:paddingLeft">@dimen/titleBarMargin</item>
+    <item name="android:paddingRight">@dimen/titleBarMargin</item>
+    <item name="android:singleLine">true</item>
+    <item name="android:ellipsize">marquee</item>
+    <item name="android:layout_width">fill_parent</item>
+  </style>
+
+  <!-- The application specific styles -->
+
+  <style name="bodyText">
+    <item name="android:textSize">@dimen/bodyText</item>
+    <item name="android:textColor">@color/android:black</item>
+  </style>
+
+  <!-- From here, we overload the Android default theme -->
+
+  <!--style
+    name="Widget.Button.Small.Droid4Sample"
+    parent="android:Widget.Button.Small"
+  >
+    <item name="android:background">@drawable/btn_default_small</item>
+  </style-->
+
+</resources>

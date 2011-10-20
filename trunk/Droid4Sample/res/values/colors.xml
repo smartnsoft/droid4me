@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- The "Android 2.0" title bar -->
+  <color name="title_bar_background">@color/android:black</color>
+  <color name="title_bar_separator">@color/android:white</color>
+
+  <color name="grey">#666666</color>
+  <color name="dark_grey">#333333</color>
+
+</resources>
