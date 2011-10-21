@@ -66,10 +66,11 @@
   />
   <ImageView
     android:id="@+id/smartnsoftIllustration"
-    android:layout_width="fill_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_below="@id/center"
     android:layout_marginTop="-40dip"
+    android:layout_centerHorizontal="true"
     android:scaleType="fitCenter"
     android:src="@drawable/smartnsoft_illustration"
   />
