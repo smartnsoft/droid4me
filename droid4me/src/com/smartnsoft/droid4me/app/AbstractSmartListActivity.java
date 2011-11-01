@@ -129,7 +129,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   /**
    * @return the wrapper of the UI list view
    */
-  public WrappedListView<BusinessObjectClass, ListViewClass, ViewClass> getWrappedListView()
+  public final WrappedListView<BusinessObjectClass, ListViewClass, ViewClass> getWrappedListView()
   {
     return wrappedListView;
   }
@@ -139,7 +139,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
    * 
    * @return the view which is the root of the activity layout
    */
-  public ViewGroup getWrapperLayout()
+  public final ViewGroup getWrapperLayout()
   {
     return wrapperLayout;
   }
