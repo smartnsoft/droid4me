@@ -254,6 +254,15 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   protected abstract ForList<BusinessObjectClass, ViewClass> getForListProvider();
 
   /**
+   * Is responsible for creating the {@link ListViewClass} widget.
+   * 
+   * @param activity
+   *          the activity creating the list view
+   * @return a valid list view widget
+   */
+  protected abstract ListViewClass computeListView(Activity activity);
+
+  /**
    * @return underlying list view
    */
   public abstract ListViewClass getListView();

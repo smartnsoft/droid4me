@@ -21,18 +21,18 @@ package com.smartnsoft.droid4me.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.GestureDetector.OnGestureListener;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
 
@@ -51,6 +51,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
       extends ListView
       implements OnGestureListener
   {
+
     private final GestureDetector gestureDetector;
 
     public TheListView(Context context)
@@ -130,7 +131,13 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
   {
     super(activity);
     this.forListProvider = forListProvider;
-    listView = new TheListView(activity);
+    listView = computeListView(activity);
+  }
+
+  @Override
+  protected ListView computeListView(Activity activity)
+  {
+    return new TheListView(activity);
   }
 
   @Override
