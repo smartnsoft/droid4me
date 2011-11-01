@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.smartnsoft.droid4me.bo.Business;
@@ -165,6 +166,16 @@ public abstract class Persistence
       return new ArrayList<Persistence.UriUsage>(uriUsages.values());
     }
 
+    public List<String> getUris()
+    {
+      final List<String> uris = new ArrayList<String>();
+      for (Entry<String, Persistence.UriUsage> entry : uriUsages.entrySet())
+      {
+        uris.add(entry.getKey());
+      }
+      return uris;
+    }
+
   }
 
   protected final static Logger log = LoggerFactory.getInstance(Persistence.class);
@@ -266,6 +277,13 @@ public abstract class Persistence
     }
     return Persistence.instances[position];
   }
+
+  /**
+   * Enables to access all the stored URIs.
+   * 
+   * @return the list of the stored URIs stored in the persistence instance. The ordering is not guaranteed to be stable
+   */
+  public abstract List<String> getUris();
 
   /**
    * @param outputStream

@@ -26,8 +26,10 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -300,6 +302,30 @@ public final class DbPersistence
     finally
     {
       database.close();
+    }
+  }
+
+  @Override
+  public List<String> getUris()
+  {
+    Cursor cursor = null;
+    try
+    {
+      cursor = writeableDb.rawQuery("SELECT " + DbPersistence.CacheColumns.URI + " FROM " + tableName, null);
+      final List<String> uris = new ArrayList<String>();
+      while (cursor.moveToNext() == true)
+      {
+        final String uri = cursor.getString(cursor.getColumnIndex(DbPersistence.CacheColumns.URI));
+        uris.add(uri);
+      }
+      return uris;
+    }
+    finally
+    {
+      if (cursor != null)
+      {
+        cursor.close();
+      }
     }
   }
 
