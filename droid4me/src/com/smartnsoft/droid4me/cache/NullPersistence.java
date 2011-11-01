@@ -19,6 +19,7 @@ package com.smartnsoft.droid4me.cache;
 
 import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 
 import com.smartnsoft.droid4me.bo.Business.InputAtom;
 
@@ -60,6 +61,12 @@ public class NullPersistence
   public void remove(String uri)
       throws PersistenceException
   {
+  }
+
+  @Override
+  public List<String> getUris()
+  {
+    return null;
   }
 
   public Date getLastUpdate(String uri)

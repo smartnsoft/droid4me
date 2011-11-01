@@ -187,6 +187,12 @@ public final class FilePersistence
     return indexFile;
   }
 
+  @Override
+  public List<String> getUris()
+  {
+    return uriUsages.getUris();
+  }
+
   public Date getLastUpdate(String uri)
   {
     if (storageBackendAvailable == false)
