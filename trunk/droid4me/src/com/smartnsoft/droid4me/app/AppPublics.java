@@ -528,10 +528,10 @@ public final class AppPublics
      * @param intent
      *          the received intent; if the action of the Intent is not the right one, no processing is done
      * @param onMultiSelectionChanged
-     *          the interface that will be callbacked depending on the overall multi-selection state
+     *          the interface that will be callbacked depending on the overall multi-selection state; is allowed to be {@code null}
      * @return <code>true</code> if the intent has been handled ; <code>false</code> otherwise
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings( { "unchecked", "rawtypes" })
     public boolean onSelection(Intent intent, MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
     {
       if (intent.getAction().equals(AppPublics.MultiSelectionHandler.ACTION_SELECTION) == false)
@@ -542,7 +542,10 @@ public final class AppPublics
       final int previousSelectedCount = selectedCount;
       final BusinessObjectClass businessObject = (BusinessObjectClass) intent.getSerializableExtra(MultiSelectionHandler.BUSINESS_OBJECT);
       setSelection(businessObject, selected);
-      onMultiSelectionChanged.onSelectionChanged(previousSelectedCount >= 1, selectedCount >= 1, selectedObjects);
+      if (onMultiSelectionChanged != null)
+      {
+        onMultiSelectionChanged.onSelectionChanged(previousSelectedCount >= 1, selectedCount >= 1, selectedObjects);
+      }
       return true;
     }
 
