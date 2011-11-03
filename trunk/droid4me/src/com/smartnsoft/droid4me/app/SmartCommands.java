@@ -545,12 +545,27 @@ public final class SmartCommands
   /**
    * Simply executes the provided command via the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL}.
    * 
+   * <p>
+   * Equivalent to invoking {@link SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(SmartCommands.GuardedCommand)}.
+   * </p>
+   * 
    * @param guardedCommand
    *          the command to be executed
+   * @see #execute(Activity, Runnable)
    */
   public static void execute(SmartCommands.GuardedCommand guardedCommand)
   {
     SmartCommands.LOW_PRIORITY_THREAD_POOL.execute(guardedCommand);
+  }
+
+  /**
+   * Equivalent to invoking {@link SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(Activity, Runnable)}.
+   * 
+   * @see #execute(SmartCommands.GuardedCommand)
+   */
+  public static void execute(Activity activity, Runnable runnable)
+  {
+    SmartCommands.LOW_PRIORITY_THREAD_POOL.execute(activity, runnable);
   }
 
   /**
