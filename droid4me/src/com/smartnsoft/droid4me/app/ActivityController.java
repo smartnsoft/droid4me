@@ -30,6 +30,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.Window;
 
 import com.smartnsoft.droid4me.LifeCycle;
@@ -39,7 +41,15 @@ import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
- * Is responsible for intercepting an activity starting and redirect it to a pre-requisite one if necessary, and for handling globally exceptions.
+ * Is responsible for intercepting an activity starting and redirect it to a prerequisite one if necessary, and for handling globally exceptions.
+ * 
+ * <p>
+ * Everything described here which involves the {@link Activity activities}, is applicable provided the activity is a {@link SmartableActivity}.
+ * </p>
+ * 
+ * <p>
+ * It is also a container for multiple interfaces relative to its architecture.
+ * </p>
  * 
  * @author Édouard Mercier
  * @since 2009.04.28
@@ -48,16 +58,32 @@ public final class ActivityController
 {
 
   /**
-   * An interface which is queried when a new activity is bound to be displayed.
+   * An interface which is requested when a new {@link Activity} is bound to be {@link Context#startActivity(Intent) started}.
+   * 
+   * <p>
+   * The redirector acts as a controller over the activities starting phase: if an activity should be started before another one is really
+   * {@link Activity#onResume() active}, this is the right place to handle this at runtime.
+   * </p>
+   * 
+   * <p>
+   * This component is especially useful when ones need to make sure that an {@link Activity} has actually been submitted to the end-user before
+   * resuming a workflow. The common cases are the traditional application splash screen, or a signin/signup process.
+   * </p>
+   * 
+   * @see ActivityController#registerRedirector(Redirector)
    */
   public interface Redirector
   {
 
     /**
+     * Will be invoked by the {@link ActivityController#needsRedirection(Activity) framework}, in order to know whether an {@link Activity} should be
+     * started instead of the provided one, which is supposed to have just {@link Activity#onCreate(Bundle) started}.
+     * 
      * @param activity
      *          the activity which is bound to be displayed
-     * @return <code>null</code> if nothing is to be done; otherwise, the given intent will be executed and the activity         {@Activity#finish
-     *  finished}
+     * @return {@code null} if and only if nothing is to be done, i.e. no activity should be started instead. Otherwise, the given intent will be
+     *         executed: in that case, the provided activity {@Activity#finish finishes}
+     * @see ActivityController#needsRedirection(Activity)
      */
     Intent getRedirection(Activity activity);
 
@@ -65,6 +91,12 @@ public final class ActivityController
 
   /**
    * An interface which is queried during the various life cycle events of an {@link LifeCycle activity}.
+   * 
+   * <p>
+   * An interceptor is the ideal place for centralizing in one place many of the {@link Activity} life cycle events.
+   * </p>
+   * 
+   * @see ActivityController#registerInterceptor(Interceptor)
    */
   public interface Interceptor
   {
@@ -92,15 +124,16 @@ public final class ActivityController
        * {@link ActivityController.Redirector activity redirection} is requested.
        */
       onContentChanged,
-      /**
-       * Called during the {@link Activity#onCreate} method, just before the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has been
-       * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
-       */
+      // /**
+      // * Called during the {@link Activity#onCreate} method, just before the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has
+      // been
+      // * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
+      // */
       // onRetrieveDisplayObjectsBefore,
-      /**
-       * Called during the {@link Activity#onCreate} method, just after the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has been
-       * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
-       */
+      // /**
+      // * Called during the {@link Activity#onCreate} method, just after the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has been
+      // * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
+      // */
       // onRetrieveDisplayObjectsAfter,
       /**
        * Called just after the {@link AppInternals.LifeCycleInternals#onActuallyCreated} method.
@@ -146,18 +179,25 @@ public final class ActivityController
     /**
      * Invoked every time a new event occurs on the provided activity. Ideal for logging application usage analytics.
      * 
-     * The method blocks the caller thread, hence the method should last a very short time!
+     * <p>
+     * The method blocks the caller thread, which is sometimes the UI thread, hence the method should last a very short time!
+     * <p>
+     * 
+     * @see ActivityController#onLifeCycleEvent(Activity, ActivityController.Interceptor.InterceptorEvent)
      */
     void onLifeCycleEvent(Activity activity, ActivityController.Interceptor.InterceptorEvent event);
 
   }
 
   /**
-   * Defines and splits the handling of various exceptions in a single place.
+   * Defines and splits the handling of various exceptions in a single place. This handler will be invoked once it has been
+   * {@link ActivityController#registerExceptionHandler(ExceptionHandler) registered}.
    * 
    * <p>
    * The exception handler will be invoked at runtime when an exception is thrown and is not handled.
    * </p>
+   * 
+   * @see ActivityController#registerExceptionHandler(ExceptionHandler)
    */
   public interface ExceptionHandler
   {
@@ -188,7 +228,8 @@ public final class ActivityController
     boolean onServiceException(Activity activity, ServiceException exception);
 
     /**
-     * Is invoked whenever an activity implementing {@link LifeCycle} throws an unexpected exception.
+     * Is invoked whenever an activity implementing {@link LifeCycle} throws an unexpected exception, or when an exception is thrown during a
+     * {@link AppPublics.GuardedCommand} execution.
      * 
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
@@ -222,7 +263,11 @@ public final class ActivityController
   }
 
   /**
-   * An implementation of {@link ActivityController.ExceptionHandler} which pops-up error dialog boxes.
+   * A simple implementation of {@link ActivityController.ExceptionHandler} which pops-up error dialog boxes and toasts.
+   * 
+   * <p>
+   * The labels of the dialogs and the toasts are i18ned though the provided {@link SmartApplication.I18N} provided instance.
+   * </p>
    */
   public static class AbstractExceptionHandler
       implements ActivityController.ExceptionHandler
@@ -230,6 +275,10 @@ public final class ActivityController
 
     private final SmartApplication.I18N i18n;
 
+    /**
+     * @param i18n
+     *          will be used at runtime, so as to display i18ned labels in the UI
+     */
     public AbstractExceptionHandler(SmartApplication.I18N i18n)
     {
       this.i18n = i18n;
@@ -438,13 +487,24 @@ public final class ActivityController
 
   private static final Logger log = LoggerFactory.getInstance(ActivityController.class);
 
+  /**
+   * When a new activity is {@link Context#startActivity(Intent) started} because of a redirection, the newly started activity will receive the
+   * initial activity {@link Intent} through this {@link Parcelable} key.
+   * 
+   * @see #needsRedirection(Activity)
+   * @see #registerInterceptor(ActivityController. Interceptor)
+   */
   public static final String CALLING_INTENT = "com.smartnsoft.droid4me.callingIntent";
 
+  /**
+   * A singleton pattern is available for the moment.
+   */
   private static volatile ActivityController instance;
 
   /**
-   * Implements a "double-checked locking" pattern.
+   * The only way to access to the activity controller.
    */
+  // Implements a "double-checked locking" pattern.
   public static ActivityController getInstance()
   {
     if (instance == null)
@@ -466,6 +526,9 @@ public final class ActivityController
 
   private ActivityController.ExceptionHandler exceptionHandler;
 
+  /**
+   * No one else than the framework should create such an instance.
+   */
   private ActivityController()
   {
   }
@@ -475,50 +538,53 @@ public final class ActivityController
     return exceptionHandler;
   }
 
+  /**
+   * Remembers the activity redirector that will be used by the framework, before {@link Context#startActivity(Intent) starting} a new
+   * {@link Activity}.
+   * 
+   * @param redirector
+   *          the redirector that will be requested at runtime, when a new activity is being started; if {@code null}, then, redirection mechanism
+   *          will be set up
+   */
   public synchronized void registerRedirector(ActivityController.Redirector redirector)
   {
     this.redirector = redirector;
   }
 
+  /**
+   * Remembers the activity interceptor that will be used by the framework, on every {@link ActivityController.Interceptor.InterceptorEvent event}
+   * during the underlying {@link Activity} life cycle.
+   * 
+   * @param interceptor
+   *          the interceptor that will be invoked at runtime, on every event; if {@code null}, no interception mechanism will be used
+   */
   public synchronized void registerInterceptor(ActivityController.Interceptor interceptor)
   {
     this.interceptor = interceptor;
   }
 
+  /**
+   * Remembers the exception handler that will be used by the framework.
+   * 
+   * @param exceptionHandler
+   *          the handler that will be invoked in case of exception; if {@code null}, no exception handler will be used
+   */
   public synchronized void registerExceptionHandler(ActivityController.ExceptionHandler exceptionHandler)
   {
     this.exceptionHandler = exceptionHandler;
   }
 
-  public synchronized boolean needsRedirection(Activity activity)
-  {
-    if (redirector == null)
-    {
-      return false;
-    }
-    final Intent intent = redirector.getRedirection(activity);
-    if (intent == null)
-    {
-      return false;
-    }
-    if (log.isDebugEnabled())
-    {
-      log.debug("A redirection is needed");
-    }
-    activity.finish();
-    // We consider the parent activity in case it is embedded (like in a TabActivity)
-    intent.putExtra(ActivityController.CALLING_INTENT, (activity.getParent() != null ? activity.getParent().getIntent() : activity.getIntent()));
-    // Disables the fact that the new started activity should belong to the tasks history and from the recent tasks
-    // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-    // intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-    activity.startActivity(intent);
-    return true;
-  }
-
   /**
-   * Is invoked every time a life cycle event occurs for the provided activity.
+   * Is invoked by the framework every time a life cycle event occurs for the provided activity. You should not invoke that method yourself!
    * 
+   * <p>
    * Note that the method is synchronized, which means that the previous call will block the next one, if no thread is spawn.
+   * </p>
+   * 
+   * @param activity
+   *          the activity which is involved with the event
+   * @param event
+   *          the event that has just happened for that activity
    */
   public synchronized void onLifeCycleEvent(Activity activity, ActivityController.Interceptor.InterceptorEvent event)
   {
@@ -531,6 +597,12 @@ public final class ActivityController
 
   /**
    * Dispatches the exception to the {@link ActivityController.ExceptionHandler}, and invokes the right method depending on its nature.
+   * 
+   * <p>
+   * The framework is responsible for invoking that method every time an unhandled exception is thrown. If no
+   * {@link ActivityController#registerExceptionHandler(ExceptionHandler) exception handler is registered}, the exception will be only logged, and the
+   * method will return {@code false}.
+   * </p>
    * 
    * @param context
    *          the context that originated the exception ; may be <code>null</code>
@@ -624,6 +696,40 @@ public final class ActivityController
       }
       return false;
     }
+  }
+
+  /**
+   * Indicates whether a redirection is required before letting the activity continue its life cycle. Also launches the redirected {@link Activity} is
+   * a redirection is need, and provide to its {@link Intent} the initial activity {@link Intent} trough the extra {@link Parcelable}
+   * {@link ActivityController#CALLING_INTENT} key.
+   * 
+   * @param activity
+   *          the activity which is being proved against the {@link ActivityController.Redirector}
+   * @return {@code true} if and only if the given activity should be paused (or ended) and if another activity should be launched instead
+   */
+  public synchronized boolean needsRedirection(Activity activity)
+  {
+    if (redirector == null)
+    {
+      return false;
+    }
+    final Intent intent = redirector.getRedirection(activity);
+    if (intent == null)
+    {
+      return false;
+    }
+    if (log.isDebugEnabled())
+    {
+      log.debug("A redirection is needed");
+    }
+    activity.finish();
+    // We consider the parent activity in case it is embedded (like in a TabActivity)
+    intent.putExtra(ActivityController.CALLING_INTENT, (activity.getParent() != null ? activity.getParent().getIntent() : activity.getIntent()));
+    // Disables the fact that the new started activity should belong to the tasks history and from the recent tasks
+    // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+    // intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+    activity.startActivity(intent);
+    return true;
   }
 
 }

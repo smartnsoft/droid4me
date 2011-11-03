@@ -76,6 +76,10 @@ public final class AppPublics
 
   /**
    * Defined in order to compute the default intent actions.
+   * 
+   * <p>
+   * Is invoked by the framework, at initialization time.
+   * </p>
    */
   static void initialize(Application application)
   {
@@ -127,90 +131,90 @@ public final class AppPublics
 
   }
 
-  /**
-   * @since 2011.03.04
-   */
+  // /**
+  // * @since 2011.03.04
+  // */
   // TO COME
-  public final static class Aggregator
-      implements LifeCycle
-  {
-
-    static interface ProblemHandler
-    {
-
-      void onProblem(LifeCycle aggregate, Throwable throwable, boolean fromUIThread);
-
-    }
-
-    // private AppPublics.Aggregator.ProblemHandler handler;
-
-    private final List<LifeCycle> aggregates = new ArrayList<LifeCycle>();
-
-    public Aggregator()
-    {
-    }
-
-    public Aggregator(LifeCycle aggregate)
-    {
-      aggregates.add(aggregate);
-    }
-
-    public AppPublics.Aggregator append(LifeCycle aggregate)
-    {
-      aggregates.add(aggregate);
-      return this;
-    }
-
-    public void onRetrieveDisplayObjects()
-    {
-      // for (LifeCycle aggregate : aggregates)
-      // {
-      // try
-      // {
-      // aggregate.onRetrieveDisplayObjects();
-      // }
-      // catch (Throwable throwable)
-      // {
-      // handler.onProblem(aggregate, throwable, true);
-      // stateContainer.stopHandling();
-      // onException(throwable, true);
-      // return;
-      // }
-      // }
-    }
-
-    public void onRetrieveBusinessObjects()
-        throws BusinessObjectUnavailableException
-    {
-      // TODO Auto-generated method stub
-
-    }
-
-    public void onBusinessObjectsRetrieved()
-    {
-      // TODO Auto-generated method stub
-
-    }
-
-    public void onFulfillDisplayObjects()
-    {
-      // TODO Auto-generated method stub
-
-    }
-
-    public void onSynchronizeDisplayObjects()
-    {
-      // TODO Auto-generated method stub
-
-    }
-
-    public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
-    {
-      // TODO Auto-generated method stub
-
-    }
-
-  }
+  // public final static class Aggregator
+  // implements LifeCycle
+  // {
+  //
+  // static interface ProblemHandler
+  // {
+  //
+  // void onProblem(LifeCycle aggregate, Throwable throwable, boolean fromUIThread);
+  //
+  // }
+  //
+  // // private AppPublics.Aggregator.ProblemHandler handler;
+  //
+  // private final List<LifeCycle> aggregates = new ArrayList<LifeCycle>();
+  //
+  // public Aggregator()
+  // {
+  // }
+  //
+  // public Aggregator(LifeCycle aggregate)
+  // {
+  // aggregates.add(aggregate);
+  // }
+  //
+  // public AppPublics.Aggregator append(LifeCycle aggregate)
+  // {
+  // aggregates.add(aggregate);
+  // return this;
+  // }
+  //
+  // public void onRetrieveDisplayObjects()
+  // {
+  // // for (LifeCycle aggregate : aggregates)
+  // // {
+  // // try
+  // // {
+  // // aggregate.onRetrieveDisplayObjects();
+  // // }
+  // // catch (Throwable throwable)
+  // // {
+  // // handler.onProblem(aggregate, throwable, true);
+  // // stateContainer.stopHandling();
+  // // onException(throwable, true);
+  // // return;
+  // // }
+  // // }
+  // }
+  //
+  // public void onRetrieveBusinessObjects()
+  // throws BusinessObjectUnavailableException
+  // {
+  // // TODO Auto-generated method stub
+  //
+  // }
+  //
+  // public void onBusinessObjectsRetrieved()
+  // {
+  // // TODO Auto-generated method stub
+  //
+  // }
+  //
+  // public void onFulfillDisplayObjects()
+  // {
+  // // TODO Auto-generated method stub
+  //
+  // }
+  //
+  // public void onSynchronizeDisplayObjects()
+  // {
+  // // TODO Auto-generated method stub
+  //
+  // }
+  //
+  // public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
+  // {
+  // // TODO Auto-generated method stub
+  //
+  // }
+  //
+  // }
 
   /**
    * Indicates what kind of {@link Intent} are being listened to, and how to handle an intent.
@@ -485,8 +489,14 @@ public final class AppPublics
      */
     public static String ACTION_SELECTION = "com.smartnsoft.droid4me.action.SELECTION";
 
+    /**
+     * Used as a key in the {@link Intent#getExtras() intent bundle}, so as to indicate whether the event deals with a selection or deselection.
+     */
     public final static String SELECTED = "selected";
 
+    /**
+     * Used as a key in the {@link Intent#getExtras() intent bundle}, so as to indicate in the event the selected or deselected business.
+     */
     public final static String BUSINESS_OBJECT = "businessObject";
 
     private int selectedCount = 0;
@@ -525,13 +535,18 @@ public final class AppPublics
      * The method to invoke when the activity receives a {@link MultiSelectionHandler#ACTION_SELECTION intent}, due to as business object
      * selection/unselection.
      * 
+     * <p>
+     * Usually invoked from the {@link BroadcastReceiver} which is listening to business objects selection events}.
+     * </p>
+     * 
      * @param intent
      *          the received intent; if the action of the Intent is not the right one, no processing is done
      * @param onMultiSelectionChanged
-     *          the interface that will be callbacked depending on the overall multi-selection state; is allowed to be {@code null}
+     *          the interface that will be callbacked (in the same thread as the calling method) depending on the overall multi-selection state; is
+     *          allowed to be {@code null}
      * @return <code>true</code> if the intent has been handled ; <code>false</code> otherwise
      */
-    @SuppressWarnings( { "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public boolean onSelection(Intent intent, MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
     {
       if (intent.getAction().equals(AppPublics.MultiSelectionHandler.ACTION_SELECTION) == false)
@@ -551,6 +566,11 @@ public final class AppPublics
 
     /**
      * Sets the selection state for a given business object.
+     * 
+     * <p>
+     * However, the call does not trigger the
+     * {@link AppPublics.MultiSelectionHandler.OnMultiSelectionChanged#onSelectionChanged(boolean, boolean, List)} callback.
+     * </p>
      * 
      * @param businessObject
      *          the business object related to that selection event
@@ -794,69 +814,6 @@ public final class AppPublics
 
   }
 
-  private static int normalPriorityThreadCount = 1;
-
-  private static int lowPriorityThreadCount = 1;
-
-  /**
-   * This threads pool is used internally, in order to prevent from new thread creation, for an optimization purpose.
-   * 
-   * <ul>
-   * <li>This pool can contain an unlimited number of threads;</li>
-   * <li>exceptions thrown by the {@link Runnable} are handled by the {@link ActivityController.ExceptionHandler}.</li>
-   * </ul>
-   * 
-   * <p>
-   * You can use this pool in the application, instead of creating new threads.
-   * </p>
-   * 
-   * @see AppPublics#LOW_PRIORITY_THREAD_POOL
-   */
-  public final static AppPublics.SmartThreadPoolExecutor THREAD_POOL = new AppPublics.SmartThreadPoolExecutor(0, Integer.MAX_VALUE, 60l, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadFactory()
-  {
-    public Thread newThread(Runnable runnable)
-    {
-      final Thread thread = new Thread(runnable);
-      thread.setName("droid4me-pool-thread #" + AppPublics.normalPriorityThreadCount++);
-      return thread;
-    }
-  });
-
-  /**
-   * Indicates how many threads at most will be available in the {@link #LOW_PRIORITY_THREAD_POOL low-priority threads pool}, by default. It needs to
-   * be sent at the application start-up.
-   * 
-   * <p>
-   * You may change that pool size by invoking the {@link ThreadPoolExecutor#setCorePoolSize(int)} method.
-   * </p>
-   */
-  public final static int LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE = 3;
-
-  /**
-   * Use this threads pool instead of creating your own {@link Thread#MIN_PRIORITY} threads.
-   * 
-   * <ul>
-   * <li>This pool will contain at most {@link #LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE} threads by default;</li>
-   * <li>exceptions thrown by the {@link Runnable} are handled by the {@link ActivityController.ExceptionHandler}.</li>
-   * </ul>
-   * 
-   * <p>
-   * You can use this pool in the application, instead of creating new threads.
-   * </p>
-   * 
-   * @see AppPublics#THREAD_POOL
-   */
-  public final static AppPublics.SmartThreadPoolExecutor LOW_PRIORITY_THREAD_POOL = new AppPublics.SmartThreadPoolExecutor(AppPublics.LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE, AppPublics.LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE, 10l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory()
-  {
-    public Thread newThread(Runnable runnable)
-    {
-      final Thread thread = new Thread(runnable);
-      thread.setPriority(Thread.MIN_PRIORITY);
-      thread.setName("droid4me-lowpool-thread #" + AppPublics.lowPriorityThreadCount++);
-      return thread;
-    }
-  });
-
   /**
    * A {@link DialogInterface.OnClickListener} which runs its {@link AppPublics.GuardedCommand#runGuarded() execution} in the
    * {@link AppPublics#LOW_PRIORITY_THREAD_POOL low-priority threads pool}, and which handles exceptions.
@@ -911,6 +868,79 @@ public final class AppPublics
 
   }
 
+  /**
+   * An instance counter for the {@link AppPublics#THREAD_POOL thread pool}.
+   */
+  private static int normalPriorityThreadCount = 1;
+
+  /**
+   * An instance counter for the {@link AppPublics#LOW_PRIORITY_THREAD_POOL thread pool}.
+   */
+  private static int lowPriorityThreadCount = 1;
+
+  /**
+   * This threads pool is used internally, in order to prevent from new thread creation, for an optimization purpose.
+   * 
+   * <ul>
+   * <li>This pool can contain an unlimited number of threads;</li>
+   * <li>exceptions thrown by the {@link Runnable} are handled by the
+   * {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler}.</li>
+   * </ul>
+   * 
+   * <p>
+   * You can use this pool in the application, instead of creating new threads.
+   * </p>
+   * 
+   * @see AppPublics#LOW_PRIORITY_THREAD_POOL
+   */
+  public final static AppPublics.SmartThreadPoolExecutor THREAD_POOL = new AppPublics.SmartThreadPoolExecutor(0, Integer.MAX_VALUE, 60l, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadFactory()
+  {
+    public Thread newThread(Runnable runnable)
+    {
+      final Thread thread = new Thread(runnable);
+      thread.setName("droid4me-pool-thread #" + AppPublics.normalPriorityThreadCount++);
+      return thread;
+    }
+  });
+
+  /**
+   * Indicates how many threads at most will be available in the {@link #LOW_PRIORITY_THREAD_POOL low-priority threads pool}, by default. It needs to
+   * be sent at the application start-up.
+   * 
+   * <p>
+   * You may change that pool size by invoking the {@link ThreadPoolExecutor#setCorePoolSize(int)} method.
+   * </p>
+   */
+  public final static int LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE = 3;
+
+  /**
+   * Use this threads pool instead of creating your own {@link Thread#MIN_PRIORITY} threads.
+   * 
+   * <ul>
+   * <li>This pool will contain at most {@link #LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE} threads by default;</li>
+   * <li>exceptions thrown by the {@link Runnable} are handled by the {@link ActivityController.ExceptionHandler}.</li>
+   * </ul>
+   * 
+   * <p>
+   * You can use this pool in the application, instead of creating new threads.
+   * </p>
+   * 
+   * @see AppPublics#THREAD_POOL
+   */
+  public final static AppPublics.SmartThreadPoolExecutor LOW_PRIORITY_THREAD_POOL = new AppPublics.SmartThreadPoolExecutor(AppPublics.LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE, AppPublics.LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE, 10l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory()
+  {
+    public Thread newThread(Runnable runnable)
+    {
+      final Thread thread = new Thread(runnable);
+      thread.setPriority(Thread.MIN_PRIORITY);
+      thread.setName("droid4me-lowpool-thread #" + AppPublics.lowPriorityThreadCount++);
+      return thread;
+    }
+  });
+
+  /**
+   * There is no reason creating an instance of that class, which is just a container.
+   */
   private AppPublics()
   {
   }
