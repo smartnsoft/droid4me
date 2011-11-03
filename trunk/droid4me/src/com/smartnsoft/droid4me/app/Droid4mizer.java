@@ -128,7 +128,7 @@ public final class Droid4mizer<AggregateClass>
         public void run()
         {
           // We call that method asynchronously in a specific thread
-          AppPublics.THREAD_POOL.execute(activity, new Runnable()
+          AppInternals.execute(activity, new Runnable()
           {
             public void run()
             {
