@@ -322,7 +322,7 @@ public abstract class SmartTabActivity<AggregateClass>
         public void run()
         {
           // We call that method asynchronously in a specific thread
-          AppPublics.THREAD_POOL.execute(SmartTabActivity.this, new Runnable()
+          AppInternals.execute(SmartTabActivity.this, new Runnable()
           {
             public void run()
             {

@@ -23,12 +23,12 @@ import java.lang.Thread.UncaughtExceptionHandler;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Application;
 import android.app.Dialog;
-import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -458,8 +458,8 @@ public abstract class SmartApplication
   }
 
   /**
-   * In addition to the default behavior, this event will be logged, and the {@link AppPublics#LOW_PRIORITY_THREAD_POOL} and
-   * {@link AppPublics#THREAD_POOL} thread pools stopped.
+   * In addition to the default behavior, this event will be logged, and the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL} and
+   * {@link AppInternals#THREAD_POOL} thread pools stopped.
    */
   @Override
   public void onTerminate()
@@ -476,8 +476,8 @@ public abstract class SmartApplication
     try
     {
       // We stop the threads pools
-      AppPublics.LOW_PRIORITY_THREAD_POOL.shutdown();
-      AppPublics.THREAD_POOL.shutdown();
+      SmartCommands.LOW_PRIORITY_THREAD_POOL.shutdown();
+      AppInternals.THREAD_POOL.shutdown();
     }
     finally
     {

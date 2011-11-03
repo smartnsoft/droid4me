@@ -545,7 +545,7 @@ public abstract class SmartMapActivity<AggregateClass>
         public void run()
         {
           // We call that method asynchronously in a specific thread
-          AppPublics.THREAD_POOL.execute(SmartMapActivity.this, new Runnable()
+          AppInternals.execute(SmartMapActivity.this, new Runnable()
           {
             public void run()
             {

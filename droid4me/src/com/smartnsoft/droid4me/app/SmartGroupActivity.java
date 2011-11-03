@@ -690,7 +690,7 @@ public abstract class SmartGroupActivity<AggregateClass>
         public void run()
         {
           // We call that method asynchronously in a specific thread
-          AppPublics.THREAD_POOL.execute(SmartGroupActivity.this, new Runnable()
+          AppInternals.execute(SmartGroupActivity.this, new Runnable()
           {
             public void run()
             {

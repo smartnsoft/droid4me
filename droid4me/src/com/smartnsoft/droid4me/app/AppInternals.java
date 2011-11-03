@@ -20,6 +20,9 @@ package com.smartnsoft.droid4me.app;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -99,8 +102,7 @@ final class AppInternals
 
       private final Runnable onOver;
 
-      private RefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects,
-          Runnable onOver)
+      private RefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver)
       {
         this.retrieveBusinessObjects = retrieveBusinessObjects;
         this.onOver = onOver;
@@ -223,8 +225,7 @@ final class AppInternals
       }
     }
 
-    void registerBroadcastListeners(Activity activity,
-        AppPublics.BroadcastListener[] broadcastListeners)
+    void registerBroadcastListeners(Activity activity, AppPublics.BroadcastListener[] broadcastListeners)
     {
       final int startIndex = enrichBroadCastListeners(broadcastListeners.length);
       for (int index = 0; index < broadcastListeners.length; index++)
@@ -233,8 +234,7 @@ final class AppInternals
       }
     }
 
-    private void registerBroadcastListeners(Activity activity, int index,
-        final AppPublics.BroadcastListener broadcastListener)
+    private void registerBroadcastListeners(Activity activity, int index, final AppPublics.BroadcastListener broadcastListener)
     {
       if (index == 0 && log.isDebugEnabled())
       {
@@ -269,8 +269,7 @@ final class AppInternals
           log.error("An exception occurred while computing the intent filter!", throwable);
         }
       }
-      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter()
-          : intentFilter);
+      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter() : intentFilter);
     }
 
     private int enrichBroadCastListeners(int count)
@@ -358,7 +357,7 @@ final class AppInternals
         }
         else
         {
-          AppPublics.THREAD_POOL.submit(new Runnable()
+          AppInternals.THREAD_POOL.submit(new Runnable()
           {
             public void run()
             {
@@ -389,8 +388,7 @@ final class AppInternals
 
     Runnable getRetrieveBusinessObjectsOver()
     {
-      return refreshBusinessObjectsAndDisplayNextTime == null ? null
-          : refreshBusinessObjectsAndDisplayNextTime.onOver;
+      return refreshBusinessObjectsAndDisplayNextTime == null ? null : refreshBusinessObjectsAndDisplayNextTime.onOver;
     }
 
     void onRefreshingBusinessObjectsAndDisplayStart()
@@ -431,7 +429,7 @@ final class AppInternals
         }
         else
         {
-          AppPublics.THREAD_POOL.submit(new Runnable()
+          AppInternals.THREAD_POOL.submit(new Runnable()
           {
             public void run()
             {
@@ -470,8 +468,7 @@ final class AppInternals
       return stopHandling == false && beingRedirected == false;
     }
 
-    boolean shouldDelayRefreshBusinessObjectsAndDisplay(
-        boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
+    boolean shouldDelayRefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
     {
       if (isInteracting == false && immediately == false)
       {
@@ -491,8 +488,7 @@ final class AppInternals
       return activity instanceof ServiceLifeCycle.ForServicesAsynchronousPolicy;
     }
 
-    private void internalPrepareServices(Activity activity,
-        ServiceLifeCycle forServices)
+    private void internalPrepareServices(Activity activity, ServiceLifeCycle forServices)
     {
       try
       {
@@ -504,8 +500,7 @@ final class AppInternals
       }
     }
 
-    private void internalDisposeServices(Activity activity,
-        ServiceLifeCycle forServices)
+    private void internalDisposeServices(Activity activity, ServiceLifeCycle forServices)
     {
       try
       {
@@ -517,9 +512,7 @@ final class AppInternals
       }
     }
 
-    private void onInternalServiceException(Activity activity,
-        ServiceLifeCycle forServices,
-        ServiceLifeCycle.ServiceException exception)
+    private void onInternalServiceException(Activity activity, ServiceLifeCycle forServices, ServiceLifeCycle.ServiceException exception)
     {
       if (log.isErrorEnabled())
       {
@@ -533,7 +526,45 @@ final class AppInternals
 
   }
 
+  /**
+   * An internal key, which enables to determine whether an activity has already been started.
+   */
   final static String ALREADY_STARTED = "com.smartnsoft.droid4me.alreadyStarted";
+
+  /**
+   * An instance counter for the {@link THREAD_POOL thread pool}.
+   */
+  private static int normalPriorityThreadCount = 1;
+
+  /**
+   * This threads pool is used internally, in order to prevent from new thread creation, for an optimization purpose.
+   * 
+   * <ul>
+   * <li>This pool can contain an unlimited number of threads;</li>
+   * <li>exceptions thrown by the {@link Runnable} are handled by the
+   * {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler}.</li>
+   * </ul>
+   * 
+   * <p>
+   * This pool will be used by the framework, instead of creating new threads.
+   * </p>
+   * 
+   * @see SmartCommands#LOW_PRIORITY_THREAD_POOL
+   */
+  final static SmartCommands.SmartThreadPoolExecutor THREAD_POOL = new SmartCommands.SmartThreadPoolExecutor(0, Integer.MAX_VALUE, 60l, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadFactory()
+  {
+    public Thread newThread(Runnable runnable)
+    {
+      final Thread thread = new Thread(runnable);
+      thread.setName("droid4me-pool-thread #" + AppInternals.normalPriorityThreadCount++);
+      return thread;
+    }
+  });
+
+  static void execute(Activity activity, Runnable runnable)
+  {
+    AppInternals.THREAD_POOL.execute(activity, runnable);
+  }
 
   private AppInternals()
   {

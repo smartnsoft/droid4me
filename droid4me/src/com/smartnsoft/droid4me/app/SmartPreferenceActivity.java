@@ -336,7 +336,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
         public void run()
         {
           // We call that method asynchronously in a specific thread
-          AppPublics.THREAD_POOL.execute(SmartPreferenceActivity.this, new Runnable()
+          AppInternals.execute(SmartPreferenceActivity.this, new Runnable()
           {
             public void run()
             {
