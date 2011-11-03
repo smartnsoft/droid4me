@@ -30,14 +30,18 @@ import java.util.concurrent.TimeUnit;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 import android.view.View;
 
 import com.smartnsoft.droid4me.LifeCycle;
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * Gathers some interfaces and helpers for the types belonging to its Java package.
@@ -616,6 +620,8 @@ public final class AppPublics
       implements Runnable
   {
 
+    protected final static Logger log = LoggerFactory.getInstance(AppPublics.GuardedCommand.class);
+
     private final Context context;
 
     /**
@@ -754,6 +760,250 @@ public final class AppPublics
   }
 
   /**
+   * An exception which acts as an {@link Throwable} wrapper, and which works in combination with the {@link AppPublics.SimpleGuardedCommmand}. It
+   * will be triggered during the {@link AppPublics.SimpleGuardedCommmand#handle(Throwable)} method.
+   * 
+   * <p>
+   * The traditional case is to let the {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler}
+   * cope in a centralized way with this kind of exception.
+   * </p>
+   * 
+   * @since 2011.11.03
+   */
+  public static class GuardedException
+      extends Exception
+  {
+
+    private static final long serialVersionUID = 642514965027273713L;
+
+    public final String displayMessage;
+
+    /**
+     * Builds a wrapper over the provided exception, and with an attached human readable message.
+     * 
+     * @param throwable
+     *          the exception to be wrapped
+     * @param displayMessage
+     *          the supposedly i18ned message that will be used later on when actually handling that exception
+     */
+    protected GuardedException(Throwable throwable, String displayMessage)
+    {
+      super(throwable);
+      this.displayMessage = displayMessage;
+    }
+
+  }
+
+  /**
+   * A handy {@link AppPublics.GuardedCommand} which will issue systematically a log when an exception occurs during the command execution, and will
+   * trigger a {@link AppPublics.GuardedException} which wraps the original exception in that case.
+   * 
+   * @since 2011.11.03
+   */
+  public abstract static class SimpleGuardedCommmand
+      extends AppPublics.GuardedCommand
+  {
+
+    protected final String warningLogMessage;
+
+    protected final String warningDisplayMessage;
+
+    /**
+     * Same as {@link AppPublics.SimpleGuardedCommmand#SimpleGuardedCommmand(Context, String, String)} with the last parameter equal to
+     * {@code context.getString(warningDisplayMessageResourceId)}.
+     */
+    public SimpleGuardedCommmand(Context context, String warningLogMessage, int warningDisplayMessageResourceId)
+    {
+      this(context, warningLogMessage, context.getString(warningDisplayMessageResourceId));
+    }
+
+    /**
+     * Creates a new {@link AppPublics.GuardedCommand}, which will issue a {@link Log#WARN warning log} and then trigger a
+     * {@link AppPublics.GuardedException}, if an exception occurs during its execution.
+     * 
+     * @param context
+     *          the Android context under which the commands is being run
+     * @param warningLogMessage
+     *          the log message that will be output in case of exception
+     * @param warningDisplayMessage
+     *          the (supposedly i18ned) human readable that will be transfered to the {@link AppPublics.GuardedException} in case of exception during
+     *          the command execution
+     */
+    public SimpleGuardedCommmand(Context context, String warningLogMessage, String warningDisplayMessage)
+    {
+      super(context);
+      this.warningLogMessage = warningLogMessage;
+      this.warningDisplayMessage = warningDisplayMessage;
+    }
+
+    /**
+     * The implementation will log as a {@link Log#WARN warning} the exception, and return a {@link AppPublics.GuardedException} which wraps the
+     * provided exception, with the {@link AppPublics.SimpleGuardedCommmand#warningDisplayMessage} as
+     * {@link AppPublics.GuardedException#displayMessage message attribute}.
+     * 
+     * @see AppPublics.GuardedCommand#handle(Throwable)
+     */
+    @Override
+    protected Throwable handle(Throwable throwable)
+    {
+      if (log.isWarnEnabled())
+      {
+        log.warn(warningLogMessage, throwable);
+      }
+      return new AppPublics.GuardedException(throwable, warningDisplayMessage);
+    }
+
+  }
+
+  /**
+   * A handy {@link AppPublics.SimpleGuardedCommmand} which will issue systematically {@link DialogInterface#dismiss() dismiss} a
+   * {@link ProgressDialog} once the command execution is over.
+   * 
+   * <p>
+   * This kind of command is especially useful when a {@link ProgressDialog} is being displayed just before the current command execution, and that it
+   * should be dismissed at the end of its execution.
+   * </p>
+   * 
+   * @since 2011.11.03
+   */
+  public abstract static class ProgressDialogGuardedCommmand
+      extends AppPublics.SimpleGuardedCommmand
+  {
+
+    protected final ProgressDialog progressDialog;
+
+    /**
+     * Same as {@link AppPublics.ProgressDialogGuardedCommmand#ProgressDialogGuardedCommmand(Context, String, String, ProgressDialog)} with the third
+     * parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
+     */
+    public ProgressDialogGuardedCommmand(Context context, String warningLogMessage, int warningDisplayMessageResourceId, ProgressDialog progressDialog)
+    {
+      this(context, warningLogMessage, context.getString(warningDisplayMessageResourceId), progressDialog);
+    }
+
+    /**
+     * 
+     * Creates a new {@link AppPublics.GuardedCommand}, which will issue a {@link Log#WARN warning log} and then trigger a
+     * {@link AppPublics.SimpleGuardedCommmand}, if an exception occurs during its execution, and eventually {@link DialogInterface#dismiss dismiss}
+     * the provided dialog.
+     * 
+     * @param context
+     *          the Android context under which the commands is being run
+     * @param warningLogMessage
+     *          the log message that will be output in case of exception
+     * @param warningDisplayMessage
+     *          the (supposedly i18ned) human readable that will be transfered to the {@link AppPublics.GuardedException} in case of exception during
+     *          the command execution
+     * @param progressDialog
+     *          the dialog to be dismissed at the end of the command execution ; may be {@code null}, and in that case, just behaves as its parent
+     *          {@link AppPublics.SimpleGuardedCommmand}
+     * @see AppPublics.SimpleGuardedCommmand#SimpleGuardedCommmand(Context, String, String)
+     */
+    public ProgressDialogGuardedCommmand(Context context, String warningLogMessage, String warningDisplayMessage, ProgressDialog progressDialog)
+    {
+      super(context, warningLogMessage, warningDisplayMessage);
+      this.progressDialog = progressDialog;
+    }
+
+    /**
+     * The actual command method to implement.
+     * 
+     * @throws Exception
+     *           if something wrong happened during the command execution
+     */
+    protected abstract void runGuardedDialog()
+        throws Exception;
+
+    /**
+     * The implementation will invoke the {@link #runGuardedDialog()} method, and will eventually dismiss the {@link #progressDialog} if necessary,
+     * whatever happens.
+     * 
+     * @see AppPublics.SimpleGuardedCommmand#runGuarded()
+     */
+    @Override
+    protected final void runGuarded()
+        throws Exception
+    {
+      try
+      {
+        runGuardedDialog();
+      }
+      finally
+      {
+        // This can be done from any thread, according to the documentation
+        if (progressDialog != null && progressDialog.isShowing() == true)
+        {
+          if (getContext() instanceof Activity)
+          {
+            // We want to prevent from dismissing the ProgressDialog once its creating Activity is already finished, and hence prevent from a crash
+            final Activity activity = (Activity) getContext();
+            if (activity.isFinishing() == true)
+            {
+              return;
+            }
+          }
+          progressDialog.dismiss();
+        }
+      }
+    }
+
+  }
+
+  /**
+   * A {@link DialogInterface.OnClickListener} which runs its {@link AppPublics.GuardedCommand#runGuarded() execution} in the
+   * {@link AppPublics#LOW_PRIORITY_THREAD_POOL low-priority threads pool}, and which handles exceptions.
+   * 
+   * @since 2010.06.08
+   */
+  public static abstract class GuardedDialogInterfaceClickListener
+      extends AppPublics.GuardedCommand
+      implements DialogInterface.OnClickListener
+  {
+
+    /**
+     * @param activity
+     *          the activity from which the execution originates, and which will be used when reporting a potential exception
+     */
+    public GuardedDialogInterfaceClickListener(Activity activity)
+    {
+      super(activity);
+    }
+
+    public final void onClick(DialogInterface dialog, int which)
+    {
+      AppPublics.LOW_PRIORITY_THREAD_POOL.execute(this);
+    }
+
+  }
+
+  /**
+   * A {@link View.OnClickListener} which runs its {@link AppPublics.GuardedCommand#runGuarded() execution} in the
+   * {@link AppPublics#LOW_PRIORITY_THREAD_POOL low-priority threads pool}, and which handles exceptions.
+   * 
+   * @since 2010.06.08
+   */
+  public static abstract class GuardedViewClickListener
+      extends AppPublics.GuardedCommand
+      implements View.OnClickListener
+  {
+
+    /**
+     * @param activity
+     *          the activity from which the execution originates, and which will be used when reporting a potential exception
+     */
+    public GuardedViewClickListener(Activity activity)
+    {
+      super(activity);
+    }
+
+    public final void onClick(View view)
+    {
+      AppPublics.LOW_PRIORITY_THREAD_POOL.execute(this);
+    }
+
+  }
+
+  /**
    * Introduced so as to be able to catch the exceptions thrown in the framework thread pools.
    * 
    * @since 2010.03.02
@@ -810,60 +1060,6 @@ public final class AppPublics
     public void execute(Runnable command)
     {
       this.execute(null, command);
-    }
-
-  }
-
-  /**
-   * A {@link DialogInterface.OnClickListener} which runs its {@link AppPublics.GuardedCommand#runGuarded() execution} in the
-   * {@link AppPublics#LOW_PRIORITY_THREAD_POOL low-priority threads pool}, and which handles exceptions.
-   * 
-   * @since 2010.06.08
-   */
-  public static abstract class GuardedDialogClickListener
-      extends AppPublics.GuardedCommand
-      implements DialogInterface.OnClickListener
-  {
-
-    /**
-     * @param activity
-     *          the activity from which the execution originates, and which will be used when reporting a potential exception
-     */
-    public GuardedDialogClickListener(Activity activity)
-    {
-      super(activity);
-    }
-
-    public final void onClick(DialogInterface dialog, int which)
-    {
-      AppPublics.LOW_PRIORITY_THREAD_POOL.execute(this);
-    }
-
-  }
-
-  /**
-   * A {@link View.OnClickListener} which runs its {@link AppPublics.GuardedCommand#runGuarded() execution} in the
-   * {@link AppPublics#LOW_PRIORITY_THREAD_POOL low-priority threads pool}, and which handles exceptions.
-   * 
-   * @since 2010.06.08
-   */
-  public static abstract class GuardedViewClickListener
-      extends AppPublics.GuardedCommand
-      implements View.OnClickListener
-  {
-
-    /**
-     * @param activity
-     *          the activity from which the execution originates, and which will be used when reporting a potential exception
-     */
-    public GuardedViewClickListener(Activity activity)
-    {
-      super(activity);
-    }
-
-    public final void onClick(View view)
-    {
-      AppPublics.LOW_PRIORITY_THREAD_POOL.execute(this);
     }
 
   }
