@@ -22,6 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -67,7 +68,8 @@ public final class SmartCommands
    * A {@link Runnable} used as command, which is allowed to throw an exception during its execution.
    * 
    * <p>
-   * During the command execution, any thrown {@link Throwable} will be delivered to the {@link ActivityController} through its
+   * During the command execution, any thrown {@link Throwable} will be delivered to the
+   * {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler} through its
    * {@link ActivityController#handleException(Context, Throwable)} method, so that it can be controlled in a central way, and not "swallowed".
    * </p>
    * 
@@ -101,7 +103,7 @@ public final class SmartCommands
      * 
      * <p>
      * It is also possible to set the {@link SmartCommands.GuardedHandler delegate} as long as the command execution has not been started through the
-     * {@link #setGuardedHandlerDelegate(GuardedHandler)} method.
+     * {@link #setDelegate(GuardedHandler)} method.
      * </p>
      * 
      * @param context
@@ -109,6 +111,7 @@ public final class SmartCommands
      * @{code null}
      * @param delegate
      *          if not {@code null}, the {@link #onThrowable(Throwable)} execution will be delegated to it
+     * @see #setDelegate(SmartCommands.GuardedHandler)
      */
     public GuardedCommand(Context context, SmartCommands.GuardedHandler delegate)
     {
@@ -137,11 +140,14 @@ public final class SmartCommands
     }
 
     /**
+     * Sets the delegate that will be used in case of exception thrown during the command execution.
      * 
      * @param delegate
-     * @return
+     *          the exception handler which will be invoked when an exception is thrown during the command execution, via the
+     *          {@link #onThrowable(Throwable)} method; if {@code null}, no delegating mecanism will be involved
+     * @return the current instance, so as to ease its usage
      */
-    public SmartCommands.GuardedCommand setGuardedHandlerDelegate(SmartCommands.GuardedHandler delegate)
+    public SmartCommands.GuardedCommand setDelegate(SmartCommands.GuardedHandler delegate)
     {
       this.delegate = delegate;
       return this;
@@ -162,7 +168,7 @@ public final class SmartCommands
      * chance to handle locally the exception.
      * 
      * <p>
-     * By default, the method does nothing and returns the provided <code>throwable</code>.
+     * By default, the method does nothing and returns the provided {@code throwable}.
      * </p>
      * 
      * @param throwable
@@ -310,8 +316,8 @@ public final class SmartCommands
     protected final String warningDisplayMessage;
 
     /**
-     * Same as {@link SmartCommands.SimpleGuardedCommmand#SimpleGuardedCommmand(Context, String, String)} with the last parameter equal to {@code
-     * context.getString(warningDisplayMessageResourceId)}.
+     * Same as {@link SmartCommands.SimpleGuardedCommmand#SimpleGuardedCommmand(Context, String, String)} with the last parameter equal to
+     * {@code context.getString(warningDisplayMessageResourceId)}.
      */
     public SimpleGuardedCommmand(Context context, String warningLogMessage, int warningDisplayMessageResourceId)
     {
@@ -568,11 +574,6 @@ public final class SmartCommands
   }
 
   /**
-   * An instance counter for the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL thread pool}.
-   */
-  private static int lowPriorityThreadCount = 1;
-
-  /**
    * Indicates how many threads at most will be available in the {@link #LOW_PRIORITY_THREAD_POOL low-priority threads pool}, by default. It needs to
    * be sent at the application start-up.
    * 
@@ -596,13 +597,17 @@ public final class SmartCommands
    */
   public final static SmartCommands.SmartThreadPoolExecutor LOW_PRIORITY_THREAD_POOL = new SmartCommands.SmartThreadPoolExecutor(SmartCommands.LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE, SmartCommands.LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE, 10l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory()
   {
+
+    private final AtomicInteger threadsCount = new AtomicInteger(1);
+
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
       thread.setPriority(Thread.MIN_PRIORITY);
-      thread.setName("droid4me-lowpool-thread #" + SmartCommands.lowPriorityThreadCount++);
+      thread.setName("droid4me-lowpool-thread #" + threadsCount.getAndIncrement());
       return thread;
     }
+
   });
 
   /**

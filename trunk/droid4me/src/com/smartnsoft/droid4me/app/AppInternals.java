@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -532,11 +533,6 @@ final class AppInternals
   final static String ALREADY_STARTED = "com.smartnsoft.droid4me.alreadyStarted";
 
   /**
-   * An instance counter for the {@link THREAD_POOL thread pool}.
-   */
-  private static int normalPriorityThreadCount = 1;
-
-  /**
    * This threads pool is used internally, in order to prevent from new thread creation, for an optimization purpose.
    * 
    * <ul>
@@ -553,10 +549,13 @@ final class AppInternals
    */
   final static SmartCommands.SmartThreadPoolExecutor THREAD_POOL = new SmartCommands.SmartThreadPoolExecutor(0, Integer.MAX_VALUE, 60l, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadFactory()
   {
+
+    private final AtomicInteger threadsCount = new AtomicInteger(1);
+
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
-      thread.setName("droid4me-pool-thread #" + AppInternals.normalPriorityThreadCount++);
+      thread.setName("droid4me-pool-thread #" + threadsCount.getAndIncrement());
       return thread;
     }
   });
