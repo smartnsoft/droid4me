@@ -1,5 +1,5 @@
 #summary Support droid4me!
-#labels droid4me,credits
+#labels Featured
 
 = Introduction =
 
