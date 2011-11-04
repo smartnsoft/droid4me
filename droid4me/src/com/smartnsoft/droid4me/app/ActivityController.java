@@ -28,11 +28,12 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.Window;
+import android.widget.Toast;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.LifeCycle.BusinessObjectUnavailableException;
@@ -273,6 +274,25 @@ public final class ActivityController
       implements ActivityController.ExceptionHandler
   {
 
+    /**
+     * Defines how the framework should behave when an Internet connectivity problem has been detected.
+     */
+    public static enum ConnectivityUIExperience
+    {
+      /**
+       * Should open a {@link android.app.Dialog dialog box} with a "retry"/"ok" button.
+       */
+      DialogRetry,
+      /**
+       * Should open a {@link android.app.Dialog dialog box} with a single "ok" button.
+       */
+      Dialog,
+      /**
+       * Should issue an Android {@link Toast.LENGTH_SHORT short} {@link android.widget.Toast}.
+       */
+      Toast
+    }
+
     private final SmartApplication.I18N i18n;
 
     /**
@@ -286,7 +306,7 @@ public final class ActivityController
 
     public boolean onBusinessObjectAvailableException(final Activity activity, BusinessObjectUnavailableException exception)
     {
-      if (checkConnectivityProblemInCause(activity, exception, true) == true)
+      if (checkConnectivityProblemInCause(activity, exception, ConnectivityUIExperience.DialogRetry) == true)
       {
         return true;
       }
@@ -311,7 +331,7 @@ public final class ActivityController
 
     public boolean onServiceException(final Activity activity, ServiceException exception)
     {
-      if (checkConnectivityProblemInCause(activity, exception, false) == true)
+      if (checkConnectivityProblemInCause(activity, exception, ConnectivityUIExperience.Dialog) == true)
       {
         return true;
       }
@@ -336,7 +356,7 @@ public final class ActivityController
 
     public boolean onOtherException(final Activity activity, Throwable throwable)
     {
-      if (checkConnectivityProblemInCause(activity, throwable, false) == true)
+      if (checkConnectivityProblemInCause(activity, throwable, ConnectivityUIExperience.Toast) == true)
       {
         return true;
       }
@@ -365,18 +385,19 @@ public final class ActivityController
     }
 
     /**
-     * Attempts to find a connection issue in the provided exception by iterating over the causes, and display a dialog box if any.
+     * Attempts to find an Internet connection issue in the provided exception by iterating over the causes, and display a dialog box if any.
      * 
      * @param activity
      *          in case a connection issue is discovered, it will be used to pop up a dialog box. When the dialog box "OK" button is hit, it will be
      *          simply dismissed
      * @param throwable
      *          the exception to be inspected
-     * @param proposeRetry
-     *          when set to <code>true</code, the dialog box displayed will present an additional "Retry" action
-     * @return <code>true</code> if and only a connection issue has been detected
+     * @param connectivityUIExperience
+     *          indicates the end-user experience to provide if a connectivity problem has been detected
+     * @return {@code true} if and only a connection issue has been detected
      */
-    protected final boolean checkConnectivityProblemInCause(final Activity activity, Throwable throwable, final boolean proposeRetry)
+    protected final boolean checkConnectivityProblemInCause(final Activity activity, Throwable throwable,
+        final ActivityController.AbstractExceptionHandler.ConnectivityUIExperience connectivityUIExperience)
     {
       if (isAConnectivityProblem(throwable) == true)
       {
@@ -384,41 +405,48 @@ public final class ActivityController
         {
           public void run()
           {
-            final boolean retry = proposeRetry == true && activity instanceof LifeCycle;
-            final Builder builder = new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-                retry == true ? i18n.connectivityProblemRetryHint : i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null);
-            if (retry == true)
+            if (connectivityUIExperience == ConnectivityUIExperience.Toast)
             {
-              builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
-              {
-                public void onClick(DialogInterface dialog, int which)
-                {
-                  ((LifeCycle) activity).refreshBusinessObjectsAndDisplay(true, null, false);
-                  dialog.dismiss();
-                }
-              }).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener()
-              {
-                public void onClick(DialogInterface dialog, int which)
-                {
-                  dialog.cancel();
-                  activity.finish();
-                }
-              }).setOnCancelListener(new DialogInterface.OnCancelListener()
-              {
-                public void onCancel(DialogInterface dialog)
-                {
-                  activity.finish();
-                }
-              }).show();
+              Toast.makeText(activity, i18n.connectivityProblemHint, Toast.LENGTH_SHORT).show();
             }
             else
             {
-              builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+              final boolean retry = connectivityUIExperience == ConnectivityUIExperience.DialogRetry && activity instanceof LifeCycle;
+              final Builder builder = new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
+                  retry == true ? i18n.connectivityProblemRetryHint : i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null);
+              if (retry == true)
               {
-                public void onClick(DialogInterface dialog, int which)
+                builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
                 {
-                }
-              }).show();
+                  public void onClick(DialogInterface dialog, int which)
+                  {
+                    ((LifeCycle) activity).refreshBusinessObjectsAndDisplay(true, null, false);
+                    dialog.dismiss();
+                  }
+                }).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener()
+                {
+                  public void onClick(DialogInterface dialog, int which)
+                  {
+                    dialog.cancel();
+                    activity.finish();
+                  }
+                }).setOnCancelListener(new DialogInterface.OnCancelListener()
+                {
+                  public void onCancel(DialogInterface dialog)
+                  {
+                    activity.finish();
+                  }
+                }).show();
+              }
+              else
+              {
+                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
+                {
+                  public void onClick(DialogInterface dialog, int which)
+                  {
+                  }
+                }).show();
+              }
             }
           }
         });
@@ -446,7 +474,7 @@ public final class ActivityController
      *          a list of exception classes to look after
      * @return <code>null</code> if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings( { "unchecked", "rawtypes" })
     public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
     {
       Throwable newThrowable = throwable;
