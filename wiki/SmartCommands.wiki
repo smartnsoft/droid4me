@@ -17,11 +17,11 @@ Android (from release 3) comes with the `AsyncTask`, which already provides an e
  
  == `SmartThreadPoolExecutor`: an answer for a a threads pool with managed exceptions ==
  
- We have been working on our own threads pool which runs commands through low-priority worker threads and which centralize the handling of the commands execution exceptions. This threads pool is available through the `SmartThreadPoolExecutor` class, and an instance of this pool is accessible through the `SmartCommands.LOW_PRIORITY_THREAD_POOL`: most of the time, you do not need to access to this instance, and a wrapping method is at your disposal through the `SmartCommands.execute()` method.
+ We have been working on our own threads pool which runs commands through low-priority worker threads and which centralize the handling of the commands execution exceptions. This threads pool is available through the `SmartThreadPoolExecutor` class, derived from the Java built-in `ThreadPoolExecutor` class, and an instance of this pool is accessible through the `SmartCommands.LOW_PRIORITY_THREAD_POOL`: most of the time, you do not need to access to this instance, and a wrapping method is at your disposal through the `SmartCommands.execute()` method.
  
  The `SmartThreadPoolExecutor.execute()` method takes a `GuardedCommand` as an argument: this command is allowed to throw any kind of exception during its execution, which is performed via the `runGuarded()` method. If such an exception is triggered, it will be handled by the ExceptionHandler component.
  
- When you need to run something in the background, just use the `SmartCommands.execute()` command. If you want to tune how many threads are available in its core, you can access it via the SmartCommands.LOW_PRIORITY_THREAD_POOL`: it uses a `LinkedBlockingQueue` strategy, which means that it can spawn as many threads as required.
+ When you need to run something in the background, just use the `SmartCommands.execute()` command. If you want to tune how many threads are available in its core, you can access it via the `SmartCommands.LOW_PRIORITY_THREAD_POOL`: it uses a `LinkedBlockingQueue` strategy, which means that it can spawn as many threads as required.
  
  Note that this threads pool class is also instantiated once in the framework, and used internally to cope with the asynchronous loading of business objects (see the `BusinessObjectsRetrievalAsynchronousPolicy` interface).
  

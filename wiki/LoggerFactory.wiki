@@ -1,0 +1,29 @@
+#summary Log in a simple and extensible way
+#labels Featured,Phase-Implementation
+
+= LoggerFactory =
+
+A well developed application deserves to log various information, so that when a problem occurs, it makes the life easier for both the end-user and the developer.
+
+Android comes with a built-in very light logging system though the `android.util.Log` class. It is a good thing that it is light, because it is going to be running on small footprint devices, but it is a bit a pity that the developer cannot find back something which looks like the Java `java.util.logging` package or the [http://logging.apache.org/log4j  Apache Log4J] framework.
+
+== `Log`: a very simple logging interface ==
+
+This is the reason why we have introduced a minor component available though the `LoggerFactory` class: it exposes two simple `getInstance()` methods, which return a `Logger` interface implementation.
+
+The `Logger` class is the one that should be used for logging, just like on the Android `android.util.Log` class. In order to use it:
+
+ # set properly the `LoggerFactory.logLevel` variable, so that your application only outputs logs from a certain level ;
+ # just create a static instance of `Logger` by using the `LoggerFactory.getInstance()` factory (the parameter is usually the enclosing class, or a string): this parameter will be considered as the traditional Log4J category,
+ # in the code where a logging, us the `Logger` logging methods ; if you want to optimize further, do not forget to surround your logging statement by a `Logger.isXXXEnabled()`, just like you would with Log4J.
+
+So as to make this logging component even more flexible, we should let the developer chose the `Logger` interface implementation to use, in the future.
+
+== Key benefits of using the "LoggerFactory" ==
+
+ * The `Logger` interface exposes some `isXXXEnabled()` methods, which enables to prevent from preparing a logging string for nothing if the logging level does not require it.
+ * When running some code on a pure Java environment on which the Android runtime is not available, if you define the Java system property `droid4me.logging` to value `false`, then the standard output and the standard error output will be used to issue the logs.
+ * When logging, you do not need to specify a tag, and the log output uses the `Logger` declared category as a tag.
+ * The whole framework uses that logging facility, hence you get logs in a consistent way. For instance, you can look in `adb` the logs for the tags "SmartableActivity", "Persistence", "BitmapDownloader", "ActivityController"...
+
+When submitting your application under production, do not forget to elevate the logging trigger level through the `LoggerFactory.logLevel` variable!
