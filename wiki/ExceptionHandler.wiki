@@ -5,7 +5,7 @@
 
 When it comes to exceptions in an Android application, it may become very tedious and cumbersome to systematically handle them properly. Very often, many developers end up in "swallowing" those exception silently, which is obviously a very bad thing, because it takes too much time to investigate for its cause and display the right user interface (Toast, Dialog...). However, the quality of a software significantly depends on the way exceptions are handled: good programmers know that, and they also know that handling properly exceptions takes time and prompts them to define consistent policies. 
 
-The typical case are exceptions raised due to bad network connectivity: everytime a web service service is invoked, that kind of exception may be thrown, and if you want to provide a descent end-user experience, you ought to handle them properly, and not just ignoring them.
+The typical case are exceptions raised due to bad network connectivity: every time a web service service is invoked, that kind of exception may be thrown, and if you want to provide a descent end-user experience, you ought to handle them properly, and not just ignoring them.
 
 Since Android does not offer that kind of feature natively, that's where the "ExceptionHandler" comes in hand: it has been designed for enabling to centralize in a single place all exceptions thrown by an Android application. Whatever the piece of code which causes the exception to be triggered, the ExceptionHandler will be invoked for letting you handle the exception. The main places where exceptions are thrown is while retrieving business objects, and running some code in a detached thread.
 
@@ -16,9 +16,9 @@ In order to benefit from the "ExceptionHandler" component, you need to take the 
  # define a class which implements the `ExceptionHandler` interface, or use one of the already existing like the `AbstractExceptionHandler`;
  # declare this class in the `ActivityController` though the `registerExceptionHandler()` method. The typical location where to register that exception handler is when the Android application starts, in the `Application.onCreate()` method. In the case of the framework, if you use the `SmartApplication`, this will be automatically done for you through the `SmartApplication.getExceptionHandler()` method ;
  # derive your Android activities from one of the `Smartable` classes provided by the framework ;
- # whenever you perform something in a background/detached thread, use the `SmartCommands.execute()` method. 
+ # whenever you perform something in a background/detached thread, use the `SmartCommands.execute()` method.
 
-If you have registered an ExceptionHandler, it will be involved by the framwork in two cases:
+If you have registered an ExceptionHandler, it will be involved by the framework in two cases:
 
  # when retrieving business objects in your Android `Smartable` activities through the `LifeCycle.onRetrieveBusinessObjects`: when something goes wrong, throw a `LifeCycle.BusinessObjectUnavailableException` exception ;
  # when using the `SmartCommand.execute()` method and an exception is thrown during the command execution.
@@ -28,10 +28,14 @@ If you have registered an ExceptionHandler, it will be involved by the framwork 
 This component exposes 4 methods, for which you will find documentation in the [http://droid4me.googlecode.com/svn/javadoc/com/smartnsoft/droid4me/app/ActivityController.ExceptionHandler.html JavaDoc]. In particular, two methods will be invoked when exceptions are raised:
 
  * `onBusinessObjectAvailableException()`: if a `BusinessObjectUnavailableException` exception is thrown during the retrieval of business objects during the `LifeCycle.onRetrieveBusinessObjects()` method ;
- * `onOtherException()`: when running a command through the `SmartCommands.execute()` method, if the command execution throws an exception.
+ * `onOtherException()`: when running a command through the `SmartCommands.execute()` method, if the command execution throws an exception. If you decide to use the `SimpleGuardedCommmand` as a command when running such a command, you will receive a `GuardedException` exception if the command execution throws an exception, which lets you, for instance, display a dialog box or a toast for notifying the end-user.
 
 This handler is a good place for handling those exceptions: since the methods above provide the activity which originated the exception, and well as the exception itself, you can handle in a centralized way certain kinds of exceptions.
 
 == The `AbstractExceptionHandler` ==
 
-...
+This class is a first implementation of `ExceptionHandler` which can be used out-of-the-box. You may derive to use it as is, or to derive from it. For every handled exception, it checks if it is due to an Internet connectivity problem through its `checkConnectivityProblemInCause()` method. Please, take a look at the source code implementation, in order to tailor yours.
+
+== Conclusion ==
+
+With the ExceptionHandler component, you can now centralize the way to handle all your Android application exceptions in one place. If you have integrated an error reporting system in your application, it is also a good place for logging to that system.
