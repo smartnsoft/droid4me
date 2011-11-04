@@ -3,4 +3,8 @@
 
 = SmartCommands =
 
-...
+When developing Android application, it is a good practice to perform potentially long actions in another thread than the UI thread, otherwise, the runtime may trigger an "Application Not Responding" (ANR) dialog box, because this locks the application User Interface, and prevents the application from being responsive.
+
+Creating a thread has a cost, and if the application performs many background thread operations, this may have an impact. Moreover, the `Thread.start()` method invokes its underlying `Runnable`, which is not authorised to throw exception, which forces the developer to handle locally the exception.
+
+Android comes with the `AsyncTask` ...
