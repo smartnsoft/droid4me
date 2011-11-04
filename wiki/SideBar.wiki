@@ -1,1 +1,3 @@
+#summary The wiki side-bar
+
 Do not forget that [http://droid4me.googlecode.com/svn/javadoc/index.html the library JavaDoc is available here].
