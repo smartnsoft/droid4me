@@ -42,40 +42,70 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public final class SmartCommands
 {
 
+  private final static Logger log = LoggerFactory.getInstance(SmartCommands.class);
+
+  public static interface GuardedHandler
+  {
+
+    Throwable onThrowable(Throwable throwable);
+
+  }
+
   /**
-   * A {@link Runnable} which is allowed to throw an exception during its execution.
+   * A {@link Runnable} used as command, which is allowed to throw an exception during its execution.
    * 
    * <p>
    * During the command execution, any thrown {@link Throwable} will be delivered to the {@link ActivityController} through its
-   * {@link ActivityController#handleException(Context, Throwable)} method, so that it can be controller in a central way, and not "swallowed".
+   * {@link ActivityController#handleException(Context, Throwable)} method, so that it can be controlled in a central way, and not "swallowed".
    * </p>
    * 
    * <p>
-   * It has been specifically designed for being able to run {@link Runnable} which throw exceptions within the {@link SmartThreadPoolExecutor}.
+   * It has been specifically designed for being able to run {@link Runnable} which throw exceptions within the
+   * {@link SmartCommands.SmartThreadPoolExecutor}.
    * </p>
    * 
    * @since 2010.06.08
    */
   public abstract static class GuardedCommand
-      implements Runnable
+      implements Runnable, SmartCommands.GuardedHandler
   {
-
-    protected final static Logger log = LoggerFactory.getInstance(SmartCommands.GuardedCommand.class);
 
     private final Context context;
 
+    private SmartCommands.GuardedHandler delegate;
+
     /**
-     * @param context
-     *          the context from which the execution originates, and which will be used when reporting a potential exception ; it is not allowed to be
-     *          <code>null</code>
+     * Equivalent to calling {@code SmartCommands.GuardedCommand#GuardedCommand(Context, SmartCommands.GuardedHandler)} with the second argument being
+     * {@code null}.
      */
     public GuardedCommand(Context context)
+    {
+      this(context, null);
+    }
+
+    /**
+     * Creates a command that may be executed through the {@link SmartCommands#execute(SmartCommands.GuardedCommand)} method, and which is able to
+     * tune any thrown exception during its execution.
+     * 
+     * <p>
+     * It is also possible to set the {@link SmartCommands.GuardedHandler delegate} as long as the command execution has not been started through the
+     * {@link #setGuardedHandlerDelegate(GuardedHandler)} method.
+     * </p>
+     * 
+     * @param context
+     *          the context from which the execution originates, and which will be used when reporting a potential exception ; it is not allowed to be
+     * @{code null}
+     * @param delegate
+     *          if not {@code null}, the {@link #onThrowable(Throwable)} execution will be delegated to it
+     */
+    public GuardedCommand(Context context, SmartCommands.GuardedHandler delegate)
     {
       if (context == null)
       {
         throw new NullPointerException("The context should not be null!");
       }
       this.context = context;
+      this.delegate = delegate;
     }
 
     /**
@@ -84,6 +114,25 @@ public final class SmartCommands
     protected final Context getContext()
     {
       return context;
+    }
+
+    /**
+     * @return the delegate to which the {@link #onThrowable(Throwable)} method implementation will be redirected to ; may be {@code null}
+     */
+    protected final SmartCommands.GuardedHandler getDelegate()
+    {
+      return delegate;
+    }
+
+    /**
+     * 
+     * @param delegate
+     * @return
+     */
+    public SmartCommands.GuardedCommand setGuardedHandlerDelegate(SmartCommands.GuardedHandler delegate)
+    {
+      this.delegate = delegate;
+      return this;
     }
 
     /**
@@ -109,9 +158,9 @@ public final class SmartCommands
      * @return <code>null</code> if and only if the method has handled the exception and that the {@link ActivityController.ExceptionHandler} should
      *         not be invoked ; otherwise, the {@link Throwable} that should be submitted to the {@link ActivityController.ExceptionHandler}
      */
-    protected Throwable handle(Throwable throwable)
+    public Throwable onThrowable(Throwable throwable)
     {
-      return throwable;
+      return delegate == null ? throwable : delegate.onThrowable(throwable);
     }
 
     /**
@@ -126,7 +175,7 @@ public final class SmartCommands
       catch (Throwable throwable)
       {
         // We let a chance to the caller to handle the exception
-        final Throwable modifiedThrowable = handle(throwable);
+        final Throwable modifiedThrowable = onThrowable(throwable);
         if (modifiedThrowable == null)
         {
           // In that case, the exception has been handled locally
@@ -201,7 +250,7 @@ public final class SmartCommands
 
   /**
    * An exception which acts as an {@link Throwable} wrapper, and which works in combination with the {@link SmartCommands.SimpleGuardedCommmand}. It
-   * will be triggered during the {@link SmartCommands.SimpleGuardedCommmand#handle(Throwable)} method.
+   * will be triggered during the {@link SmartCommands.SimpleGuardedCommmand#onThrowable(Throwable)} method.
    * 
    * <p>
    * The traditional case is to let the {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler}
@@ -249,8 +298,8 @@ public final class SmartCommands
     protected final String warningDisplayMessage;
 
     /**
-     * Same as {@link SmartCommands.SimpleGuardedCommmand#SimpleGuardedCommmand(Context, String, String)} with the last parameter equal to
-     * {@code context.getString(warningDisplayMessageResourceId)}.
+     * Same as {@link SmartCommands.SimpleGuardedCommmand#SimpleGuardedCommmand(Context, String, String)} with the last parameter equal to {@code
+     * context.getString(warningDisplayMessageResourceId)}.
      */
     public SimpleGuardedCommmand(Context context, String warningLogMessage, int warningDisplayMessageResourceId)
     {
@@ -277,20 +326,22 @@ public final class SmartCommands
     }
 
     /**
-     * The implementation will log as a {@link Log#WARN warning} the exception, and return a {@link SmartCommands.GuardedException} which wraps the
-     * provided exception, with the {@link SmartCommands.SimpleGuardedCommmand#warningDisplayMessage} as
-     * {@link SmartCommands.GuardedException#displayMessage message attribute}.
+     * The implementation will log as a {@link Log#WARN warning} the exception.
      * 
-     * @see SmartCommands.GuardedCommand#handle(Throwable)
+     * @return in the case the {@link #getDelegate()} is {@code null} a {@link SmartCommands.GuardedException} which wraps the provided exception,
+     *         with the {@link SmartCommands.SimpleGuardedCommmand#warningDisplayMessage} as {@link SmartCommands.GuardedException#displayMessage
+     *         message attribute} ; otherwise, the return value comes from the delegate
+     * 
+     * @see SmartCommands.GuardedCommand#onThrowable(Throwable)
      */
     @Override
-    protected Throwable handle(Throwable throwable)
+    public Throwable onThrowable(Throwable throwable)
     {
       if (log.isWarnEnabled())
       {
         log.warn(warningLogMessage, throwable);
       }
-      return new SmartCommands.GuardedException(throwable, warningDisplayMessage);
+      return getDelegate() != null ? super.onThrowable(throwable) : new SmartCommands.GuardedException(throwable, warningDisplayMessage);
     }
 
   }
