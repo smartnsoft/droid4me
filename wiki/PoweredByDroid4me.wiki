@@ -3,7 +3,7 @@
 
 = Applications powered by droid4me =
 
-== Using droid4me ==
+== Using droid4me? ==
 
 Have you developed an Android application which uses droid4me? Please, let us know, so that the framework becomes more popular.
 
