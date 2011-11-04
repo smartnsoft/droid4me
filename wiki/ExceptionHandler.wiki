@@ -1,3 +1,4 @@
+#labels Featured,Phase-Implementation
 = ExceptionHandler =
 
 When it comes to exceptions in an Android application, it may become very tedious and cumbersome to systematically handle them properly. Very often, many developers end up in "swallowing" those exception silently, which is obviously a very bad thing, because it takes too much time to investigate for its cause and display the right user interface (Toast, Dialog...). However, the quality of a software significantly depends on the way exceptions are handled: good programmers know that, and they also know that handling properly exceptions takes time and prompts them to define consistent policies. 
