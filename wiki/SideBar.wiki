@@ -1,1 +1,1 @@
-SideBar
+Do not forget that the JavaDoc is available [http://droid4me.googlecode.com/svn/javadoc/index.html here].
