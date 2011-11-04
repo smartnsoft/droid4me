@@ -5,6 +5,36 @@
 
 When developing Android application, it is a good practice to perform potentially long actions in another thread than the UI thread, otherwise, the runtime may trigger an "Application Not Responding" (ANR) dialog box, because this locks the application User Interface, and prevents the application from being responsive.
 
-Creating a thread has a cost, and if the application performs many background thread operations, this may have an impact. Moreover, the `Thread.start()` method invokes its underlying `Runnable`, which is not authorised to throw exception, which forces the developer to handle locally the exception.
+Creating a thread has a cost, and if the application performs many background thread operations, this may have an impact. Moreover, the `Thread.start()` method invokes its underlying `Runnable`, which is not authorized to throw exception, which forces the developer to handle locally the exception.
 
-Android comes with the `AsyncTask` ...
+Android (from release 3) comes with the `AsyncTask`, which already provides an excellent candidate to run long action in a detached thread, to monitor its progress and eventually update the User Interface in the UI thread, but this component suffers some lacks:
+
+ * it does not let you easily manage exceptions in a centralized way, and in particular, it does not allow to express what action to take in case of exception,
+ * it uses an internal threads pool, but this pool is not customizable, and especially, you cannot tune the threads priorities nor the number of active threads in it ;
+ * it executes pre and post routines, which may cause useless overhead if your command execution does not require this.
+ 
+ In the future, though, we intend to extends the `AsyncTask`, so that it can handle the command exceptions.
+ 
+ == `SmartThreadPoolExecutor`: an answer for a a threads pool with managed exceptions ==
+ 
+ We have been working on our own threads pool which runs commands through low-priority worker threads and which centralize the handling of the commands execution exceptions. This threads pool is available through the `SmartThreadPoolExecutor` class, and an instance of this pool is accessible through the `SmartCommands.LOW_PRIORITY_THREAD_POOL`: most of the time, you do not need to access to this instance, and a wrapping method is at your disposal through the `SmartCommands.execute()` method.
+ 
+ The `SmartThreadPoolExecutor.execute()` method takes a `GuardedCommand` as an argument: this command is allowed to throw any kind of exception during its execution, which is performed via the `runGuarded()` method. If such an exception is triggered, it will be handled by the ExceptionHandler component.
+ 
+ When you need to run something in the background, just use the `SmartCommands.execute()` command. If you want to tune how many threads are available in its core, you can access it via the SmartCommands.LOW_PRIORITY_THREAD_POOL`: it uses a `LinkedBlockingQueue` strategy, which means that it can spawn as many threads as required.
+ 
+ Note that this threads pool class is also instantiated once in the framework, and used internally to cope with the asynchronous loading of business objects (see the `BusinessObjectsRetrievalAsynchronousPolicy` interface).
+ 
+ == The various flavors of `GuardedCommand`s ==
+ 
+Being able to catch and handle exceptions raised by worker threads is one thing, but being able to indicate what action to take when an exception is raised is another. This is the reason why the `GuardedCommand` does not only expose a `runGuarded()` method for running the command, it also makes possible to handle the exception in situ or turn the exception to something that the ExceptionHandler will be able to better interprete. This is the role of the `onThrowable()` method and the role of the `GuardedHandler` delegate which may be attached to it.
+
+The framework exposes subclasses of this abstract `GuardedCommand`, which automate some common cases. On that purpose a `GuardedException` exception class has been designed (which can be overriden): it can be raised in the `GuardedCommand.onThrowable()` method, so that the `ExceptionHandler` knows how to handle it.
+
+ * `SimpleGuardedCommmand`: this command will issue a warning log which accounts for any thrown exception during its execution, and which contains a human readable string, which will be transmitted to the generated `GuardedException` ;
+ * `ProgressDialogGuardedCommmand`: this command is especially useful when an Android `ProgresDialog` is submitted to the end-user while the command is being run. It will dismiss that progress dialog box when the command execution terminates.
+ * `GuardedDialogInterfaceClickListener`: this command is also a `DialogInterface.OnClickListener` and will be executed on a `DialogInterface.onClick()` method ;
+ * `GuardedViewClickListener`: this command is also a `View.OnClickListener` and will be executed on a `View.onClick()` method.
+ 
+ You can create your own subclasses and play with the `GuardedCommand.setDelegate()` method, so that the "ExceptionHandler" component executes on its turn a command in case of an exception.
+ 
