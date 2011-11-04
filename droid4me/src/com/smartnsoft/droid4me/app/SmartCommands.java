@@ -44,9 +44,21 @@ public final class SmartCommands
 
   private final static Logger log = LoggerFactory.getInstance(SmartCommands.class);
 
+  /**
+   * Defines a single contract which enables to turn an exception into another one.
+   * 
+   * @since 2011.11.03
+   */
   public static interface GuardedHandler
   {
 
+    /**
+     * Is responsible for turning an exception into another exception.
+     * 
+     * @param throwable
+     *          the exception that is assessed
+     * @return {@code null} if and only if the method has handled the exception itself, and that it should not be propagated by the caller
+     */
     Throwable onThrowable(Throwable throwable);
 
   }
@@ -155,8 +167,8 @@ public final class SmartCommands
      * 
      * @param throwable
      *          the exception that has been thrown during the {@link #runGuarded()} execution
-     * @return <code>null</code> if and only if the method has handled the exception and that the {@link ActivityController.ExceptionHandler} should
-     *         not be invoked ; otherwise, the {@link Throwable} that should be submitted to the {@link ActivityController.ExceptionHandler}
+     * @return {@code null} if and only if the method has handled the exception and that the {@link ActivityController.ExceptionHandler} should not be
+     *         invoked ; otherwise, the {@link Throwable} that should be submitted to the {@link ActivityController.ExceptionHandler}
      */
     public Throwable onThrowable(Throwable throwable)
     {
