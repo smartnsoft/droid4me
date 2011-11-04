@@ -23,12 +23,12 @@ import java.lang.Thread.UncaughtExceptionHandler;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnClickListener;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -141,7 +141,7 @@ public abstract class SmartApplication
     @Override
     public boolean onOtherException(final Activity activity, Throwable throwable)
     {
-      if (checkConnectivityProblemInCause(activity, throwable, false) == true)
+      if (checkConnectivityProblemInCause(activity, throwable, ActivityController.AbstractExceptionHandler.ConnectivityUIExperience.Toast) == true)
       {
         return true;
       }
