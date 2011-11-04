@@ -1,5 +1,5 @@
+#summary How to start with the framework.
 #labels Phase-Implementation,Phase-Deploy
-#How to start with the framework.
 
 = Introduction =
 
