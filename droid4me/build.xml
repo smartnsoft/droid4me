@@ -108,7 +108,7 @@ This Ant buildfile requires that you have included the following Ant library ext
       location="${distribution.directoryPath}/${droid4meJar.fileName}"
     />
     <property
-      name="javaDoc.filePath"
+      name="javaDoc.directoryPath"
       location="docs/api"
     />
     <property
@@ -127,7 +127,7 @@ This Ant buildfile requires that you have included the following Ant library ext
     description="Cleans up the project"
   >
     <delete dir="${temporary.directoryPath}"/>
-    <delete dir="${javaDoc.filePath}"/>
+    <delete dir="${javaDoc.directoryPath}"/>
   </target>
 
   <target
@@ -207,15 +207,46 @@ This Ant buildfile requires that you have included the following Ant library ext
     </copy>
   </target>
 
+  <!-- The way to deal with the JavaDoc on Google Code has been taken from http://stuffthathappens.com/blog/2007/11/09/howto-publish-javadoc-on-google-code/ -->
   <target
-    name="generateDoc"
+    name="wikiJavaDoc"
+    depends="init"
+    description="Generates the JavaDoc of the library source code into a specific folder for the Wiki site."
+  >
+    <var
+      name="javaDoc.directoryPath"
+      unset="true"
+    />
+    <property
+      name="javaDoc.directoryPath"
+      location="../droid4me-javadoc"
+    />
+    <delete includeEmptyDirs="true">
+      <fileset dir="${javaDoc.directoryPath}">
+        <include name="**/*"/>
+        <exclude name=".project"/>
+      </fileset>
+    </delete>
+    <antcall target="javaDocInternal"/>
+  </target>
+
+  <target
+    name="javaDoc"
+    depends="init"
+    description="Cleans up and generates the JavaDoc of the library source code."
+  >
+    <delete dir="${javaDoc.directoryPath}"/>
+    <antcall target="javaDocInternal"/>
+  </target>
+ 
+  <target
+    name="javaDocInternal"
     depends="init"
     description="Generates the JavaDoc of the library source code."
   >
-    <delete dir="${javaDoc.filePath}"/>
     <javadoc
       defaultexcludes="yes"
-      destdir="${javaDoc.filePath}"
+      destdir="${javaDoc.directoryPath}"
       author="true"
       version="true"
       use="true"
@@ -231,33 +262,37 @@ This Ant buildfile requires that you have included the following Ant library ext
         <include name="**/*.java"/>
       </fileset>
       <doctitle><![CDATA[<h1>droid4me API documentation</h1>]]></doctitle>
-      <bottom><![CDATA[<i>Copyright &#169; 2009-2010 Smart&Soft. All Rights Reserved.</i>]]></bottom>
+      <bottom><![CDATA[<i>Copyright &#169; 2009-2011 Smart&Soft. All Rights Reserved.</i>]]></bottom>
       <group
         title="Core features"
-        packages="${droid4me.packageName}.app:${droid4me.packageName}.content:${droid4me.packageName}.log"
-       />
+        packages="${droid4me.packageName}.app:${droid4me.packageName}.appwidget:${droid4me.packageName}.content:${droid4me.packageName}.log"
+      />
       <group
         title="Shared in the framework"
         packages="${droid4me.packageName}.bo:${droid4me.packageName}.framework"
-       />
+      />
       <group
         title="Caching and persistence"
         packages="${droid4me.packageName}.cache:${droid4me.packageName}.ws:${droid4me.packageName}.wscache"
-       />
+      />
+      <group
+        title="Bitmap downloader"
+        packages="${droid4me.packageName}.download"
+      />
       <group
         title="User Interface"
         packages="${droid4me.packageName}.ui:${droid4me.packageName}.widget:${droid4me.packageName}.graphics.drawable:${droid4me.packageName}.menu"
-       />
+      />
       <group
         title="Utilities"
         packages="${droid4me.packageName}.util"
-       />
+      />
     </javadoc>
   </target>
 
   <target
     name="package"
-    depends="init, build, generateDoc"
+    depends="init, build, javaDoc"
     description="Generates a package of the framework with the binaries and the documentation."
   >
     <mkdir dir="${temporary.directoryPath}"/>
@@ -271,7 +306,7 @@ This Ant buildfile requires that you have included the following Ant library ext
       update="false"
     >
       <zipfileset
-        dir="${javaDoc.filePath}"
+        dir="${javaDoc.directoryPath}"
         prefix="doc"
       />
       <zipfileset
@@ -287,7 +322,7 @@ This Ant buildfile requires that you have included the following Ant library ext
 
   <target
     name="export"
-    depends="init, build, generateDoc"
+    depends="init, build, javaDoc"
     description="Builds a zip which contains the library source code."
   >
     <property
@@ -321,7 +356,7 @@ This Ant buildfile requires that you have included the following Ant library ext
       update="false"
     >
       <zipfileset
-        dir="${javaDoc.filePath}"
+        dir="${javaDoc.directoryPath}"
         prefix="doc"
       />
       <zipfileset
