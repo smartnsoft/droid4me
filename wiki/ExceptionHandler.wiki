@@ -22,3 +22,7 @@ If you have registered an ExceptionHandler, it will be involved by the framwork 
 
  # when retrieving business objects in your Android `Smartable` activities through the `LifeCycle.onRetrieveBusinessObjects`: when something goes wrong, throw a `LifeCycle.BusinessObjectUnavailableException` exception ;
  # when using the `SmartCommand.execute()` method and an exception is thrown during the command execution.
+
+== The `ExceptionHandler` interface methods ==
+
+This component exposes 4 methods, for which you will find documentation in the JavaDoc...
