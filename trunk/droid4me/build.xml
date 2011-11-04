@@ -262,7 +262,9 @@ This Ant buildfile requires that you have included the following Ant library ext
         <include name="**/*.java"/>
       </fileset>
       <doctitle><![CDATA[<h1>droid4me API documentation</h1>]]></doctitle>
+      <header><![CDATA[<a href="http://droid4me.googlecode.com"><img src="http://droid4me.googlecode.com/files/droid4me-logo.png" alt="droid4me project logo"/></a>]]></header>
       <bottom><![CDATA[<i>Copyright &#169; 2009-2011 Smart&Soft. All Rights Reserved.</i>]]></bottom>
+      <link href="http://droid4me.googlecode.com"/>
       <group
         title="Core features"
         packages="${droid4me.packageName}.app:${droid4me.packageName}.appwidget:${droid4me.packageName}.content:${droid4me.packageName}.log"
