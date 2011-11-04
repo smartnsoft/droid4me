@@ -25,4 +25,13 @@ If you have registered an ExceptionHandler, it will be involved by the framwork 
 
 == The `ExceptionHandler` interface methods ==
 
-This component exposes 4 methods, for which you will find documentation in the [http://droid4me.googlecode.com/svn/javadoc/com/smartnsoft/droid4me/app/ActivityController.ExceptionHandler.html JavaDoc]...
+This component exposes 4 methods, for which you will find documentation in the [http://droid4me.googlecode.com/svn/javadoc/com/smartnsoft/droid4me/app/ActivityController.ExceptionHandler.html JavaDoc]. In particular, two methods will be invoked when exceptions are raised:
+
+ * `onBusinessObjectAvailableException()`: if a `BusinessObjectUnavailableException` exception is thrown during the retrieval of business objects during the `LifeCycle.onRetrieveBusinessObjects()` method ;
+ * `onOtherException()`: when running a command through the `SmartCommands.execute()` method, if the command execution throws an exception.
+
+This handler is a good place for handling those exceptions: since the methods above provide the activity which originated the exception, and well as the exception itself, you can handle in a centralized way certain kinds of exceptions.
+
+== The `AbstractExceptionHandler` ==
+
+...
