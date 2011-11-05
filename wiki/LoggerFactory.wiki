@@ -17,7 +17,7 @@ The `Logger` class is the one that should be used for logging, just like on the 
  # just create a static instance of `Logger` by using the `LoggerFactory.getInstance()` factory (the parameter is usually the enclosing class, or a string): this parameter will be considered as the traditional Log4J category,
  # in the code where a logging, us the `Logger` logging methods ; if you want to optimize further, do not forget to surround your logging statement by a `Logger.isXXXEnabled()`, just like you would with Log4J.
 
-So as to make this logging component even more flexible, we should let the developer chose the `Logger` interface implementation to use, in the future.
+So as to make this logging component even more flexible, we should let the developer chose the `Logger` interface implementation to use, in the future: just ask, and we will work on that.
 
 == Key benefits of using the "LoggerFactory" ==
 

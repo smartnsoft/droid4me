@@ -1,0 +1,34 @@
+#summary A very effective bitmap downloader
+#labels Featured,Phase-Implementation
+
+= BitmapDownloader =
+
+Many Android application do not embed all graphical resources inside the .apk installation package, and need to download efficiently dynamically bitmaps from Internet. Moreover, most of the time, those bitmaps need to be persisted locally, in order to prevent to download them every time they need to be displayed. In some cases, the bitmap need to have a footprint applied to it, when turned into an Android `android.graphics.Bitmap` instance. In addition, bitmaps also need to be kept in memory via a caching mechanism, because they are very frequently accessed, especially in `android.widget.ListView` rows.
+
+Most of the open-source components handle some of those constraints, but not all at the same time. It would be very handy to have a component at hand which addresses all those challenges.
+
+== `BitmapDownloader`: an all-in-one component for handling Android bitmaps == 
+
+We have designed the "BitmapDownloader" component with those requirements in mind, and we have strived to make it both efficient and flexible.
+
+The `BitmapDownloader` component proposes multiple instances, so as to provide a separate and independent caching feature. Its interface is very simple, since it also proposes to retrieve a bitmap and attach it to a `android.view.View` and to clear the memory cache.
+
+The "BitmapDownloader" works closely with a `DownloadInstructions.Instructions` interface, which will be used throughout the bitmap retrieval and attaching process so as to provide instructions.
+
+== How to use the "BitmapDownloader" component ==
+
+Here are the steps that you need to take:
+
+ # Set up the "BitmapDownloader" parameters: a typical location where to tune those parameters is the `Application.onCreate()` method. You may define:
+  * the `BitmapDownloader.INSTANCES_COUNT` variable to indicate how many instances should be created (defaults to `1`),
+  * optionally, the `BitmapDownloader.MAX_MEMORY_IN_BYTES` integer array variable to indicate the RAM high water mark that each instance should respect,
+  * optionally, the `BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES` integer array variable to indicate the RAM low water mark that each instance should respect,
+  * very optionally, the `BitmapDownloader.IMPLEMENTATION_FQN` string variable which indicates the `BitmapDownloader` class Fully Qualified Name, if you have decided to derive from the built-in one.
+# Create an implementation of the `DownloadInstructions.Instructions` interface: most of the time, you will need only one instance of that interface, which you can define in a `static` way. An already descent implementation is the `DownloadInstructions.AbstractInstructions` class, and if you want to define your own, it is very likely that you should derive from it.
+# Every time you need to bind a bitmap to an Android `android.view.View` (in most cases a `android.widget.ImageView`), invoke the `BitmapDownloader.get()` method, which will take the bitmap URL, some optional specifications, and the previously created `DownloadInstructions.Instructions` instance.
+
+The component will handle everything for you, and in particular, if the bitmap is already in memory, no HTTP request will be performed.
+
+== The "ImageDownloader" command workflow ==
+
+...

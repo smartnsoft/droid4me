@@ -13,7 +13,7 @@ Android (from release 3) comes with the `AsyncTask`, which already provides an e
  * it uses an internal threads pool, but this pool is not customizable, and especially, you cannot tune the threads priorities nor the number of active threads in it ;
  * it executes pre and post routines, which may cause useless overhead if your command execution does not require this.
  
- In the future, though, we intend to extends the `AsyncTask`, so that it can handle the command exceptions.
+ In the future, though, we intend to extends the `AsyncTask`, so that it can handle the command exceptions: to speed up the process, just ask, and we will work on it.
  
  == `SmartThreadPoolExecutor`: an answer for a a threads pool with managed exceptions ==
  
