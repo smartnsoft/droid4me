@@ -30,7 +30,7 @@ import android.util.Log;
  * </p>
  * 
  * @author Édouard Mercier
- * @date 2008.01.15
+ * @since 2008.01.15
  */
 public class LoggerFactory
 {

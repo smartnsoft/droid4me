@@ -127,7 +127,7 @@ public final class Values
      * Is invoked when the underlying business object will not be taken from the memory cache, or when the cached value has been rejected.
      * 
      * @param cachingEvent
-     *          the interface that will be used to notify the caller about the loading workflow ; may be <code>null</code>
+     *          the interface that will be used to notify the caller about the loading workflow ; may be {@code null}
      * @return the wrapped business object that should be attempted to be requested from another place than the cache
      */
     Values.Info<BusinessObjectType> onNotFromLoaded(Values.CachingEvent cachingEvent)

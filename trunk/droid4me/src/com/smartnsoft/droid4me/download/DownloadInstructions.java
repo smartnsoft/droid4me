@@ -41,17 +41,29 @@ public class DownloadInstructions
     extends BasisDownloadInstructions
 {
 
+  /**
+   * An implementation of the {@link BitmapableBitmap} interface specific to the Android platform.
+   */
   public final static class BitmapableBitmap
       implements Bitmapable
   {
 
     private final Bitmap bitmap;
 
+    /**
+     * Creates a wrapper around the provided actual Android bitmap.
+     * 
+     * @param bitmap
+     *          the bitmap to be wrapped
+     */
     public BitmapableBitmap(Bitmap bitmap)
     {
       this.bitmap = bitmap;
     }
 
+    /**
+     * @return the wrapped bitmap
+     */
     public Bitmap getBitmap()
     {
       return bitmap;
@@ -72,17 +84,29 @@ public class DownloadInstructions
 
   }
 
+  /**
+   * An implementation of the {@link Viewable} interface specific to the Android platform.
+   */
   public final static class ViewableView
       implements Viewable
   {
 
     private final View view;
 
+    /**
+     * Creates a wrapper around the provided actual Android view.
+     * 
+     * @param view
+     *          the widget to be wrapped
+     */
     public ViewableView(View view)
     {
       this.view = view;
     }
 
+    /**
+     * @return the wrapped Android view
+     */
     public View getView()
     {
       return view;
@@ -105,17 +129,29 @@ public class DownloadInstructions
 
   }
 
+  /**
+   * An implementation of the {@link Handlerable} interface specific to the Android platform.
+   */
   public final static class HandlerableHander
       implements Handlerable
   {
 
     private final Handler handler;
 
+    /**
+     * Creates a wrapper around the provided actual Android handler.
+     * 
+     * @param handler
+     *          the handler to be wrapped
+     */
     public HandlerableHander(Handler handler)
     {
       this.handler = handler;
     }
 
+    /**
+     * @return the wrapped Android handler
+     */
     public Handler getHandler()
     {
       return handler;
@@ -174,16 +210,27 @@ public class DownloadInstructions
 
   }
 
+  /**
+   * A very simple implementation of the {@link Instructions}, which by-passes the persistence option.
+   */
   public static abstract class SimpleInstructions
       extends Instructions
   {
 
+    /**
+     * @return {@code null}, which means that the underlying {@link BitmapableBitmap} cannot be retrieved from the persistence
+     */
     public InputStream getInputStream(String bitmapUid, Object imageSpecs, String url, InputStreamDownloadInstructor instructor)
         throws IOException
     {
       return null;
     }
 
+    /**
+     * The method does not use the provided {@link inputStream}, and just returns it.
+     * 
+     * @return the provided {@link InputStream}, which means that the underlying {@link BitmapableBitmap} is not persisted
+     */
     public InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream)
     {
       return inputStream;

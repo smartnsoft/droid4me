@@ -77,9 +77,9 @@ public class DownloadSpecs
 
     public final int size;
 
-    public DefaultImageSpecs(int size, int imageId)
+    public DefaultImageSpecs(int size, int imageResourceId)
     {
-      super(imageId);
+      super(imageResourceId);
       this.size = size;
     }
 

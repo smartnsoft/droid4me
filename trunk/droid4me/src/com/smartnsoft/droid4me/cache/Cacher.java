@@ -62,7 +62,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     /**
      * Is invoked to determine whether the persistence timestamp field should be requested, on the {@link IOStreamer} layer.
      * 
-     * @return <code>true</code> if and only if the timestamp of the underlying business object should be requested on the persistence layer
+     * @return {@code true} if and only if the timestamp of the underlying business object should be requested on the persistence layer
      */
     boolean queryTimestamp();
 
@@ -70,9 +70,9 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
      * Indicates whether the underlying business is still valid regarding its storage timestamp. Is invoked in two ways:
      * 
      * @param timestamp
-     *          the date corresponding to the last data retrieval ; may be <code>null</code>, and will be if the {@link #queryTimestamp()} previously
-     *          returned <code>false</code>
-     * @return <code>true</code> if and only if the business object state should be taken from the persistence layer
+     *          the date corresponding to the last data retrieval ; may be {@code null}, and will be if the {@link #queryTimestamp()} previously
+     *          returned {@code false}
+     * @return {@code true} if and only if the business object state should be taken from the persistence layer
      */
     boolean takeFromCache(Date timestamp);
 

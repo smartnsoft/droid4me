@@ -188,10 +188,10 @@ public interface LifeCycle
    * @param retrieveBusinessObjects
    *          indicates whether the {@link #onRetrieveBusinessObjects()} method should be invoked or not
    * @param onOver
-   *          if not <code>null</code>, this method will be eventually invoked from the UI thread
+   *          if not {@code null}, this method will be eventually invoked from the UI thread
    * @param immediately
-   *          if this flag is set to <code>true</code>, even if the implementing {@link Activity} is not currently displayed, the execution will be
-   *          run at once. If set to <code>false</code>, the execution will be delayed until the {@link Activity#onRestart()} method is invoked
+   *          if this flag is set to {@code true}, even if the implementing {@link Activity} is not currently displayed, the execution will be
+   *          run at once. If set to {@code false}, the execution will be delayed until the {@link Activity#onRestart()} method is invoked
    */
   void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately);
 

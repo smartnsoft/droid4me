@@ -132,7 +132,7 @@ public interface WebServiceClient
     }
 
     /**
-     * @return <code>true</code> is the current exception is linked to a connectivity problem with Internet.
+     * @return {@code true} is the current exception is linked to a connectivity problem with Internet.
      * @see #isConnectivityProblem(Throwable)
      */
     public final boolean isConnectivityProblem()
@@ -145,7 +145,7 @@ public interface WebServiceClient
      * 
      * @param throwable
      *          the exception to test
-     * @return <code>true</code> if the {@link Throwable} was triggered because of a connectivity problem with Internet
+     * @return {@code true} if the {@link Throwable} was triggered because of a connectivity problem with Internet
      */
     public static boolean isConnectivityProblem(Throwable throwable)
     {
@@ -245,7 +245,7 @@ public interface WebServiceClient
    *          the type of HTTP method
    * @param body
    *          the body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
-   *          <code>null</code> otherwise
+   *          {@code null} otherwise
    * @return the input stream resulting to the HTTP request, which is taken from the response
    * @throws WebServiceClient.CallException
    *           in case an error occurred during the HTTP request execution

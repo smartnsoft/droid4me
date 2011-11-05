@@ -73,7 +73,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * <p>
  * When invoking an HTTP method, the caller goes through the following workflow:
  * <ol>
- * <li>the {@link #isConnected()} method is checked: if the return value is set to <code>false</code>, no request will be attempted and a
+ * <li>the {@link #isConnected()} method is checked: if the return value is set to {@code false}, no request will be attempted and a
  * {@link WebServiceCaller.CallException} exception will be thrown (embedding a {@link UnknownHostException} exception) ;</li>
  * <li>the {@link #onBeforeHttpRequestExecution(DefaultHttpClient, HttpRequestBase)} method will be invoked, so as to let the caller tune the HTTP
  * method request ;</li>
@@ -212,7 +212,7 @@ public abstract class WebServiceCaller
 
   /**
    * Enables to indicate that no Internet connectivity is available, or that the connectivity has been restored. The initial value is
-   * <code>true</code>.
+   * {@code true}.
    */
   public void setConnected(boolean isConnected)
   {
@@ -235,11 +235,11 @@ public abstract class WebServiceCaller
    * @param body
    *          if the HTTP method is set to {@link WebServiceCaller.CallType#Post} or {@link WebServiceCaller.CallType#Put}, this is the body of the
    *          request
-   * @return the input stream of the HTTP method call; cannot be <code>null</code>
+   * @return the input stream of the HTTP method call; cannot be {@code null}
    * @throws WebServiceCaller.CallException
    *           if the status code of the HTTP response does not belong to the [{@link HttpStatus.SC_OK}, {@link HttpStatus.SC_MULTI_STATUS}] range.
    *           Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
-   *           {@link #isConnected()} method returns <code>false</code>, no request will be attempted and a {@link WebServiceCaller.CallException}
+   *           {@link #isConnected()} method returns {@code false}, no request will be attempted and a {@link WebServiceCaller.CallException}
    *           exception will be thrown (embedding a {@link UnknownHostException} exception).
    */
   public final InputStream getInputStream(String uri, WebServiceCaller.CallType callType, HttpEntity body)
@@ -536,14 +536,14 @@ public abstract class WebServiceCaller
    *          the type of the HTTP method
    * @param body
    *          the body of the HTTP method when its a {@link WebServiceCaller.CallType#Post} or a {@link WebServiceCaller.CallType#Put} ;
-   *          <code>null</code> otherwise
+   *          {@code null} otherwise
    * @param response
    *          the HTTP response
    * @param statusCode
    *          the status code of the response, which is not <code>20X</code>
    * @param attemptsCount
    *          the number of attempts that have been run for this HTTP method. Starts at <code>1</code>
-   * @return <code>true</code> if you want the request to be re-run if it has failed
+   * @return {@code true} if you want the request to be re-run if it has failed
    * @throws WebServiceCaller.CallException
    *           if you want the call to be considered as not OK
    */

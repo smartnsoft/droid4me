@@ -61,7 +61,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   private ViewGroup wrapperLayout;
 
   /**
-   * @return <code>false</code> by default
+   * @return {@code false} by default
    */
   protected boolean containsText(BusinessObjectClass businessObject, String filterTextLower)
   {
@@ -69,7 +69,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   }
 
   /**
-   * @return <code>null</code> by default
+   * @return {@code null} by default
    */
   protected Uri getContentUri()
   {
@@ -287,7 +287,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
    * Call this method when you want the list display to be recomputed because its underlying business object list has changed.
    * 
    * @param businessObjectCountAndSortingUnchanged
-   *          set to <code>true</code> when either the business objects count and order have been unchanged, and just the data changed
+   *          set to {@code true} when either the business objects count and order have been unchanged, and just the data changed
    */
   public final void notifyBusinessObjectsChanged(boolean businessObjectCountAndSortingUnchanged)
   {
@@ -315,7 +315,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
    * Forces the retrieving of the business objects list, and eventually asks to the underlying list UI to refresh.
    * 
    * @param businessObjectCountAndSortingUnchanged
-   *          set to <code>true</code> when either the business objects count and order have been unchanged, and just the data changed
+   *          set to {@code true} when either the business objects count and order have been unchanged, and just the data changed
    * @see #notifyBusinessObjectsChanged(boolean)
    * @see #refreshBusinessObjectsAndDisplay(boolean)
    */

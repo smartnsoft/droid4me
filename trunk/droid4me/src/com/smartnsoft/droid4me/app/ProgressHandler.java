@@ -106,7 +106,7 @@ public abstract class ProgressHandler
 
   /**
    * The same method as {@link #onProgress(Activity, boolean) except that it can be invoked from a non-GUI thread. In that case, the
-   * <code>fromGuiThread</code> parameter must be set to <code>false</code>.
+   * <code>fromGuiThread</code> parameter must be set to {@code false}.
    */
   public final void onProgress(final Activity activity, final boolean isLoading, final Object progressExtra, boolean fromGuiThread)
   {

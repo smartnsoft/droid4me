@@ -105,10 +105,10 @@ public class SmartImageView
 
   /**
    * Indicates that the underlying bitmap size never changes, and hence causing the {@link #requestLayout()} to do nothing. The default value is
-   * <code>false</code>
+   * {@code false}
    * 
    * @param fixedSized
-   *          when set to <code>true</code>, the {@link #requestLayout()} will not invoke its parent method, and will do nothing
+   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and will do nothing
    */
   public void setFixedSized(boolean fixedSized)
   {

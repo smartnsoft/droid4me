@@ -46,7 +46,7 @@ public abstract class SmartSplashScreenActivity
   /**
    * @param splashScreenActivity
    *          the class of the splash screen
-   * @return a non <code>null</code> date, if and only if the given splash screen has been initialized ; in that case, the returned date is the
+   * @return a non {@code null} date, if and only if the given splash screen has been initialized ; in that case, the returned date is the
    *         timestamp when it has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class))}
    */
   public static Date isInitialized(Class<? extends SmartSplashScreenActivity> splashScreenActivity)
@@ -109,7 +109,7 @@ public abstract class SmartSplashScreenActivity
       throws BusinessObjectUnavailableException;
 
   /**
-   * @return <code>true</code> if and only if the application requires an external storage to work
+   * @return {@code true} if and only if the application requires an external storage to work
    */
   protected boolean requiresExternalStorage()
   {
@@ -117,7 +117,7 @@ public abstract class SmartSplashScreenActivity
   }
 
   /**
-   * If the {@link #requiresExternalStorage()} method returns <code>true</code> and that, at runtime, non external storage is available, this method
+   * If the {@link #requiresExternalStorage()} method returns {@code true} and that, at runtime, non external storage is available, this method
    * will be invoked.
    * 
    * <p>

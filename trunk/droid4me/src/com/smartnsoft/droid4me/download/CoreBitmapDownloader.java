@@ -49,7 +49,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * A flag which enables to get debug information for the "BitmapDownloader" component: only defined for development purposes. Defaults to
-   * <code>false</code>.
+   * {@code false}.
    */
   public static boolean IS_DEBUG_TRACE = false;
 
@@ -224,7 +224,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * </p>
    * 
    * @param view
-   *          the view that will be bound with the retrieved {@link Bitmap}. May be <code>null</code>, which enables to simply download a bitmap and
+   *          the view that will be bound with the retrieved {@link Bitmap}. May be {@code null}, which enables to simply download a bitmap and
    *          put it into the cache
    * @param bitmapUid
    *          the identifier of the bitmap to retrieve. Most of the time, this is the URL of the bitmap on Internet, but it can serve as a basis to
@@ -244,7 +244,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * may be called from the GUI thread and blocking.
    * 
    * @param isBlocking
-   *          indicates whether the call is blocking. It <code>true</code>, the call must be done from the GUI thread!
+   *          indicates whether the call is blocking. It {@code true}, the call must be done from the GUI thread!
    */
   public abstract void get(boolean isBlocking, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions);

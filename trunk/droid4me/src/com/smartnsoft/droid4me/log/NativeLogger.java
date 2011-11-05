@@ -29,9 +29,9 @@ import android.util.Log;
  * 
  * @see LoggerFactory
  * @author Édouard Mercier
- * @date 2007.12.23
+ * @since 2007.12.23
  */
-final class NativeLogger
+public class NativeLogger
     implements Logger
 {
 

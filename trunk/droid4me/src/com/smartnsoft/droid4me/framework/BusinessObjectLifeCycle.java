@@ -28,7 +28,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler;
  * An interface which is bound to a business object.
  * 
  * @author Édouard Mercier
- * @date 2008.06.11
+ * @since 2008.06.11
  */
 public interface BusinessObjectLifeCycle<BusinessObjectClass>
 {

@@ -149,7 +149,7 @@ public final class Business
      * 
      * @param parameter
      *          the parameters which enable to compute the entity URI
-     * @return the URI which enables to access to the underlying business object entity ; should return <code>null</code> if no URI is available
+     * @return the URI which enables to access to the underlying business object entity ; should return {@code null} if no URI is available
      */
     UriType computeUri(ParameterType parameter);
 
@@ -328,8 +328,8 @@ public final class Business
      * Should return an input stream related to the provided URI.
      * 
      * @param uri
-     *          an URI which identifies the resource; it is not allowed to be <code>null</code>
-     * @return a wrapper of the resulting input stream, which may be <code>null</code>; the {@link Business.InputAtom#inputStream} and
+     *          an URI which identifies the resource; it is not allowed to be {@code null}
+     * @return a wrapper of the resulting input stream, which may be {@code null}; the {@link Business.InputAtom#inputStream} and
      *         {@link Business.InputAtom#context} are allowed to be null
      * @throws ExceptionType
      *           whenever a problem occurred while processing
@@ -341,8 +341,8 @@ public final class Business
      * Should return the last modification date of the input stream related to the provided URI.
      * 
      * @param uri
-     *          an URI which identifies the resource; it is not allowed to be <code>null</code>
-     * @return the last modification date of the related input stream, or <code>null</code> if there is no such input stream
+     *          an URI which identifies the resource; it is not allowed to be {@code null}
+     * @return the last modification date of the related input stream, or {@code null} if there is no such input stream
      */
     Date getLastUpdate(UriType uri);
 
@@ -365,7 +365,7 @@ public final class Business
      * @param inputAtom
      *          the wrapper that contains the data to be persisted the {@link Business.InputAtom#inputStream} is allowed to be null: in that case, a
      *          null-like object must be persisted
-     * @return a valid input stream corresponding to the persisted data; it is not allowed to be <code>null</code>
+     * @return a valid input stream corresponding to the persisted data; it is not allowed to be {@code null}
      * @throws Exception
      *           if any problem occurs while persisting the data
      */

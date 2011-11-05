@@ -32,7 +32,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler.Custom;
  * regarding the activity life cycle.
  * 
  * @author Édouard Mercier
- * @date 2008.04.13
+ * @since 2008.04.13
  */
 public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectClass>
     extends SmartActivity<AggregateClass>

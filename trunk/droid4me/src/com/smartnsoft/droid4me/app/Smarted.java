@@ -41,7 +41,7 @@ public interface Smarted<AggregateClass>
   Handler getHandler();
 
   /**
-   * @return an object that may be used along the {@link Activity} life ; may return <code>null</code>
+   * @return an object that may be used along the {@link Activity} life ; may return {@code null}
    * @see #setAggregate(Object)
    */
   AggregateClass getAggregate();
@@ -73,7 +73,7 @@ public interface Smarted<AggregateClass>
   void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners);
 
   /**
-   * @return all the static menu commands that the activity wants to make available ; may return <code>null</code>
+   * @return all the static menu commands that the activity wants to make available ; may return {@code null}
    */
   List<StaticMenuCommand> getMenuCommands();
 
