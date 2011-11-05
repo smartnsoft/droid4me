@@ -24,13 +24,13 @@ Here are the steps that you need to take:
   * optionally, the `BitmapDownloader.MAX_MEMORY_IN_BYTES` integer array variable to indicate the RAM high water mark that each instance should respect,
   * optionally, the `BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES` integer array variable to indicate the RAM low water mark that each instance should respect,
   * very optionally, the `BitmapDownloader.IMPLEMENTATION_FQN` string variable which indicates the `BitmapDownloader` class Fully Qualified Name, if you have decided to derive from the built-in one.
-# Create an implementation of the `DownloadInstructions.Instructions` interface: most of the time, you will need only one instance of that interface, which you can define in a `static` way. An already descent implementation is the `DownloadInstructions.AbstractInstructions` class, and if you want to define your own, it is very likely that you should derive from it.
-# Every time you need to bind a bitmap to an Android `android.view.View` (in most cases a `android.widget.ImageView`), invoke the `BitmapDownloader.get()` method from any thread (except if you use the version of the method which takes a `boolean` as first argument, and that you set that flag `true`), and the "BitmapDownloader" will take
- # the `view` Android view a bitmap should be bound to,
- # the bitmap `imageUid` unique identifier string,
- # some optional-but-very-handy “mageSpecs` specifications object,
- # an Android `android.os.Handler` (which will be used to run certain methods in the UI thread),
- # and the previously created `DownloadInstructions.Instructions` instance.
+ # Create an implementation of the `DownloadInstructions.Instructions` interface: most of the time, you will need only one instance of that interface, which you can define in a `static` way. An already descent implementation is the `DownloadInstructions.AbstractInstructions` class, and if you want to define your own, it is very likely that you should derive from it.
+ # Every time you need to bind a bitmap to an Android `android.view.View` (in most cases a `android.widget.ImageView`), invoke the `BitmapDownloader.get()` method from any thread (except if you use the version of the method which takes a `boolean` as first argument, and that you set that flag `true`), and the "BitmapDownloader" will take
+  # the `view` Android view a bitmap should be bound to,
+  # the bitmap `imageUid` unique identifier string,
+  # some optional-but-very-handy `imageSpecs` specifications object,
+  # an Android `android.os.Handler` (which will be used to run certain methods in the UI thread),
+  # and the previously created `DownloadInstructions.Instructions` instance.
 
 The component will handle everything for you, and in particular, if the bitmap is already in memory, no HTTP request will be performed.
 
