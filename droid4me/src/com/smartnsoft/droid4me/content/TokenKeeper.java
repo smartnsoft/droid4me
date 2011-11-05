@@ -84,7 +84,7 @@ public class TokenKeeper<Token extends Serializable>
      * 
      * @param token
      *          the token that should be analyzed
-     * @return the tokens related to the provided token. If <code>null</code>, it will be considered that no sub-token is available for the given
+     * @return the tokens related to the provided token. If {@code null}, it will be considered that no sub-token is available for the given
      *         token. The array should not contain the provided token (for better performances)
      */
     Token[] getSubTokens(Token token);
@@ -111,7 +111,7 @@ public class TokenKeeper<Token extends Serializable>
    *          method when broadcasting
    * @param prefix
    *          a string, which will be used when storing the token in the {@link SharedPreferences preferences}, and when {@link #broadcast(Enum)
-   *          broadcasting} it; can be <code>null</code>
+   *          broadcasting} it; can be {@code null}
    */
   public TokenKeeper(Context context, String prefix)
   {
@@ -121,7 +121,7 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * @return <code>true</code> if and only if the token keeper is currently enabled
+   * @return {@code true} if and only if the token keeper is currently enabled
    * @see #setEnabled(boolean)
    */
   public final boolean isEnabled()
@@ -146,7 +146,7 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * @return the currently registered token multiplier; may be <code>null</code>
+   * @return the currently registered token multiplier; may be {@code null}
    * @see #setTokenMultiplier(TokenMultiplier)
    */
   public final TokenMultiplier<Token> getTokenMultiplier()
@@ -164,7 +164,7 @@ public class TokenKeeper<Token extends Serializable>
    * </p>
    * 
    * @param tokenMultiplier
-   *          the interface that will be used to "multiply" the remembered token; it should be set to <code>null</code>, if that feature needs to be
+   *          the interface that will be used to "multiply" the remembered token; it should be set to {@code null}, if that feature needs to be
    *          disabled
    */
   public final void setTokenMultiplier(TokenMultiplier<Token> tokenMultiplier)
@@ -202,7 +202,7 @@ public class TokenKeeper<Token extends Serializable>
    *          the intent that will investigated
    * @param tokens
    *          the list of notification kinds to look after
-   * @return <code>true</code> if and only if the IntentFilter {@link Intent#getAction() action} is not null and one of notification kind matches the
+   * @return {@code true} if and only if the IntentFilter {@link Intent#getAction() action} is not null and one of notification kind matches the
    *         Intent action
    */
   public boolean belongsTo(Intent intent, Token... tokens)
@@ -227,7 +227,7 @@ public class TokenKeeper<Token extends Serializable>
    * 
    * @param token
    *          the token to search for
-   * @return <code>true</code> if and only if the notification kind token is present
+   * @return {@code true} if and only if the notification kind token is present
    * @see #missesToken(Enum)
    */
   public boolean hasToken(Token token)
@@ -247,7 +247,7 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Sets persistently a token for the given notification kind, so that a {@link #hasToken(Enum) subsequent call} returns <code>true</code>.
+   * Sets persistently a token for the given notification kind, so that a {@link #hasToken(Enum) subsequent call} returns {@code true}.
    * 
    * @param token
    *          the token to set and remember
@@ -342,7 +342,7 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Discards the given token, so as a {@link #hasToken(Enum) subsequent method call} returns <code>false</code>.
+   * Discards the given token, so as a {@link #hasToken(Enum) subsequent method call} returns {@code false}.
    * 
    * @param token
    *          the token to discard

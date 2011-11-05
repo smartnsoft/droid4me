@@ -29,7 +29,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler.Custom;
  * A basic implementation.
  * 
  * @author Édouard Mercier
- * @date 2008.08.11
+ * @since 2008.08.11
  */
 public abstract class ForBusinessObjectImplementation<BusinessObjectClass>
     implements BusinessObjectLifeCycle<BusinessObjectClass>

@@ -211,8 +211,8 @@ public final class ActivityController
      * </p>
      * 
      * @param activity
-     *          the activity that issued the exception ; cannot be <code>null</code>
-     * @return <code>true</code> if the handler has actually handled the exception: this indicates to the framework that it does not need to
+     *          the activity that issued the exception ; cannot be {@code null}
+     * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to
      *         investigate for a further exception handler anymore
      */
     boolean onBusinessObjectAvailableException(Activity activity, BusinessObjectUnavailableException exception);
@@ -458,7 +458,7 @@ public final class ActivityController
     /**
      * @param throwable
      *          the exception to investigate
-     * @return <code>true</code> if and only if the exception results from a connectivity issue by inspecting its causes tree
+     * @return {@code true} if and only if the exception results from a connectivity issue by inspecting its causes tree
      */
     public static boolean isAConnectivityProblem(Throwable throwable)
     {
@@ -472,7 +472,7 @@ public final class ActivityController
      *          the exception to be inspected
      * @param exceptionClass
      *          a list of exception classes to look after
-     * @return <code>null</code> if and only one of the provided exception classes has not been detected ; the matching cause otherwise
+     * @return {@code null} if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
     @SuppressWarnings( { "unchecked", "rawtypes" })
     public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
@@ -633,11 +633,11 @@ public final class ActivityController
    * </p>
    * 
    * @param context
-   *          the context that originated the exception ; may be <code>null</code>
+   *          the context that originated the exception ; may be {@code null}
    * @param throwable
    *          the reported exception
-   * @return <code>true</code> if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception
-   *         handled has been set}, returns <code>false</code>
+   * @return {@code true} if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception
+   *         handled has been set}, returns {@code false}
    */
   public synchronized boolean handleException(Context context, Throwable throwable)
   {

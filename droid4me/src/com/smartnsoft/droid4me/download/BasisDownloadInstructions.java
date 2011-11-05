@@ -43,7 +43,16 @@ public class BasisDownloadInstructions
   {
 
     /**
-     * @return <code>true</code> if and only the bitmap should be taken locally, instead of running into the downloading process: in that case, the
+     * The method will be invoked, so as to known whether the bitmap could not be extracted locally, i.e. from the application .apk, or a static local
+     * resource.
+     * 
+     * <p>
+     * Do not use that placeholder for introducing any persistent strategy, but use the
+     * {@link #getInputStream(String, Object, String, BasisDownloadInstructions.InputStreamDownloadInstructor)} and
+     * {@link #onInputStreamDownloaded(String, Object, String, InputStream)} methods instead, for that purpose.
+     * </p>
+     * 
+     * @return {@code true} if and only the bitmap should be taken locally, instead of running into the downloading process: in that case, the
      *         {@link Instructions#onBindLocalBitmap(View, String, Object)} will be invoked
      */
     boolean hasLocalBitmap(String bitmapUid, Object imageSpecs);
@@ -58,19 +67,22 @@ public class BasisDownloadInstructions
     void onBindLocalBitmap(ViewClass view, String bitmapUid, Object imageSpecs);
 
     /**
-     * Given the bitmap identifier, its size and its extra specifications, returns its URL, which will be used for downloading it.
+     * Given the bitmap identifier, its extra specifications, returns its URL, which will be used for downloading it.
+     * 
+     * @return the URL that will be used to investigate on whether the bitmap is already in cache memory, persisted, and to download it from the
+     *         network. If the method returns {@code null}, it will be considered that no bitmap is available for the {@code imageUid}
      */
     String computeUrl(String bitmapUid, Object imageSpecs);
 
     /**
      * Enables to determine whether a temporary bitmap (which will be eventually a final bound bitmap if the case the provided <code>bitmapUid</code>
-     * is <code>null</code>) should be bound to the underlying view.
+     * is {@code null}) should be bound to the underlying view.
      * 
      * <p>
-     * The method will be invoked even with a <code>bitmapUid</code> set to <code>null</code>.
+     * The method will be invoked even with a <code>bitmapUid</code> set to {@code null}.
      * </p>
      * 
-     * @return <code>true</code> if and only if a temporary bitmap should be used for the underlying view: in that case, the
+     * @return {@code true} if and only if a temporary bitmap should be used for the underlying view: in that case, the
      *         {@link Instructions#onBindTemporaryBitmap(View, String, Object)} will be invoked
      */
     boolean hasTemporaryBitmap(String bitmapUid, Object imageSpecs);
@@ -79,7 +91,7 @@ public class BasisDownloadInstructions
      * When a temporary bitmap usage has been specified, is responsible for binding the view with that temporary bitmap.
      * 
      * <p>
-     * The method will be invoked even with a <code>bitmapUid</code> set to <code>null</code>.
+     * The method will be invoked even with a <code>bitmapUid</code> set to {@code null}.
      * </p>
      * 
      * <p>
@@ -98,10 +110,10 @@ public class BasisDownloadInstructions
      * 
      * @param instructor
      *          if you want the input stream download to be asynchronous, call
-     *          {@link CoreBitmapDownloader.InputStreamDownloadInstructor#setAsynchronous()} and return <code>null</code> ; once the input stream has
-     *          been download, invoke {@link CoreBitmapDownloader.InputStreamDownloadInstructor#onDownloaded(InputStream)}.
-     * @return if <code>null</code> and {@link CoreBitmapDownloader.InputStreamDownloadInstructor#setAsynchronous()} has not been invoked, the
-     *         framework will download the input from Internet; otherwise that input stream will be used for populating the view
+     *          {@link CoreBitmapDownloader.InputStreamDownloadInstructor#setAsynchronous()} and return {@code null} ; once the input stream has been
+     *          download, invoke {@link CoreBitmapDownloader.InputStreamDownloadInstructor#onDownloaded(InputStream)}.
+     * @return if {@code null} and {@link CoreBitmapDownloader.InputStreamDownloadInstructor#setAsynchronous()} has not been invoked, the framework
+     *         will download the input from Internet; otherwise that input stream will be used for populating the view
      */
     InputStream getInputStream(String bitmapUid, Object imageSpecs, String url, BasisDownloadInstructions.InputStreamDownloadInstructor instructor)
         throws IOException;
@@ -114,8 +126,8 @@ public class BasisDownloadInstructions
      * input stream.
      * </p>
      * 
-     * @return the input stream corresponding to the bitmap ; the returned should not be <code>null</code> in case of failure, but the method should
-     *         throw an {@link IOException} instead
+     * @return the input stream corresponding to the bitmap ; the returned should not be {@code null} in case of failure, but the method should throw
+     *         a {@link IOException} exception instead
      * @throws IOException
      *           if a network problem occurred while downloading the bitmap
      */
@@ -141,14 +153,14 @@ public class BasisDownloadInstructions
      * </p>
      * 
      * @param the
-     *          input stream that should be converted. It is ensured that this method will not be invoked with a <code>null</code> input stream
+     *          input stream that should be converted. It is ensured that this method will not be invoked with a {@code null} input stream
      */
     BitmapClass convert(InputStream inputStream, String bitmapUid, Object imageSpecs);
 
     /**
-     * Is invoked every time once the underlying view bitmap is either not <code>null</code> ready in memory (the <code>allright</code> parameter is
-     * set to <code>true</code>), or when it occurs that the bitmap could not be downloaded or is not well formed (the <code>allright</code> parameter
-     * is set to <code>false</code>).
+     * Is invoked every time once the underlying view bitmap is either not {@code null} ready in memory (the <code>allright</code> parameter is set to
+     * {@code true}), or when it occurs that the bitmap could not be downloaded or is not well formed (the <code>allright</code> parameter is set to
+     * {@code false}).
      * 
      * <p>
      * It is NOT ensured that this method will be run from the UI thread.
@@ -157,14 +169,14 @@ public class BasisDownloadInstructions
      * @param allright
      *          indicates whether the bitmap is actually available and well formed
      * @param view
-     *          will be <code>null</code> if, and only if the provided {@link View} is <code>null</code>
+     *          will be {@code null} if, and only if the provided {@link View} is {@code null}
      * @param bitmap
-     *          cannot be <code>null</code> if and only if <code>allright</code> is <code>true</code>
+     *          cannot be {@code null} if and only if <code>allright</code> is {@code true}
      */
     void onBitmapReady(boolean allright, ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs);
 
     /**
-     * Is invoked once the bitmap is ready when the provided {@link View} is not <code>null</code>, whether it has been downloaded from Internet or
+     * Is invoked once the bitmap is ready when the provided {@link View} is not {@code null}, whether it has been downloaded from Internet or
      * retrieved from the cache.
      * 
      * <p>
@@ -174,8 +186,8 @@ public class BasisDownloadInstructions
      * @param downloaded
      *          indicates whether the bitmap has actually been downloaded from the network or retrieved locally
      * @param bitmap
-     *          will never be <code>null</code>
-     * @return <code>false</code> if and only if the current instance did not perform the binding
+     *          will never be {@code null}
+     * @return {@code false} if and only if the current instance did not perform the binding
      */
     boolean onBindBitmap(boolean downloaded, ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs);
 
@@ -190,7 +202,7 @@ public class BasisDownloadInstructions
      * </ul>
      * 
      * <p>
-     * The method will be invoked even with a <code>bitmapUid</code> set to <code>null</code>.
+     * The method will be invoked even with a <code>bitmapUid</code> set to {@code null}.
      * </p>
      * 
      * <p>
@@ -198,7 +210,7 @@ public class BasisDownloadInstructions
      * </p>
      * 
      * @param result
-     *          <code>true</code> if and only if the bitmap has actually been downloaded and attached to its view
+     *          {@code true} if and only if the bitmap has actually been downloaded and attached to its view
      */
     void onBitmapBound(boolean result, ViewClass view, String bitmapUid, Object imageSpecs);
 
@@ -301,7 +313,7 @@ public class BasisDownloadInstructions
      * Should be called when the input stream has just been downloaded.
      * 
      * @param inputStream
-     *          should not be <code>null</code>
+     *          should not be {@code null}
      */
     public void onDownloaded(InputStream inputStream);
 

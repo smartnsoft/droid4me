@@ -201,11 +201,11 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
      */
     InCache,
     /**
-     * The bitmap imageUid is <code>null</code>, there is no temporary bitmap, and the command is over.
+     * The bitmap imageUid is {@code null}, there is no temporary bitmap, and the command is over.
      */
     NullUriNoTemporary,
     /**
-     * The bitmap imageUid is <code>null</code>, there is a temporary bitmap, and the command is over.
+     * The bitmap imageUid is {@code null}, there is a temporary bitmap, and the command is over.
      */
     NullUriTemporary,
     /**
@@ -771,7 +771,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
 
     /**
-     * @return <code>null</code>, in particular, if the underlying bitmap URL is null or empty
+     * @return {@code null}, in particular, if the underlying bitmap URL is null or empty
      */
     private final BitmapClass retrieveBitmap()
     {
@@ -837,11 +837,11 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
 
     /**
-     * This method assumes that the provided <code>inputStream</code> is not <code>null</code>.
+     * This method assumes that the provided <code>inputStream</code> is not {@code null}.
      * 
      * @param inputStream
      *          an input stream corresponding to a bitmap
-     * @return <code>null</code> if the input stream could not be properly converted ; a valid bitmap otherwise
+     * @return {@code null} if the input stream could not be properly converted ; a valid bitmap otherwise
      */
     protected BitmapClass fromInputStreamToBitmap(InputStream inputStream)
     {
@@ -869,7 +869,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
 
     /**
-     * @return <code>null</code>, in particular, when either if the URL is null or empty
+     * @return {@code null}, in particular, when either if the URL is null or empty
      * @throws IOException
      *           if an IO problem occurred while retrieving the bitmap stream
      */
@@ -935,7 +935,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     /**
      * Is responsible for actually downloading the input stream corresponding to the bitmap.
      * 
-     * @return the input stream corresponding to the bitmap ; should not return <code>null</code> but throw an exception instead when the input stream
+     * @return the input stream corresponding to the bitmap ; should not return {@code null} but throw an exception instead when the input stream
      *         cannot be downloaded
      * @throws IOException
      *           if a problem occurred during the download
@@ -951,7 +951,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
 
     /**
-     * The method will do nothing if the {@link #view} is <code>null</code>.
+     * The method will do nothing if the {@link #view} is {@code null}.
      */
     private final void bindBitmap()
     {

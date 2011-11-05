@@ -275,7 +275,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
    * Adds a view to the underlying list view, on its top, or on its bottom.
    * 
    * @param onTop
-   *          if <code>true</code>, the view is added to the header ; otherwise to the footer
+   *          if {@code true}, the view is added to the header ; otherwise to the footer
    * @param fixed
    *          whether the view will scroll or not
    * @param view
@@ -287,7 +287,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
    * Adds a view to the underlying list view, or its left or on its right.
    * 
    * @param onLeft
-   *          if <code>true</code>, the view is added to left of the view ; otherwise to the right
+   *          if {@code true}, the view is added to left of the view ; otherwise to the right
    * @param view
    *          the view to add
    */
@@ -542,7 +542,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   }
 
   /**
-   * May return <code>null</code> if no filter text is currently active.
+   * May return {@code null} if no filter text is currently active.
    */
   public String getFilterText()
   {

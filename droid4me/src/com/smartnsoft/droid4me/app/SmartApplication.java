@@ -285,7 +285,7 @@ public abstract class SmartApplication
    * It is useful when having multiple processes for the same application, and that some of the processes should not use the framework.
    * </p>
    * 
-   * @return <code>true</code> if and only if you want the framework to be ignored for the process. Returns <code>false</code> by default
+   * @return {@code true} if and only if you want the framework to be ignored for the process. Returns {@code false} by default
    */
   protected boolean shouldBeSilent()
   {
@@ -295,7 +295,7 @@ public abstract class SmartApplication
   /**
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
    * 
-   * @return an instance which indicates how to redirect {@link Activity activities} if necessary. Returns <code>null</code>, which means that no
+   * @return an instance which indicates how to redirect {@link Activity activities} if necessary. Returns {@code null}, which means that no
    *         redirection is handled by default ; override this method, in order to control the redirection mechanism
    */
   protected ActivityController.Redirector getActivityRedirector()
@@ -306,7 +306,7 @@ public abstract class SmartApplication
   /**
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
    * 
-   * @return an instance which will be invoked on every {@link Activity} life-cycle event. Returns <code>null</code>, which means that no interception
+   * @return an instance which will be invoked on every {@link Activity} life-cycle event. Returns {@code null}, which means that no interception
    *         is handled by default ; override this method, in order to be notified of activities life-cycle events
    */
   protected ActivityController.Interceptor getActivityInterceptor()

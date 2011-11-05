@@ -97,7 +97,7 @@ public final class AppPublics
     /**
      * Is not invoked by the framework, and provides information about the current entity life cycle.
      * 
-     * @return <code>true</code> if and only if the entity life cycle is the first time to execute during its container life
+     * @return {@code true} if and only if the entity life cycle is the first time to execute during its container life
      */
     boolean isFirstLifeCycle();
 
@@ -117,7 +117,7 @@ public final class AppPublics
      * It is very handy when it comes to disable certain things, like menu entries, while an {@link Activity} is loading.
      * </p>
      * 
-     * @return <code>true</code> if and only if the {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} is being executed.
+     * @return {@code true} if and only if the {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} is being executed.
      */
     boolean isRefreshingBusinessObjectsAndDisplay();
 
@@ -217,7 +217,7 @@ public final class AppPublics
   {
 
     /**
-     * @return if not <code>null</code>, only the intents that match with this returned value, will be received by the activity
+     * @return if not {@code null}, only the intents that match with this returned value, will be received by the activity
      */
     IntentFilter getIntentFilter();
 
@@ -243,7 +243,7 @@ public final class AppPublics
   {
 
     /**
-     * @return the broadcast listener that this provider exposes ; can be <code>null</code>
+     * @return the broadcast listener that this provider exposes ; can be {@code null}
      */
     AppPublics.BroadcastListener getBroadcastListener();
 
@@ -434,7 +434,7 @@ public final class AppPublics
      * Is invoked when a new loading event (intent) occurs.
      * 
      * @param isLoading
-     *          is equal to <code>true</code> if and only if the underlying activity is not loading anymore
+     *          is equal to {@code true} if and only if the underlying activity is not loading anymore
      */
     protected abstract void onLoading(boolean isLoading);
 
@@ -536,7 +536,7 @@ public final class AppPublics
      * @param onMultiSelectionChanged
      *          the interface that will be callbacked (in the same thread as the calling method) depending on the overall multi-selection state; is
      *          allowed to be {@code null}
-     * @return <code>true</code> if the intent has been handled ; <code>false</code> otherwise
+     * @return {@code true} if the intent has been handled ; {@code false} otherwise
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public boolean onSelection(Intent intent, MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)

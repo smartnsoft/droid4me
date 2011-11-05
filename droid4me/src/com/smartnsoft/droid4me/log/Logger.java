@@ -22,7 +22,7 @@ package com.smartnsoft.droid4me.log;
  * Just in order to have various loggers.
  * 
  * @author Édouard Mercier
- * @date 2007.12.23
+ * @since 2007.12.23
  */
 public interface Logger
 {

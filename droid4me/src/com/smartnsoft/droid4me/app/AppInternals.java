@@ -70,7 +70,7 @@ final class AppInternals
      * when it starts, if some other activity needs to be executed beforehand.
      * </p>
      * 
-     * @return <code>true</code> if and only if the implementing {@link Activity} should resume its execution
+     * @return {@code true} if and only if the implementing {@link Activity} should resume its execution
      */
     boolean shouldKeepOn();
 

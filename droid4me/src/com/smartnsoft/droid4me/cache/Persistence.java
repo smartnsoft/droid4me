@@ -414,7 +414,7 @@ public abstract class Persistence
    * 
    * @param uri
    *          the URI which identifies the stream to extract
-   * @return <code>null</code> if and only if there is no data associated to the given URI; otherwise, its related wrapped input stream is returned
+   * @return {@code null} if and only if there is no data associated to the given URI; otherwise, its related wrapped input stream is returned
    */
   public abstract Business.InputAtom extractInputStream(String uri)
       throws Persistence.PersistenceException;

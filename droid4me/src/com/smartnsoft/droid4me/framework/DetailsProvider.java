@@ -57,7 +57,7 @@ public abstract class DetailsProvider
     /**
      * This is specific to the smart list.
      * 
-     * @return the list of business objects handled; a <code>null</code> is authorized and means an empty list
+     * @return the list of business objects handled; a {@code null} is authorized and means an empty list
      */
     List<? extends BusinessObjectClass> retrieveBusinessObjectsList()
         throws LifeCycle.BusinessObjectUnavailableException;
@@ -73,7 +73,7 @@ public abstract class DetailsProvider
     long getObjectId(BusinessObjectClass businessObject);
 
     /**
-     * @return <code>true</code> if the business object is enabled (can be selected)
+     * @return {@code true} if the business object is enabled (can be selected)
      */
     boolean isEnabled(BusinessObjectClass businessObject);
 
