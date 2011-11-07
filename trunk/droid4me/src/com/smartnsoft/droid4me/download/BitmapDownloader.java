@@ -51,7 +51,7 @@ public class BitmapDownloader
   /**
    * The fully qualified name of the {@link BasisBitmapDownloader} instances implementation.
    */
-  public static String IMPLEMENTATION_FQN = BasisBitmapDownloader.class.getName();
+  public static String IMPLEMENTATION_FQN = BitmapDownloader.class.getName();
 
   /**
    * Indicates the upper limit of memory that each cache is allowed to reach.
