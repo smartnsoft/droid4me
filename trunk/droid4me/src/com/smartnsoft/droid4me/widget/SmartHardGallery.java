@@ -37,6 +37,8 @@ public class SmartHardGallery
     extends Gallery
 {
 
+  protected boolean disableRequestLayout;
+
   /**
    * The minimum velocity value which forbids the sliding movement to swipe multiple gallery panes at the same time.
    */
@@ -73,6 +75,26 @@ public class SmartHardGallery
       onKeyDown(KeyEvent.KEYCODE_DPAD_RIGHT, null);
     }
     return true;
+  }
+
+  @Override
+  public void requestLayout()
+  {
+    if (disableRequestLayout == false)
+    {
+      super.requestLayout();
+    }
+  }
+
+  /**
+   * Indicates whether the gallery should handle the {@link android.view.View#requestLayout() layout requests}. By default, nothing is disabled.
+   * 
+   * @param disableRequestLayout
+   *          if set to {@code true}, all {@link android.view.View#requestLayout()} invocation will be ignored
+   */
+  public void setDisableRequestLayout(boolean disableRequestLayout)
+  {
+    this.disableRequestLayout = disableRequestLayout;
   }
 
 }
