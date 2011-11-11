@@ -256,7 +256,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * All operations in progress should be canceled.
    * </p>
    */
-  public abstract void empty();
+  public abstract void clear();
 
   protected final UsedBitmap getUsedBitmapFromCache(String url)
   {

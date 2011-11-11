@@ -171,4 +171,19 @@ public class BitmapDownloader
     get(isBlocking, view != null ? new ViewableView(view) : null, bitmapUid, imageSpecs, handler != null ? new HandlerableHander(handler) : null, instructions);
   }
 
+  /**
+   * Totally clears all instances memory caches.
+   */
+  public static synchronized void clearAll()
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Clearing all BitmapDownloader instances");
+    }
+    for (int index = 0; index < BitmapDownloader.INSTANCES_COUNT; index++)
+    {
+      BitmapDownloader.getInstance(index).clear();
+    }
+  }
+
 }
