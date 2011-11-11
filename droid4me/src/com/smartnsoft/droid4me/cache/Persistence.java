@@ -487,7 +487,7 @@ public abstract class Persistence
   {
     if (log.isDebugEnabled())
     {
-      log.debug("Emptying all persistence instances");
+      log.debug("Clearing all Persistence instances");
     }
     for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
     {
