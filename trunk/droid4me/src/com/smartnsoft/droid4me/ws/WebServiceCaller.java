@@ -211,8 +211,7 @@ public abstract class WebServiceCaller
   }
 
   /**
-   * Enables to indicate that no Internet connectivity is available, or that the connectivity has been restored. The initial value is
-   * {@code true}.
+   * Enables to indicate that no Internet connectivity is available, or that the connectivity has been restored. The initial value is {@code true}.
    */
   public void setConnected(boolean isConnected)
   {
@@ -421,17 +420,22 @@ public abstract class WebServiceCaller
     }
   }
 
+  /**
+   * Runs the input stream SAX parsing.
+   * 
+   * @param contentHandler
+   *          the SAX parser
+   * @param inputStream
+   *          the input stream which contains the XML to be parsed
+   */
   public final void parseSax(ContentHandler contentHandler, InputStream inputStream)
       throws FactoryConfigurationError, IOException, SAXException
   {
     // Now that multiple SAX parsings can be done in parallel, we create a new XML reader each time
     try
     {
-      final XMLReader xmlReader = getNewXmlReader();
-      xmlReader.setContentHandler(contentHandler);
       final InputSource inputSource = new InputSource(inputStream);
-      inputSource.setEncoding(getUrlEncoding());
-      xmlReader.parse(inputSource);
+      parseSax(contentHandler, inputSource);
     }
     finally
     {
@@ -447,6 +451,23 @@ public abstract class WebServiceCaller
         }
       }
     }
+  }
+
+  /**
+   * Runs the input source SAX parsing.
+   * 
+   * @param contentHandler
+   *          the SAX parser
+   * @param inputSource
+   *          the XML to be parsed
+   */
+  public final void parseSax(ContentHandler contentHandler, InputSource inputSource)
+      throws FactoryConfigurationError, IOException, SAXException
+  {
+    final XMLReader xmlReader = getNewXmlReader();
+    xmlReader.setContentHandler(contentHandler);
+    inputSource.setEncoding(getUrlEncoding());
+    xmlReader.parse(inputSource);
   }
 
   protected final HttpResponse performHttpGet(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
@@ -535,8 +556,8 @@ public abstract class WebServiceCaller
    * @param callType
    *          the type of the HTTP method
    * @param body
-   *          the body of the HTTP method when its a {@link WebServiceCaller.CallType#Post} or a {@link WebServiceCaller.CallType#Put} ;
-   *          {@code null} otherwise
+   *          the body of the HTTP method when its a {@link WebServiceCaller.CallType#Post} or a {@link WebServiceCaller.CallType#Put} ; {@code null}
+   *          otherwise
    * @param response
    *          the HTTP response
    * @param statusCode
