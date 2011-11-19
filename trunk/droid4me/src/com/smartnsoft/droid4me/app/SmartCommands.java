@@ -267,8 +267,8 @@ public final class SmartCommands
   }
 
   /**
-   * An exception which acts as an {@link Throwable} wrapper, and which works in combination with the {@link SmartCommands.SimpleGuardedCommmand}. It
-   * will be triggered during the {@link SmartCommands.SimpleGuardedCommmand#onThrowable(Throwable)} method.
+   * An exception which acts as an {@link Throwable} wrapper, and which works in combination with the {@link SmartCommands.SimpleGuardedCommand}. It
+   * will be triggered during the {@link SmartCommands.SimpleGuardedCommand#onThrowable(Throwable)} method.
    * 
    * <p>
    * The traditional case is to let the {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler}
@@ -307,7 +307,7 @@ public final class SmartCommands
    * 
    * @since 2011.11.03
    */
-  public abstract static class SimpleGuardedCommmand
+  public abstract static class SimpleGuardedCommand
       extends SmartCommands.GuardedCommand
   {
 
@@ -316,10 +316,10 @@ public final class SmartCommands
     protected final String warningDisplayMessage;
 
     /**
-     * Same as {@link SmartCommands.SimpleGuardedCommmand#SimpleGuardedCommmand(Context, String, String)} with the last parameter equal to
+     * Same as {@link SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)} with the last parameter equal to
      * {@code context.getString(warningDisplayMessageResourceId)}.
      */
-    public SimpleGuardedCommmand(Context context, String warningLogMessage, int warningDisplayMessageResourceId)
+    public SimpleGuardedCommand(Context context, String warningLogMessage, int warningDisplayMessageResourceId)
     {
       this(context, warningLogMessage, context.getString(warningDisplayMessageResourceId));
     }
@@ -336,7 +336,7 @@ public final class SmartCommands
      *          the (supposedly i18ned) human readable that will be transfered to the {@link SmartCommands.GuardedException} in case of exception
      *          during the command execution
      */
-    public SimpleGuardedCommmand(Context context, String warningLogMessage, String warningDisplayMessage)
+    public SimpleGuardedCommand(Context context, String warningLogMessage, String warningDisplayMessage)
     {
       super(context);
       this.warningLogMessage = warningLogMessage;
@@ -347,7 +347,7 @@ public final class SmartCommands
      * The implementation will log as a {@link Log#WARN warning} the exception.
      * 
      * @return in the case the {@link #getDelegate()} is {@code null} a {@link SmartCommands.GuardedException} which wraps the provided exception,
-     *         with the {@link SmartCommands.SimpleGuardedCommmand#warningDisplayMessage} as {@link SmartCommands.GuardedException#displayMessage
+     *         with the {@link SmartCommands.SimpleGuardedCommand#warningDisplayMessage} as {@link SmartCommands.GuardedException#displayMessage
      *         message attribute} ; otherwise, the return value comes from the delegate
      * 
      * @see SmartCommands.GuardedCommand#onThrowable(Throwable)
@@ -365,7 +365,7 @@ public final class SmartCommands
   }
 
   /**
-   * A handy {@link SmartCommands.SimpleGuardedCommmand} which will issue systematically {@link DialogInterface#dismiss() dismiss} a
+   * A handy {@link SmartCommands.SimpleGuardedCommand} which will issue systematically {@link DialogInterface#dismiss() dismiss} a
    * {@link ProgressDialog} once the command execution is over.
    * 
    * <p>
@@ -375,17 +375,17 @@ public final class SmartCommands
    * 
    * @since 2011.11.03
    */
-  public abstract static class ProgressDialogGuardedCommmand
-      extends SmartCommands.SimpleGuardedCommmand
+  public abstract static class ProgressDialogGuardedCommand
+      extends SmartCommands.SimpleGuardedCommand
   {
 
     protected final ProgressDialog progressDialog;
 
     /**
-     * Same as {@link SmartCommands.ProgressDialogGuardedCommmand#ProgressDialogGuardedCommmand(Context, String, String, ProgressDialog)} with the
+     * Same as {@link SmartCommands.ProgressDialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, ProgressDialog)} with the
      * third parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
      */
-    public ProgressDialogGuardedCommmand(Context context, String warningLogMessage, int warningDisplayMessageResourceId, ProgressDialog progressDialog)
+    public ProgressDialogGuardedCommand(Context context, String warningLogMessage, int warningDisplayMessageResourceId, ProgressDialog progressDialog)
     {
       this(context, warningLogMessage, context.getString(warningDisplayMessageResourceId), progressDialog);
     }
@@ -393,7 +393,7 @@ public final class SmartCommands
     /**
      * 
      * Creates a new {@link SmartCommands.GuardedCommand}, which will issue a {@link Log#WARN warning log} and then trigger a
-     * {@link SmartCommands.SimpleGuardedCommmand}, if an exception occurs during its execution, and eventually {@link DialogInterface#dismiss
+     * {@link SmartCommands.SimpleGuardedCommand}, if an exception occurs during its execution, and eventually {@link DialogInterface#dismiss
      * dismiss} the provided dialog.
      * 
      * @param context
@@ -405,10 +405,10 @@ public final class SmartCommands
      *          during the command execution
      * @param progressDialog
      *          the dialog to be dismissed at the end of the command execution ; may be {@code null}, and in that case, just behaves as its parent
-     *          {@link SmartCommands.SimpleGuardedCommmand}
-     * @see SmartCommands.SimpleGuardedCommmand#SimpleGuardedCommmand(Context, String, String)
+     *          {@link SmartCommands.SimpleGuardedCommand}
+     * @see SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)
      */
-    public ProgressDialogGuardedCommmand(Context context, String warningLogMessage, String warningDisplayMessage, ProgressDialog progressDialog)
+    public ProgressDialogGuardedCommand(Context context, String warningLogMessage, String warningDisplayMessage, ProgressDialog progressDialog)
     {
       super(context, warningLogMessage, warningDisplayMessage);
       this.progressDialog = progressDialog;
@@ -427,7 +427,7 @@ public final class SmartCommands
      * The implementation will invoke the {@link #runGuardedDialog()} method, and will eventually dismiss the {@link #progressDialog} if necessary,
      * whatever happens.
      * 
-     * @see SmartCommands.SimpleGuardedCommmand#runGuarded()
+     * @see SmartCommands.SimpleGuardedCommand#runGuarded()
      */
     @Override
     protected final void runGuarded()
