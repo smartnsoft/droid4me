@@ -92,7 +92,7 @@ public abstract class WebServiceCaller
 {
 
   /**
-   * An empty interface which states that the underlying {@link HttpClient} instance should be reused for all HTTP request, instead of creating a new
+   * An empty interface which states that the underlying {@link HttpClient} instance should be reused for all HTTP requests, instead of creating a new
    * one each time.
    */
   public static interface ReuseHttpClient
@@ -665,26 +665,51 @@ public abstract class WebServiceCaller
    * Is responsible for returning an HTTP client instance, used for actually running the HTTP request.
    * 
    * <p>
-   * The current implementation returns a {@link SensibleHttpClient} instance, which is thread-safe.
+   * The current implementation returns a {@link SensibleHttpClient} instance, which is thread-safe, in case the extending class implements the
+   * {@link WebServiceCaller.ReuseHttpClient} interface.
    * </p>
    * 
    * @return a valid HTTP client
+   * @see #computeHttpClient()
    */
-  protected HttpClient getHttpClient()
+  protected final HttpClient getHttpClient()
   {
     if (this instanceof WebServiceCaller.ReuseHttpClient)
     {
       if (httpClient == null)
       {
-        // Taken from http://foo.jasonhudgins.com/2010/03/http-connections-revisited.html
-        final DefaultHttpClient initialHttpClient = new DefaultHttpClient();
-        final ClientConnectionManager clientConnectionManager = initialHttpClient.getConnectionManager();
-        final HttpParams params = initialHttpClient.getParams();
-        @SuppressWarnings("deprecation")
-        final ThreadSafeClientConnManager threadSafeClientConnectionManager = new ThreadSafeClientConnManager(params, clientConnectionManager.getSchemeRegistry());
-        httpClient = new SensibleHttpClient(threadSafeClientConnectionManager, params);
+        httpClient = computeHttpClient();
       }
       return httpClient;
+    }
+    else
+    {
+      return new SensibleHttpClient();
+    }
+  }
+
+  /**
+   * This method will be invoked by the {@link #getHttpClient()} method, when it needs to use a new {@link HttpClient}. The method should be
+   * overridden, when the {@link HttpClient} to use should be customized; a typical case is when the connection time-outs, the HTTP {@code User-Agent}
+   * parameters need to fine-tuned.
+   * 
+   * <p>
+   * In the case the class implements {@link WebServiceCaller.ReuseHttpClient} interface, this method will be invoked only once.
+   * </p>
+   * 
+   * @return an HTTP client that will be used for running HTTP requests
+   */
+  protected HttpClient computeHttpClient()
+  {
+    if (this instanceof WebServiceCaller.ReuseHttpClient)
+    {
+      // Taken from http://foo.jasonhudgins.com/2010/03/http-connections-revisited.html
+      final DefaultHttpClient initialHttpClient = new DefaultHttpClient();
+      final ClientConnectionManager clientConnectionManager = initialHttpClient.getConnectionManager();
+      final HttpParams params = initialHttpClient.getParams();
+      @SuppressWarnings("deprecation")
+      final ThreadSafeClientConnManager threadSafeClientConnectionManager = new ThreadSafeClientConnManager(params, clientConnectionManager.getSchemeRegistry());
+      return new SensibleHttpClient(threadSafeClientConnectionManager, params);
     }
     else
     {
