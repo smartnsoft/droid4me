@@ -784,7 +784,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         if (log.isWarnEnabled())
         {
-          log.warn("Could not access to the bitmap with id '" + bitmapUid + "  ' relative to the URL '" + url + "'");
+          log.warn("Could not access to the bitmap with id '" + bitmapUid + "' relative to the URL '" + url + "'");
         }
         return null;
       }
