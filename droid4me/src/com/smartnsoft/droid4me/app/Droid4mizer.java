@@ -106,7 +106,7 @@ public final class Droid4mizer<AggregateClass>
 
   public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
-    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
+    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(activity, retrieveBusinessObjects, onOver, immediately) == true)
     {
       return;
     }
@@ -501,7 +501,7 @@ public final class Droid4mizer<AggregateClass>
       }
       catch (Throwable throwable)
       {
-        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, activity);
         onInternalBusinessObjectAvailableException(throwable);
         return false;
       }
@@ -525,7 +525,7 @@ public final class Droid4mizer<AggregateClass>
       }
       catch (Throwable throwable)
       {
-        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, activity);
         onException(throwable, true);
         stateContainer.onStopLoading(activity);
         return;
@@ -539,7 +539,7 @@ public final class Droid4mizer<AggregateClass>
     }
     catch (Throwable throwable)
     {
-      stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
+      stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, activity);
       onException(throwable, true);
       return;
     }
@@ -553,7 +553,7 @@ public final class Droid4mizer<AggregateClass>
     {
       onOver.run();
     }
-    stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, activity);
   }
 
   private void businessObjectRetrievalAndResultHandlers()

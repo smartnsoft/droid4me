@@ -300,7 +300,7 @@ public abstract class SmartTabActivity<AggregateClass>
   void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately,
       final boolean businessObjectCountAndSortingUnchanged)
   {
-    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
+    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(this, retrieveBusinessObjects, onOver, immediately) == true)
     {
       return;
     }
@@ -359,7 +359,7 @@ public abstract class SmartTabActivity<AggregateClass>
       }
       catch (Throwable throwable)
       {
-        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, this);
         onInternalBusinessObjectAvailableException(throwable);
         return false;
       }
@@ -378,7 +378,7 @@ public abstract class SmartTabActivity<AggregateClass>
       }
       catch (Throwable throwable)
       {
-        stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, this);
         onException(throwable, true);
         stateContainer.onStopLoading(this);
         return;
@@ -392,7 +392,7 @@ public abstract class SmartTabActivity<AggregateClass>
     }
     catch (Throwable throwable)
     {
-      stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
+      stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, this);
       onException(throwable, true);
       return;
     }
@@ -406,7 +406,7 @@ public abstract class SmartTabActivity<AggregateClass>
     {
       onOver.run();
     }
-    stateContainer.onRefreshingBusinessObjectsAndDisplayStop();
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, this);
   }
 
   @Override

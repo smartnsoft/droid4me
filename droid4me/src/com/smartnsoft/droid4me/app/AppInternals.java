@@ -109,6 +109,11 @@ final class AppInternals
         this.onOver = onOver;
       }
 
+      private void refreshBusinessObjectsAndDisplay(LifeCycle lifeCycleActivity)
+      {
+        lifeCycleActivity.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, true);
+      }
+
     }
 
     private static final Logger log = LoggerFactory.getInstance(StateContainer.class);
@@ -147,9 +152,15 @@ final class AppInternals
 
     private boolean stopHandling;
 
+    /**
+     * A flag which states whether the underlying {@link Activity} life-cycle is between the {@link Activity#onResume()} and
+     * {@link Activity#onPause()}.
+     */
     private boolean isInteracting;
 
     private AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay refreshBusinessObjectsAndDisplayNextTime;
+
+    private AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay refreshBusinessObjectsAndDisplayPending;
 
     boolean isFirstLifeCycle()
     {
@@ -397,9 +408,22 @@ final class AppInternals
       refreshingBusinessObjectsAndDisplay = true;
     }
 
-    void onRefreshingBusinessObjectsAndDisplayStop()
+    synchronized void onRefreshingBusinessObjectsAndDisplayStop(LifeCycle lifeCycleActivity, Activity activity)
     {
       refreshingBusinessObjectsAndDisplay = false;
+      if (activity.isFinishing() == true)
+      {
+        return;
+      }
+      if (refreshBusinessObjectsAndDisplayPending != null)
+      {
+        if (log.isDebugEnabled())
+        {
+          log.debug("The stacked refresh of the business objects and display is stacked can now be executed");
+        }
+        refreshBusinessObjectsAndDisplayPending.refreshBusinessObjectsAndDisplay(lifeCycleActivity);
+        refreshBusinessObjectsAndDisplayPending = null;
+      }
     }
 
     boolean isRefreshingBusinessObjectsAndDisplay()
@@ -469,15 +493,32 @@ final class AppInternals
       return stopHandling == false && beingRedirected == false;
     }
 
-    boolean shouldDelayRefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
+    synchronized boolean shouldDelayRefreshBusinessObjectsAndDisplay(Activity activity, boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
     {
+      // If the Activity is finishing, we give up
+      if (activity.isFinishing() == true)
+      {
+        return true;
+      }
+      // We test whether the Activity is active (its life-cycle state is between 'onResume()' and 'onPause()'
       if (isInteracting == false && immediately == false)
       {
         refreshBusinessObjectsAndDisplayNextTime = new AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver);
         if (log.isDebugEnabled())
         {
-          log.debug("The refresh of the business objects and display is delayed");
+          log.debug("The refresh of the business objects and display is delayed because the Activity is not interacting");
         }
+        return true;
+      }
+      // We test whether the Activity is already being refreshed
+      if (refreshingBusinessObjectsAndDisplay == true)
+      {
+        // In that case, we need to wait for the refresh action to be over
+        if (log.isDebugEnabled())
+        {
+          log.debug("The refresh of the business objects and display is stacked because it is already refreshing");
+        }
+        refreshBusinessObjectsAndDisplayPending = new AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver);
         return true;
       }
       refreshBusinessObjectsAndDisplayNextTime = null;
