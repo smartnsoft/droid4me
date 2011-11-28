@@ -21,14 +21,14 @@ package com.smartnsoft.droid4me.menu;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
-
 import android.content.Context;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * In order to alleviate the work when creating static and contextual menus for business objects.
@@ -149,17 +149,23 @@ public abstract class MenuHandler
       }
       for (MenuCommand<BusinessObjectClass> command : getCommands())
       {
+        boolean isVisible;
         boolean isEnabled;
-        if (/* businessObject == null || */enabled == false)
+        if (enabled == false)
         {
+          isVisible = false;
           isEnabled = false;
         }
         else
         {
-          isEnabled = command.isEnabled(businessObject);
+          isVisible = command.isVisible(businessObject);
+          isEnabled = isVisible == false ? false : command.isEnabled(businessObject);
         }
-        menu.findItem(command.menuId + getOffsetIdentifier()).setEnabled(isEnabled);
-        menu.findItem(command.menuId + getOffsetIdentifier()).setVisible(isEnabled);
+        menu.findItem(command.menuId + getOffsetIdentifier()).setVisible(isVisible);
+        if (isVisible == true)
+        {
+          menu.findItem(command.menuId + getOffsetIdentifier()).setEnabled(isEnabled);
+        }
       }
     }
 
@@ -192,7 +198,7 @@ public abstract class MenuHandler
 
     private boolean onMenuItemSelected(MenuItem item, BusinessObjectClass businessObject)
     {
-      if (getCommands() == null /* || businessObject == null */)
+      if (getCommands() == null)
       {
         return false;
       }
