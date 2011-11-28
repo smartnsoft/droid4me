@@ -70,6 +70,9 @@ public interface Commands
 
   }
 
+  /**
+   * A command which is not tied to any business object.
+   */
   public static abstract class StaticExecutable
       implements Executable<Void>
   {
@@ -81,9 +84,14 @@ public interface Commands
     /**
      * @return {@code true} by default
      */
-    public boolean isVisible(Void businessObject)
+    public boolean isVisible()
     {
       return true;
+    }
+
+    public final boolean isVisible(Void businessObject)
+    {
+      return isVisible();
     }
 
     public final void run(Void businessObject)
@@ -95,6 +103,7 @@ public interface Commands
     {
       return isEnabled();
     }
+
   }
 
   /**
