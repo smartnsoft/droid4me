@@ -29,12 +29,43 @@ public interface Commands
 
   /**
    * The interface that makes possible to run a command on a business object.
+   * 
+   * <p>
+   * The {@link Executable#isVisible(BusinessObjectClass)} and {@link Executable#isEnabled(BusinessObjectClass)} methods will be invoked dynamically
+   * every time the end-user makes the menu appear.
+   * </p>
+   * 
+   * @param <BusinessObjectClass>
+   *          the business object class the command deals with
    */
   public static interface Executable<BusinessObjectClass>
   {
 
+    /**
+     * The method which will be invoked when the command is executed.
+     * 
+     * @param businessObject
+     *          the business object the command is executed against
+     */
     public void run(BusinessObjectClass businessObject);
 
+    /**
+     * The method which will be invoked to determine whether the command should be visible, i.e. displayed.
+     * 
+     * @param businessObject
+     *          the business object the command is executed against
+     * @return {@code true} if and only if the command should be visible
+     */
+    public boolean isVisible(BusinessObjectClass businessObject);
+
+    /**
+     * The method which will be invoked to determine whether the command should be enabled, i.e. grayed or not. The method will only be invoked
+     * provided the {@link #isVisible(BusinessObjectClass)} has previously returned {@code true}.
+     * 
+     * @param businessObject
+     *          the business object the command is executed against
+     * @return {@code true} if and only if the command should be enabled ; if {@code false}, the entry will be grayed, but will be visible
+     */
     public boolean isEnabled(BusinessObjectClass businessObject);
 
   }
@@ -46,6 +77,14 @@ public interface Commands
     public abstract void run();
 
     public abstract boolean isEnabled();
+
+    /**
+     * @return {@code true} by default
+     */
+    public boolean isVisible(Void businessObject)
+    {
+      return true;
+    }
 
     public final void run(Void businessObject)
     {
@@ -64,6 +103,11 @@ public interface Commands
   public static abstract class EnabledExecutable<BusinessObjectClass>
       implements Executable<BusinessObjectClass>
   {
+
+    public final boolean isVisible(BusinessObjectClass businessObject)
+    {
+      return true;
+    }
 
     public final boolean isEnabled(BusinessObjectClass businessObject)
     {

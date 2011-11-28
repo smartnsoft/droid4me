@@ -174,6 +174,12 @@ public abstract class SmartAdapters
         menuCommands.add(new MenuCommand<BusinessViewWrapper<?>>(objectMenuCommand.text, objectMenuCommand.textId, objectMenuCommand.numericalShortcut, objectMenuCommand.characterShortcut, objectMenuCommand.icon, new Commands.Executable<BusinessViewWrapper<?>>()
         {
           @SuppressWarnings("unchecked")
+          public boolean isVisible(BusinessViewWrapper<?> businessObject)
+          {
+            return objectMenuCommand.executable.isVisible((BusinessObjectClass) businessObject.getBusinessObject());
+          }
+          
+          @SuppressWarnings("unchecked")
           public boolean isEnabled(BusinessViewWrapper<?> businessObject)
           {
             return objectMenuCommand.executable.isEnabled((BusinessObjectClass) businessObject.getBusinessObject());

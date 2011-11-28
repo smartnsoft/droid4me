@@ -19,11 +19,6 @@
 package com.smartnsoft.droid4me.menu;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -41,32 +36,6 @@ public class MenuCommand<BusinessObjectClass>
 {
 
   private static final Logger log = LoggerFactory.getInstance(MenuCommand.class);
-
-  private static final int MENU_ICON_WIDTH = 48;
-
-  private static final int MENU_ICON_HEIGHT = 48;
-
-  // Taken from http://www.anddev.org/resize_and_rotate_image_-_example-t621.html
-  // TODO: put in cache all already computed icons
-  @Deprecated
-  public static Drawable resizeIcon(Context context, int iconId)
-  {
-    Bitmap originalBitmap = BitmapFactory.decodeResource(context.getResources(), iconId);
-    int width = originalBitmap.getWidth();
-    int height = originalBitmap.getHeight();
-    // Calculate the scale
-    float scaleWidth = ((float) MENU_ICON_WIDTH) / width;
-    float scaleHeight = ((float) MENU_ICON_HEIGHT) / height;
-    // Creates a matrix for the manipulation
-    Matrix matrix = new Matrix();
-    // Resizes the bit map
-    matrix.postScale(scaleWidth, scaleHeight);
-    // Recreate the new Bitmap
-    Bitmap resizedBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, width, height, matrix, true);
-    // Make a Drawable from Bitmap to allow to set the BitMap to the ImageView, ImageButton or what ever
-    BitmapDrawable drawable = new BitmapDrawable(resizedBitmap);
-    return drawable;
-  }
 
   public int menuId;
 
@@ -116,12 +85,17 @@ public class MenuCommand<BusinessObjectClass>
     this.executable = executable;
   }
 
-  public void runAction(BusinessObjectClass businessObject)
+  public final void runAction(BusinessObjectClass businessObject)
   {
     executable.run(businessObject);
   }
 
-  public boolean isEnabled(BusinessObjectClass businessObject)
+  public final boolean isVisible(BusinessObjectClass businessObject)
+  {
+    return executable.isVisible(businessObject);
+  }
+
+  public final boolean isEnabled(BusinessObjectClass businessObject)
   {
     return executable.isEnabled(businessObject);
   }
@@ -141,7 +115,6 @@ public class MenuCommand<BusinessObjectClass>
     menuEntry.setShortcut(numericalShortcut, characterShortcut);
     if (icon >= 0)
     {
-      // menuEntry.setIcon(Action.resizeIcon(context, icon));
       menuEntry.setIcon(icon);
     }
     if (log.isDebugEnabled())
