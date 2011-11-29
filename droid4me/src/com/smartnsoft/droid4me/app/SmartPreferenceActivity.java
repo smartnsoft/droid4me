@@ -303,7 +303,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
    */
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
   {
-    refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null, true);
+    refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null, false);
   }
 
   public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
