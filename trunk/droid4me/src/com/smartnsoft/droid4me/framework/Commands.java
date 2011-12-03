@@ -107,24 +107,66 @@ public interface Commands
   }
 
   /**
-   * Here, no need to indicate whether the command is enabled or not: it is always enabled.
+   * A visible command.
+   * 
+   * @param <BusinessObjectClass>
+   *          the business object class the command deals with
+   * 
+   * @since 2011.12.03
+   */
+  public static abstract class VisibleExecutable<BusinessObjectClass>
+      implements Executable<BusinessObjectClass>
+  {
+
+    /**
+     * @return {@code true}
+     */
+    public boolean isVisible(BusinessObjectClass businessObject)
+    {
+      return true;
+    }
+
+    /**
+     * @return the same value as {@link #isVisible(Object)}
+     */
+    public final boolean isEnabled(BusinessObjectClass businessObject)
+    {
+      return isVisible(businessObject);
+    }
+
+  }
+
+  /**
+   * An enabled command.
+   * 
+   * @param <BusinessObjectClass>
+   *          the business object class the command deals with
    */
   public static abstract class EnabledExecutable<BusinessObjectClass>
       implements Executable<BusinessObjectClass>
   {
 
+    /**
+     * @return the same value as {@link #isEnabled(Object)}
+     */
     public final boolean isVisible(BusinessObjectClass businessObject)
     {
-      return true;
+      return isEnabled(businessObject);
     }
 
-    public final boolean isEnabled(BusinessObjectClass businessObject)
+    /**
+     * @return {@code true}
+     */
+    public boolean isEnabled(BusinessObjectClass businessObject)
     {
       return true;
     }
 
   }
 
+  /**
+   * A static enabled command.
+   */
   public static abstract class StaticEnabledExecutable
       extends StaticExecutable
   {
