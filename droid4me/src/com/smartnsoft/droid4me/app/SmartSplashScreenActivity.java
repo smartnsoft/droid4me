@@ -34,24 +34,27 @@ import com.smartnsoft.droid4me.LifeCycle;
  * The loading of the business objects is synchronous, but in the derived class, if necessary, think of making it
  * {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy asynchronous} if necessary, so as to relief the UI.
  * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * 
  * @author Édouard Mercier
  * @since 2010.01.05
  */
-public abstract class SmartSplashScreenActivity
-    extends SmartActivity<Void>
+public abstract class SmartSplashScreenActivity<AggregateClass>
+    extends SmartActivity<AggregateClass>
 {
 
   private static final Map<String, Date> initialized = new HashMap<String, Date>();
 
   /**
-   * @param splashScreenActivity
+   * @param splashScreenActivityClass
    *          the class of the splash screen
-   * @return a non {@code null} date, if and only if the given splash screen has been initialized ; in that case, the returned date is the
-   *         timestamp when it has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class))}
+   * @return a non {@code null} date, if and only if the given splash screen has been initialized ; in that case, the returned date is the timestamp
+   *         when it has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class))}
    */
-  public static Date isInitialized(Class<? extends SmartSplashScreenActivity> splashScreenActivity)
+  public static Date isInitialized(Class<? extends Activity> splashScreenActivityClass)
   {
-    return SmartSplashScreenActivity.initialized.get(splashScreenActivity.getName());
+    return SmartSplashScreenActivity.initialized.get(splashScreenActivityClass.getName());
   }
 
   /**
@@ -61,12 +64,12 @@ public abstract class SmartSplashScreenActivity
    * This is useful within an application which provides a "reset-to-factory" or "log-out" feature.
    * </p>
    * 
-   * @param splashScreenActivity
+   * @param splashScreenActivityClass
    *          the class of the splash screen
    */
-  public static void markAsUnitialized(Class<? extends SmartSplashScreenActivity> splashScreenActivity)
+  public static void markAsUnitialized(Class<? extends Activity> splashScreenActivityClass)
   {
-    SmartSplashScreenActivity.initialized.remove(splashScreenActivity.getName());
+    SmartSplashScreenActivity.initialized.remove(splashScreenActivityClass.getName());
   }
 
   private boolean stopActivity;
@@ -117,8 +120,8 @@ public abstract class SmartSplashScreenActivity
   }
 
   /**
-   * If the {@link #requiresExternalStorage()} method returns {@code true} and that, at runtime, non external storage is available, this method
-   * will be invoked.
+   * If the {@link #requiresExternalStorage()} method returns {@code true} and that, at runtime, non external storage is available, this method will
+   * be invoked.
    * 
    * <p>
    * This is a good place to pop-up an error dialog box and prevent the application from resuming. It is ensured that this callback will be invoked
