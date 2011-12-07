@@ -50,16 +50,23 @@ public class NullPersistence
   @Override
   public void initialize()
   {
+    storageBackendAvailable = true;
   }
 
   @Override
-  protected void empty()
-      throws PersistenceException
+  protected void clearInstance()
+      throws Persistence.PersistenceException
+  {
+  }
+
+  @Override
+  protected void closeInstance()
+      throws Persistence.PersistenceException
   {
   }
 
   public void remove(String uri)
-      throws PersistenceException
+      throws Persistence.PersistenceException
   {
   }
 
@@ -76,26 +83,26 @@ public class NullPersistence
 
   @Override
   public InputAtom flushInputStream(String uri, InputAtom inputAtom)
-      throws PersistenceException
+      throws Persistence.PersistenceException
   {
     return inputAtom;
   }
 
   public InputStream writeInputStream(String uri, InputAtom inputAtom)
-      throws PersistenceException
+      throws Persistence.PersistenceException
   {
     return inputAtom.inputStream;
   }
 
   @Override
   public InputAtom extractInputStream(String uri)
-      throws PersistenceException
+      throws Persistence.PersistenceException
   {
     return null;
   }
 
   public InputAtom readInputStream(String uri)
-      throws PersistenceException
+      throws Persistence.PersistenceException
   {
     return null;
   }

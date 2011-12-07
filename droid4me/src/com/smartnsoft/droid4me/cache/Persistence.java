@@ -210,6 +210,9 @@ public abstract class Persistence
    */
   public static int MAXIMUM_URI_CONTENTS_SIZE_IN_BYTES = 512 * 1024;
 
+  /**
+   * Remembers whether the storage back-end is currently available.
+   */
   protected boolean storageBackendAvailable;
 
   private final String storageDirectoryPath;
@@ -227,7 +230,12 @@ public abstract class Persistence
   }
 
   /**
-   * Enables to access the various persistence instances.
+   * Enables to access the various persistence instances. The number of instantiated occurrences is defined by the {@link Persistence#INSTANCES_COUNT}
+   * variable, which must have been set beforehand.
+   * 
+   * <p>
+   * This will cause the {@link Persistence#initialize()} method to be invoked for every instance.
+   * </p>
    * 
    * <p>
    * Note that the instantiation is lazy.
@@ -438,15 +446,31 @@ public abstract class Persistence
       throws Persistence.PersistenceException;
 
   /**
-   * Empties the specific part of the persistence.
+   * Empties the persistence.
    * 
-   * When called, the persistence storage is ensured to be available.
+   * <p>
+   * Once called, the persistence storage will be emptied, but the instance can keep on being used as is.
+   * </p>
    * 
    * @throws if
    *           any problem occurs while emptying the persistence
    * @see #clear()
    */
-  protected abstract void empty()
+  protected abstract void clearInstance()
+      throws Persistence.PersistenceException;
+
+  /**
+   * Closes the persistence.
+   * 
+   * <p>
+   * Once called, the persistence will need to be {@link #initialize() initialized again}, before being used.
+   * </p>
+   * 
+   * @throws if
+   *           any problem occurs while closing the persistence
+   * @see #close()
+   */
+  protected abstract void closeInstance()
       throws Persistence.PersistenceException;
 
   /**
@@ -458,11 +482,18 @@ public abstract class Persistence
   }
 
   /**
-   * Totally clears the cache related to the current instance.
+   * Totally clears the cache related to the current instance. This will delete all the entries. The method will invoke the {@link #clearInstance()}
+   * method.
+   * 
+   * <p>
+   * Once cleared, the current instance can be used as is.
+   * </p>
    * 
    * @throws if
    *           any problem occurs while clearing the persistence
-   * @see #clear()
+   * @see #clearInstance()
+   * @see #close()
+   * @see #clearAll()
    */
   public final synchronized void clear()
       throws Persistence.PersistenceException
@@ -473,14 +504,41 @@ public abstract class Persistence
     }
     if (storageBackendAvailable == true)
     {
-      empty();
+      clearInstance();
     }
     uriUsages.clear();
     beingProcessed.clear();
   }
 
   /**
-   * Totally clears all caches.
+   * Closes the current instance. The method will invoke the {@link #closeInstance()} method.
+   * 
+   * <p>
+   * Once closed, the current instance cannot be used until an explicit {@link #initialize()} call is performed.
+   * </p>
+   * 
+   * @see #closeInstance()
+   * @see #clear()
+   * @see #closeAll()
+   */
+  public final synchronized void close()
+      throws Persistence.PersistenceException
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Closing the persistence instance");
+    }
+    if (storageBackendAvailable == true)
+    {
+      closeInstance();
+    }
+    uriUsages.clear();
+    beingProcessed.clear();
+    storageBackendAvailable = false;
+  }
+
+  /**
+   * Clears all persistence instances. The method will invoke the {@link #clear()} on each instance.
    */
   public static synchronized void clearAll()
       throws Persistence.PersistenceException
@@ -492,6 +550,22 @@ public abstract class Persistence
     for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
     {
       Persistence.getInstance(index).clear();
+    }
+  }
+
+  /**
+   * Closes all persistence instances. The method will invoke the {@link #close()} on each instance.
+   */
+  public static synchronized void closeAll()
+      throws Persistence.PersistenceException
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Closing all Persistence instances");
+    }
+    for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
+    {
+      Persistence.getInstance(index).close();
     }
   }
 

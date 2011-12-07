@@ -35,6 +35,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -108,8 +109,6 @@ public final class DbPersistence
    */
   public static String[] TABLE_NAMES = new String[] { DbPersistence.DEFAULT_TABLE_NAME };
 
-  private static int threadCount = 1;
-
   /**
    * The number of simultaneous available threads in the pool.
    */
@@ -117,24 +116,33 @@ public final class DbPersistence
 
   private final static ThreadPoolExecutor THREAD_POOL = new ThreadPoolExecutor(1, DbPersistence.THREAD_POOL_DEFAULT_SIZE, 5l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory()
   {
+
+    private final AtomicInteger threadCount = new AtomicInteger(1);
+
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
-      thread.setName("droid4me.ext-dbpersistence-thread #" + DbPersistence.threadCount++);
+      thread.setName("droid4me-dbpersistence-thread #" + threadCount.getAndIncrement());
       return thread;
     }
+
   });
 
   /**
    * In order to put in common the databases connections.
    */
-  private static Map<String, SQLiteDatabase> writeableDbs = new HashMap<String, SQLiteDatabase>();
+  private static Map<String, SQLiteDatabase> writeableDatabases = new HashMap<String, SQLiteDatabase>();
+
+  /**
+   * In order to put in common the databases connections.
+   */
+  private static Map<String, Integer> writeableDatabaseCounts = new HashMap<String, Integer>();
 
   private final String fileName;
 
   private final String tableName;
 
-  private SQLiteDatabase writeableDb;
+  private SQLiteDatabase writeableDatabase;
 
   /**
    * Defined in order to make the {@link #readInputStream(String)} method more optimized when computing its underlying SQL query.
@@ -169,7 +177,11 @@ public final class DbPersistence
   @Override
   public synchronized void initialize()
   {
-    final String dbFilePath = getStorageDirectoryPath() + "/" + fileName;
+    final String dbFilePath = computeFilePath();
+    if (log.isDebugEnabled())
+    {
+      log.debug("Initializing the database located at '" + dbFilePath + "' for the table '" + tableName + "'");
+    }
     try
     {
       DbPersistence.ensureDatabaseAvailability(dbFilePath, tableName);
@@ -191,14 +203,14 @@ public final class DbPersistence
       {
         if (log.isErrorEnabled())
         {
-          log.error("Cannot properly initialize the cache database: no database caching is available!", otherException);
+          log.error("Cannot properly initialize the database: no database is available!", otherException);
         }
         return;
       }
     }
     try
     {
-      writeableDb = DbPersistence.getDatabase(dbFilePath);
+      writeableDatabase = DbPersistence.obtainDatabase(dbFilePath);
       // Ideally, this compiled statement should be computed here, but when the table is created, it seems that the calling method returns before the
       // work is done.
       // Hence, we perform some lazy instantiation
@@ -216,18 +228,51 @@ public final class DbPersistence
   }
 
   /**
+   * Opens a new database if necessary, and updates the references.
+   * 
+   * <p>
    * This enables to share the database instances when possible.
+   * </p>
    */
-  private static synchronized SQLiteDatabase getDatabase(String filePath)
+  private static synchronized SQLiteDatabase obtainDatabase(String filePath)
   {
-    SQLiteDatabase database = DbPersistence.writeableDbs.get(filePath);
+    SQLiteDatabase database = DbPersistence.writeableDatabases.get(filePath);
+    Integer count = DbPersistence.writeableDatabaseCounts.get(filePath);
     if (database == null)
     {
       database = SQLiteDatabase.openDatabase(filePath, null, SQLiteDatabase.OPEN_READWRITE);
       database.setLockingEnabled(true);
-      DbPersistence.writeableDbs.put(filePath, database);
+      DbPersistence.writeableDatabases.put(filePath, database);
+      count = new Integer(0);
     }
+    DbPersistence.writeableDatabaseCounts.put(filePath, count + 1);
     return database;
+  }
+
+  /**
+   * Closes the shared database if necessary, and updates the references.
+   * 
+   * <p>
+   * This enables to share the database instances when possible.
+   * </p>
+   * 
+   * @return
+   */
+  private static synchronized SQLiteDatabase releaseDatabase(String filePath)
+  {
+    final Integer count = DbPersistence.writeableDatabaseCounts.get(filePath);
+    final Integer newCount = count - 1;
+    if (newCount <= 0)
+    {
+      final SQLiteDatabase database = DbPersistence.writeableDatabases.remove(filePath);
+      DbPersistence.writeableDatabaseCounts.remove(filePath);
+      return database;
+    }
+    else
+    {
+      DbPersistence.writeableDatabaseCounts.put(filePath, newCount);
+      return null;
+    }
   }
 
   private static void ensureDatabaseAvailability(String dbFilePath, String tableName)
@@ -311,7 +356,7 @@ public final class DbPersistence
     Cursor cursor = null;
     try
     {
-      cursor = writeableDb.rawQuery("SELECT " + DbPersistence.CacheColumns.URI + " FROM " + tableName, null);
+      cursor = writeableDatabase.rawQuery("SELECT " + DbPersistence.CacheColumns.URI + " FROM " + tableName, null);
       final List<String> uris = new ArrayList<String>();
       while (cursor.moveToNext() == true)
       {
@@ -341,7 +386,7 @@ public final class DbPersistence
       if (getLastUpdateStreamExistsStatement == null)
       {
         // Lazy instantiation, not totally thread-safe, but a work-around
-        getLastUpdateStreamExistsStatement = writeableDb.compileStatement("SELECT " + DbPersistence.CacheColumns.LAST_UPDATE + " FROM " + tableName + " WHERE " + DbPersistence.CacheColumns.URI + " = ?");
+        getLastUpdateStreamExistsStatement = writeableDatabase.compileStatement("SELECT " + DbPersistence.CacheColumns.LAST_UPDATE + " FROM " + tableName + " WHERE " + DbPersistence.CacheColumns.URI + " = ?");
       }
       getLastUpdateStreamExistsStatement.bindString(1, uri);
       // A single operation is bound to execute, hence no transaction is required
@@ -395,14 +440,14 @@ public final class DbPersistence
      */
     try
     {
-      cursor = writeableDb.rawQuery(readInputStreamQuery, new String[] { uri });
+      cursor = writeableDatabase.rawQuery(readInputStreamQuery, new String[] { uri });
     }
     catch (SQLException exception)
     {
       // Cannot figure out why the first time the database is accessed once it has just been created, an exception is thrown on that query
       // Re-running it, fixes the problem ;(
       // Hence, we silently ignore the previous exception
-      cursor = writeableDb.rawQuery(readInputStreamQuery, new String[] { uri });
+      cursor = writeableDatabase.rawQuery(readInputStreamQuery, new String[] { uri });
     }
     try
     {
@@ -477,23 +522,52 @@ public final class DbPersistence
       return;
     }
     // This is a single operation, no transaction is needed
-    writeableDb.delete(tableName, DbPersistence.CacheColumns.URI + " = '" + uri + "'", null);
+    writeableDatabase.delete(tableName, DbPersistence.CacheColumns.URI + " = '" + uri + "'", null);
   }
 
-  protected void empty()
+  protected void clearInstance()
       throws Persistence.PersistenceException
   {
-    writeableDb.beginTransaction();
+    writeableDatabase.beginTransaction();
     try
     {
       // We delete all the table rows
-      writeableDb.delete(tableName, null, null);
-      writeableDb.setTransactionSuccessful();
+      // For the explanation about the "1" argument, see
+      // http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html#delete(java.lang.String, java.lang.String,
+      // java.lang.String[])
+      writeableDatabase.delete(tableName, "1", null);
+      writeableDatabase.setTransactionSuccessful();
     }
     finally
     {
-      writeableDb.endTransaction();
+      writeableDatabase.endTransaction();
     }
+  }
+
+  /**
+   * This closes the database connection if possible, i.e. when no more instance points to the same database file.
+   */
+  @Override
+  protected void closeInstance()
+      throws Persistence.PersistenceException
+  {
+    // TODO: we should wait for all operations to end!
+    final SQLiteDatabase database = DbPersistence.releaseDatabase(computeFilePath());
+    if (writeInputStreamExistsStatement != null)
+    {
+      writeInputStreamExistsStatement.close();
+      writeInputStreamExistsStatement = null;
+    }
+    if (getLastUpdateStreamExistsStatement != null)
+    {
+      getLastUpdateStreamExistsStatement.close();
+      getLastUpdateStreamExistsStatement = null;
+    }
+    if (database != null)
+    {
+      database.close();
+    }
+    writeableDatabase = null;
   }
 
   private Business.InputAtom internalCacheInputStream(final String uri, Business.InputAtom inputAtom, final boolean asynchronous)
@@ -608,7 +682,7 @@ public final class DbPersistence
         if (writeInputStreamExistsStatement == null)
         {
           // Lazy instantiation, not totally thread-safe, but a work-around
-          writeInputStreamExistsStatement = writeableDb.compileStatement("SELECT COUNT(1) FROM " + tableName + " WHERE " + DbPersistence.CacheColumns.URI + " = ?");
+          writeInputStreamExistsStatement = writeableDatabase.compileStatement("SELECT COUNT(1) FROM " + tableName + " WHERE " + DbPersistence.CacheColumns.URI + " = ?");
         }
         writeInputStreamExistsStatement.bindString(1, uri);
         result = writeInputStreamExistsStatement.simpleQueryForLong();
@@ -646,11 +720,11 @@ public final class DbPersistence
       }
       if (insert == true)
       {
-        writeableDb.insert(tableName, null, contentValues);
+        writeableDatabase.insert(tableName, null, contentValues);
       }
       else
       {
-        writeableDb.update(tableName, contentValues, DbPersistence.CacheColumns.URI + " = '" + uri + "'", null);
+        writeableDatabase.update(tableName, contentValues, DbPersistence.CacheColumns.URI + " = '" + uri + "'", null);
       }
     }
     catch (IOException exception)
@@ -661,6 +735,11 @@ public final class DbPersistence
     {
       log.debug("Wrote into the table '" + tableName + "' regarding the URI '" + uri + "' in " + (System.currentTimeMillis() - start) + " ms");
     }
+  }
+
+  private String computeFilePath()
+  {
+    return getStorageDirectoryPath() + "/" + fileName;
   }
 
 }
