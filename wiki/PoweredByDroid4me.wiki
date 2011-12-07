@@ -19,6 +19,7 @@ The best ambassadors of droid4me are the Android applications which already inte
  * [http://market.android.com/details?id=com.smartnsoft.slapps Slapps]
  * [http://market.android.com/details?id=com.smartnsoft.smarties Smarties]
  * [http://market.android.com/details?id=com.smartnsoft.pronofoot PronoFoot]
+ * [http://market.android.com/details?id=com.familywall FamilyWall]
  * [http://market.android.com/details?id=com.keldelice Keldelice]
  * [http://market.android.com/details?id=com.smartnsoft.metro Metro]
  * [http://market.android.com/details?id=com.tellmewhere Dismoioù v1]
