@@ -342,7 +342,7 @@ public final class FilePersistence
     return cacheInputStream(uri, inputAtom, false).inputStream;
   }
 
-  protected void empty()
+  protected void clearInstance()
       throws Persistence.PersistenceException
   {
     final Enumeration<?> propertyNames = properties.propertyNames();
@@ -354,6 +354,15 @@ public final class FilePersistence
     }
     getIndexFile().delete();
     properties.clear();
+  }
+
+  @Override
+  protected void closeInstance()
+      throws Persistence.PersistenceException
+  {
+    properties = null;
+    indexFile = null;
+    fileIndexNeedsSaving = false;
   }
 
   // TODO: think of making the processing in another thread
