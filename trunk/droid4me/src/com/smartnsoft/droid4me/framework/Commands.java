@@ -71,42 +71,6 @@ public interface Commands
   }
 
   /**
-   * A command which is not tied to any business object.
-   */
-  public static abstract class StaticExecutable
-      implements Executable<Void>
-  {
-
-    public abstract void run();
-
-    public abstract boolean isEnabled();
-
-    /**
-     * @return {@code true} by default
-     */
-    public boolean isVisible()
-    {
-      return true;
-    }
-
-    public final boolean isVisible(Void businessObject)
-    {
-      return isVisible();
-    }
-
-    public final void run(Void businessObject)
-    {
-      run();
-    }
-
-    public final boolean isEnabled(Void businessObject)
-    {
-      return isEnabled();
-    }
-
-  }
-
-  /**
    * A visible command.
    * 
    * @param <BusinessObjectClass>
@@ -165,6 +129,42 @@ public interface Commands
   }
 
   /**
+   * A command which is not tied to any business object.
+   */
+  public static abstract class StaticExecutable
+      implements Executable<Void>
+  {
+
+    public abstract void run();
+
+    public abstract boolean isEnabled();
+
+    /**
+     * @return {@code true} by default
+     */
+    public boolean isVisible()
+    {
+      return true;
+    }
+
+    public final boolean isVisible(Void businessObject)
+    {
+      return isVisible();
+    }
+
+    public final void run(Void businessObject)
+    {
+      run();
+    }
+
+    public final boolean isEnabled(Void businessObject)
+    {
+      return isEnabled();
+    }
+
+  }
+
+  /**
    * A static enabled command.
    */
   public static abstract class StaticEnabledExecutable
@@ -172,6 +172,22 @@ public interface Commands
   {
 
     public final boolean isEnabled()
+    {
+      return true;
+    }
+
+  }
+
+  /**
+   * A static visible command.
+   * 
+   * @since 2011.12.07
+   */
+  public static abstract class StaticVisibleExecutable
+      extends StaticExecutable
+  {
+
+    public final boolean isVisible()
     {
       return true;
     }
