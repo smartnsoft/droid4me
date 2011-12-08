@@ -1,16 +1,19 @@
 package com.smartnsoft.droid4me.cache.test;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
 import junit.framework.Assert;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.smartnsoft.droid4me.bo.Business.InputAtom;
 import com.smartnsoft.droid4me.cache.FilePersistence;
+import com.smartnsoft.droid4me.cache.Persistence;
 import com.smartnsoft.droid4me.test.BasisTests;
 import com.smartnsoft.droid4me.ws.WebServiceCaller;
 
@@ -30,7 +33,43 @@ public final class Tests
     super.setup();
     persistence = new FilePersistence(getTemporaryDirectory().getPath(), 0);
     persistence.initialize();
+  }
+
+  @After
+  public void tearDown()
+  {
     persistence.clear();
+    persistence.close();
+  }
+
+  @Test
+  public void lazyInitialization()
+      throws IOException
+  {
+    final File directory = new File(getTemporaryDirectory(), "other");
+    final Persistence aNewPersistence = new FilePersistence(directory.getPath(), 0);
+    try
+    {
+      Assert.assertEquals("The persistence instance should not be initialized", false, aNewPersistence.isInitialized());
+      aNewPersistence.getUris();
+      Assert.assertEquals("The persistence instance should now be initialized", true, aNewPersistence.isInitialized());
+    }
+    finally
+    {
+      aNewPersistence.clear();
+      aNewPersistence.close();
+    }
+  }
+
+  @Test
+  public void closeAndReinitialize()
+      throws IOException
+  {
+    Assert.assertEquals("The persistence instance should now be initialized", true, persistence.isInitialized());
+    persistence.close();
+    Assert.assertEquals("The persistence instance should not be initialized", false, persistence.isInitialized());
+    persistence.getUris();
+    Assert.assertEquals("The persistence instance should now be initialized", true, persistence.isInitialized());
   }
 
   @Test
