@@ -352,6 +352,7 @@ public final class DbPersistence
 
   @Override
   public List<String> getUris()
+      throws Persistence.PersistenceException
   {
     Cursor cursor = null;
     try
@@ -374,7 +375,9 @@ public final class DbPersistence
     }
   }
 
+  @Override
   public Date getLastUpdate(String uri)
+      throws Persistence.PersistenceException
   {
     if (storageBackendAvailable == false)
     {

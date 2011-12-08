@@ -26,12 +26,13 @@ import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.log.Logger;
@@ -222,78 +223,6 @@ public abstract class Persistence
   protected final Set<String> beingProcessed = new HashSet<String>();
 
   /**
-   * Equivalent to calling {@link #getInstance(0)}.
-   */
-  public static Persistence getInstance()
-  {
-    return Persistence.getInstance(0);
-  }
-
-  /**
-   * Enables to access the various persistence instances. The number of instantiated occurrences is defined by the {@link Persistence#INSTANCES_COUNT}
-   * variable, which must have been set beforehand.
-   * 
-   * <p>
-   * This will cause the {@link Persistence#initialize()} method to be invoked for every instance.
-   * </p>
-   * 
-   * <p>
-   * Note that the instantiation is lazy.
-   * </p>
-   * 
-   * @throws Persistence.PersistenceException
-   *           in case a problem occurred while initializing the persistence
-   */
-  // We accept the "out-of-order writes" case
-  @SuppressWarnings("unchecked")
-  public static Persistence getInstance(int position)
-  {
-    if (Persistence.instances == null)
-    {
-      synchronized (Persistence.class)
-      {
-        if (Persistence.instances == null)
-        {
-          if (Persistence.IMPLEMENTATION_FQN == null)
-          {
-            throw new Persistence.PersistenceException("The persistence implementation class has not been set!");
-          }
-          try
-          {
-            // We do that way, because the Persistence initialization may be long, and we want the "instances" attribute to be atomic
-            final Class<? extends Persistence> implementationClass = (Class<? extends Persistence>) Class.forName(Persistence.IMPLEMENTATION_FQN);
-            final Persistence[] newInstances = (Persistence[]) Array.newInstance(implementationClass, Persistence.INSTANCES_COUNT);
-            final Constructor<? extends Persistence> constructor = implementationClass.getDeclaredConstructor(String.class, int.class);
-            for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
-            {
-              newInstances[index] = constructor.newInstance(Persistence.CACHE_DIRECTORY_PATHS[index], index);
-              newInstances[index].initialize();
-            }
-            // We only assign the instances class variable here, once all instances have actually been created
-            Persistence.instances = newInstances;
-          }
-          catch (Exception exception)
-          {
-            if (log.isFatalEnabled())
-            {
-              log.fatal("Cannot instantiate properly the persistence instances", exception);
-            }
-            throw new Persistence.PersistenceException("Cannot instantiate properly the persistence instances", exception);
-          }
-        }
-      }
-    }
-    return Persistence.instances[position];
-  }
-
-  /**
-   * Enables to access all the stored URIs.
-   * 
-   * @return the list of the stored URIs stored in the persistence instance. The ordering is not guaranteed to be stable
-   */
-  public abstract List<String> getUris();
-
-  /**
    * @param outputStream
    *          it is closed by this method
    */
@@ -395,6 +324,71 @@ public abstract class Persistence
   }
 
   /**
+   * Equivalent to calling {@link #getInstance(0)}.
+   */
+  public static Persistence getInstance()
+  {
+    return Persistence.getInstance(0);
+  }
+
+  /**
+   * Enables to access the various persistence instances. The number of instantiated occurrences is defined by the {@link Persistence#INSTANCES_COUNT}
+   * variable, which must have been set beforehand.
+   * 
+   * <p>
+   * This will cause the {@link Persistence#initialize()} method to be invoked for every instance.
+   * </p>
+   * 
+   * <p>
+   * Note that the instantiation is lazy.
+   * </p>
+   * 
+   * @throws Persistence.PersistenceException
+   *           in case a problem occurred while initializing the persistence
+   */
+  // We accept the "out-of-order writes" case
+  @SuppressWarnings("unchecked")
+  public static Persistence getInstance(int position)
+  {
+    if (Persistence.instances == null)
+    {
+      synchronized (Persistence.class)
+      {
+        if (Persistence.instances == null)
+        {
+          if (Persistence.IMPLEMENTATION_FQN == null)
+          {
+            throw new Persistence.PersistenceException("The persistence implementation class has not been set!");
+          }
+          try
+          {
+            // We do that way, because the Persistence initialization may be long, and we want the "instances" attribute to be atomic
+            final Class<? extends Persistence> implementationClass = (Class<? extends Persistence>) Class.forName(Persistence.IMPLEMENTATION_FQN);
+            final Persistence[] newInstances = (Persistence[]) Array.newInstance(implementationClass, Persistence.INSTANCES_COUNT);
+            final Constructor<? extends Persistence> constructor = implementationClass.getDeclaredConstructor(String.class, int.class);
+            for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
+            {
+              newInstances[index] = constructor.newInstance(Persistence.CACHE_DIRECTORY_PATHS[index], index);
+              newInstances[index].initialize();
+            }
+            // We only assign the instances class variable here, once all instances have actually been created
+            Persistence.instances = newInstances;
+          }
+          catch (Exception exception)
+          {
+            if (log.isFatalEnabled())
+            {
+              log.fatal("Cannot instantiate properly the persistence instances", exception);
+            }
+            throw new Persistence.PersistenceException("Cannot instantiate properly the persistence instances", exception);
+          }
+        }
+      }
+    }
+    return Persistence.instances[position];
+  }
+
+  /**
    * The unique constructor.
    * 
    * @param storageDirectoryPath
@@ -416,6 +410,26 @@ public abstract class Persistence
    * </p>
    */
   public abstract void initialize();
+
+  /**
+   * Enables to access all the stored URIs. Each persistent entry is represented by a a local URI, and this method returns all of them.
+   * 
+   * @return the list of the stored URIs stored in the persistence instance. The ordering is not guaranteed to be stable
+   * @throws Persistence.PersistenceException
+   *           in case an error occurred while computing the URIs
+   */
+  public abstract List<String> getUris()
+      throws Persistence.PersistenceException;
+
+  /**
+   * Indicates the latest update timestamp corresponding to an URI persistent entry.
+   * 
+   * @return the date when the underlying persistent entry has been updated ; {@code null} if no persistent entry exists for the provided URI
+   * @throws Persistence.PersistenceException
+   *           in case an error occurred while processing the request
+   */
+  public abstract Date getLastUpdate(String uri)
+      throws Persistence.PersistenceException;
 
   /**
    * Is responsible for extracting an input stream from the persistence related to the provided URI.
@@ -452,8 +466,7 @@ public abstract class Persistence
    * Once called, the persistence storage will be emptied, but the instance can keep on being used as is.
    * </p>
    * 
-   * @throws if
-   *           any problem occurs while emptying the persistence
+   * @throws if any problem occurs while emptying the persistence
    * @see #clear()
    */
   protected abstract void clearInstance()
@@ -466,8 +479,7 @@ public abstract class Persistence
    * Once called, the persistence will need to be {@link #initialize() initialized again}, before being used.
    * </p>
    * 
-   * @throws if
-   *           any problem occurs while closing the persistence
+   * @throws if any problem occurs while closing the persistence
    * @see #close()
    */
   protected abstract void closeInstance()
@@ -489,8 +501,7 @@ public abstract class Persistence
    * Once cleared, the current instance can be used as is.
    * </p>
    * 
-   * @throws if
-   *           any problem occurs while clearing the persistence
+   * @throws if any problem occurs while clearing the persistence
    * @see #clearInstance()
    * @see #close()
    * @see #clearAll()

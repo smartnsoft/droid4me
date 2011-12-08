@@ -189,11 +189,14 @@ public final class FilePersistence
 
   @Override
   public List<String> getUris()
+      throws Persistence.PersistenceException
   {
     return uriUsages.getUris();
   }
 
+  @Override
   public Date getLastUpdate(String uri)
+      throws Persistence.PersistenceException
   {
     if (storageBackendAvailable == false)
     {

@@ -72,11 +72,14 @@ public class NullPersistence
 
   @Override
   public List<String> getUris()
+      throws Persistence.PersistenceException
   {
     return null;
   }
 
+  @Override
   public Date getLastUpdate(String uri)
+      throws Persistence.PersistenceException
   {
     return null;
   }
