@@ -173,9 +173,9 @@ public final class DbPersistence
         " = ?").toString();
   }
 
-  // TODO: think of minimizing this start-up process
   @Override
-  public synchronized void initialize()
+  protected void initializeInstance()
+      throws Persistence.PersistenceException
   {
     final String dbFilePath = computeFilePath();
     if (log.isDebugEnabled())
@@ -205,7 +205,7 @@ public final class DbPersistence
         {
           log.error("Cannot properly initialize the database: no database is available!", otherException);
         }
-        return;
+        throw new Persistence.PersistenceException("Cannot initialize properly", exception);
       }
     }
     try
@@ -216,7 +216,6 @@ public final class DbPersistence
       // Hence, we perform some lazy instantiation
       // writeInputStreamExistsStatement = writeableDb.compileStatement("SELECT COUNT(1) FROM " + tableName + " WHERE " +
       // DbPersistence.CacheColumns.URI + " = ?");
-      storageBackendAvailable = true;
     }
     catch (SQLiteException exception)
     {
@@ -224,7 +223,9 @@ public final class DbPersistence
       {
         log.error("Cannot properly open the cache database: no database caching is available!", exception);
       }
+      throw new Persistence.PersistenceException("Cannot initialize properly", exception);
     }
+    storageBackendAvailable = true;
   }
 
   /**
@@ -351,7 +352,7 @@ public final class DbPersistence
   }
 
   @Override
-  public List<String> getUris()
+  protected List<String> getUrisInstance()
       throws Persistence.PersistenceException
   {
     Cursor cursor = null;
@@ -376,7 +377,7 @@ public final class DbPersistence
   }
 
   @Override
-  public Date getLastUpdate(String uri)
+  public Date getLastUpdateInstance(String uri)
       throws Persistence.PersistenceException
   {
     if (storageBackendAvailable == false)
@@ -407,13 +408,7 @@ public final class DbPersistence
   }
 
   @Override
-  public Business.InputAtom extractInputStream(String uri)
-      throws Persistence.PersistenceException
-  {
-    return readInputStream(uri);
-  }
-
-  public Business.InputAtom readInputStream(String uri)
+  protected Business.InputAtom readInputStreamInstance(String uri)
       throws Persistence.PersistenceException
   {
     if (storageBackendAvailable == false)
@@ -502,19 +497,22 @@ public final class DbPersistence
   }
 
   @Override
-  public Business.InputAtom flushInputStream(String uri, Business.InputAtom inputAtom)
+  protected Business.InputAtom flushInputStreamInstance(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException
   {
     return internalCacheInputStream(uri, inputAtom, false);
   }
 
-  public InputStream writeInputStream(String uri, Business.InputAtom inputAtom)
+  @Override
+  protected InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException
   {
     return internalCacheInputStream(uri, inputAtom, true).inputStream;
   }
 
-  public void remove(String uri)
+  @Override
+  protected void removeInstance(String uri)
+      throws Persistence.PersistenceException
   {
     if (log.isDebugEnabled())
     {

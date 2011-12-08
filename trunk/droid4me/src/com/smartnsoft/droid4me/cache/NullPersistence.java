@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
+import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.bo.Business.InputAtom;
 
 /**
@@ -48,7 +49,8 @@ public class NullPersistence
   }
 
   @Override
-  public void initialize()
+  protected void initializeInstance()
+      throws Persistence.PersistenceException
   {
     storageBackendAvailable = true;
   }
@@ -65,46 +67,42 @@ public class NullPersistence
   {
   }
 
-  public void remove(String uri)
+  @Override
+  protected void removeInstance(String uri)
       throws Persistence.PersistenceException
   {
   }
 
   @Override
-  public List<String> getUris()
-      throws Persistence.PersistenceException
-  {
-    return null;
-  }
-
-  @Override
-  public Date getLastUpdate(String uri)
+  protected List<String> getUrisInstance()
       throws Persistence.PersistenceException
   {
     return null;
   }
 
   @Override
-  public InputAtom flushInputStream(String uri, InputAtom inputAtom)
+  public Date getLastUpdateInstance(String uri)
+      throws Persistence.PersistenceException
+  {
+    return null;
+  }
+
+  @Override
+  protected Business.InputAtom flushInputStreamInstance(String uri, InputAtom inputAtom)
       throws Persistence.PersistenceException
   {
     return inputAtom;
   }
 
-  public InputStream writeInputStream(String uri, InputAtom inputAtom)
+  @Override
+  protected InputStream writeInputStreamInstance(String uri, InputAtom inputAtom)
       throws Persistence.PersistenceException
   {
     return inputAtom.inputStream;
   }
 
   @Override
-  public InputAtom extractInputStream(String uri)
-      throws Persistence.PersistenceException
-  {
-    return null;
-  }
-
-  public InputAtom readInputStream(String uri)
+  protected Business.InputAtom readInputStreamInstance(String uri)
       throws Persistence.PersistenceException
   {
     return null;

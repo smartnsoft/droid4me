@@ -68,7 +68,8 @@ public final class FilePersistence
   }
 
   @Override
-  public synchronized void initialize()
+  protected void initializeInstance()
+      throws Persistence.PersistenceException
   {
     properties = new Properties();
     indexFile = new File(getStorageDirectoryPath(), CACHE_INDEX_FILE_NAME);
@@ -81,20 +82,17 @@ public final class FilePersistence
       {
         log.error("The back-end directory '" + storageDirectory.getAbsolutePath() + "' is not available: will not cache the streams");
       }
-      return;
-    }
-    else
-    {
-      storageBackendAvailable = true;
+      throw new Persistence.PersistenceException("Cannot initialize properly: the back-end directory '" + storageDirectory.getAbsolutePath() + "' is not available");
     }
     if (indexFile.exists() == false)
     {
       // There is no index file yet
+      storageBackendAvailable = true;
       return;
     }
     if (log.isInfoEnabled())
     {
-      log.info("Reading the index file '" + indexFile + "'");
+      log.info("Reading the index file '" + indexFile.getAbsolutePath() + "'");
     }
     FileInputStream inputStream = null;
     try
@@ -119,8 +117,9 @@ public final class FilePersistence
     {
       if (log.isErrorEnabled())
       {
-        log.error("Cannot properly read the index file at '" + indexFile + "'", exception);
+        log.error("Cannot properly read the index file at '" + indexFile.getAbsolutePath() + "'", exception);
       }
+      throw new Persistence.PersistenceException("Cannot initialize properly: the index file at '" + indexFile.getAbsolutePath() + "'", exception);
     }
     finally
     {
@@ -136,6 +135,7 @@ public final class FilePersistence
         }
       }
     }
+    storageBackendAvailable = true;
   }
 
   private synchronized void saveIndexFileIfNecessary()
@@ -188,14 +188,14 @@ public final class FilePersistence
   }
 
   @Override
-  public List<String> getUris()
+  protected List<String> getUrisInstance()
       throws Persistence.PersistenceException
   {
     return uriUsages.getUris();
   }
 
   @Override
-  public Date getLastUpdate(String uri)
+  public Date getLastUpdateInstance(String uri)
       throws Persistence.PersistenceException
   {
     if (storageBackendAvailable == false)
@@ -218,13 +218,8 @@ public final class FilePersistence
     }
   }
 
-  public Business.InputAtom extractInputStream(String uri)
-      throws Persistence.PersistenceException
-  {
-    return readInputStream(uri);
-  }
-
-  public Business.InputAtom readInputStream(String uri)
+  @Override
+  protected Business.InputAtom readInputStreamInstance(String uri)
       throws Persistence.PersistenceException
   {
     if (log.isDebugEnabled())
@@ -307,13 +302,15 @@ public final class FilePersistence
   }
 
   @Override
-  public Business.InputAtom flushInputStream(String uri, Business.InputAtom inputAtom)
+  protected Business.InputAtom flushInputStreamInstance(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException
   {
     return cacheInputStream(uri, inputAtom, false);
   }
 
-  public void remove(String uri)
+  @Override
+  protected void removeInstance(String uri)
+      throws Persistence.PersistenceException
   {
     if (log.isDebugEnabled())
     {
@@ -339,7 +336,8 @@ public final class FilePersistence
     }
   }
 
-  public InputStream writeInputStream(String uri, Business.InputAtom inputAtom)
+  @Override
+  protected InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException
   {
     return cacheInputStream(uri, inputAtom, false).inputStream;
