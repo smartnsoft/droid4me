@@ -219,7 +219,7 @@ public abstract class Persistence
   /**
    * Remembers whether the storage back-end is currently available.
    */
-  protected boolean storageBackendAvailable;
+  private boolean storageBackendAvailable;
 
   private final String storageDirectoryPath;
 
@@ -412,6 +412,17 @@ public abstract class Persistence
     this.instanceIndex = instanceIndex;
     this.storageDirectoryPath = storageDirectoryPath;
     uriUsages = new UriUsages();
+  }
+
+  /**
+   * Indicates whether the underlying back-end storage is available.
+   * 
+   * @param storageBackendAvailable
+   *          {@code true} if and only if the back-end storage is available
+   */
+  protected final void setStorageBackendAvailable(boolean storageBackendAvailable)
+  {
+    this.storageBackendAvailable = storageBackendAvailable;
   }
 
   /**
