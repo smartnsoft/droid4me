@@ -87,7 +87,7 @@ public final class FilePersistence
     if (indexFile.exists() == false)
     {
       // There is no index file yet
-      storageBackendAvailable = true;
+      setStorageBackendAvailable(true);
       return;
     }
     if (log.isInfoEnabled())
@@ -135,7 +135,7 @@ public final class FilePersistence
         }
       }
     }
-    storageBackendAvailable = true;
+    setStorageBackendAvailable(true);
   }
 
   private synchronized void saveIndexFileIfNecessary()
@@ -198,11 +198,6 @@ public final class FilePersistence
   public Date getLastUpdateInstance(String uri)
       throws Persistence.PersistenceException
   {
-    if (storageBackendAvailable == false)
-    {
-      return null;
-    }
-
     final Persistence.UriUsage uriUsage;
     synchronized (uriUsages)
     {
@@ -266,16 +261,9 @@ public final class FilePersistence
           log.debug("Reusing the cached data for the URI '" + uri + "', stored in the file '" + uriUsage.storageFilePath + "'");
         }
         rememberUriUsed(uri);
-        if (storageBackendAvailable == true)
-        {
-          final File file = new File(uriUsage.storageFilePath);
-          final long lastModified = file.lastModified();
-          return new Business.InputAtom(new Date(lastModified), new FileInputStream(file));
-        }
-        else
-        {
-          return null;
-        }
+        final File file = new File(uriUsage.storageFilePath);
+        final long lastModified = file.lastModified();
+        return new Business.InputAtom(new Date(lastModified), new FileInputStream(file));
       }
       catch (FileNotFoundException exception)
       {
@@ -315,10 +303,6 @@ public final class FilePersistence
     if (log.isDebugEnabled())
     {
       log.debug("Removing from the persistence the contents related to the URI '" + uri + "'");
-    }
-    if (storageBackendAvailable == false)
-    {
-      return;
     }
     final Persistence.UriUsage uriUsage;
     synchronized (uriUsages)
@@ -390,24 +374,16 @@ public final class FilePersistence
     }
     try
     {
-      if (storageBackendAvailable == true)
+      final String filePath = computeUriFilePath(uri);
+      if (log.isDebugEnabled())
       {
-        final String filePath = computeUriFilePath(uri);
-        if (log.isDebugEnabled())
-        {
-          log.debug("Caching the stream for the URI '" + uri + "' to the file '" + filePath + "'");
-        }
-        // We store the contents of the input stream on the SD card
-        final InputStream newInputStream = FilePersistence.storeInputStreamToFile(filePath, inputAtom, closeInput);
-        rememberUriUsed(uri);
-        saveIndexFileIfNecessary();
-        return new Business.InputAtom(new Date(), newInputStream, inputAtom.context);
+        log.debug("Caching the stream for the URI '" + uri + "' to the file '" + filePath + "'");
       }
-      else
-      {
-        // There is no use trying to cache the stream, since the back-end storage is not available
-        return inputAtom;
-      }
+      // We store the contents of the input stream on the SD card
+      final InputStream newInputStream = FilePersistence.storeInputStreamToFile(filePath, inputAtom, closeInput);
+      rememberUriUsed(uri);
+      saveIndexFileIfNecessary();
+      return new Business.InputAtom(new Date(), newInputStream, inputAtom.context);
     }
     finally
     {

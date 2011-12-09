@@ -225,7 +225,7 @@ public final class DbPersistence
       }
       throw new Persistence.PersistenceException("Cannot initialize properly", exception);
     }
-    storageBackendAvailable = true;
+    setStorageBackendAvailable(true);
   }
 
   /**
@@ -380,11 +380,6 @@ public final class DbPersistence
   public Date getLastUpdateInstance(String uri)
       throws Persistence.PersistenceException
   {
-    if (storageBackendAvailable == false)
-    {
-      return null;
-    }
-
     synchronized (getLastUpdateStatementSyncObject)
     {
       if (getLastUpdateStreamExistsStatement == null)
@@ -411,10 +406,6 @@ public final class DbPersistence
   protected Business.InputAtom readInputStreamInstance(String uri)
       throws Persistence.PersistenceException
   {
-    if (storageBackendAvailable == false)
-    {
-      return null;
-    }
     if (log.isDebugEnabled())
     {
       log.debug("Reading from the table '" + tableName + "' the contents related to the URI '" + uri + "'");
@@ -518,10 +509,6 @@ public final class DbPersistence
     {
       log.debug("Removing from the table '" + tableName + "' the contents related to the URI '" + uri + "'");
     }
-    if (storageBackendAvailable == false)
-    {
-      return;
-    }
     // This is a single operation, no transaction is needed
     writeableDatabase.delete(tableName, DbPersistence.CacheColumns.URI + " = '" + uri + "'", null);
   }
@@ -574,10 +561,7 @@ public final class DbPersistence
   private Business.InputAtom internalCacheInputStream(final String uri, Business.InputAtom inputAtom, final boolean asynchronous)
       throws Persistence.PersistenceException
   {
-    if (storageBackendAvailable == false)
-    {
-      return inputAtom;
-    } // We do not allow null URIs
+    // We do not allow null URIs
     if (uri == null)
     {
       if (log.isErrorEnabled())

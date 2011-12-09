@@ -52,7 +52,7 @@ public class NullPersistence
   protected void initializeInstance()
       throws Persistence.PersistenceException
   {
-    storageBackendAvailable = true;
+    setStorageBackendAvailable(true);
   }
 
   @Override
