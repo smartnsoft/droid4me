@@ -31,8 +31,8 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
+import android.widget.LinearLayout.LayoutParams;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
@@ -239,6 +239,9 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   private BusinessObjectClass selectedObject;
 
+  // Just there in order to ensure the consistency of the business objects for the adapter
+  private List<? extends BusinessObjectClass> prevousObjects;
+
   private List<? extends BusinessObjectClass> objects;
 
   private List<? extends BusinessObjectClass> filteredObjects;
@@ -438,6 +441,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   public void onSynchronizeDisplayObjects()
   {
+    prevousObjects = null;
   }
 
   public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
@@ -471,6 +475,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   public void onRetrieveBusinessObjects()
       throws BusinessObjectUnavailableException
   {
+    prevousObjects = objects;
     // We can safely retrieve the business objects
     objects = getForListProvider().retrieveBusinessObjectsList();
 
@@ -533,7 +538,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   public List<? extends BusinessObjectClass> getFilteredObjects()
   {
-    return filteredObjects;
+    return prevousObjects != null ? prevousObjects : filteredObjects;
   }
 
   public Activity getActivity()
