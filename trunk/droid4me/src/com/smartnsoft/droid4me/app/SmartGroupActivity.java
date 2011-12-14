@@ -622,7 +622,7 @@ public abstract class SmartGroupActivity<AggregateClass>
 
   private void businessObjectRetrievalAndResultHandlers()
   {
-    refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), false);
+    refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), true);
     if (stateContainer.actionResultsRetrieved == false)
     {
       onRegisterResultHandlers(stateContainer.compositeActivityResultHandler);

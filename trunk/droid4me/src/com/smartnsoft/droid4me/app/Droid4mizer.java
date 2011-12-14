@@ -551,7 +551,7 @@ public final class Droid4mizer<AggregateClass>
 
   private void businessObjectRetrievalAndResultHandlers()
   {
-    smartableActivity.refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), false);
+    smartableActivity.refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), true);
     if (stateContainer.actionResultsRetrieved == false)
     {
       onRegisterResultHandlers(stateContainer.compositeActivityResultHandler);
