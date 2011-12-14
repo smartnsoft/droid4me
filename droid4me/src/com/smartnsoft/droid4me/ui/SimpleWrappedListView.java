@@ -21,18 +21,18 @@ package com.smartnsoft.droid4me.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.view.GestureDetector;
-import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.GestureDetector.OnGestureListener;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 
 import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
 
@@ -250,34 +250,6 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
   @Override
   protected final void setAdapter()
   {
-    // TODO: remove the duplicated "setOnItemClickListener"
-    listView.setOnItemClickListener(new OnItemClickListener()
-    {
-      public void onItemClick(AdapterView<?> adapterView, View view, int position, long rowId)
-      {
-        if (getListView().isEnabled() == false)
-        {
-          return;
-        }
-        final int actualPosition = position - listView.getHeaderViewsCount();
-        if (actualPosition < 0)
-        {
-          return;
-        }
-        if (actualPosition >= getFilteredObjects().size())
-        {
-          if (log.isErrorEnabled())
-          {
-            log.error("The selected row " + actualPosition + " exceeds the size of the filtered business objetcs list which is " + getFilteredObjects().size());
-          }
-          return;
-        }
-        if (onEventObjectListener != null)
-        {
-          onEventObjectListener.onClickedObject(view, getFilteredObjects().get(actualPosition));
-        }
-      }
-    });
     listView.setOnItemLongClickListener(new OnItemLongClickListener()
     {
       public boolean onItemLongClick(AdapterView<?> adapter, View view, int position, long rowId)
@@ -295,7 +267,6 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
         return false;
       }
     });
-    final OnItemClickListener onItemClickListener = listView.getOnItemClickListener();
     listView.setOnItemClickListener(new OnItemClickListener()
     {
       public void onItemClick(AdapterView<?> adapterView, View view, int position, long id)
@@ -310,7 +281,23 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
           return;
         }
         setSelectedObject(getFilteredObjects().get(actualPosition));
-        onItemClickListener.onItemClick(adapterView, view, position, id);
+
+        if (getListView().isEnabled() == false)
+        {
+          return;
+        }
+        if (actualPosition >= getFilteredObjects().size())
+        {
+          if (log.isErrorEnabled())
+          {
+            log.error("The selected row " + actualPosition + " exceeds the size of the filtered business objetcs list which is " + getFilteredObjects().size());
+          }
+          return;
+        }
+        if (onEventObjectListener != null)
+        {
+          onEventObjectListener.onClickedObject(view, getFilteredObjects().get(actualPosition));
+        }
       }
     });
     listView.setOnItemSelectedListener(new OnItemSelectedListener()
