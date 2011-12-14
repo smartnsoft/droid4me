@@ -330,28 +330,21 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     }
     else
     {
-      // We invoke the method in the GUI thread
-      runOnUiThread(new Runnable()
+      // We call that routine asynchronously in a background thread
+      AppInternals.execute(SmartPreferenceActivity.this, new Runnable()
       {
         public void run()
         {
-          // We call that method asynchronously in a specific thread
-          AppInternals.execute(SmartPreferenceActivity.this, new Runnable()
+          if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
+          {
+            return;
+          }
+          // We are handling the UI, and we need to make sure that this is done through the GUI thread
+          runOnUiThread(new Runnable()
           {
             public void run()
             {
-              if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
-              {
-                return;
-              }
-              // We are handling the UI, and we need to make sure that this is done through the GUI thread
-              runOnUiThread(new Runnable()
-              {
-                public void run()
-                {
-                  onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
-                }
-              });
+              onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
             }
           });
         }
