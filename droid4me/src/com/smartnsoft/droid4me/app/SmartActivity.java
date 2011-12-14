@@ -261,7 +261,7 @@ public abstract class SmartActivity<AggregateClass>
 
   private void businessObjectRetrievalAndResultHandlers()
   {
-    refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), false);
+    refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), true);
     if (stateContainer.actionResultsRetrieved == false)
     {
       onRegisterResultHandlers(stateContainer.compositeActivityResultHandler);
@@ -302,6 +302,7 @@ public abstract class SmartActivity<AggregateClass>
   void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately,
       final boolean businessObjectCountAndSortingUnchanged)
   {
+    log.debug("refreshBusinessObjectsAndDisplayInternal()");
     if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(this, retrieveBusinessObjects, onOver, immediately) == true)
     {
       return;
