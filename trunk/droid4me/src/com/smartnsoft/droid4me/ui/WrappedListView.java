@@ -508,14 +508,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     notifyDataSetChanged(!recomputeFilteredObjects);
   }
 
-  protected void recomputeObjectsAndRefreshDisplay()
-      throws BusinessObjectUnavailableException
-  {
-    onRetrieveBusinessObjects();
-    filterHasChanged(true);
-    getListView().invalidate();
-  }
-
   public void onRetrieveDisplayObjects()
   {
     activityResultHandler = new ActivityResultHandler.Handler();
