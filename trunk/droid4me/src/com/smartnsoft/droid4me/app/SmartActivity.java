@@ -302,7 +302,6 @@ public abstract class SmartActivity<AggregateClass>
   void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately,
       final boolean businessObjectCountAndSortingUnchanged)
   {
-    log.debug("refreshBusinessObjectsAndDisplayInternal()");
     if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(this, retrieveBusinessObjects, onOver, immediately) == true)
     {
       return;
