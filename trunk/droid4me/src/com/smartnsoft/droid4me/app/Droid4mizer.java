@@ -104,6 +104,26 @@ public final class Droid4mizer<AggregateClass>
     return stateContainer.isRefreshingBusinessObjectsAndDisplay();
   }
 
+  /**
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
+   * 
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
+   */
+  public void refreshBusinessObjectsAndDisplay()
+  {
+    refreshBusinessObjectsAndDisplay(true, null, false);
+  }
+
+  /**
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, null, false)}.
+   * 
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
+   */
+  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
+  {
+    refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null, false);
+  }
+
   public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
     if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(activity, retrieveBusinessObjects, onOver, immediately) == true)
