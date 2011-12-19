@@ -53,13 +53,20 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     implements LifeCycle
 {
 
+  /**
+   * Useful when {@link Context#sendBroadcast(android.content.Intent) sending broadcast} which need to indicate the position of a row.
+   */
+  public final static String LIST_VIEW_POSITION = "listViewPosition";
+
   public static interface OnEventObjectListener<BusinessObjectClass>
   {
-    void onSelectedObject(View view, BusinessObjectClass selectedObject);
 
-    void onClickedObject(View view, BusinessObjectClass clickedObject);
+    void onSelectedObject(View view, BusinessObjectClass selectedObject, int position);
 
-    boolean onWipedObject(View view, BusinessObjectClass wipedObject, boolean leftToRight);
+    void onClickedObject(View view, BusinessObjectClass clickedObject, int position);
+
+    boolean onWipedObject(View view, BusinessObjectClass wipedObject, boolean leftToRight, int position);
+
   }
 
   public static class SmartAdapter<BusinessObjectClass, ListViewClass extends ViewGroup, ViewClass extends View>

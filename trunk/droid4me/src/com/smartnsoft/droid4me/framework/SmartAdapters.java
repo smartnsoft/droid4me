@@ -140,22 +140,22 @@ public abstract class SmartAdapters
       return true;
     }
 
-    public final Intent computeIntent(Activity activity, View view, SmartAdapters.ObjectEvent objectEvent)
+    public final Intent computeIntent(Activity activity, View view, SmartAdapters.ObjectEvent objectEvent, int position)
     {
-      return computeIntent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent);
+      return computeIntent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent, position);
     }
 
-    public Intent computeIntent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent)
+    public Intent computeIntent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position)
     {
       return null;
     }
 
-    public final boolean onObjectEvent(Activity activity, View view, SmartAdapters.ObjectEvent objectEvent)
+    public final boolean onObjectEvent(Activity activity, View view, SmartAdapters.ObjectEvent objectEvent, int position)
     {
-      return onObjectEvent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent);
+      return onObjectEvent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent, position);
     }
 
-    public boolean onObjectEvent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent)
+    public boolean onObjectEvent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position)
     {
       return false;
     }
