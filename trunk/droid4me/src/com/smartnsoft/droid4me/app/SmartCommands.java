@@ -316,8 +316,8 @@ public final class SmartCommands
     protected final String warningDisplayMessage;
 
     /**
-     * Same as {@link SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)} with the last parameter equal to
-     * {@code context.getString(warningDisplayMessageResourceId)}.
+     * Same as {@link SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)} with the last parameter equal to {@code
+     * context.getString(warningDisplayMessageResourceId)}.
      */
     public SimpleGuardedCommand(Context context, String warningLogMessage, int warningDisplayMessageResourceId)
     {
@@ -379,11 +379,16 @@ public final class SmartCommands
       extends SmartCommands.SimpleGuardedCommand
   {
 
+    /**
+     * There, in order to understand why the "Dialog.dismiss()" method sometimes makes the application crash.
+     */
+    public static boolean ALWAYS_DISMISS_DIALOG = false;
+
     protected final ProgressDialog progressDialog;
 
     /**
-     * Same as {@link SmartCommands.ProgressDialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, ProgressDialog)} with the
-     * third parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
+     * Same as {@link SmartCommands.ProgressDialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, ProgressDialog)} with the third
+     * parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
      */
     public ProgressDialogGuardedCommand(Context context, String warningLogMessage, int warningDisplayMessageResourceId, ProgressDialog progressDialog)
     {
@@ -393,8 +398,8 @@ public final class SmartCommands
     /**
      * 
      * Creates a new {@link SmartCommands.GuardedCommand}, which will issue a {@link Log#WARN warning log} and then trigger a
-     * {@link SmartCommands.SimpleGuardedCommand}, if an exception occurs during its execution, and eventually {@link DialogInterface#dismiss
-     * dismiss} the provided dialog.
+     * {@link SmartCommands.SimpleGuardedCommand}, if an exception occurs during its execution, and eventually {@link DialogInterface#dismiss dismiss}
+     * the provided dialog.
      * 
      * @param context
      *          the Android context under which the commands is being run
@@ -439,19 +444,30 @@ public final class SmartCommands
       }
       finally
       {
-        // This can be done from any thread, according to the documentation
-        if (progressDialog != null && progressDialog.isShowing() == true)
+        if (SmartCommands.ProgressDialogGuardedCommand.ALWAYS_DISMISS_DIALOG == true)
         {
-          if (getContext() instanceof Activity)
+          // This can be done from any thread, according to the documentation
+          if (progressDialog != null)
           {
-            // We want to prevent from dismissing the ProgressDialog once its creating Activity is already finished, and hence prevent from a crash
-            final Activity activity = (Activity) getContext();
-            if (activity.isFinishing() == true)
-            {
-              return;
-            }
+            progressDialog.dismiss();
           }
-          progressDialog.dismiss();
+        }
+        else
+        {
+          // This can be done from any thread, according to the documentation
+          if (progressDialog != null && progressDialog.isShowing() == true)
+          {
+            if (getContext() instanceof Activity)
+            {
+              // We want to prevent from dismissing the ProgressDialog once its creating Activity is already finished, and hence prevent from a crash
+              final Activity activity = (Activity) getContext();
+              if (activity.isFinishing() == true)
+              {
+                return;
+              }
+            }
+            progressDialog.dismiss();
+          }
         }
       }
     }
