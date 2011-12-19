@@ -93,7 +93,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
             final int positionForView = listView.getPositionForView(listView.getChildAt(index));
             if (positionForView == position)
             {
-              return onEventObjectListener.onWipedObject(listView.getChildAt(index), businessObject, velocityX > 0);
+              return onEventObjectListener.onWipedObject(listView.getChildAt(index), businessObject, velocityX > 0, position);
             }
           }
         }
@@ -296,7 +296,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
         }
         if (onEventObjectListener != null)
         {
-          onEventObjectListener.onClickedObject(view, getFilteredObjects().get(actualPosition));
+          onEventObjectListener.onClickedObject(view, getFilteredObjects().get(actualPosition), actualPosition);
         }
       }
     });
@@ -323,7 +323,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
         setSelectedObject(getFilteredObjects().get(actualPosition));
         if (onEventObjectListener != null)
         {
-          onEventObjectListener.onSelectedObject(view, getSelectedObject());
+          onEventObjectListener.onSelectedObject(view, getSelectedObject(), actualPosition);
         }
         // log.debug("The view at position " + actualPosition + " is now selected, and corresponds to the business object with id '" +
         // forListProvider.getObjectId(getSelectedObject()) + "'");

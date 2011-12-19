@@ -24,9 +24,9 @@ import java.util.List;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.LinearLayout;
 
 import com.smartnsoft.droid4me.framework.DetailsProvider;
@@ -144,22 +144,22 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
     return wrapperLayout;
   }
 
-  public final void onSelectedObject(View view, BusinessObjectClass selectedObject)
+  public final void onSelectedObject(View view, BusinessObjectClass selectedObject, int position)
   {
-    onInternalEvent(view, selectedObject, SmartAdapters.ObjectEvent.Selected);
+    onInternalEvent(view, selectedObject, SmartAdapters.ObjectEvent.Selected, position);
   }
 
-  public final void onClickedObject(View view, BusinessObjectClass clickedObject)
+  public final void onClickedObject(View view, BusinessObjectClass clickedObject, int position)
   {
-    onInternalEvent(view, clickedObject, SmartAdapters.ObjectEvent.Clicked);
+    onInternalEvent(view, clickedObject, SmartAdapters.ObjectEvent.Clicked, position);
   }
 
-  public final boolean onWipedObject(View view, BusinessObjectClass wipedObject, boolean leftToRight)
+  public final boolean onWipedObject(View view, BusinessObjectClass wipedObject, boolean leftToRight, int position)
   {
-    return onInternalEvent(view, wipedObject, leftToRight == true ? SmartAdapters.ObjectEvent.WipedLeftToRight : SmartAdapters.ObjectEvent.WipedRightToLeft);
+    return onInternalEvent(view, wipedObject, leftToRight == true ? SmartAdapters.ObjectEvent.WipedLeftToRight : SmartAdapters.ObjectEvent.WipedRightToLeft, position);
   }
 
-  private boolean onInternalEvent(View view, BusinessObjectClass businessObject, ObjectEvent objectEvent)
+  private boolean onInternalEvent(View view, BusinessObjectClass businessObject, ObjectEvent objectEvent, int position)
   {
     if (wrappedListView.getListView().isEnabled() == true)
     {
@@ -167,7 +167,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
       final Intent intent;
       try
       {
-        intent = computeIntent(view, businessObject, objectEvent);
+        intent = computeIntent(view, businessObject, objectEvent, position);
       }
       catch (Throwable throwable)
       {
@@ -189,7 +189,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
         // We set a protection against a bad usage from the end-user
         try
         {
-          return onObjectEvent(view, businessObject, objectEvent);
+          return onObjectEvent(view, businessObject, objectEvent, position);
         }
         catch (Throwable throwable)
         {
@@ -365,12 +365,12 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   /**
    * Indicates what intent to trigger corresponding to this kind of event.
    */
-  protected abstract Intent computeIntent(View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent);
+  protected abstract Intent computeIntent(View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position);
 
   /**
    * Does nothing by default.
    */
-  protected boolean onObjectEvent(View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent)
+  protected boolean onObjectEvent(View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position)
   {
     return false;
   }

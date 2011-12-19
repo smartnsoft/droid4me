@@ -43,15 +43,15 @@ public abstract class AbstractWrappedSmartListActivity<AggregateClass, ListViewC
 {
 
   @Override
-  protected final Intent computeIntent(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, SmartAdapters.ObjectEvent objectEvent)
+  protected final Intent computeIntent(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, SmartAdapters.ObjectEvent objectEvent, int position)
   {
-    return businessViewWrapper.computeIntent(this, view, objectEvent);
+    return businessViewWrapper.computeIntent(this, view, objectEvent, position);
   }
 
   @Override
-  protected final boolean onObjectEvent(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, SmartAdapters.ObjectEvent objectEvent)
+  protected final boolean onObjectEvent(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, SmartAdapters.ObjectEvent objectEvent, int position)
   {
-    return businessViewWrapper.onObjectEvent(this, view, objectEvent);
+    return businessViewWrapper.onObjectEvent(this, view, objectEvent, position);
   }
 
   @Override
