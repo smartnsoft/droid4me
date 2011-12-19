@@ -18,6 +18,7 @@
 
 package com.smartnsoft.droid4me.app;
 
+import java.io.File;
 import java.io.InterruptedIOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -31,6 +32,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
+import android.os.Debug;
+import android.os.Environment;
 import android.os.Parcelable;
 import android.view.Window;
 import android.widget.Toast;
@@ -195,7 +198,8 @@ public final class ActivityController
    * {@link ActivityController#registerExceptionHandler(ExceptionHandler) registered}.
    * 
    * <p>
-   * The exception handler will be invoked at runtime when an exception is thrown and is not handled.
+   * The exception handler will be invoked at runtime when an exception is thrown and is not handled. You do not need to log the exception, because
+   * the {@link ActivityController} already takes care of logging it, before invoking the current interface methods.
    * </p>
    * 
    * @see ActivityController#registerExceptionHandler(ExceptionHandler)
@@ -212,8 +216,10 @@ public final class ActivityController
      * 
      * @param activity
      *          the activity that issued the exception ; cannot be {@code null}
-     * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to
-     *         investigate for a further exception handler anymore
+     * @param exception
+     *          the exception that has been triggered
+     * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
+     *         for a further exception handler anymore
      */
     boolean onBusinessObjectAvailableException(Activity activity, BusinessObjectUnavailableException exception);
 
@@ -224,7 +230,12 @@ public final class ActivityController
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
      * 
-     * @see #onBusinessObjectAvailableException for the explanation about the return value and the <code>activity</code> parameter
+     * @param activity
+     *          the activity that issued the exception ; cannot be {@code null}
+     * @param exception
+     *          the exception that has been triggered
+     * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
+     *         for a further exception handler anymore
      */
     boolean onServiceException(Activity activity, ServiceException exception);
 
@@ -240,7 +251,12 @@ public final class ActivityController
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
      * 
-     * @see #onBusinessObjectAvailableException for the explanation about the return value and the <code>activity</code> parameter
+     * @param activity
+     *          the activity that issued the exception ; cannot be {@code null}
+     * @param throwable
+     *          the throwable that has been triggered
+     * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
+     *         for a further exception handler anymore
      */
     boolean onOtherException(Activity activity, Throwable throwable);
 
@@ -255,9 +271,12 @@ public final class ActivityController
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
      * 
+     * @param throwable
+     *          the throwable that has been triggered
      * @param context
      *          the context that issued the exception
-     * @see #onBusinessObjectAvailableException for the explanation about the return value
+     * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
+     *         for a further exception handler anymore
      */
     boolean onContextException(Context context, Throwable throwable);
 
@@ -296,6 +315,74 @@ public final class ActivityController
     private final SmartApplication.I18N i18n;
 
     /**
+     * @param throwable
+     *          the exception to investigate
+     * @return {@code true} if and only if the exception results from a connectivity issue by inspecting its causes tree
+     */
+    public static boolean isAConnectivityProblem(Throwable throwable)
+    {
+      return ActivityController.AbstractExceptionHandler.searchForCause(throwable, UnknownHostException.class, SocketException.class,
+          SocketTimeoutException.class, InterruptedIOException.class) != null;
+    }
+
+    /**
+     * @param throwable
+     *          the exception to investigate
+     * @return {@code true} if and only if the exception results from a memory saturation issue (i.e. a {@link OutOfMemoryError} exception) by
+     *         inspecting its causes tree
+     */
+    public static boolean isAMemoryProblem(Throwable throwable)
+    {
+      return ActivityController.AbstractExceptionHandler.searchForCause(throwable, OutOfMemoryError.class) != null;
+    }
+
+    /**
+     * Attempts to find a specific exception in the provided exception by iterating over the causes, starting with the provided exception itself.
+     * 
+     * @param throwable
+     *          the exception to be inspected
+     * @param exceptionClass
+     *          a list of exception classes to look after
+     * @return {@code null} if and only one of the provided exception classes has not been detected ; the matching cause otherwise
+     */
+    @SuppressWarnings( { "unchecked", "rawtypes" })
+    public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
+    {
+      Throwable newThrowable = throwable;
+      Throwable cause = throwable;
+      // We investigate over the whole causes stack
+      while (cause != null)
+      {
+        for (Class<? extends Throwable> anExceptionClass : exceptionClass)
+        {
+          final Class<? extends Throwable> causeClass = cause.getClass();
+          if (causeClass == anExceptionClass)
+          {
+            return cause;
+          }
+          // We scan the cause class hierarchy
+          Class<?> superclass = causeClass.getSuperclass();
+          while (superclass != null)
+          {
+            if (superclass == anExceptionClass)
+            {
+              return cause;
+            }
+            superclass = superclass.getSuperclass();
+          }
+        }
+        // It seems that when there are no more causes, the exception itself is returned as a cause: stupid implementation!
+        if (newThrowable.getCause() == newThrowable)
+        {
+          break;
+        }
+        newThrowable = cause;
+        cause = newThrowable.getCause();
+      }
+      return null;
+    }
+
+    /**
      * @param i18n
      *          will be used at runtime, so as to display i18ned labels in the UI
      */
@@ -306,7 +393,11 @@ public final class ActivityController
 
     public boolean onBusinessObjectAvailableException(final Activity activity, BusinessObjectUnavailableException exception)
     {
-      if (checkConnectivityProblemInCause(activity, exception, ConnectivityUIExperience.DialogRetry) == true)
+      if (handleCommonCauses(activity, exception, ConnectivityUIExperience.DialogRetry) == true)
+      {
+        return true;
+      }
+      else if (handleOtherCauses(activity, exception) == true)
       {
         return true;
       }
@@ -331,7 +422,11 @@ public final class ActivityController
 
     public boolean onServiceException(final Activity activity, ServiceException exception)
     {
-      if (checkConnectivityProblemInCause(activity, exception, ConnectivityUIExperience.Dialog) == true)
+      if (handleCommonCauses(activity, exception, ConnectivityUIExperience.Dialog) == true)
+      {
+        return true;
+      }
+      else if (handleOtherCauses(activity, exception) == true)
       {
         return true;
       }
@@ -356,10 +451,33 @@ public final class ActivityController
 
     public boolean onOtherException(final Activity activity, Throwable throwable)
     {
-      if (checkConnectivityProblemInCause(activity, throwable, ConnectivityUIExperience.Toast) == true)
+      if (handleCommonCauses(activity, throwable, ConnectivityUIExperience.Toast) == true)
       {
         return true;
       }
+      else if (handleOtherCauses(activity, throwable) == true)
+      {
+        return true;
+      }
+      onOtherExceptionFallback(activity, throwable);
+      return true;
+    }
+
+    /**
+     * This method will be invoked by the {@link #onOtherException(Activity, Throwable)} method, as a fallback if the provided throwable has not been
+     * handled neither by the {@link #handleCommonCauses()} nor the {@link #handleOtherCauses()} methods.
+     * 
+     * <p>
+     * A dialog box which reports the problem will be popped up.
+     * </p>
+     * 
+     * @param activity
+     *          the activity that issued the throwable
+     * @param throwable
+     *          the throwable that has been triggered
+     */
+    protected void onOtherExceptionFallback(final Activity activity, Throwable throwable)
+    {
       // We make sure that the dialog is popped from the UI thread
       activity.runOnUiThread(new Runnable()
       {
@@ -376,11 +494,63 @@ public final class ActivityController
               }).setCancelable(false).show();
         }
       });
-      return true;
     }
 
+    /**
+     * @return {@code false} in the current implementation
+     */
     public boolean onContextException(Context context, Throwable throwable)
     {
+      return false;
+    }
+
+    /**
+     * A place holder for handling in a centralized way all kinds of exceptions.
+     * 
+     * <p>
+     * When deriving from the {@link ActivityController.AbstractExceptionHandler} class, this method should be overridden, so as to handle all
+     * application specific exceptions.
+     * </p>
+     * 
+     * @param activity
+     *          the activity which has triggered the exception
+     * @param throwable
+     *          the throwable to analyze
+     * @return {@code true} if and only if the throwable has been handled; the current implementation returns {@code false}
+     */
+    protected boolean handleOtherCauses(Activity activity, Throwable throwable)
+    {
+      return false;
+    }
+
+    /**
+     * Checks for an Internet connectivity issue or a memory saturation issue inside the provided throwable root causes.
+     * 
+     * <p>
+     * This method is especially useful when overriding the {@link ActivityController.AbstractExceptionHandler}, in order to let the framework hunt
+     * for common troubles.
+     * </p>
+     * 
+     * @param activity
+     *          the activity which has triggered the exception
+     * @param throwable
+     *          the throwable to analyze
+     * @param connectivityUIExperience
+     *          indicates what end-user experience to deliver if the problem is an Internet connectivity issue
+     * @return {@code true} if and only if the throwable has been handled
+     * @see #handleConnectivityProblemInCause(Activity, Throwable, ConnectivityUIExperience)
+     * @see #handleMemoryProblemInCause(Activity, Throwable)
+     */
+    protected final boolean handleCommonCauses(final Activity activity, Throwable throwable, ConnectivityUIExperience connectivityUIExperience)
+    {
+      if (handleConnectivityProblemInCause(activity, throwable, connectivityUIExperience) == true)
+      {
+        return true;
+      }
+      else if (handleMemoryProblemInCause(activity, throwable) == true)
+      {
+        return true;
+      }
       return false;
     }
 
@@ -396,10 +566,10 @@ public final class ActivityController
      *          indicates the end-user experience to provide if a connectivity problem has been detected
      * @return {@code true} if and only a connection issue has been detected
      */
-    protected final boolean checkConnectivityProblemInCause(final Activity activity, Throwable throwable,
+    protected final boolean handleConnectivityProblemInCause(final Activity activity, Throwable throwable,
         final ActivityController.AbstractExceptionHandler.ConnectivityUIExperience connectivityUIExperience)
     {
-      if (isAConnectivityProblem(throwable) == true)
+      if (ActivityController.AbstractExceptionHandler.isAConnectivityProblem(throwable) == true)
       {
         activity.runOnUiThread(new Runnable()
         {
@@ -456,59 +626,44 @@ public final class ActivityController
     }
 
     /**
-     * @param throwable
-     *          the exception to investigate
-     * @return {@code true} if and only if the exception results from a connectivity issue by inspecting its causes tree
-     */
-    public static boolean isAConnectivityProblem(Throwable throwable)
-    {
-      return searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class) != null;
-    }
-
-    /**
-     * Attempts to find a specific exception in the provided exception by iterating over the causes, starting with the provided exception itself.
+     * Attempts to find a memory saturation issue in the provided exception by iterating over the causes, and display a dialog box if any.
      * 
+     * <p>
+     * In the exception root cause is a memory saturation issue, a @{link .hprof} dump file will be generated into the directory {@link
+     * Environment.getExternalStorageDirectory()}, and the exact name of this file will be traced.
+     * </p>
+     * 
+     * @param activity
+     *          the activity responsible for triggering the exception
      * @param throwable
      *          the exception to be inspected
-     * @param exceptionClass
-     *          a list of exception classes to look after
-     * @return {@code null} if and only one of the provided exception classes has not been detected ; the matching cause otherwise
+     * @return {@code true} if and only a memory saturation issue has been detected
      */
-    @SuppressWarnings( { "unchecked", "rawtypes" })
-    public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
+    protected final boolean handleMemoryProblemInCause(Activity activity, Throwable throwable)
     {
-      Throwable newThrowable = throwable;
-      Throwable cause = throwable;
-      // We investigate over the whole causes stack
-      while (cause != null)
+      if (ActivityController.AbstractExceptionHandler.isAMemoryProblem(throwable) == true)
       {
-        for (Class<? extends Throwable> anExceptionClass : exceptionClass)
+        // We first run a garbage collection, in the hope to free some memory ;(
+        System.gc();
+        final File file = new File(Environment.getExternalStorageDirectory(), activity.getApplication().getPackageName() + "-outofmemory-" + System.currentTimeMillis() + ".hprof");
+        if (log.isErrorEnabled())
         {
-          final Class<? extends Throwable> causeClass = cause.getClass();
-          if (causeClass == anExceptionClass)
+          log.error("A memory saturation issue has been detected: dumping the memory usage to file '" + file.getAbsolutePath() + "'", throwable);
+        }
+        try
+        {
+          Debug.dumpHprofData(file.getAbsolutePath());
+        }
+        catch (Throwable innerThrowable)
+        {
+          if (log.isErrorEnabled())
           {
-            return cause;
-          }
-          // We scan the cause class hierarchy
-          Class<?> superclass = causeClass.getSuperclass();
-          while (superclass != null)
-          {
-            if (superclass == anExceptionClass)
-            {
-              return cause;
-            }
-            superclass = superclass.getSuperclass();
+            log.error("A problem occurred while attempting to dump the memory usage to file '" + file.getAbsolutePath() + "'", innerThrowable);
           }
         }
-        // It seems that when there are no more causes, the exception itself is returned as a cause: stupid implementation!
-        if (newThrowable.getCause() == newThrowable)
-        {
-          break;
-        }
-        newThrowable = cause;
-        cause = newThrowable.getCause();
+        return true;
       }
-      return null;
+      return false;
     }
 
   }
@@ -636,8 +791,8 @@ public final class ActivityController
    *          the context that originated the exception ; may be {@code null}
    * @param throwable
    *          the reported exception
-   * @return {@code true} if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception
-   *         handled has been set}, returns {@code false}
+   * @return {@code true} if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception handled
+   *         has been set}, returns {@code false}
    */
   public synchronized boolean handleException(Context context, Throwable throwable)
   {

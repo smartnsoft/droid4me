@@ -25,7 +25,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
-import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
@@ -139,60 +138,40 @@ public abstract class SmartApplication
     }
 
     @Override
-    public boolean onOtherException(final Activity activity, Throwable throwable)
+    protected void onOtherExceptionFallback(final Activity activity, Throwable throwable)
     {
-      if (checkConnectivityProblemInCause(activity, throwable, ActivityController.AbstractExceptionHandler.ConnectivityUIExperience.Toast) == true)
+      final boolean proposeToSendLog = getLogReportRecipient() != null;
+      if (proposeToSendLog == false)
       {
-        return true;
+        super.onOtherExceptionFallback(activity, throwable);
       }
-      // We log the exception in that case
-      if (log.isErrorEnabled())
+      else
       {
-        log.error("An unexpected error occured!", throwable);
-      }
-      // We make sure that the dialog is popped from the UI thread
-      activity.runOnUiThread(new Runnable()
-      {
-        public void run()
+        activity.runOnUiThread(new Runnable()
         {
-          final I18N i18n = getI18N();
-          // If the logger recipient is not set, no e-mail submission is proposed
-          final boolean proposeToSendLog = getLogReportRecipient() != null;
-          final Builder alertBuilder = new AlertDialog.Builder(activity).setTitle(getI18N().dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-              getI18N().otherProblemHint);
-          if (proposeToSendLog == true)
+          public void run()
           {
-            alertBuilder.setNegativeButton(android.R.string.cancel, new OnClickListener()
+            final I18N i18n = getI18N();
+            // If the logger recipient is not set, no e-mail submission is proposed
+            new AlertDialog.Builder(activity).setTitle(getI18N().dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
+                getI18N().otherProblemHint).setNegativeButton(android.R.string.cancel, new OnClickListener()
             {
-              public void onClick(DialogInterface dialogInterface, int i)
+              public void onClick(DialogInterface dialogInterface, int which)
               {
                 // We leave the activity, because we cannot go any further
                 activity.finish();
               }
             }).setPositiveButton(i18n.reportButtonLabel, new OnClickListener()
             {
-              public void onClick(DialogInterface dialogInterface, int i)
+              public void onClick(DialogInterface dialogInterface, int which)
               {
                 new SendLogsTask(activity, i18n.retrievingLogProgressMessage, "[" + i18n.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
                     null, null);
               }
-            });
+            }).setCancelable(false).show();
           }
-          else
-          {
-            alertBuilder.setPositiveButton(android.R.string.ok, new OnClickListener()
-            {
-              public void onClick(DialogInterface dialogInterface, int i)
-              {
-                // We leave the activity, because we cannot go any further
-                activity.finish();
-              }
-            });
-          }
-          alertBuilder.setCancelable(false).show();
-        }
-      });
-      return true;
+        });
+      }
     }
 
   }
@@ -306,8 +285,8 @@ public abstract class SmartApplication
   /**
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
    * 
-   * @return an instance which will be invoked on every {@link Activity} life-cycle event. Returns {@code null}, which means that no interception
-   *         is handled by default ; override this method, in order to be notified of activities life-cycle events
+   * @return an instance which will be invoked on every {@link Activity} life-cycle event. Returns {@code null}, which means that no interception is
+   *         handled by default ; override this method, in order to be notified of activities life-cycle events
    */
   protected ActivityController.Interceptor getActivityInterceptor()
   {
