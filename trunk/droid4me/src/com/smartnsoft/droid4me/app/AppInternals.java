@@ -202,28 +202,25 @@ final class AppInternals
      * If the activity implements either the {@link AppPublics.BroadcastListener} or {@link AppPublics.BroadcastListenerProvider} or
      * {@link AppPublics.BroadcastListenersProvider} interface, it will register for listening to some broadcast intents.
      */
-    void registerBroadcastListeners(Activity activity)
+    void registerBroadcastListeners(Activity activity, Object component)
     {
       final AppPublics.BroadcastListener broadcastListener;
-      if (activity instanceof AppPublics.BroadcastListenerProvider)
+      if (component instanceof AppPublics.BroadcastListenerProvider)
       {
-        broadcastListener = ((AppPublics.BroadcastListenerProvider) activity).getBroadcastListener();
+        broadcastListener = ((AppPublics.BroadcastListenerProvider) component).getBroadcastListener();
         if (broadcastListener != null)
         {
           registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
         }
       }
-      else if (activity instanceof AppPublics.BroadcastListener)
+      else if (component instanceof AppPublics.BroadcastListener)
       {
-        broadcastListener = (AppPublics.BroadcastListener) activity;
-        if (broadcastListener != null)
-        {
-          registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
-        }
+        broadcastListener = (AppPublics.BroadcastListener) component;
+        registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
       }
-      else if (activity instanceof AppPublics.BroadcastListenersProvider)
+      else if (component instanceof AppPublics.BroadcastListenersProvider)
       {
-        final AppPublics.BroadcastListenersProvider broadcastListenersProvider = (AppPublics.BroadcastListenersProvider) activity;
+        final AppPublics.BroadcastListenersProvider broadcastListenersProvider = (AppPublics.BroadcastListenersProvider) component;
         final int count = broadcastListenersProvider.getBroadcastListenersCount();
         if (log.isDebugEnabled())
         {

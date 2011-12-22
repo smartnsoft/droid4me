@@ -35,16 +35,21 @@ import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
+import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * The class that should be used when extending a legacy class to support the whole droid4me framework features.
  * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * @param <ComponentClass>
+ *          the instance that will be use to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
+ *          asynchronously}, and to {@linkplain #registerBroadcastListeners(BroadcastListener[]) register broadcast listeners}
  * @author Édouard Mercier
  * @since 2011.06.14
  */
-public final class Droid4mizer<AggregateClass>
+public final class Droid4mizer<AggregateClass, ComponentClass>
     implements SmartableActivity<AggregateClass>, Droid4mizerInterface
 {
 
@@ -52,15 +57,18 @@ public final class Droid4mizer<AggregateClass>
 
   private final Activity activity;
 
+  private final ComponentClass component;
+
   private final SmartableActivity<AggregateClass> smartableActivity;
 
   private final Droid4mizerInterface droid4mizerInterface;
 
   private final AppInternals.StateContainer<AggregateClass> stateContainer = new AppInternals.StateContainer<AggregateClass>();
 
-  public Droid4mizer(Activity activity, SmartableActivity<AggregateClass> smartableActivity, Droid4mizerInterface droid4mizerInterface)
+  public Droid4mizer(Activity activity, SmartableActivity<AggregateClass> smartableActivity, Droid4mizerInterface droid4mizerInterface, ComponentClass component)
   {
     this.activity = activity;
+    this.component = component;
     this.smartableActivity = smartableActivity;
     this.droid4mizerInterface = droid4mizerInterface;
   }
@@ -132,7 +140,7 @@ public final class Droid4mizer<AggregateClass>
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
-    if (!(activity instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
+    if (!(component instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
     {
       if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
       {
@@ -198,13 +206,6 @@ public final class Droid4mizer<AggregateClass>
       log.debug("Droid4mizer::onCreate");
     }
 
-    // TO COME
-    // AppPublics.Aggregator aggregator = onRetrieveAggregator();
-    // if (aggregator == null)
-    // {
-    // aggregator = new AppPublics.Aggregator(this);
-    // }
-
     ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     superMethod.run();
     if (ActivityController.getInstance().needsRedirection(activity) == true)
@@ -228,13 +229,11 @@ public final class Droid4mizer<AggregateClass>
       onActuallyCreated();
       ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
-    stateContainer.registerBroadcastListeners(activity);
+    stateContainer.registerBroadcastListeners(activity, component);
 
     stateContainer.create(activity);
     droid4mizerInterface.onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
-    // TO COME
-    // aggregator.onRetrieveDisplayObjects();
     try
     {
       onRetrieveDisplayObjects();
