@@ -164,7 +164,7 @@ public abstract class SmartActivity<AggregateClass>
       onActuallyCreated();
       ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
-    stateContainer.registerBroadcastListeners(this);
+    stateContainer.registerBroadcastListeners(this, this);
 
     stateContainer.create(getApplicationContext());
     onBeforeRetrievingDisplayObjects();
