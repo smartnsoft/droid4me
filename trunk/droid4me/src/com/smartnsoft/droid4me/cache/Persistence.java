@@ -517,7 +517,7 @@ public abstract class Persistence
       throws Persistence.PersistenceException
   {
     checkAndInitializeIfNecessary();
-    return getLastUpdate(uri);
+    return getLastUpdateInstance(uri);
   }
 
   /**
