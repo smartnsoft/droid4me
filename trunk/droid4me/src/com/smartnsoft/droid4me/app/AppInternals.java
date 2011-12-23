@@ -167,6 +167,15 @@ final class AppInternals
       return firstLifeCycle;
     }
 
+    /**
+     * @return {@code true} if and only if the underlying {@link Activity} life-cycle is between the {@link Activity#onResume()} and
+     *         {@link Activity#onPause()} methods
+     */
+    final boolean isInteracting()
+    {
+      return isInteracting;
+    }
+
     synchronized SharedPreferences getPreferences(Context applicationContext)
     {
       if (preferences == null)
