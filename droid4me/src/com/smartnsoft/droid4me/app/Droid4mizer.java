@@ -35,8 +35,8 @@ import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
-import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
+import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 
 /**
  * The class that should be used when extending a legacy class to support the whole droid4me framework features.
@@ -180,6 +180,11 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   public final boolean isFirstLifeCycle()
   {
     return stateContainer.isFirstLifeCycle();
+  }
+
+  public final boolean isInteracting()
+  {
+    return stateContainer.isInteracting();
   }
 
   public void onActuallyCreated()

@@ -91,15 +91,24 @@ public final class AppPublics
   public interface LifeCyclePublic
   {
 
-    // TO COME
-    // AppPublics.Aggregator onRetrieveAggregator();
-
     /**
-     * Is not invoked by the framework, and provides information about the current entity life cycle.
+     * Provides information about the current entity life cycle.
      * 
      * @return {@code true} if and only if the entity life cycle is the first time to execute during its container life
      */
     boolean isFirstLifeCycle();
+
+    /**
+     * Provides information about the current entity life cycle.
+     * 
+     * <p>
+     * It is very handy when it comes to know whether the end-user can interact with the underlying activity.
+     * </p>
+     * 
+     * @return {@code true} if and only if the underlying {@link Activity} life-cycle is between the {@link Activity#onResume()} and
+     *         {@link Activity#onPause()} methods
+     */
+    boolean isInteracting();
 
     /**
      * Enables to know how many times the {@link LifeCycle#onSynchronizeDisplayObjects()} method has been invoked, which may be useful when you do not
@@ -122,91 +131,6 @@ public final class AppPublics
     boolean isRefreshingBusinessObjectsAndDisplay();
 
   }
-
-  // /**
-  // * @since 2011.03.04
-  // */
-  // TO COME
-  // public final static class Aggregator
-  // implements LifeCycle
-  // {
-  //
-  // static interface ProblemHandler
-  // {
-  //
-  // void onProblem(LifeCycle aggregate, Throwable throwable, boolean fromUIThread);
-  //
-  // }
-  //
-  // // private AppPublics.Aggregator.ProblemHandler handler;
-  //
-  // private final List<LifeCycle> aggregates = new ArrayList<LifeCycle>();
-  //
-  // public Aggregator()
-  // {
-  // }
-  //
-  // public Aggregator(LifeCycle aggregate)
-  // {
-  // aggregates.add(aggregate);
-  // }
-  //
-  // public AppPublics.Aggregator append(LifeCycle aggregate)
-  // {
-  // aggregates.add(aggregate);
-  // return this;
-  // }
-  //
-  // public void onRetrieveDisplayObjects()
-  // {
-  // // for (LifeCycle aggregate : aggregates)
-  // // {
-  // // try
-  // // {
-  // // aggregate.onRetrieveDisplayObjects();
-  // // }
-  // // catch (Throwable throwable)
-  // // {
-  // // handler.onProblem(aggregate, throwable, true);
-  // // stateContainer.stopHandling();
-  // // onException(throwable, true);
-  // // return;
-  // // }
-  // // }
-  // }
-  //
-  // public void onRetrieveBusinessObjects()
-  // throws BusinessObjectUnavailableException
-  // {
-  // // TODO Auto-generated method stub
-  //
-  // }
-  //
-  // public void onBusinessObjectsRetrieved()
-  // {
-  // // TODO Auto-generated method stub
-  //
-  // }
-  //
-  // public void onFulfillDisplayObjects()
-  // {
-  // // TODO Auto-generated method stub
-  //
-  // }
-  //
-  // public void onSynchronizeDisplayObjects()
-  // {
-  // // TODO Auto-generated method stub
-  //
-  // }
-  //
-  // public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
-  // {
-  // // TODO Auto-generated method stub
-  //
-  // }
-  //
-  // }
 
   /**
    * Indicates what kind of {@link Intent} are being listened to, and how to handle an intent.
@@ -538,7 +462,7 @@ public final class AppPublics
      *          allowed to be {@code null}
      * @return {@code true} if the intent has been handled ; {@code false} otherwise
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings( { "unchecked", "rawtypes" })
     public boolean onSelection(Intent intent, MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
     {
       if (intent.getAction().equals(AppPublics.MultiSelectionHandler.ACTION_SELECTION) == false)

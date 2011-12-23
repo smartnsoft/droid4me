@@ -91,6 +91,11 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     return stateContainer.isFirstLifeCycle();
   }
 
+  public final boolean isInteracting()
+  {
+    return stateContainer.isInteracting();
+  }
+
   public final int getOnSynchronizeDisplayObjectsCount()
   {
     return stateContainer.getOnSynchronizeDisplayObjectsCount();
