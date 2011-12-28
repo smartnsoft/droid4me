@@ -24,9 +24,9 @@ import java.util.List;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.LinearLayout;
 
 import com.smartnsoft.droid4me.framework.DetailsProvider;
@@ -156,7 +156,8 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
 
   public final boolean onWipedObject(View view, BusinessObjectClass wipedObject, boolean leftToRight, int position)
   {
-    return onInternalEvent(view, wipedObject, leftToRight == true ? SmartAdapters.ObjectEvent.WipedLeftToRight : SmartAdapters.ObjectEvent.WipedRightToLeft, position);
+    return onInternalEvent(view, wipedObject, leftToRight == true ? SmartAdapters.ObjectEvent.WipedLeftToRight : SmartAdapters.ObjectEvent.WipedRightToLeft,
+        position);
   }
 
   private boolean onInternalEvent(View view, BusinessObjectClass businessObject, ObjectEvent objectEvent, int position)
@@ -298,17 +299,24 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   void refreshBusinessObjectsAndDisplayInternal(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately,
       final boolean businessObjectCountAndSortingUnchanged)
   {
-    super.refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, new Runnable()
+    if (retrieveBusinessObjects == false)
     {
-      public void run()
+      super.refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, onOver, immediately, businessObjectCountAndSortingUnchanged);
+    }
+    else
+    {
+      super.refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, new Runnable()
       {
-        notifyBusinessObjectsChanged(businessObjectCountAndSortingUnchanged);
-        if (onOver != null)
+        public void run()
         {
-          onOver.run();
+          notifyBusinessObjectsChanged(businessObjectCountAndSortingUnchanged);
+          if (onOver != null)
+          {
+            onOver.run();
+          }
         }
-      }
-    }, immediately, businessObjectCountAndSortingUnchanged);
+      }, immediately, businessObjectCountAndSortingUnchanged);
+    }
   }
 
   /**
