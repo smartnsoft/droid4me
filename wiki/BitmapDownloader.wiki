@@ -84,9 +84,14 @@ The "BitmapDownloader" lets you set, for each instance, define how much memory, 
 
 You may want to empty the cache yourself: on that purpose, you may invoke the `empty()` method.
 
-== How to couple the "BitmapDownloader" with the "Persistence" ==
+== How to couple the "BitmapDownloader" with the "Persistence" component ==
 
-É
+If you want the downloaded bitmaps to be persisted, implement the following methods of the `DownloadInstructions.AbstractInstructions` class:
+
+* `getInputStream()`: return the value of the `Persistence.extractInputStream()` ;
+* `onInputStreamDownloaded()`: return the value of the `Persistence.flushInputStream()`.
+
+This will ensure that, when the bitmap is not already in memory cache, a first attempt to retrieve from the persistence layer will be performed, and once the bitmap has been downloaded, it will be persisted.
 
 == Some noteworthy `BitmapDownloader` internal implementation details ==
 

@@ -1,0 +1,54 @@
+#summary Ensure persistence and caching in a simple way
+#labels Featured,Phase-Implementation
+
+= Persistence =
+
+A major bonus of a native application compared to legacy (i.e. non HTML5) web apps, is its ability to store its contents persistently, which enables to minimize webs service calls, and to provide an off-line feature. Android comes with the necessary infrastructure to address the persistence, but the developer still needs to handle the database schema and data binding even for simple data coming from web services.
+
+In order to relief the developer from this burden, we have designed the "Persistence" component, which enables to handle multiple persistence instances at the same time, to store and retrieve web service flows, and even deserialize and serialize Plain Old Java Objects an easy way.
+
+== The Persistence storage architecture ==
+
+The way this component stores the data is very simple: for a given business object entity, it is able to store:
+
+* its URI: this string is used to be able to find back the entity,
+* its binary representation: those data will be persisted,
+* its time stamp: this date is useful to know when the data was lastly persisted,
+* an optional context: this object enables to associate free information to the entity, which is not strictly part of the persistence.
+
+This persistence architecture is very simple, and not handle complex relational schemas, but, for most of Android applications, this way of thinking the persistence is enough and efficient. Indeed, what percent of applications really require to structure their data, so that they really need a dedicated schema? From our experience, very little. Really. If you think your application in terms of persistent data, you will probably come up with the fact that most of data which require persistence come from the web services. And in that case, this architecture fits perfectly.
+
+== The `Persistence` abstract class ==
+
+The  [http://droid4me.googlecode.com/svn/javadoc/com/smartnsoft/droid4me/cache/Persistence.html Persistence] abstract class is available under the `com.smartnsoft.droid4me.cache` Java package. It exposes a few method, and here are the most noteworthy:
+
+* `initialize()`: initializes the instance, which is required before start using it ;
+* `close()`: closes the persistence instance, so as to free the underlying resources ;
+* `getUris()`: this returns the currently persisted URIs ;
+* `getLastUpdate(String uri)`: this returns the time stamp of the last time the data corresponding to the provided URI has been persisted ;
+* `extractInputStream/readInputStream(String uri)`: this returns the binary representation of the persisted data corresponding to the provided URI ;
+* `flushInputStream/writeInputStream(String uri, Business.InputAtom inputAtom)`: stores the binary data to the provided URI ;
+* `remove(String uri)`: deletes the persistence for the provided URI ;
+* `clear()`: deletes all data from the persistence.
+
+== Initialization ==
+
+The easiest way to access to this component is to use the `Persistence.getInstance(int)` method, because the component presents a multi-instances design pattern. But, before using that method, you need to set the following variables:
+
+# `Persistence.INSTANCES_COUNT`: an integer which defines how many instances will be instantiated ;
+# `Persistence.CACHE_DIRECTORY_PATHS`: an array of strings, which defines, for each instance, the directory path where the persistence storage is done ;
+# `Persistence.IMPLEMENTATION_FQN`: a string which states the Fully Qualified Name of the `Persistence` implementation class.
+
+A traditional location where to set those variables is in the `Application.onCreate()` method.
+
+The actual instantiation of the instances is lazy: invoking the `Persistence.getInstance(int)` method will actually create the instances, but their `initialize()` method will be invoked if the instance has not already yet been initialized when using the methods mentioned in the previous paragraph.
+
+== Implementations ==
+
+The framework proposes three implementations of the `Persistence` abstract class:
+
+* `FilePersistence`: the binary representations are stored through the file system, one file per URI, plus an index file. For this instance, the `FilePersistence.CACHE_FILE_COUNT_LIMITS` variable must also be set ;
+* `DbPersistence`: the binary representations are stored through a SQLite database. For this instance, the `DbPersistence.FILE_NAMES` and `DbPersistence.TABLE_NAMES` variables must also be set ;
+* `NullPersistence`: no persistence is performed.
+
+You may define your own implementation.
