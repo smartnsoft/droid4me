@@ -21,6 +21,7 @@ package com.smartnsoft.droid4me.app;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.app.TabActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -62,7 +63,7 @@ public abstract class SmartTabActivity<AggregateClass>
    * ------------------- Beginning of "Copied from the SmartActivity class" -------------------
    */
 
-  private AppInternals.StateContainer<AggregateClass> stateContainer = new AppInternals.StateContainer<AggregateClass>();
+  private final AppInternals.StateContainer<AggregateClass, Activity> stateContainer = new AppInternals.StateContainer<AggregateClass, Activity>(this, this);
 
   public void onActuallyCreated()
   {
@@ -94,22 +95,22 @@ public abstract class SmartTabActivity<AggregateClass>
 
   public final Handler getHandler()
   {
-    return stateContainer.handler;
+    return stateContainer.getHandler();
   }
 
   public final AggregateClass getAggregate()
   {
-    return stateContainer.aggregate;
+    return stateContainer.getAggregate();
   }
 
   public final void setAggregate(AggregateClass aggregate)
   {
-    stateContainer.aggregate = aggregate;
+    stateContainer.setAggregate(aggregate);
   }
 
   public final void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners)
   {
-    stateContainer.registerBroadcastListeners(this, broadcastListeners);
+    stateContainer.registerBroadcastListeners(broadcastListeners);
   }
 
   public List<StaticMenuCommand> getMenuCommands()
@@ -119,7 +120,7 @@ public abstract class SmartTabActivity<AggregateClass>
 
   public final void onException(Throwable throwable, boolean fromGuiThread)
   {
-    ActivityController.getInstance().handleException(this, throwable);
+    ActivityController.getInstance().handleException(this, null, throwable);
   }
 
   protected void onBeforeRetrievingDisplayObjects()
@@ -131,7 +132,7 @@ public abstract class SmartTabActivity<AggregateClass>
    */
   protected void onBeforeRefreshBusinessObjectsAndDisplay()
   {
-    stateContainer.onStartLoading(this);
+    stateContainer.onStartLoading();
   }
 
   @Override
@@ -141,7 +142,7 @@ public abstract class SmartTabActivity<AggregateClass>
     {
       log.debug("SmartTabActivity::onCreate");
     }
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
+    ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     super.onCreate(savedInstanceState);
     if (ActivityController.getInstance().needsRedirection(this) == true)
     {
@@ -151,24 +152,24 @@ public abstract class SmartTabActivity<AggregateClass>
     }
     else
     {
-      ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onCreate);
+      ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onCreate);
     }
 
     if (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true)
     {
-      stateContainer.firstLifeCycle = false;
+      stateContainer.setFirstLifeCycle(false);
     }
     else
     {
-      stateContainer.firstLifeCycle = true;
+      stateContainer.setFirstLifeCycle(true);
       onActuallyCreated();
-      ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
+      ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
-    stateContainer.registerBroadcastListeners(this, this);
+    stateContainer.registerBroadcastListeners();
 
-    stateContainer.create(getApplicationContext());
+    stateContainer.initialize();
     onBeforeRetrievingDisplayObjects();
-    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
+    // ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     try
     {
       onRetrieveDisplayObjects();
@@ -179,7 +180,7 @@ public abstract class SmartTabActivity<AggregateClass>
       onException(throwable, true);
       return;
     }
-    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
+    // ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
     // We add the static menu commands
     getCompositeActionHandler().add(new MenuHandler.Static()
     {
@@ -225,7 +226,7 @@ public abstract class SmartTabActivity<AggregateClass>
     {
       return;
     }
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
+    ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
   }
 
   @Override
@@ -236,13 +237,12 @@ public abstract class SmartTabActivity<AggregateClass>
       log.debug("SmartTabActivity::onResume");
     }
     super.onResume();
-    stateContainer.doNotCallOnActivityDestroyed = false;
     if (shouldKeepOn() == false)
     {
       return;
     }
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onResume);
-    stateContainer.onResume(this);
+    ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onResume);
+    stateContainer.onResume();
     businessObjectRetrievalAndResultHandlers();
   }
 
@@ -252,7 +252,7 @@ public abstract class SmartTabActivity<AggregateClass>
     {
       log.error("Cannot retrieve the business objects", throwable);
     }
-    stateContainer.onStopLoading(this);
+    stateContainer.onStopLoading();
     // We need to invoke that method on the GUI thread, because that method may have been triggered from another thread
     onException(throwable, false);
   }
@@ -305,7 +305,7 @@ public abstract class SmartTabActivity<AggregateClass>
   void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately,
       final boolean businessObjectCountAndSortingUnchanged)
   {
-    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(this, retrieveBusinessObjects, onOver, immediately) == true)
+    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
     {
       return;
     }
@@ -357,7 +357,7 @@ public abstract class SmartTabActivity<AggregateClass>
       }
       catch (Throwable throwable)
       {
-        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, this);
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
         onInternalBusinessObjectAvailableException(throwable);
         return false;
       }
@@ -368,7 +368,7 @@ public abstract class SmartTabActivity<AggregateClass>
 
   private void onFulfillAndSynchronizeDisplayObjectsInternal(Runnable onOver)
   {
-    if (stateContainer.resumedForTheFirstTime == true)
+    if (stateContainer.isResumedForTheFirstTime() == true)
     {
       try
       {
@@ -376,12 +376,12 @@ public abstract class SmartTabActivity<AggregateClass>
       }
       catch (Throwable throwable)
       {
-        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, this);
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
         onException(throwable, true);
-        stateContainer.onStopLoading(this);
+        stateContainer.onStopLoading();
         return;
       }
-      ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
+      ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
     }
     try
     {
@@ -390,21 +390,21 @@ public abstract class SmartTabActivity<AggregateClass>
     }
     catch (Throwable throwable)
     {
-      stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, this);
+      stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
       onException(throwable, true);
       return;
     }
     finally
     {
-      stateContainer.onStopLoading(this);
+      stateContainer.onStopLoading();
     }
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
-    stateContainer.resumedForTheFirstTime = false;
+    ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
+    stateContainer.markNotResumedForTheFirstTime();
     if (onOver != null)
     {
       onOver.run();
     }
-    stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, this);
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
   }
 
   @Override
@@ -415,8 +415,7 @@ public abstract class SmartTabActivity<AggregateClass>
       log.debug("SmartTabActivity::onSaveInstanceState");
     }
     super.onSaveInstanceState(outState);
-    stateContainer.doNotCallOnActivityDestroyed = true;
-    outState.putBoolean(AppInternals.ALREADY_STARTED, true);
+    stateContainer.onSaveInstanceState(outState);
   }
 
   @Override
@@ -438,8 +437,8 @@ public abstract class SmartTabActivity<AggregateClass>
       log.debug("SmartTabActivity::onStart");
     }
     super.onStart();
-    ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onStart);
-    stateContainer.onStart(this);
+    ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onStart);
+    stateContainer.onStart();
   }
 
   @Override
@@ -458,8 +457,8 @@ public abstract class SmartTabActivity<AggregateClass>
       }
       else
       {
-        ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onPause);
-        stateContainer.onPause(this);
+        ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onPause);
+        stateContainer.onPause();
       }
     }
     finally
@@ -477,8 +476,8 @@ public abstract class SmartTabActivity<AggregateClass>
     }
     try
     {
-      ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onStop);
-      stateContainer.onStop(this);
+      ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onStop);
+      stateContainer.onStop();
     }
     finally
     {
@@ -500,16 +499,16 @@ public abstract class SmartTabActivity<AggregateClass>
         // We stop here if a redirection is needed or is something went wrong
         return;
       }
-      if (stateContainer.doNotCallOnActivityDestroyed == false)
+      if (stateContainer.isDoNotCallOnActivityDestroyed() == false)
       {
         onActuallyDestroyed();
-        ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onActuallyDestroyedDone);
+        ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onActuallyDestroyedDone);
       }
       else
       {
-        ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onDestroy);
+        ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onDestroy);
       }
-      stateContainer.unregisterBroadcastListeners(this);
+      stateContainer.unregisterBroadcastListeners();
     }
     finally
     {

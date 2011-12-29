@@ -35,8 +35,8 @@ import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
+import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * The class that should be used when extending a legacy class to support the whole droid4me framework features.
@@ -44,8 +44,9 @@ import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
  * @param <AggregateClass>
  *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
  * @param <ComponentClass>
- *          the instance that will be use to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
+ *          the instance that will be used to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
  *          asynchronously}, and to {@linkplain #registerBroadcastListeners(BroadcastListener[]) register broadcast listeners}
+ * 
  * @author Édouard Mercier
  * @since 2011.06.14
  */
@@ -63,24 +64,43 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   private final Droid4mizerInterface droid4mizerInterface;
 
-  private final AppInternals.StateContainer<AggregateClass> stateContainer = new AppInternals.StateContainer<AggregateClass>();
+  private final AppInternals.StateContainer<AggregateClass, ComponentClass> stateContainer;
 
+  /**
+   * The only way to create an instance.
+   * 
+   * @param activity
+   *          the activity this instance relies on
+   * @param smartableActivity
+   *          the component to be droid4mized
+   * @param droid4mizerInterface
+   *          the extension used for extending the component behavior
+   * @param component
+   *          the declared component used to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
+   *          asynchronously}, and to {@linkplain #registerBroadcastListeners(BroadcastListener[]) register broadcast listeners}
+   */
   public Droid4mizer(Activity activity, SmartableActivity<AggregateClass> smartableActivity, Droid4mizerInterface droid4mizerInterface, ComponentClass component)
   {
     this.activity = activity;
     this.component = component;
     this.smartableActivity = smartableActivity;
     this.droid4mizerInterface = droid4mizerInterface;
+    stateContainer = new AppInternals.StateContainer<AggregateClass, ComponentClass>(activity, component);
   }
 
   public AggregateClass getAggregate()
   {
-    return stateContainer.aggregate;
+    return stateContainer.getAggregate();
+  }
+
+  public void setAggregate(AggregateClass aggregate)
+  {
+    stateContainer.setAggregate(aggregate);
   }
 
   public Handler getHandler()
   {
-    return stateContainer.handler;
+    return stateContainer.getHandler();
   }
 
   public List<StaticMenuCommand> getMenuCommands()
@@ -90,17 +110,12 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onException(Throwable throwable, boolean fromGuiThread)
   {
-    ActivityController.getInstance().handleException(activity, throwable);
+    ActivityController.getInstance().handleException(activity, component, throwable);
   }
 
   public void registerBroadcastListeners(BroadcastListener[] broadcastListeners)
   {
-    stateContainer.registerBroadcastListeners(activity, broadcastListeners);
-  }
-
-  public void setAggregate(AggregateClass aggregate)
-  {
-    stateContainer.aggregate = aggregate;
+    stateContainer.registerBroadcastListeners(broadcastListeners);
   }
 
   public void onBusinessObjectsRetrieved()
@@ -134,7 +149,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
-    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(activity, retrieveBusinessObjects, onOver, immediately) == true)
+    if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
     {
       return;
     }
@@ -211,7 +226,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       log.debug("Droid4mizer::onCreate");
     }
 
-    ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
+    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     superMethod.run();
     if (ActivityController.getInstance().needsRedirection(activity) == true)
     {
@@ -221,22 +236,22 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     else
     {
-      ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onCreate);
+      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onCreate);
     }
 
     if (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true)
     {
-      stateContainer.firstLifeCycle = false;
+      stateContainer.setFirstLifeCycle(false);
     }
     else
     {
-      stateContainer.firstLifeCycle = true;
+      stateContainer.setFirstLifeCycle(true);
       onActuallyCreated();
-      ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
+      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
-    stateContainer.registerBroadcastListeners(activity, component);
+    stateContainer.registerBroadcastListeners();
 
-    stateContainer.create(activity);
+    stateContainer.initialize();
     droid4mizerInterface.onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     try
@@ -291,7 +306,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       return;
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
+    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
   }
 
   public void onResume()
@@ -300,13 +315,12 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onResume");
     }
-    stateContainer.doNotCallOnActivityDestroyed = false;
     if (shouldKeepOn() == false)
     {
       return;
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onResume);
-    stateContainer.onResume(activity);
+    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onResume);
+    stateContainer.onResume();
     businessObjectRetrievalAndResultHandlers();
   }
 
@@ -316,7 +330,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onSaveInstanceState");
     }
-    stateContainer.doNotCallOnActivityDestroyed = true;
+    stateContainer.onSaveInstanceState(outState);
     outState.putBoolean(AppInternals.ALREADY_STARTED, true);
   }
 
@@ -335,8 +349,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onStart");
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onStart);
-    stateContainer.onStart(activity);
+    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onStart);
+    stateContainer.onStart();
   }
 
   public void onPause()
@@ -352,8 +366,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     else
     {
-      ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onPause);
-      stateContainer.onPause(activity);
+      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onPause);
+      stateContainer.onPause();
     }
   }
 
@@ -363,8 +377,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onStop");
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onStop);
-    stateContainer.onStop(activity);
+    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onStop);
+    stateContainer.onStop();
   }
 
   public void onDestroy()
@@ -378,16 +392,16 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       // We stop here if a redirection is needed or is something went wrong
       return;
     }
-    if (stateContainer.doNotCallOnActivityDestroyed == false)
+    if (stateContainer.isDoNotCallOnActivityDestroyed() == false)
     {
       onActuallyDestroyed();
-      ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onActuallyDestroyedDone);
+      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onActuallyDestroyedDone);
     }
     else
     {
-      ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onDestroy);
+      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onDestroy);
     }
-    stateContainer.unregisterBroadcastListeners(activity);
+    stateContainer.unregisterBroadcastListeners();
   }
 
   public boolean onCreateOptionsMenu(boolean superResult, Menu menu)
@@ -518,7 +532,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       }
       catch (Throwable throwable)
       {
-        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, activity);
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
         onInternalBusinessObjectAvailableException(throwable);
         return false;
       }
@@ -534,7 +548,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   private void onFulfillAndSynchronizeDisplayObjectsInternal(Runnable onOver)
   {
-    if (stateContainer.resumedForTheFirstTime == true)
+    if (stateContainer.isResumedForTheFirstTime() == true)
     {
       try
       {
@@ -542,12 +556,12 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       }
       catch (Throwable throwable)
       {
-        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, activity);
+        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
         onException(throwable, true);
-        stateContainer.onStopLoading(activity);
+        stateContainer.onStopLoading();
         return;
       }
-      ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
+      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
     }
     try
     {
@@ -556,21 +570,21 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     catch (Throwable throwable)
     {
-      stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, activity);
+      stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
       onException(throwable, true);
       return;
     }
     finally
     {
-      stateContainer.onStopLoading(activity);
+      stateContainer.onStopLoading();
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
-    stateContainer.resumedForTheFirstTime = false;
+    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
+    stateContainer.markNotResumedForTheFirstTime();
     if (onOver != null)
     {
       onOver.run();
     }
-    stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this, activity);
+    stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
   }
 
   private void businessObjectRetrievalAndResultHandlers()
@@ -589,7 +603,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.error("Cannot retrieve the business objects", throwable);
     }
-    stateContainer.onStopLoading(activity);
+    stateContainer.onStopLoading();
     // We need to invoke that method on the GUI thread, because that method may have been triggered from another thread
     onException(throwable, false);
   }

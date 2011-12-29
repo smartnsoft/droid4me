@@ -29,8 +29,8 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Environment;
@@ -187,9 +187,16 @@ public final class ActivityController
      * The method blocks the caller thread, which is sometimes the UI thread, hence the method should last a very short time!
      * <p>
      * 
-     * @see ActivityController#onLifeCycleEvent(Activity, ActivityController.Interceptor.InterceptorEvent)
+     * @param activity
+     *          the activity on which a life cycle event occurs ; cannot be {@code null}
+     * @param component
+     *          the component on which the life cycle event occurs ; may be {@code null}
+     * @param event
+     *          the event that has just happened
+     * 
+     * @see ActivityController#onLifeCycleEvent()
      */
-    void onLifeCycleEvent(Activity activity, ActivityController.Interceptor.InterceptorEvent event);
+    void onLifeCycleEvent(Activity activity, Object component, ActivityController.Interceptor.InterceptorEvent event);
 
   }
 
@@ -216,12 +223,14 @@ public final class ActivityController
      * 
      * @param activity
      *          the activity that issued the exception ; cannot be {@code null}
+     * @param component
+     *          the component that issued the exception ; may be {@code null}
      * @param exception
      *          the exception that has been triggered
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
      *         for a further exception handler anymore
      */
-    boolean onBusinessObjectAvailableException(Activity activity, BusinessObjectUnavailableException exception);
+    boolean onBusinessObjectAvailableException(Activity activity, Object component, BusinessObjectUnavailableException exception);
 
     /**
      * Is invoked whenever the {@link LifeCycle#onRetrieveBusinessObjects()} throws an exception.
@@ -232,12 +241,14 @@ public final class ActivityController
      * 
      * @param activity
      *          the activity that issued the exception ; cannot be {@code null}
+     * @param component
+     *          the component that issued the exception ; may be {@code null}
      * @param exception
      *          the exception that has been triggered
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
      *         for a further exception handler anymore
      */
-    boolean onServiceException(Activity activity, ServiceException exception);
+    boolean onServiceException(Activity activity, Object component, ServiceException exception);
 
     /**
      * Is invoked whenever an activity implementing {@link LifeCycle} throws an unexpected exception, or when an exception is thrown during a
@@ -253,12 +264,14 @@ public final class ActivityController
      * 
      * @param activity
      *          the activity that issued the exception ; cannot be {@code null}
+     * @param component
+     *          the component that issued the exception ; may be {@code null}
      * @param throwable
      *          the throwable that has been triggered
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
      *         for a further exception handler anymore
      */
-    boolean onOtherException(Activity activity, Throwable throwable);
+    boolean onOtherException(Activity activity, Object component, Throwable throwable);
 
     /**
      * Is invoked whenever a handled exception is thrown with a non-activity context.
@@ -273,12 +286,14 @@ public final class ActivityController
      * 
      * @param throwable
      *          the throwable that has been triggered
+     * @param component
+     *          the component that issued the exception ; may be {@code null}
      * @param context
      *          the context that issued the exception
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
      *         for a further exception handler anymore
      */
-    boolean onContextException(Context context, Throwable throwable);
+    boolean onContextException(Context context, Object component, Throwable throwable);
 
   }
 
@@ -345,7 +360,7 @@ public final class ActivityController
      *          a list of exception classes to look after
      * @return {@code null} if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
-    @SuppressWarnings( { "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
     {
       Throwable newThrowable = throwable;
@@ -391,9 +406,9 @@ public final class ActivityController
       this.i18n = i18n;
     }
 
-    public boolean onBusinessObjectAvailableException(final Activity activity, BusinessObjectUnavailableException exception)
+    public boolean onBusinessObjectAvailableException(final Activity activity, Object component, BusinessObjectUnavailableException exception)
     {
-      if (handleCommonCauses(activity, exception, ConnectivityUIExperience.DialogRetry) == true)
+      if (handleCommonCauses(activity, component, exception, ConnectivityUIExperience.DialogRetry) == true)
       {
         return true;
       }
@@ -420,9 +435,9 @@ public final class ActivityController
       return true;
     }
 
-    public boolean onServiceException(final Activity activity, ServiceException exception)
+    public boolean onServiceException(final Activity activity, Object component, ServiceException exception)
     {
-      if (handleCommonCauses(activity, exception, ConnectivityUIExperience.Dialog) == true)
+      if (handleCommonCauses(activity, component, exception, ConnectivityUIExperience.Dialog) == true)
       {
         return true;
       }
@@ -449,9 +464,9 @@ public final class ActivityController
       return true;
     }
 
-    public boolean onOtherException(final Activity activity, Throwable throwable)
+    public boolean onOtherException(final Activity activity, Object component, Throwable throwable)
     {
-      if (handleCommonCauses(activity, throwable, ConnectivityUIExperience.Toast) == true)
+      if (handleCommonCauses(activity, component, throwable, ConnectivityUIExperience.Toast) == true)
       {
         return true;
       }
@@ -459,24 +474,26 @@ public final class ActivityController
       {
         return true;
       }
-      onOtherExceptionFallback(activity, throwable);
+      onOtherExceptionFallback(activity, component, throwable);
       return true;
     }
 
     /**
-     * This method will be invoked by the {@link #onOtherException(Activity, Throwable)} method, as a fallback if the provided throwable has not been
-     * handled neither by the {@link #handleCommonCauses()} nor the {@link #handleOtherCauses()} methods.
+     * This method will be invoked by the {@link #onOtherException()} method, as a fallback if the provided throwable has not been handled neither by
+     * the {@link #handleCommonCauses()} nor the {@link #handleOtherCauses()} methods.
      * 
      * <p>
      * A dialog box which reports the problem will be popped up.
      * </p>
      * 
      * @param activity
-     *          the activity that issued the throwable
+     *          the activity from which the throwable has been thrown ; cannot be {@code null}
+     * @param component
+     *          the component responsible for having thrown the exception
      * @param throwable
      *          the throwable that has been triggered
      */
-    protected void onOtherExceptionFallback(final Activity activity, Throwable throwable)
+    protected void onOtherExceptionFallback(final Activity activity, Object component, Throwable throwable)
     {
       // We make sure that the dialog is popped from the UI thread
       activity.runOnUiThread(new Runnable()
@@ -499,7 +516,7 @@ public final class ActivityController
     /**
      * @return {@code false} in the current implementation
      */
-    public boolean onContextException(Context context, Throwable throwable)
+    public boolean onContextException(Context context, Object component, Throwable throwable)
     {
       return false;
     }
@@ -533,6 +550,8 @@ public final class ActivityController
      * 
      * @param activity
      *          the activity which has triggered the exception
+     * @param component
+     *          the component which has triggered the exception ; may be {@code null}
      * @param throwable
      *          the throwable to analyze
      * @param connectivityUIExperience
@@ -541,9 +560,9 @@ public final class ActivityController
      * @see #handleConnectivityProblemInCause(Activity, Throwable, ConnectivityUIExperience)
      * @see #handleMemoryProblemInCause(Activity, Throwable)
      */
-    protected final boolean handleCommonCauses(final Activity activity, Throwable throwable, ConnectivityUIExperience connectivityUIExperience)
+    protected final boolean handleCommonCauses(final Activity activity, Object component, Throwable throwable, ConnectivityUIExperience connectivityUIExperience)
     {
-      if (handleConnectivityProblemInCause(activity, throwable, connectivityUIExperience) == true)
+      if (handleConnectivityProblemInCause(activity, component, throwable, connectivityUIExperience) == true)
       {
         return true;
       }
@@ -560,13 +579,15 @@ public final class ActivityController
      * @param activity
      *          in case a connection issue is discovered, it will be used to pop up a dialog box. When the dialog box "OK" button is hit, it will be
      *          simply dismissed
+     * @param component
+     *          the component which has triggered the exception ; may be {@code null}
      * @param throwable
      *          the exception to be inspected
      * @param connectivityUIExperience
      *          indicates the end-user experience to provide if a connectivity problem has been detected
      * @return {@code true} if and only a connection issue has been detected
      */
-    protected final boolean handleConnectivityProblemInCause(final Activity activity, Throwable throwable,
+    protected final boolean handleConnectivityProblemInCause(final Activity activity, Object component, Throwable throwable,
         final ActivityController.AbstractExceptionHandler.ConnectivityUIExperience connectivityUIExperience)
     {
       if (ActivityController.AbstractExceptionHandler.isAConnectivityProblem(throwable) == true)
@@ -765,17 +786,19 @@ public final class ActivityController
    * </p>
    * 
    * @param activity
-   *          the activity which is involved with the event
+   *          the activity which is involved with the event : cannot be {@code null}
+   * @param component
+   *          the component the event occurs on ; may be {code null}
    * @param event
    *          the event that has just happened for that activity
    */
-  public synchronized void onLifeCycleEvent(Activity activity, ActivityController.Interceptor.InterceptorEvent event)
+  public synchronized void onLifeCycleEvent(Activity activity, Object component, ActivityController.Interceptor.InterceptorEvent event)
   {
     if (interceptor == null)
     {
       return;
     }
-    interceptor.onLifeCycleEvent(activity, event);
+    interceptor.onLifeCycleEvent(activity, component, event);
   }
 
   /**
@@ -794,7 +817,7 @@ public final class ActivityController
    * @return {@code true} if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception handled
    *         has been set}, returns {@code false}
    */
-  public synchronized boolean handleException(Context context, Throwable throwable)
+  public synchronized boolean handleException(Context context, Object component, Throwable throwable)
   {
     if (exceptionHandler == null)
     {
@@ -833,7 +856,7 @@ public final class ActivityController
         {
           return true;
         }
-        return exceptionHandler.onServiceException(activity, exception);
+        return exceptionHandler.onServiceException(activity, component, exception);
       }
       else if (throwable instanceof BusinessObjectUnavailableException)
       {
@@ -849,7 +872,7 @@ public final class ActivityController
         {
           return true;
         }
-        return exceptionHandler.onBusinessObjectAvailableException(activity, exception);
+        return exceptionHandler.onBusinessObjectAvailableException(activity, component, exception);
       }
       else
       {
@@ -861,11 +884,11 @@ public final class ActivityController
         // For this special case, we ignore the case when the activity is dying
         if (activity != null)
         {
-          return exceptionHandler.onOtherException(activity, throwable);
+          return exceptionHandler.onOtherException(activity, component, throwable);
         }
         else
         {
-          return exceptionHandler.onContextException(context, throwable);
+          return exceptionHandler.onContextException(context, component, throwable);
         }
       }
     }

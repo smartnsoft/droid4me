@@ -91,9 +91,14 @@ final class AppInternals
   /**
    * There for gathering all instance variables, and in order to make copy and paste smarter.
    * 
+   * @param <AggregateClass>
+   *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+   * @param <ComponentClass>
+   *          the instance the container has been created for
+   * 
    * @since 2009.02.16
    */
-  final static class StateContainer<AggregateClass>
+  final static class StateContainer<AggregateClass, ComponentClass>
   {
 
     private final static class RefreshBusinessObjectsAndDisplay
@@ -118,15 +123,25 @@ final class AppInternals
 
     private static final Logger log = LoggerFactory.getInstance(StateContainer.class);
 
-    boolean resumedForTheFirstTime = true;
+    /**
+     * The activity this container has been created for.
+     */
+    private final Activity activity;
+
+    /**
+     * The component this container has been created for.
+     */
+    private final ComponentClass component;
+
+    private boolean resumedForTheFirstTime = true;
 
     MenuHandler.Composite compositeActionHandler;
 
     CompositeHandler compositeActivityResultHandler;
 
-    Handler handler;
+    private Handler handler;
 
-    AggregateClass aggregate;
+    private AggregateClass aggregate;
 
     private SharedPreferences preferences;
 
@@ -134,9 +149,9 @@ final class AppInternals
 
     private boolean businessObjectsRetrieved;
 
-    boolean doNotCallOnActivityDestroyed;
+    private boolean doNotCallOnActivityDestroyed;
 
-    boolean firstLifeCycle = true;
+    private boolean firstLifeCycle = true;
 
     /**
      * A flag which indicates whether the underlying {@link LifeCycle} is executing a
@@ -162,9 +177,53 @@ final class AppInternals
 
     private AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay refreshBusinessObjectsAndDisplayPending;
 
+    /**
+     * Should only be created by classes in the same package.
+     * 
+     * @param activity
+     *          the activity this container has been created for
+     * @param component
+     *          the component this container has been created for
+     */
+    StateContainer(Activity activity, ComponentClass component)
+    {
+      this.activity = activity;
+      this.component = component;
+    }
+
+    AggregateClass getAggregate()
+    {
+      return aggregate;
+    }
+
+    void setAggregate(AggregateClass aggregate)
+    {
+      this.aggregate = aggregate;
+    }
+
+    Handler getHandler()
+    {
+      return handler;
+    }
+
     boolean isFirstLifeCycle()
     {
       return firstLifeCycle;
+    }
+
+    void setFirstLifeCycle(boolean firstLifeCycle)
+    {
+      this.firstLifeCycle = firstLifeCycle;
+    }
+
+    boolean isResumedForTheFirstTime()
+    {
+      return resumedForTheFirstTime;
+    }
+
+    void markNotResumedForTheFirstTime()
+    {
+      resumedForTheFirstTime = false;
     }
 
     /**
@@ -176,6 +235,11 @@ final class AppInternals
       return isInteracting;
     }
 
+    boolean isDoNotCallOnActivityDestroyed()
+    {
+      return doNotCallOnActivityDestroyed;
+    }
+
     synchronized SharedPreferences getPreferences(Context applicationContext)
     {
       if (preferences == null)
@@ -185,15 +249,18 @@ final class AppInternals
       return preferences;
     }
 
-    void create(Context context)
+    /**
+     * Should be always invoked from the UI thread.
+     */
+    void initialize()
     {
       compositeActionHandler = new MenuHandler.Composite();
-      compositeActionHandler.add(createStaticActionHandler(context));
+      compositeActionHandler.add(createStaticActionHandler());
       compositeActivityResultHandler = new ActivityResultHandler.CompositeHandler();
       handler = new Handler();
     }
 
-    MenuHandler.Static createStaticActionHandler(final Context context)
+    private MenuHandler.Static createStaticActionHandler()
     {
       final MenuHandler.Static staticActionHandler = new MenuHandler.Static()
       {
@@ -211,7 +278,7 @@ final class AppInternals
      * If the activity implements either the {@link AppPublics.BroadcastListener} or {@link AppPublics.BroadcastListenerProvider} or
      * {@link AppPublics.BroadcastListenersProvider} interface, it will register for listening to some broadcast intents.
      */
-    void registerBroadcastListeners(Activity activity, Object component)
+    void registerBroadcastListeners()
     {
       final AppPublics.BroadcastListener broadcastListener;
       if (component instanceof AppPublics.BroadcastListenerProvider)
@@ -219,13 +286,13 @@ final class AppInternals
         broadcastListener = ((AppPublics.BroadcastListenerProvider) component).getBroadcastListener();
         if (broadcastListener != null)
         {
-          registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
+          registerBroadcastListeners(enrichBroadCastListeners(1), broadcastListener);
         }
       }
       else if (component instanceof AppPublics.BroadcastListener)
       {
         broadcastListener = (AppPublics.BroadcastListener) component;
-        registerBroadcastListeners(activity, enrichBroadCastListeners(1), broadcastListener);
+        registerBroadcastListeners(enrichBroadCastListeners(1), broadcastListener);
       }
       else if (component instanceof AppPublics.BroadcastListenersProvider)
       {
@@ -238,21 +305,21 @@ final class AppInternals
         final int startIndex = enrichBroadCastListeners(count);
         for (int index = 0; index < count; index++)
         {
-          registerBroadcastListeners(activity, startIndex + index, broadcastListenersProvider.getBroadcastListener(index));
+          registerBroadcastListeners(startIndex + index, broadcastListenersProvider.getBroadcastListener(index));
         }
       }
     }
 
-    void registerBroadcastListeners(Activity activity, AppPublics.BroadcastListener[] broadcastListeners)
+    void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners)
     {
       final int startIndex = enrichBroadCastListeners(broadcastListeners.length);
       for (int index = 0; index < broadcastListeners.length; index++)
       {
-        registerBroadcastListeners(activity, index + startIndex, broadcastListeners[index]);
+        registerBroadcastListeners(index + startIndex, broadcastListeners[index]);
       }
     }
 
-    private void registerBroadcastListeners(Activity activity, int index, final AppPublics.BroadcastListener broadcastListener)
+    private void registerBroadcastListeners(int index, final AppPublics.BroadcastListener broadcastListener)
     {
       if (index == 0 && log.isDebugEnabled())
       {
@@ -316,7 +383,7 @@ final class AppInternals
     /**
      * If the activity implements the {@link AppPublics.BroadcastListener} interface, this will make it stop listening to broadcasted intents.
      */
-    void unregisterBroadcastListeners(Activity activity)
+    void unregisterBroadcastListeners()
     {
       if (broadcastReceivers != null)
       {
@@ -338,7 +405,7 @@ final class AppInternals
      * Should be invoked during the {@link SmartActivity.onBeforeRefreshBusinessObjectsAndDisplay} method: is responsible for triggering a loading
      * broadcast intent if required, in order to indicate that the activity is loading.
      */
-    void onStartLoading(Activity activity)
+    void onStartLoading()
     {
       if (activity instanceof AppPublics.SendLoadingIntent)
       {
@@ -351,7 +418,7 @@ final class AppInternals
      * Should be invoked just after the {@link SmartActivity.onSynchronizeDisplayObjects} method: is responsible for triggering a loading broadcast
      * intent if required, in order to indicate that the activity has stopped loading.
      */
-    void onStopLoading(Activity activity)
+    void onStopLoading()
     {
       if (activity instanceof AppPublics.SendLoadingIntent)
       {
@@ -364,14 +431,14 @@ final class AppInternals
      * Invoked when the provided activity enters the {@link Activity#onStart()} method. We check whether to invoke the {@link ServiceLifeCycle}
      * methods.
      */
-    void onStart(final Activity activity)
+    void onStart()
     {
       if (activity instanceof ServiceLifeCycle)
       {
         final ServiceLifeCycle forServices = (ServiceLifeCycle) activity;
-        if (areServicesAsynchronous(activity) == false)
+        if (areServicesAsynchronous() == false)
         {
-          internalPrepareServices(activity, forServices);
+          internalPrepareServices(forServices);
         }
         else
         {
@@ -379,7 +446,7 @@ final class AppInternals
           {
             public void run()
             {
-              internalPrepareServices(activity, forServices);
+              internalPrepareServices(forServices);
             }
           });
         }
@@ -389,9 +456,10 @@ final class AppInternals
     /**
      * Invoked when the provided activity enters the {@link Activity#onResume()} method.
      */
-    void onResume(Activity activity)
+    void onResume()
     {
       isInteracting = true;
+      doNotCallOnActivityDestroyed = false;
     }
 
     void setBusinessObjectsRetrieved()
@@ -414,7 +482,7 @@ final class AppInternals
       refreshingBusinessObjectsAndDisplay = true;
     }
 
-    synchronized void onRefreshingBusinessObjectsAndDisplayStop(LifeCycle lifeCycleActivity, Activity activity)
+    synchronized void onRefreshingBusinessObjectsAndDisplayStop(LifeCycle lifeCycleActivity)
     {
       refreshingBusinessObjectsAndDisplay = false;
       if (activity.isFinishing() == true)
@@ -440,7 +508,7 @@ final class AppInternals
     /**
      * Invoked when the provided activity enters the {@link Activity#onPause()} method.
      */
-    void onPause(Activity activity)
+    void onPause()
     {
       isInteracting = false;
     }
@@ -449,14 +517,14 @@ final class AppInternals
      * Invoked when the provided activity enters the {@link Activity#onStop()} method. We check whether to invoke the {@link ServiceLifeCycle}
      * methods.
      */
-    void onStop(final Activity activity)
+    void onStop()
     {
       if (activity instanceof ServiceLifeCycle)
       {
         final ServiceLifeCycle forServices = (ServiceLifeCycle) activity;
-        if (areServicesAsynchronous(activity) == false)
+        if (areServicesAsynchronous() == false)
         {
-          internalDisposeServices(activity, forServices);
+          internalDisposeServices(forServices);
         }
         else
         {
@@ -464,11 +532,17 @@ final class AppInternals
           {
             public void run()
             {
-              internalDisposeServices(activity, forServices);
+              internalDisposeServices(forServices);
             }
           });
         }
       }
+    }
+
+    void onSaveInstanceState(Bundle outState)
+    {
+      doNotCallOnActivityDestroyed = true;
+      outState.putBoolean(AppInternals.ALREADY_STARTED, true);
     }
 
     void onSynchronizeDisplayObjects()
@@ -499,7 +573,7 @@ final class AppInternals
       return stopHandling == false && beingRedirected == false;
     }
 
-    synchronized boolean shouldDelayRefreshBusinessObjectsAndDisplay(Activity activity, boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
+    synchronized boolean shouldDelayRefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
     {
       // If the Activity is finishing, we give up
       if (activity.isFinishing() == true)
@@ -531,12 +605,12 @@ final class AppInternals
       return false;
     }
 
-    private boolean areServicesAsynchronous(Activity activity)
+    private boolean areServicesAsynchronous()
     {
       return activity instanceof ServiceLifeCycle.ForServicesAsynchronousPolicy;
     }
 
-    private void internalPrepareServices(Activity activity, ServiceLifeCycle forServices)
+    private void internalPrepareServices(ServiceLifeCycle forServices)
     {
       try
       {
@@ -544,11 +618,11 @@ final class AppInternals
       }
       catch (ServiceLifeCycle.ServiceException exception)
       {
-        onInternalServiceException(activity, forServices, exception);
+        onInternalServiceException(forServices, exception);
       }
     }
 
-    private void internalDisposeServices(Activity activity, ServiceLifeCycle forServices)
+    private void internalDisposeServices(ServiceLifeCycle forServices)
     {
       try
       {
@@ -556,19 +630,19 @@ final class AppInternals
       }
       catch (ServiceLifeCycle.ServiceException exception)
       {
-        onInternalServiceException(activity, forServices, exception);
+        onInternalServiceException(forServices, exception);
       }
     }
 
-    private void onInternalServiceException(Activity activity, ServiceLifeCycle forServices, ServiceLifeCycle.ServiceException exception)
+    private void onInternalServiceException(ServiceLifeCycle forServices, ServiceLifeCycle.ServiceException exception)
     {
       if (log.isErrorEnabled())
       {
         log.error("Cannot access properly to the services", exception);
       }
-      if (ActivityController.getInstance().handleException(activity, exception) == false)
+      // TODO: handle another way the component
+      if (ActivityController.getInstance().handleException(activity, component, exception) == false)
       {
-        // onServiceException(exception);
       }
     }
 

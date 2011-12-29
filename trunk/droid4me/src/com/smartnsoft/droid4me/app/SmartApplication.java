@@ -26,8 +26,8 @@ import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -138,12 +138,12 @@ public abstract class SmartApplication
     }
 
     @Override
-    protected void onOtherExceptionFallback(final Activity activity, Throwable throwable)
+    protected void onOtherExceptionFallback(final Activity activity, Object component, Throwable throwable)
     {
       final boolean proposeToSendLog = getLogReportRecipient() != null;
       if (proposeToSendLog == false)
       {
-        super.onOtherExceptionFallback(activity, throwable);
+        super.onOtherExceptionFallback(activity, component, throwable);
       }
       else
       {
@@ -205,7 +205,7 @@ public abstract class SmartApplication
     {
       try
       {
-        ActivityController.getInstance().handleException(null, throwable);
+        ActivityController.getInstance().handleException(null, null, throwable);
       }
       finally
       {
