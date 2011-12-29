@@ -31,8 +31,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.log.Logger;
@@ -80,8 +80,14 @@ public abstract class Persistence
       implements Comparable<Persistence.UriUsage>
   {
 
+    /**
+     * How many times the URI has been accessed.
+     */
     public int accessCount = 0;
 
+    /**
+     * If applicable, the file path of the persisted data.
+     */
     public final String storageFilePath;
 
     /**
@@ -89,7 +95,7 @@ public abstract class Persistence
      */
     public final String uri;
 
-    public UriUsage(String storageFilePath, String uri)
+    protected UriUsage(String storageFilePath, String uri)
     {
       this.storageFilePath = storageFilePath;
       this.uri = uri;
@@ -110,19 +116,35 @@ public abstract class Persistence
 
   }
 
+  /**
+   * Used by the classes overriding the {@link Persistence} class, so as to keep track of how many time each persisted URI has been accessed.
+   */
   protected static final class UriUsages
   {
 
+    /**
+     * The map which contains the persisted URIs as keys, and their usage as a value.
+     */
     private final Map<String, Persistence.UriUsage> uriUsages = new HashMap<String, Persistence.UriUsage>();
 
+    /**
+     * A counter which is incremented every time a URI is being declared {@link #put(String, UriUsage) persisted}.
+     */
     private int index = 0;
+
+    /**
+     * Only a {@link Persistence} instance should be allowed to create such an instance.
+     */
+    private UriUsages()
+    {
+    }
 
     public int getIndex()
     {
       return index;
     }
 
-    public void setIndex(int index)
+    protected void setIndex(int index)
     {
       this.index = index;
     }
@@ -181,6 +203,9 @@ public abstract class Persistence
 
   protected final static Logger log = LoggerFactory.getInstance(Persistence.class);
 
+  /**
+   * All the {@link Persistence} instances which have been creating once the {@link Persistence#getInstance(int)} method has been invoked.
+   */
   private static volatile Persistence[] instances;
 
   /**
@@ -221,6 +246,9 @@ public abstract class Persistence
    */
   private boolean storageBackendAvailable;
 
+  /**
+   * The location of the folder where the data are being persisted, if applicable.
+   */
   private final String storageDirectoryPath;
 
   /**
@@ -228,8 +256,14 @@ public abstract class Persistence
    */
   private final int instanceIndex;
 
+  /**
+   * Indicates how the persisted URI are being accessed.
+   */
   protected final UriUsages uriUsages;
 
+  /**
+   * Holds all the URIs which are currently being persisted.
+   */
   protected final Set<String> beingProcessed = new HashSet<String>();
 
   /**
@@ -402,10 +436,16 @@ public abstract class Persistence
   /**
    * The unique constructor.
    * 
+   * <p>
+   * The {@link #initialize()} method does not need to be explicitly invoked before using the instance, as long as the {@code XXXInstance} methods are
+   * not invoked, because the other methods will invoke it.
+   * </p>
+   * 
    * @param storageDirectoryPath
    *          the location where the persistence should be performed
    * @param instanceIndex
    *          the ordinal of the instance which is bound to be created. Starts with {@code 0}.
+   * @see #initialize()
    */
   protected Persistence(String storageDirectoryPath, int instanceIndex)
   {
@@ -528,7 +568,7 @@ public abstract class Persistence
    *           in case an error occurred while processing the request
    * @see #getLastUpdate()
    */
-  public abstract Date getLastUpdateInstance(String uri)
+  protected abstract Date getLastUpdateInstance(String uri)
       throws Persistence.PersistenceException;
 
   /**
@@ -668,7 +708,8 @@ public abstract class Persistence
    * Once called, the persistence storage will be emptied, but the instance can keep on being used as is.
    * </p>
    * 
-   * @throws if any problem occurs while emptying the persistence
+   * @throws if
+   *           any problem occurs while emptying the persistence
    * @see #clear()
    */
   protected abstract void clearInstance()
@@ -681,7 +722,8 @@ public abstract class Persistence
    * Once called, the persistence will need to be {@link #initialize() initialized again}, before being used.
    * </p>
    * 
-   * @throws if any problem occurs while closing the persistence
+   * @throws if
+   *           any problem occurs while closing the persistence
    * @see #close()
    */
   protected abstract void closeInstance()
@@ -695,7 +737,8 @@ public abstract class Persistence
    * Once cleared, the current instance can be used as is.
    * </p>
    * 
-   * @throws if any problem occurs while clearing the persistence
+   * @throws if
+   *           any problem occurs while clearing the persistence
    * @see #clearInstance()
    * @see #close()
    * @see #clearAll()

@@ -44,8 +44,14 @@ public final class FilePersistence
 
   private static final String INDEX_KEY = "index";
 
+  /**
+   * An array, which indicates for each instance, the maximum number of URIs which can be persisted.
+   */
   public static int[] CACHE_FILE_COUNT_LIMITS = new int[] { Integer.MAX_VALUE };
 
+  /**
+   * The name of the file which will store the index of the persisted files.
+   */
   public static String CACHE_INDEX_FILE_NAME = "index";
 
   private Properties properties;
@@ -56,6 +62,9 @@ public final class FilePersistence
 
   private boolean fileIndexNeedsSaving;
 
+  /**
+   * {@inheritDoc}
+   */
   public FilePersistence(String storageDirectoryPath, int instanceIndex)
   {
     super(storageDirectoryPath, instanceIndex);
@@ -195,7 +204,7 @@ public final class FilePersistence
   }
 
   @Override
-  public Date getLastUpdateInstance(String uri)
+  protected Date getLastUpdateInstance(String uri)
       throws Persistence.PersistenceException
   {
     final Persistence.UriUsage uriUsage;
