@@ -200,7 +200,7 @@ public final class SmartCommands
           return;
         }
         // We handle the exception
-        ActivityController.getInstance().handleException(context, modifiedThrowable);
+        ActivityController.getInstance().handleException(context, null, modifiedThrowable);
       }
     }
 
@@ -561,7 +561,7 @@ public final class SmartCommands
       catch (Throwable throwable)
       {
         // We handle the exception
-        ActivityController.getInstance().handleException(activity, throwable);
+        ActivityController.getInstance().handleException(activity, null, throwable);
       }
     }
 
