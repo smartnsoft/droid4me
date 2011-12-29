@@ -163,6 +163,9 @@ public final class DbPersistence
 
   private final Object getLastUpdateStatementSyncObject = new Object();
 
+  /**
+   * {@inheritDoc}
+   */
   public DbPersistence(String storageDirectoryPath, int instanceIndex)
   {
     super(storageDirectoryPath, instanceIndex);
@@ -377,7 +380,7 @@ public final class DbPersistence
   }
 
   @Override
-  public Date getLastUpdateInstance(String uri)
+  protected Date getLastUpdateInstance(String uri)
       throws Persistence.PersistenceException
   {
     synchronized (getLastUpdateStatementSyncObject)

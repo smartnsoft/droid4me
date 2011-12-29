@@ -43,6 +43,9 @@ public class NullPersistence
     super(null, instanceIndex);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public NullPersistence(String storageDirectoryPath, int instanceIndex)
   {
     super(storageDirectoryPath, instanceIndex);
@@ -81,7 +84,7 @@ public class NullPersistence
   }
 
   @Override
-  public Date getLastUpdateInstance(String uri)
+  protected Date getLastUpdateInstance(String uri)
       throws Persistence.PersistenceException
   {
     return null;
