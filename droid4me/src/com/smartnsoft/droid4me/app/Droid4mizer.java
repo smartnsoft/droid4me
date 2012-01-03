@@ -105,7 +105,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public List<StaticMenuCommand> getMenuCommands()
   {
-    return null;
+    return smartableActivity.getMenuCommands();
   }
 
   public void onException(Throwable throwable, boolean fromGuiThread)
