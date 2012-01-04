@@ -61,9 +61,9 @@ public abstract class MenuHandler
 
     public Custom()
     {
-      id = counter;
+      id = Custom.counter;
       // We make the assumption that there are not more than 20 commands per handler
-      counter += 20;
+      Custom.counter += 20;
     }
 
     private int getOffsetIdentifier()
@@ -161,10 +161,22 @@ public abstract class MenuHandler
           isVisible = command.isVisible(businessObject);
           isEnabled = isVisible == false ? false : command.isEnabled(businessObject);
         }
-        menu.findItem(command.menuId + getOffsetIdentifier()).setVisible(isVisible);
-        if (isVisible == true)
+        final int menuId = command.menuId + getOffsetIdentifier();
+        final MenuItem menuItem = menu.findItem(menuId);
+        if (menuItem == null)
         {
-          menu.findItem(command.menuId + getOffsetIdentifier()).setEnabled(isEnabled);
+          if (MenuCommand.log.isErrorEnabled())
+          {
+            MenuCommand.log.error("Cannot find the menu item with id " + menuId + "!");
+          }
+        }
+        else
+        {
+          menuItem.setVisible(isVisible);
+          if (isVisible == true)
+          {
+            menuItem.setEnabled(isEnabled);
+          }
         }
       }
     }
