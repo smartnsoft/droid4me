@@ -26,7 +26,7 @@ import com.smartnsoft.droid4me.framework.Commands;
  * @author Édouard Mercier
  * @since 2009.09.02
  */
-public final class StaticMenuCommand
+public class StaticMenuCommand
     extends MenuCommand<Void>
 {
 
