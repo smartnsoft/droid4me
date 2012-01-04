@@ -102,15 +102,15 @@ public class MenuCommand<BusinessObjectClass>
 
   public void computeMenuItem(Context context, Menu menu, int identifierOffset)
   {
-    int theMenuId = menuId + identifierOffset;
+    final int theMenuId = menuId + identifierOffset;
     final MenuItem menuEntry;
     if (text == null)
     {
-      menuEntry = menu.add(0, theMenuId, Menu.NONE, textId);
+      menuEntry = menu.add(Menu.NONE, theMenuId, Menu.NONE, textId);
     }
     else
     {
-      menuEntry = menu.add(0, theMenuId, Menu.NONE, text);
+      menuEntry = menu.add(Menu.NONE, theMenuId, Menu.NONE, text);
     }
     menuEntry.setShortcut(numericalShortcut, characterShortcut);
     if (icon >= 0)
