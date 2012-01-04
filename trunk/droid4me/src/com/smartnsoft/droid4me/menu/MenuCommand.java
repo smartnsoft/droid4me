@@ -35,7 +35,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public class MenuCommand<BusinessObjectClass>
 {
 
-  private static final Logger log = LoggerFactory.getInstance(MenuCommand.class);
+  static final Logger log = LoggerFactory.getInstance(MenuCommand.class);
 
   public int menuId;
 
@@ -100,7 +100,7 @@ public class MenuCommand<BusinessObjectClass>
     return executable.isEnabled(businessObject);
   }
 
-  public void computeMenuItem(Context context, Menu menu, int identifierOffset)
+  public MenuItem computeMenuItem(Context context, Menu menu, int identifierOffset)
   {
     final int theMenuId = menuId + identifierOffset;
     final MenuItem menuEntry;
@@ -121,6 +121,7 @@ public class MenuCommand<BusinessObjectClass>
     {
       log.debug("Added to the menu the entry with id '" + theMenuId + "'");
     }
+    return menuEntry;
   }
 
 }
