@@ -60,6 +60,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   private final ComponentClass component;
 
+  private final ComponentClass interceptorComponent;
+
   private final SmartableActivity<AggregateClass> smartableActivity;
 
   private final Droid4mizerInterface droid4mizerInterface;
@@ -78,13 +80,17 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    * @param component
    *          the declared component used to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
    *          asynchronously}, and to {@linkplain #registerBroadcastListeners(BroadcastListener[]) register broadcast listeners}
+   * @param interceptorComponent
+   *          the declared component used to send life-cycle events to the {@link ActivityController.Interceptor}
    */
-  public Droid4mizer(Activity activity, SmartableActivity<AggregateClass> smartableActivity, Droid4mizerInterface droid4mizerInterface, ComponentClass component)
+  public Droid4mizer(Activity activity, SmartableActivity<AggregateClass> smartableActivity, Droid4mizerInterface droid4mizerInterface,
+      ComponentClass component, ComponentClass interceptorComponent)
   {
     this.activity = activity;
-    this.component = component;
     this.smartableActivity = smartableActivity;
     this.droid4mizerInterface = droid4mizerInterface;
+    this.component = component;
+    this.interceptorComponent = interceptorComponent;
     stateContainer = new AppInternals.StateContainer<AggregateClass, ComponentClass>(activity, component);
   }
 
@@ -226,7 +232,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       log.debug("Droid4mizer::onCreate");
     }
 
-    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     superMethod.run();
     if (ActivityController.getInstance().needsRedirection(activity) == true)
     {
@@ -236,7 +242,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     else
     {
-      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onCreate);
+      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onCreate);
     }
 
     if (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true)
@@ -247,7 +253,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       stateContainer.setFirstLifeCycle(true);
       onActuallyCreated();
-      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
+      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
     stateContainer.registerBroadcastListeners();
 
@@ -306,7 +312,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       return;
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onContentChanged);
   }
 
   public void onResume()
@@ -319,7 +325,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       return;
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onResume);
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onResume);
     stateContainer.onResume();
     businessObjectRetrievalAndResultHandlers();
   }
@@ -349,7 +355,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onStart");
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onStart);
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onStart);
     stateContainer.onStart();
   }
 
@@ -366,7 +372,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     else
     {
-      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onPause);
+      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onPause);
       stateContainer.onPause();
     }
   }
@@ -377,7 +383,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onStop");
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onStop);
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onStop);
     stateContainer.onStop();
   }
 
@@ -395,11 +401,11 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     if (stateContainer.isDoNotCallOnActivityDestroyed() == false)
     {
       onActuallyDestroyed();
-      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onActuallyDestroyedDone);
+      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onActuallyDestroyedDone);
     }
     else
     {
-      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onDestroy);
+      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onDestroy);
     }
     stateContainer.unregisterBroadcastListeners();
   }
@@ -561,7 +567,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
         stateContainer.onStopLoading();
         return;
       }
-      ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
+      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent,
+          ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
     }
     try
     {
@@ -578,7 +585,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       stateContainer.onStopLoading();
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, component, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent,
+        ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
     stateContainer.markNotResumedForTheFirstTime();
     if (onOver != null)
     {
