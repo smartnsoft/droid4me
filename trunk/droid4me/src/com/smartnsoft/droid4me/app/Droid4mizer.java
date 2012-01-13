@@ -416,7 +416,17 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onCreateOptionsMenu");
     }
-    stateContainer.compositeActionHandler.onCreateOptionsMenu(activity, menu);
+    if (stateContainer.compositeActionHandler != null)
+    {
+      stateContainer.compositeActionHandler.onCreateOptionsMenu(activity, menu);
+    }
+    else
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("onCreateOptionsMenu() being called whereas the 'stateContainer.compositeActionHandler' has not yet been initialized!");
+      }
+    }
     return superResult;
   }
 
@@ -426,7 +436,17 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onPrepareOptionsMenu");
     }
-    stateContainer.compositeActionHandler.onPrepareOptionsMenu(menu);
+    if (stateContainer.compositeActionHandler != null)
+    {
+      stateContainer.compositeActionHandler.onPrepareOptionsMenu(menu);
+    }
+    else
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("onPrepareOptionsMenu() being called whereas the 'stateContainer.compositeActionHandler' has not yet been initialized!");
+      }
+    }
     return superResult;
   }
 
