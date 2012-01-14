@@ -5,7 +5,7 @@
 	<classpathentry kind="lib" path="libs/httpcore-4.1.3.jar"/>
 	<classpathentry kind="lib" path="libs/httpclient-4.1.2.jar"/>
 	<classpathentry kind="lib" path="libs/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="lib" path="libs/android-r11.jar"/>
+	<classpathentry kind="lib" path="libs/android-v11.jar"/>
 	<classpathentry kind="lib" path="libs/maps.jar"/>
 	<classpathentry kind="lib" path="libs/android-support-v4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
