@@ -65,7 +65,7 @@ This Ant buildfile requires that you have included the following Ant library ext
     /-->
     <property
       name="androidJar.filePath"
-      location="libs/android.jar"
+      location="libs/android-v11.jar"
     />
     <!--property
       name="googleMapsJar.filePath"
@@ -74,6 +74,10 @@ This Ant buildfile requires that you have included the following Ant library ext
     <property
       name="googleMapsJar.filePath"
       location="libs/maps.jar"
+    />
+    <property
+      name="androidSupportJar.filePath"
+      location="libs/android-support-v4.jar"
     />
     <property
       name="temporary.directoryPath"
@@ -116,8 +120,9 @@ This Ant buildfile requires that you have included the following Ant library ext
       location="${temporary.directoryPath}/tweaked"
     />
     <path id="droid4me.classpath">
-      <pathelement location="${googleMapsJar.filePath}"/>
       <pathelement location="${androidJar.filePath}"/>
+      <pathelement location="${androidSupportJar.filePath}"/>
+      <pathelement location="${googleMapsJar.filePath}"/>
     </path>
   </target>
 
@@ -393,7 +398,7 @@ This Ant buildfile requires that you have included the following Ant library ext
   >
     <property
       name="project.directoryPath"
-      location="../FamilyWall"
+      location="../Metro-Android-Tablet"
     />
     <property
       name="excludedPath"
