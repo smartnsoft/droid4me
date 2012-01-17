@@ -10,13 +10,15 @@ import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.Droid4mizerInterface;
 import com.smartnsoft.droid4me.app.SmartableActivity;
+import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
+import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 
 /**
  * A basis classes for designing an Android compatibility library {@link android.support.v4.app.FragmentActivity} compatible with the framework.
@@ -32,6 +34,8 @@ public abstract class SmartFragmentActivity<AggregateClass>
     extends FragmentActivity
     implements Droid4mizerInterface, SmartableActivity<AggregateClass>
 {
+
+  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
 
   private final Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>>(this, this, this, this, null);
 
