@@ -569,7 +569,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   private void onBeforeRefreshBusinessObjectsAndDisplay()
   {
-    // THINK: should we plug the feature?
+    stateContainer.onStartLoading();
   }
 
   private void onFulfillAndSynchronizeDisplayObjectsInternal(Runnable onOver)
