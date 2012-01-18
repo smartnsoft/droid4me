@@ -35,8 +35,8 @@ import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
-import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
+import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 
 /**
  * The class that should be used when extending a legacy class to support the whole droid4me framework features.
@@ -282,7 +282,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
         {
           return null;
         }
-        final ArrayList<MenuCommand<Void>> menuCommands = new ArrayList<MenuCommand<Void>>(staticMenuCommands.size());
+        final List<MenuCommand<Void>> menuCommands = new ArrayList<MenuCommand<Void>>(staticMenuCommands.size());
         for (StaticMenuCommand staticMenuCommand : staticMenuCommands)
         {
           menuCommands.add(staticMenuCommand);

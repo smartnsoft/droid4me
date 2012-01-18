@@ -43,7 +43,12 @@ public final class AppPublics
   /**
    * A flag name which indicates the FQN name of the activity class concerned with the action.
    */
-  public final static String ACTION_ACTIVITY = "activity";
+  public final static String EXTRA_ACTION_ACTIVITY = "activity";
+
+  /**
+   * A flag name which indicates the FQN name of the component class concerned with the action.
+   */
+  public final static String EXTRA_ACTION_COMPONENT = "component";
 
   /**
    * Use this intent action when you need to indicate that something is being loaded. For indicating that the loading is over, attach the
@@ -208,7 +213,7 @@ public final class AppPublics
   }
 
   /**
-   * A broadcast listener which listens only to {@link AppPublics#LOAD_ACTION} intents.
+   * A broadcast listener which listens only to {@link AppPublics#LOAD_ACTION loading intent actions}.
    * 
    * @since 2011.08.02
    */
@@ -218,9 +223,9 @@ public final class AppPublics
 
     private final Class<? extends Activity> activityClass;
 
-    public static void broadcastReload(Context context, Class<? extends Activity> targetActivityClass)
+    public static void broadcastReload(Context context, Class<? extends Activity> targetActivityClass)// , Class<?> componentClass)
     {
-      context.sendBroadcast(new Intent(AppPublics.RELOAD_ACTION).putExtra(AppPublics.ACTION_ACTIVITY, targetActivityClass.getName()).addCategory(
+      context.sendBroadcast(new Intent(AppPublics.RELOAD_ACTION).putExtra(AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName()).addCategory(
           targetActivityClass.getName()));
     }
 
@@ -233,8 +238,8 @@ public final class AppPublics
 
     public static boolean matchesReload(Intent intent, Class<? extends Activity> targetActivityClass)
     {
-      return intent.getAction() != null && intent.getAction().equals(AppPublics.RELOAD_ACTION) && intent.hasExtra(AppPublics.ACTION_ACTIVITY) == true && intent.getStringExtra(
-          AppPublics.ACTION_ACTIVITY).equals(targetActivityClass.getName()) == true;
+      return intent.getAction() != null && intent.getAction().equals(AppPublics.RELOAD_ACTION) && intent.hasExtra(AppPublics.EXTRA_ACTION_ACTIVITY) == true && intent.getStringExtra(
+          AppPublics.EXTRA_ACTION_ACTIVITY).equals(targetActivityClass.getName()) == true;
     }
 
     public ReloadBroadcastListener(Class<? extends Activity> activityClass)
@@ -293,8 +298,8 @@ public final class AppPublics
      */
     public static void broadcastLoading(Context context, Class<? extends Activity> targetActivityClass, boolean isLoading, boolean addCategory)
     {
-      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_LOADING, isLoading).putExtra(AppPublics.ACTION_ACTIVITY,
-          targetActivityClass.getName());
+      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_LOADING, isLoading).putExtra(
+          AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName());
       if (addCategory == true)
       {
         intent.addCategory(targetActivityClass.getName());
@@ -335,8 +340,8 @@ public final class AppPublics
 
     public void onReceive(Intent intent)
     {
-      if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.ACTION_ACTIVITY) == true && intent.getStringExtra(
-          AppPublics.ACTION_ACTIVITY).equals(activity.getClass().getName()) == true)
+      if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.EXTRA_ACTION_ACTIVITY) == true && intent.getStringExtra(
+          AppPublics.EXTRA_ACTION_ACTIVITY).equals(activity.getClass().getName()) == true)
       {
         final int previousCounter = counter;
         // We only take into account the loading event coming from the activity itself
@@ -463,7 +468,7 @@ public final class AppPublics
      *          allowed to be {@code null}
      * @return {@code true} if the intent has been handled ; {@code false} otherwise
      */
-    @SuppressWarnings( { "unchecked", "rawtypes" })
+    @SuppressWarnings( { "unchecked" })
     public boolean onSelection(Intent intent, MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
     {
       if (intent.getAction().equals(AppPublics.MultiSelectionHandler.ACTION_SELECTION) == false)
