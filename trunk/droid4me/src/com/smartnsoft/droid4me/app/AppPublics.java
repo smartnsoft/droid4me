@@ -52,14 +52,14 @@ public final class AppPublics
 
   /**
    * Use this intent action when you need to indicate that something is being loaded. For indicating that the loading is over, attach the
-   * {@link AppPublics#UI_LOAD_ACTION_LOADING} key to the {@link Intent}.
+   * {@link AppPublics#EXTRA_UI_LOAD_ACTION_LOADING} key to the {@link Intent}.
    */
   public static String UI_LOAD_ACTION = "com.smartnsoft.droid4me.action.UI_LOADING";
 
   /**
    * A flag name which indicates whether the loading event is starting or ending.
    */
-  public final static String UI_LOAD_ACTION_LOADING = "loading";
+  public final static String EXTRA_UI_LOAD_ACTION_LOADING = "loading";
 
   /**
    * Use this intent action when you need to indicate that an activity should refresh its UI.
@@ -83,7 +83,7 @@ public final class AppPublics
     AppPublics.UI_LOAD_ACTION = application.getPackageName() + ".action.UI_LOADING";
     AppPublics.UPDATE_ACTION = application.getPackageName() + ".action.UPDATE";
     AppPublics.RELOAD_ACTION = application.getPackageName() + ".action.RELOAD";
-    AppPublics.MultiSelectionHandler.ACTION_SELECTION = application.getPackageName() + ".action.SELECTION";
+    AppPublics.MultiSelectionHandler.SELECTION_ACTION = application.getPackageName() + ".action.SELECTION";
   }
 
   /**
@@ -223,40 +223,83 @@ public final class AppPublics
 
     private final Class<? extends Activity> activityClass;
 
-    public static void broadcastReload(Context context, Class<? extends Activity> targetActivityClass)// , Class<?> componentClass)
+    private final Class<?> componentClass;
+
+    /**
+     * Triggers a reload event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
+     * 
+     * @param context
+     *          the context which will be used to trigger the event
+     * @param targetActivityClass
+     *          the class which should receive the loading event
+     * @param componentClass
+     *          an optional (may be {@code null}) class which refines the component that should receive the event
+     */
+    public static void broadcastReload(Context context, Class<? extends Activity> targetActivityClass, Class<?> componentClass)
     {
       context.sendBroadcast(new Intent(AppPublics.RELOAD_ACTION).putExtra(AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName()).addCategory(
-          targetActivityClass.getName()));
+          targetActivityClass.getName()).putExtra(AppPublics.EXTRA_ACTION_COMPONENT, componentClass == null ? null : componentClass.getName()));
     }
 
-    public static IntentFilter addReload(IntentFilter intentFilter, Class<? extends Activity> targetActivityClass)
+    /**
+     * Creates an {@link IntentFilter} which is able to listen for a broadcast reload event.
+     * 
+     * @param intentFilter
+     *          an already existing intent filter, which will be enriched
+     * @param targetActivityClass
+     *          the class which is supposed to receive the broadcast event
+     * @param componentClass
+     *          an optional (may be {@code null}) class which refines the component that is supposed to receive the event
+     * @return the provided intent filter, which has been enriched
+     */
+    public static IntentFilter addReload(IntentFilter intentFilter, Class<? extends Activity> targetActivityClass, Class<?> componentClass)
     {
       intentFilter.addAction(AppPublics.RELOAD_ACTION);
       intentFilter.addCategory(targetActivityClass.getName());
       return intentFilter;
     }
 
-    public static boolean matchesReload(Intent intent, Class<? extends Activity> targetActivityClass)
+    /**
+     * Indicates whether an intent matches a reload broadcast event.
+     * 
+     * @param intent
+     *          the intent that has been received and which is to be analyzed
+     * @param targetActivityClass
+     *          the class which is supposed to receive the broadcast event
+     * @param componentClass
+     *          an optional (may be {@code null}) class which refines the component that is supposed to receive the event
+     * @return {@code true} if and only if the intent matches the expected event
+     */
+    public static boolean matchesReload(Intent intent, Class<? extends Activity> targetActivityClass, Class<?> componentClass)
     {
       return intent.getAction() != null && intent.getAction().equals(AppPublics.RELOAD_ACTION) && intent.hasExtra(AppPublics.EXTRA_ACTION_ACTIVITY) == true && intent.getStringExtra(
           AppPublics.EXTRA_ACTION_ACTIVITY).equals(targetActivityClass.getName()) == true;
     }
 
+    /**
+     * Equivalent to {@link ReloadBroadcastListener#ReloadBroadcastListener(Class, Class) ReloadBroadcastListener(Class, null)}
+     */
     public ReloadBroadcastListener(Class<? extends Activity> activityClass)
     {
+      this(activityClass, null);
+    }
+
+    public ReloadBroadcastListener(Class<? extends Activity> activityClass, Class<?> componentClass)
+    {
       this.activityClass = activityClass;
+      this.componentClass = componentClass;
     }
 
     public IntentFilter getIntentFilter()
     {
       final IntentFilter intentFilter = new IntentFilter();
-      ReloadBroadcastListener.addReload(intentFilter, activityClass);
+      ReloadBroadcastListener.addReload(intentFilter, activityClass, componentClass);
       return intentFilter;
     }
 
     public void onReceive(Intent intent)
     {
-      if (ReloadBroadcastListener.matchesReload(intent, activityClass) == true)
+      if (ReloadBroadcastListener.matchesReload(intent, activityClass, componentClass) == true)
       {
         onReload();
       }
@@ -285,10 +328,10 @@ public final class AppPublics
     private boolean restrictToActivity;
 
     /**
-     * Triggers a loading event.
+     * Triggers a loading event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
      * 
      * @param context
-     *          the context which triggers that event
+     *          the context which will be used to trigger the event
      * @param targetActivityClass
      *          the class which should receive the loading event
      * @param isLoading
@@ -298,7 +341,7 @@ public final class AppPublics
      */
     public static void broadcastLoading(Context context, Class<? extends Activity> targetActivityClass, boolean isLoading, boolean addCategory)
     {
-      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.UI_LOAD_ACTION_LOADING, isLoading).putExtra(
+      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.EXTRA_UI_LOAD_ACTION_LOADING, isLoading).putExtra(
           AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName());
       if (addCategory == true)
       {
@@ -345,7 +388,7 @@ public final class AppPublics
       {
         final int previousCounter = counter;
         // We only take into account the loading event coming from the activity itself
-        final boolean isLoading = intent.getBooleanExtra(AppPublics.UI_LOAD_ACTION_LOADING, true);
+        final boolean isLoading = intent.getBooleanExtra(AppPublics.EXTRA_UI_LOAD_ACTION_LOADING, true);
         counter += (isLoading == true ? 1 : -1);
 
         // We only trigger an event provided the cumulative loading status has changed
@@ -371,7 +414,7 @@ public final class AppPublics
   }
 
   /**
-   * A helper which receives mutli-selection {@link Intent intents} with an action set to {@link MultiSelectionHandler#ACTION_SELECTION}, and which
+   * A helper which receives mutli-selection {@link Intent intents} with an action set to {@link MultiSelectionHandler#SELECTION_ACTION}, and which
    * remembers and triggers event according to the current selection.
    * 
    * <p>
@@ -406,20 +449,20 @@ public final class AppPublics
     /**
      * Use this intent action when you need to indicate to the current activity that a business object has been selected or unselected.
      * 
-     * @see use the {@link MultiSelectionHandler#SELECTED} and {@link MultiSelectionHandler#BUSINESS_OBJECT} extra flags for indicated whether the
-     *      business object is selected, and what business object this is about
+     * @see use the {@link MultiSelectionHandler#EXTRA_SELECTED} and {@link MultiSelectionHandler#EXTRA_BUSINESS_OBJECT} extra flags for indicated
+     *      whether the business object is selected, and what business object this is about
      */
-    public static String ACTION_SELECTION = "com.smartnsoft.droid4me.action.SELECTION";
+    public static String SELECTION_ACTION = "com.smartnsoft.droid4me.action.SELECTION";
 
     /**
      * Used as a key in the {@link Intent#getExtras() intent bundle}, so as to indicate whether the event deals with a selection or deselection.
      */
-    public final static String SELECTED = "selected";
+    public final static String EXTRA_SELECTED = "selected";
 
     /**
      * Used as a key in the {@link Intent#getExtras() intent bundle}, so as to indicate in the event the selected or deselected business.
      */
-    public final static String BUSINESS_OBJECT = "businessObject";
+    public final static String EXTRA_BUSINESS_OBJECT = "businessObject";
 
     private int selectedCount = 0;
 
@@ -454,7 +497,7 @@ public final class AppPublics
     }
 
     /**
-     * The method to invoke when the activity receives a {@link MultiSelectionHandler#ACTION_SELECTION intent}, due to as business object
+     * The method to invoke when the activity receives a {@link MultiSelectionHandler#SELECTION_ACTION intent}, due to as business object
      * selection/unselection.
      * 
      * <p>
@@ -468,16 +511,16 @@ public final class AppPublics
      *          allowed to be {@code null}
      * @return {@code true} if the intent has been handled ; {@code false} otherwise
      */
-    @SuppressWarnings( { "unchecked" })
-    public boolean onSelection(Intent intent, MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
+    @SuppressWarnings({ "unchecked" })
+    public boolean onSelection(Intent intent, @SuppressWarnings("rawtypes") MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
     {
-      if (intent.getAction().equals(AppPublics.MultiSelectionHandler.ACTION_SELECTION) == false)
+      if (intent.getAction().equals(AppPublics.MultiSelectionHandler.SELECTION_ACTION) == false)
       {
         return false;
       }
-      final boolean selected = intent.getBooleanExtra(MultiSelectionHandler.SELECTED, false) == true;
+      final boolean selected = intent.getBooleanExtra(MultiSelectionHandler.EXTRA_SELECTED, false) == true;
       final int previousSelectedCount = selectedCount;
-      final BusinessObjectClass businessObject = (BusinessObjectClass) intent.getSerializableExtra(MultiSelectionHandler.BUSINESS_OBJECT);
+      final BusinessObjectClass businessObject = (BusinessObjectClass) intent.getSerializableExtra(MultiSelectionHandler.EXTRA_BUSINESS_OBJECT);
       setSelection(businessObject, selected);
       if (onMultiSelectionChanged != null)
       {
