@@ -393,6 +393,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onDestroy");
     }
+    stateContainer.unregisterBroadcastListeners();
     if (shouldKeepOn() == false)
     {
       // We stop here if a redirection is needed or is something went wrong
@@ -407,7 +408,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onDestroy);
     }
-    stateContainer.unregisterBroadcastListeners();
   }
 
   public boolean onCreateOptionsMenu(boolean superResult, Menu menu)

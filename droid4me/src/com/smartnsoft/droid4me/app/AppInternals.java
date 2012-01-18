@@ -286,13 +286,13 @@ final class AppInternals
         broadcastListener = ((AppPublics.BroadcastListenerProvider) component).getBroadcastListener();
         if (broadcastListener != null)
         {
-          registerBroadcastListeners(enrichBroadCastListeners(1), broadcastListener);
+          registerBroadcastListeners(enrichBroadcastListeners(1), broadcastListener);
         }
       }
       else if (component instanceof AppPublics.BroadcastListener)
       {
         broadcastListener = (AppPublics.BroadcastListener) component;
-        registerBroadcastListeners(enrichBroadCastListeners(1), broadcastListener);
+        registerBroadcastListeners(enrichBroadcastListeners(1), broadcastListener);
       }
       else if (component instanceof AppPublics.BroadcastListenersProvider)
       {
@@ -302,7 +302,7 @@ final class AppInternals
         {
           log.debug("Found out that the activity supports " + count + " intent broadcast listeners");
         }
-        final int startIndex = enrichBroadCastListeners(count);
+        final int startIndex = enrichBroadcastListeners(count);
         for (int index = 0; index < count; index++)
         {
           registerBroadcastListeners(startIndex + index, broadcastListenersProvider.getBroadcastListener(index));
@@ -312,7 +312,7 @@ final class AppInternals
 
     void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners)
     {
-      final int startIndex = enrichBroadCastListeners(broadcastListeners.length);
+      final int startIndex = enrichBroadcastListeners(broadcastListeners.length);
       for (int index = 0; index < broadcastListeners.length; index++)
       {
         registerBroadcastListeners(index + startIndex, broadcastListeners[index]);
@@ -357,7 +357,7 @@ final class AppInternals
       activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter() : intentFilter);
     }
 
-    private int enrichBroadCastListeners(int count)
+    private int enrichBroadcastListeners(int count)
     {
       final int newIndex;
       if (broadcastReceivers == null)
