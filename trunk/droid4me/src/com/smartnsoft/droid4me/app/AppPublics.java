@@ -340,7 +340,8 @@ public final class AppPublics
       {
         final int previousCounter = counter;
         // We only take into account the loading event coming from the activity itself
-        counter += (intent.getBooleanExtra(AppPublics.UI_LOAD_ACTION_LOADING, true) == true ? 1 : -1);
+        final boolean isLoading = intent.getBooleanExtra(AppPublics.UI_LOAD_ACTION_LOADING, true);
+        counter += (isLoading == true ? 1 : -1);
 
         // We only trigger an event provided the cumulative loading status has changed
         if (previousCounter == 0 && counter >= 1)

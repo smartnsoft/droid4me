@@ -407,7 +407,7 @@ final class AppInternals
      */
     void onStartLoading()
     {
-      if (activity instanceof AppPublics.SendLoadingIntent)
+      if (component instanceof AppPublics.SendLoadingIntent)
       {
         // We indicate the activity which is loading, in order to filter the loading events
         AppPublics.LoadingBroadcastListener.broadcastLoading(activity, activity.getClass(), true, false);
@@ -420,7 +420,7 @@ final class AppInternals
      */
     void onStopLoading()
     {
-      if (activity instanceof AppPublics.SendLoadingIntent)
+      if (component instanceof AppPublics.SendLoadingIntent)
       {
         // We indicate the activity which is loading, in order to filter the loading events
         AppPublics.LoadingBroadcastListener.broadcastLoading(activity, activity.getClass(), false, false);
