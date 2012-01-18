@@ -560,7 +560,7 @@ public abstract class SmartGroupActivity<AggregateClass>
         {
           return null;
         }
-        final ArrayList<MenuCommand<Void>> menuCommands = new ArrayList<MenuCommand<Void>>(staticMenuCommands.size());
+        final List<MenuCommand<Void>> menuCommands = new ArrayList<MenuCommand<Void>>(staticMenuCommands.size());
         for (StaticMenuCommand staticMenuCommand : staticMenuCommands)
         {
           menuCommands.add(staticMenuCommand);
