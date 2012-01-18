@@ -486,6 +486,7 @@ public abstract class SmartActivity<AggregateClass>
     }
     try
     {
+      stateContainer.unregisterBroadcastListeners();
       if (shouldKeepOn() == false)
       {
         // We stop here if a redirection is needed or is something went wrong
@@ -500,7 +501,6 @@ public abstract class SmartActivity<AggregateClass>
       {
         ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onDestroy);
       }
-      stateContainer.unregisterBroadcastListeners();
     }
     finally
     {

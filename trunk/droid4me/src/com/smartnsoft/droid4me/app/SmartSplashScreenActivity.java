@@ -24,6 +24,7 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Environment;
 
 import com.smartnsoft.droid4me.LifeCycle;
@@ -257,7 +258,10 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
     stopActivity = false;
     pauseActivity = false;
     hasStopped = false;
-    finish();
+    if (isFinishing() == false)
+    {
+      finish();
+    }
   }
 
   /**
@@ -285,6 +289,14 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
   protected Intent computeNextIntent()
   {
     return new Intent(getApplicationContext(), getNextActivity());
+  }
+
+  @Override
+  protected void onSaveInstanceState(Bundle outState)
+  {
+    super.onSaveInstanceState(outState);
+    // The activity is bound to be recreated, hence, we do not want to finish it, otherwise the newly created instance will be created as well
+    pauseActivity = true;
   }
 
   public void onSynchronizeDisplayObjects()

@@ -26,8 +26,8 @@ import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnClickListener;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -333,6 +333,9 @@ public abstract class SmartApplication
     }
     super.onCreate();
 
+    // We initialize the preferences very soon, so that they are available
+    preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
     // We register the application exception handler as soon as possible, in order to be able to handle exceptions
     ActivityController.getInstance().registerExceptionHandler(getExceptionHandler());
     final Thread uiThread = Thread.currentThread();
@@ -374,8 +377,6 @@ public abstract class SmartApplication
     {
       ActivityController.getInstance().registerInterceptor(interceptor);
     }
-
-    preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
     onCreateCustom();
 
