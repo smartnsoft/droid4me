@@ -315,6 +315,10 @@ public class DownloadInstructions
     {
     }
 
+    public void onOver(boolean aborted, ViewableView view, String bitmapUid, Object imageSpecs)
+    {
+    }
+
   }
 
   /**

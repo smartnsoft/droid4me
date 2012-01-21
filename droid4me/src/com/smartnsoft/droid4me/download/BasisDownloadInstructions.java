@@ -158,9 +158,9 @@ public class BasisDownloadInstructions
     BitmapClass convert(InputStream inputStream, String bitmapUid, Object imageSpecs);
 
     /**
-     * Is invoked every time once the underlying view bitmap is either not {@code null} ready in memory (the <code>allright</code> parameter is set to
-     * {@code true}), or when it occurs that the bitmap could not be downloaded or is not well formed (the <code>allright</code> parameter is set to
-     * {@code false}).
+     * Is invoked every time, once the underlying view bitmap is either not {@code null} ready in memory (the <code>allright</code> parameter is set
+     * to {@code true}), or when it occurs that the bitmap could not be downloaded or is not well formed (the <code>allright</code> parameter is set
+     * to {@code false}).
      * 
      * <p>
      * It is NOT ensured that this method will be run from the UI thread.
@@ -213,6 +213,19 @@ public class BasisDownloadInstructions
      *          {@code true} if and only if the bitmap has actually been downloaded and attached to its view
      */
     void onBitmapBound(boolean result, ViewClass view, String bitmapUid, Object imageSpecs);
+
+    /**
+     * This method is invoked systematically once the command is over, either when it has successfully completed, or when it has been aborted.
+     * 
+     * <p>
+     * This callback is especially useful the unitary tests.
+     * </p>
+     * 
+     * @param aborted
+     *          {@code true} when and only when the command has been aborted, because another command working on the same {@code view} has also been
+     *          stacked in the meantime
+     */
+    void onOver(boolean aborted, ViewClass view, String bitmapUid, Object imageSpecs);
 
   }
 
@@ -290,6 +303,10 @@ public class BasisDownloadInstructions
     }
 
     public void onBitmapBound(boolean result, ViewClass view, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    public void onOver(boolean aborted, ViewClass view, String bitmapUid, Object imageSpecs)
     {
     }
 
