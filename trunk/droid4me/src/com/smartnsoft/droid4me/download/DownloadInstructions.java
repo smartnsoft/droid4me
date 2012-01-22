@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Map;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -125,6 +126,37 @@ public class DownloadInstructions
     public void setTag(Object tag)
     {
       view.setTag(tag);
+    }
+
+    /**
+     * It is very important that this wrapper class just returns the {@link View#hashCode()} method, because it will be used as a {@link Map} key.
+     */
+    @Override
+    public int hashCode()
+    {
+      return view.hashCode();
+    }
+
+    /**
+     * It is very important that this wrapper class just returns the {@link View#equals(Object)} method, because it will be used as a {@link Map} key.
+     */
+    @Override
+    public boolean equals(Object object)
+    {
+      if (this == object)
+      {
+        return true;
+      }
+      if (object == null)
+      {
+        return false;
+      }
+      if (getClass() != object.getClass())
+      {
+        return false;
+      }
+      final ViewableView other = (ViewableView) object;
+      return view == other.view;
     }
 
   }
