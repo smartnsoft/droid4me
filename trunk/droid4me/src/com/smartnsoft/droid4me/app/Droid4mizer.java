@@ -456,9 +456,19 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onOptionsItemSelected");
     }
-    if (stateContainer.compositeActionHandler.onOptionsItemSelected(item) == true)
+    if (stateContainer.compositeActionHandler != null)
     {
-      return true;
+      if (stateContainer.compositeActionHandler.onOptionsItemSelected(item) == true)
+      {
+        return true;
+      }
+    }
+    else
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("onOptionsItemSelected() being called whereas the 'stateContainer.compositeActionHandler' has not yet been initialized!");
+      }
     }
     return superResult;
   }
