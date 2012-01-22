@@ -53,6 +53,12 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    */
   public static boolean IS_DEBUG_TRACE = false;
 
+  /**
+   * A flag which enables to log dump details about "BitmapDownloader" component, which will have an effect only provided the
+   * {@link CoreBitmapDownloader#IS_DEBUG_TRACE} is set to {@code true}: only defined for development purposes. Defaults to {@code false}.
+   */
+  public static boolean IS_DUMP_TRACE = false;
+
   protected final class UsedBitmap
       implements Comparable<UsedBitmap>
   {
@@ -224,8 +230,8 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * </p>
    * 
    * @param view
-   *          the view that will be bound with the retrieved {@link Bitmap}. May be {@code null}, which enables to simply download a bitmap and
-   *          put it into the cache
+   *          the view that will be bound with the retrieved {@link Bitmap}. May be {@code null}, which enables to simply download a bitmap and put it
+   *          into the cache
    * @param bitmapUid
    *          the identifier of the bitmap to retrieve. Most of the time, this is the URL of the bitmap on Internet, but it can serve as a basis to
    *          {@link BasisBitmapDownloader.Instructions#computeUrl(String, Object) compute} the actual URL
@@ -306,18 +312,19 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
     }
     memoryConsumption += bitmapSize;
     usedBitmap.rememberAccessed();
-    cleanUpCacheIfNecessary();
-    return usedBitmap;
-  }
 
-  private final void cleanUpCacheIfNecessary()
-  {
+    // If the cache water mark upper limit has been reached, the cache is cleared
     if (memoryConsumption > maxMemoryInBytes)
     {
       cleanUpCache();
     }
+
+    return usedBitmap;
   }
 
+  /**
+   * Is responsible for emptying the cache, until the low-level memory water mark is reached.
+   */
   protected final void cleanUpCache()
   {
     if (cleanUpInProgress == true)
@@ -325,7 +332,12 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       // This cancels all the forthcoming calls, as long as the clean-up is not over, and we do not want the caller to be hanging
       return;
     }
+    final long start = System.currentTimeMillis();
     cleanUpInProgress = true;
+    if (IS_DEBUG_TRACE && log.isDebugEnabled())
+    {
+      log.debug("Running a cache clean-up from thread '" + Thread.currentThread().getName() + "'");
+    }
     try
     {
       synchronized (cache)
@@ -375,7 +387,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
         }
         if (log.isInfoEnabled())
         {
-          log.info("The bitmap cache '" + name + "' has been cleaned-up (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumption + " bytes");
+          log.info("The bitmap cache '" + name + "' has been cleaned-up in " + (System.currentTimeMillis() - start) + " ms (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumption + " bytes");
         }
       }
     }
