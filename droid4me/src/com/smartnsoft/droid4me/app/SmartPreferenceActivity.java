@@ -535,11 +535,21 @@ public abstract class SmartPreferenceActivity<AggregateClass>
   {
     if (log.isDebugEnabled())
     {
-      log.debug("SmartPreferenceActivity::onCreateOptionsMenu");
+      log.debug("SmartActivity::onCreateOptionsMenu");
     }
     boolean result = super.onCreateOptionsMenu(menu);
 
-    stateContainer.compositeActionHandler.onCreateOptionsMenu(this, menu);
+    if (stateContainer.compositeActionHandler != null)
+    {
+      stateContainer.compositeActionHandler.onCreateOptionsMenu(this, menu);
+    }
+    else
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("onCreateOptionsMenu() being called whereas the 'stateContainer.compositeActionHandler' has not yet been initialized!");
+      }
+    }
     return result;
   }
 
@@ -548,11 +558,21 @@ public abstract class SmartPreferenceActivity<AggregateClass>
   {
     if (log.isDebugEnabled())
     {
-      log.debug("SmartPreferenceActivity::onPrepareOptionsMenu");
+      log.debug("SmartActivity::onPrepareOptionsMenu");
     }
     boolean result = super.onPrepareOptionsMenu(menu);
 
-    stateContainer.compositeActionHandler.onPrepareOptionsMenu(menu);
+    if (stateContainer.compositeActionHandler != null)
+    {
+      stateContainer.compositeActionHandler.onPrepareOptionsMenu(menu);
+    }
+    else
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("onPrepareOptionsMenu() being called whereas the 'stateContainer.compositeActionHandler' has not yet been initialized!");
+      }
+    }
     return result;
   }
 
@@ -561,13 +581,23 @@ public abstract class SmartPreferenceActivity<AggregateClass>
   {
     if (log.isDebugEnabled())
     {
-      log.debug("SmartPreferenceActivity::onOptionsItemSelected");
+      log.debug("SmartActivity::onOptionsItemSelected");
     }
     boolean result = super.onOptionsItemSelected(item);
 
-    if (stateContainer.compositeActionHandler.onOptionsItemSelected(item) == true)
+    if (stateContainer.compositeActionHandler != null)
     {
-      return true;
+      if (stateContainer.compositeActionHandler.onOptionsItemSelected(item) == true)
+      {
+        return true;
+      }
+    }
+    else
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("onOptionsItemSelected() being called whereas the 'stateContainer.compositeActionHandler' has not yet been initialized!");
+      }
     }
     return result;
   }
