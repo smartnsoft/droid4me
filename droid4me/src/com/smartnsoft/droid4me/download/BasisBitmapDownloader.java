@@ -152,6 +152,9 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     protected abstract void executeStart(boolean isFromGuiThread);
 
+    /**
+     * This method will always be executed in the UI thread.
+     */
     protected abstract void executeEnd();
 
     /**
@@ -180,15 +183,25 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       }
     }
 
-    public int compareTo(BasisCommand other)
+    public final int compareTo(BasisCommand other)
     {
-      return other.ordinal - ordinal;
+      if (ordinal > other.ordinal)
+      {
+        return -1;
+      }
+      else if (ordinal < other.ordinal)
+      {
+        return 1;
+      }
+      return 0;
     }
 
-    public String logCommandId()
+    public final String logCommandId()
     {
-      return "C(" + id + ") ";
+      return logCommandIdPrefix() + "C(" + id + ") ";
     }
+
+    protected abstract String logCommandIdPrefix();
 
   }
 
@@ -326,8 +339,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       }
       // We only continue the process (and the temporary or local bitmap view binding) provided there is not already another command bound to be
       // processed for the same view
-      Integer commandId = prioritiesStack.get(view);
-      if (state != FinalState.NotInCache && (commandId == null || commandId != id))
+      final Integer commandId = prioritiesStack.get(view);
+      if (state != FinalState.NotInCache && (commandId == null || commandId.intValue() != id))
       {
         instructions.onOver(true, view, bitmapUid, imageSpecs);
         if (log.isDebugEnabled())
@@ -396,10 +409,14 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           break;
         }
         // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
-        commandId = prioritiesStack.get(view);
-        if (state != FinalState.NotInCache && commandId == id)
+        if (state != FinalState.NotInCache)
         {
           prioritiesStack.remove(view);
+          if (IS_DEBUG_TRACE && log.isDebugEnabled())
+          {
+            log.debug(logCommandId() + "Removed from the priority stack the view" + (view != null ? " " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
+                : ""));
+          }
           dump();
         }
       }
@@ -528,7 +545,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         // But we test whether the download is still required
         final Integer commandId = prioritiesStack.get(view);
-        if (commandId == null || commandId != id)
+        if (commandId == null || commandId.intValue() != id)
         {
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
@@ -567,6 +584,12 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         dump();
       }
       BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.execute(downloadCommand);
+    }
+
+    @Override
+    protected String logCommandIdPrefix()
+    {
+      return "P";
     }
 
   }
@@ -720,8 +743,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     protected void executeEnd()
     {
       // We only bind the bitmap to the view provided there is not already another command bound to be processed
-      Integer commandId = prioritiesStack.get(view);
-      if (commandId == null || commandId != id)
+      final Integer commandId = prioritiesStack.get(view);
+      if (commandId == null || commandId.intValue() != id)
       {
         if (IS_DEBUG_TRACE && log.isDebugEnabled())
         {
@@ -750,11 +773,14 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         }
         instructions.onBitmapBound(usedBitmap != null, view, bitmapUid, imageSpecs);
         instructions.onOver(false, view, bitmapUid, imageSpecs);
-        // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
-        commandId = prioritiesStack.get(view);
-        if (commandId != null && commandId == id)
+        // We clear the priorities stack because the work is over for that command
         {
           prioritiesStack.remove(view);
+          if (IS_DEBUG_TRACE && log.isDebugEnabled())
+          {
+            log.debug(logCommandId() + "Removed from the priority stack the view" + (view != null ? " " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
+                : ""));
+          }
           dump();
         }
       }
@@ -1019,6 +1045,12 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       }
     }
 
+    @Override
+    protected String logCommandIdPrefix()
+    {
+      return "D";
+    }
+
   }
 
   private final class DownloadingBitmap
@@ -1066,9 +1098,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   public BasisBitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
     super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
-    prioritiesStack = new Hashtable<ViewClass, Integer>();
-    prioritiesPreStack = new Hashtable<ViewClass, PreCommand>();
-    prioritiesDownloadStack = new Hashtable<ViewClass, DownloadBitmapCommand>();
+    prioritiesStack = new Hashtable<ViewClass, Integer>();// Collections.synchronizedMap(new IdentityHashMap<ViewClass, Integer>());
+    prioritiesPreStack = new Hashtable<ViewClass, PreCommand>();// Collections.synchronizedMap(new IdentityHashMap<ViewClass, PreCommand>());
+    prioritiesDownloadStack = new Hashtable<ViewClass, DownloadBitmapCommand>();// Collections.synchronizedMap(new IdentityHashMap<ViewClass,
+    // DownloadBitmapCommand>());
     inProgressDownloads = new Hashtable<String, DownloadingBitmap>();
     asynchronousDownloadCommands = new HashSet<ViewClass>();
   }

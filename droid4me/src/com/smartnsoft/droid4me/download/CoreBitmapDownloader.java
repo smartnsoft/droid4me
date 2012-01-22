@@ -376,7 +376,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
           discardedCount++;
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug("Removed from the cache the URL " + discardedUsedCache.url + "' accessed " + discardedUsedCache.accessCount + " time(s) and currently bound " + discardedUsedCache.bindingCount + " time(s)");
+            log.debug("Removed from the cache the bitmap with URL '" + discardedUsedCache.url + "' accessed " + discardedUsedCache.accessCount + " time(s) and currently bound " + discardedUsedCache.bindingCount + " time(s)");
           }
           index++;
         }
