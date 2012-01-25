@@ -2,6 +2,7 @@ package com.smartnsoft.droid4me.app;
 
 import java.util.List;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,8 +16,8 @@ import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
+import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * A basis classes for designing a {@link Fragment} compatible with the framework.
@@ -245,6 +246,25 @@ public abstract class SmartFragment<AggregrateClass>
   public List<StaticMenuCommand> getMenuCommands()
   {
     return null;
+  }
+
+  /**
+   * Does the same thing as the {@link #getActivity()}, except that it throws an exception if the fragment has been detached, instead of returning
+   * {@code null}
+   * 
+   * @return a never-null activity, which is the hosting activity
+   * @throws IllegalStateException
+   *           if the fragment activity is currently null
+   */
+  public final Activity getCheckedActivity()
+      throws IllegalStateException
+  {
+    if (getActivity() == null)
+    {
+      // This will generate an IllegalStateException
+      getResources();
+    }
+    return getActivity();
   }
 
 }
