@@ -80,23 +80,55 @@ public final class SmartCommands
    * {@link SmartCommands.SmartThreadPoolExecutor}.
    * </p>
    * 
+   * @param <ContextClass>
+   *          the class will holds the {@link Context} responsible for the command
+   * 
    * @since 2010.06.08
    */
-  public abstract static class GuardedCommand
+  public abstract static class GuardedCommand<ContextClass extends Context>
       implements Runnable, SmartCommands.GuardedHandler
   {
 
-    private final Context context;
+    /**
+     * The context which will be used when reporting an exception to the {@link ActivityController#getInstance() exception handler}.
+     */
+    private final ContextClass context;
 
+    /**
+     * The component which will be used when reporting an exception to the {@link ActivityController#getInstance() exception handler}.
+     */
+    private final Object component;
+
+    /**
+     * The delegate that will be used, if not {@code null}, to handle any exception thrown by the command.
+     */
     private SmartCommands.GuardedHandler delegate;
 
     /**
      * Equivalent to calling {@code SmartCommands.GuardedCommand#GuardedCommand(Context, SmartCommands.GuardedHandler)} with the second argument being
      * {@code null}.
      */
-    public GuardedCommand(Context context)
+    public GuardedCommand(ContextClass context)
     {
       this(context, null);
+    }
+
+    /**
+     * Equivalent to calling {@code SmartCommands.GuardedCommand#GuardedCommand(Context, Object, SmartCommands.GuardedHandler)} with the third
+     * argument being {@code null}.
+     */
+    public GuardedCommand(ContextClass context, Object component)
+    {
+      this(context, null, null);
+    }
+
+    /**
+     * Equivalent to calling {@code SmartCommands.GuardedCommand#GuardedCommand(Context, Object, SmartCommands.GuardedHandler)} with the second
+     * argument being {@code null}.
+     */
+    public GuardedCommand(ContextClass context, SmartCommands.GuardedHandler delegate)
+    {
+      this(context, null, null);
     }
 
     /**
@@ -111,24 +143,27 @@ public final class SmartCommands
      * @param context
      *          the context from which the execution originates, and which will be used when reporting a potential exception ; it is not allowed to be
      * @{code null}
+     * @param component
+     *          the component from which the execution originates, and which will be used when reporting a potential exception ; may be @{code null}
      * @param delegate
      *          if not {@code null}, the {@link #onThrowable(Throwable)} execution will be delegated to it
      * @see #setDelegate(SmartCommands.GuardedHandler)
      */
-    public GuardedCommand(Context context, SmartCommands.GuardedHandler delegate)
+    public GuardedCommand(ContextClass context, Object component, SmartCommands.GuardedHandler delegate)
     {
       if (context == null)
       {
         throw new NullPointerException("The context should not be null!");
       }
       this.context = context;
+      this.component = component;
       this.delegate = delegate;
     }
 
     /**
-     * @return the activity which will be used for reporting a potential exception
+     * @return the context which will be used for reporting a potential exception
      */
-    protected final Context getContext()
+    protected final ContextClass getContext()
     {
       return context;
     }
@@ -149,7 +184,7 @@ public final class SmartCommands
      *          {@link #onThrowable(Throwable)} method; if {@code null}, no delegating mecanism will be involved
      * @return the current instance, so as to ease its usage
      */
-    public SmartCommands.GuardedCommand setDelegate(SmartCommands.GuardedHandler delegate)
+    public SmartCommands.GuardedCommand<ContextClass> setDelegate(SmartCommands.GuardedHandler delegate)
     {
       this.delegate = delegate;
       return this;
@@ -202,7 +237,7 @@ public final class SmartCommands
           return;
         }
         // We handle the exception
-        ActivityController.getInstance().handleException(context, null, modifiedThrowable);
+        ActivityController.getInstance().handleException(context, component, modifiedThrowable);
       }
     }
 
@@ -219,7 +254,7 @@ public final class SmartCommands
    * @since 2010.11.30
    */
   public static abstract class ProgressGuardedCommand
-      extends SmartCommands.GuardedCommand
+      extends SmartCommands.GuardedCommand<Activity>
   {
 
     private final ProgressHandler progressHandler;
@@ -227,15 +262,27 @@ public final class SmartCommands
     private final String message;
 
     /**
+     * Equivalent to calling {@code SmartCommands.ProgressGuardedCommand#ProgressGuardedCommand(Activity, Object, ProgressHandler, String)} with the
+     * second argument being {@code null}.
+     */
+    public ProgressGuardedCommand(Activity activity, ProgressHandler progressHandler, String message)
+    {
+      this(activity, null, progressHandler, message);
+    }
+
+    /**
      * @param activity
-     *          the activity that initiates the command
+     *          the activity from which the execution originates, and which will be used when reporting a potential exception ; it is not allowed to
+     *          be @{code null}
+     * @param component
+     *          the component from which the execution originates, and which will be used when reporting a potential exception ; may be @{code null}
      * @param progressHandler
-     *          it will be invoked when the command {@link #runGuardedProgress() starts}, and when the command is over, evn if an exception is trhown
+     *          it will be invoked when the command {@link #runGuardedProgress() starts}, and when the command is over, even if an exception is thrown
      *          during the execution
      * @param message
      *          an optional message that will be passed to the {@link ProgressHandler} when the command starts
      */
-    public ProgressGuardedCommand(Activity activity, ProgressHandler progressHandler, String message)
+    public ProgressGuardedCommand(Activity activity, Object component, ProgressHandler progressHandler, String message)
     {
       super(activity);
       this.progressHandler = progressHandler;
@@ -257,12 +304,12 @@ public final class SmartCommands
     {
       try
       {
-        progressHandler.onProgress((Activity) getContext(), true, new ProgressHandler.ProgressExtra(0, message), false);
+        progressHandler.onProgress(getContext(), true, new ProgressHandler.ProgressExtra(0, message), false);
         runGuardedProgress();
       }
       finally
       {
-        progressHandler.onProgress((Activity) getContext(), false, null, false);
+        progressHandler.onProgress(getContext(), false, null, false);
       }
     }
 
@@ -307,10 +354,13 @@ public final class SmartCommands
    * A handy {@link SmartCommands.GuardedCommand} which will issue systematically a log when an exception occurs during the command execution, and
    * will trigger a {@link SmartCommands.GuardedException} which wraps the original exception in that case.
    * 
-   * @since 2011.11.03
+   * @param <ContextClass>
+   *          the class will holds the {@link Context} responsible for the command
+   * 
+   * @since 2012.01.25
    */
-  public abstract static class SimpleGuardedCommand
-      extends SmartCommands.GuardedCommand
+  public abstract static class AbstractSimpleGuardedCommand<ContextClass extends Context>
+      extends SmartCommands.GuardedCommand<ContextClass>
   {
 
     protected final String warningLogMessage;
@@ -321,9 +371,18 @@ public final class SmartCommands
      * Same as {@link SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)} with the last parameter equal to
      * {@code context.getString(warningDisplayMessageResourceId)}.
      */
-    public SimpleGuardedCommand(Context context, String warningLogMessage, int warningDisplayMessageResourceId)
+    public AbstractSimpleGuardedCommand(ContextClass context, String warningLogMessage, int warningDisplayMessageResourceId)
     {
       this(context, warningLogMessage, context.getString(warningDisplayMessageResourceId));
+    }
+
+    /**
+     * Equivalent to calling {@code SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, Object, String, String)} with the second argument
+     * being {@code null}.
+     */
+    public AbstractSimpleGuardedCommand(ContextClass context, String warningLogMessage, String warningDisplayMessage)
+    {
+      this(context, null, warningLogMessage, warningDisplayMessage);
     }
 
     /**
@@ -331,16 +390,19 @@ public final class SmartCommands
      * {@link SmartCommands.GuardedException}, if an exception occurs during its execution.
      * 
      * @param context
-     *          the Android context under which the commands is being run
+     *          the context from which the execution originates, and which will be used when reporting a potential exception ; it is not allowed to be
+     * @{code null}
+     * @param component
+     *          the component from which the execution originates, and which will be used when reporting a potential exception ; may be @{code null}
      * @param warningLogMessage
      *          the log message that will be output in case of exception
      * @param warningDisplayMessage
      *          the (supposedly i18ned) human readable that will be transfered to the {@link SmartCommands.GuardedException} in case of exception
      *          during the command execution
      */
-    public SimpleGuardedCommand(Context context, String warningLogMessage, String warningDisplayMessage)
+    public AbstractSimpleGuardedCommand(ContextClass context, Object component, String warningLogMessage, String warningDisplayMessage)
     {
-      super(context);
+      super(context, component, null);
       this.warningLogMessage = warningLogMessage;
       this.warningDisplayMessage = warningDisplayMessage;
     }
@@ -362,6 +424,32 @@ public final class SmartCommands
         log.warn(warningLogMessage, throwable);
       }
       return getDelegate() != null ? super.onThrowable(throwable) : new SmartCommands.GuardedException(throwable, warningDisplayMessage);
+    }
+
+  }
+
+  /**
+   * A handy {@link SmartCommands.AbstractSimpleGuardedCommand} dedicated to {@link Activity activities}.
+   * 
+   * @since 2011.11.03
+   */
+  public abstract static class SimpleGuardedCommand
+      extends SmartCommands.AbstractSimpleGuardedCommand<Activity>
+  {
+
+    public SimpleGuardedCommand(Activity context, Object component, String warningLogMessage, String warningDisplayMessage)
+    {
+      super(context, component, warningLogMessage, warningDisplayMessage);
+    }
+
+    public SimpleGuardedCommand(Activity context, String warningLogMessage, int warningDisplayMessageResourceId)
+    {
+      super(context, warningLogMessage, warningDisplayMessageResourceId);
+    }
+
+    public SimpleGuardedCommand(Activity context, String warningLogMessage, String warningDisplayMessage)
+    {
+      super(context, warningLogMessage, warningDisplayMessage);
     }
 
   }
@@ -392,7 +480,7 @@ public final class SmartCommands
      * Same as {@link SmartCommands.ProgressDialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, ProgressDialog)} with the third
      * parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
      */
-    public ProgressDialogGuardedCommand(Context context, String warningLogMessage, int warningDisplayMessageResourceId, ProgressDialog progressDialog)
+    public ProgressDialogGuardedCommand(Activity context, String warningLogMessage, int warningDisplayMessageResourceId, ProgressDialog progressDialog)
     {
       this(context, warningLogMessage, context.getString(warningDisplayMessageResourceId), progressDialog);
     }
@@ -404,7 +492,8 @@ public final class SmartCommands
      * the provided dialog.
      * 
      * @param context
-     *          the Android context under which the commands is being run
+     *          the context from which the execution originates, and which will be used when reporting a potential exception ; it is not allowed to be
+     * @{code null}
      * @param warningLogMessage
      *          the log message that will be output in case of exception
      * @param warningDisplayMessage
@@ -415,7 +504,7 @@ public final class SmartCommands
      *          {@link SmartCommands.SimpleGuardedCommand}
      * @see SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)
      */
-    public ProgressDialogGuardedCommand(Context context, String warningLogMessage, String warningDisplayMessage, ProgressDialog progressDialog)
+    public ProgressDialogGuardedCommand(Activity context, String warningLogMessage, String warningDisplayMessage, ProgressDialog progressDialog)
     {
       super(context, warningLogMessage, warningDisplayMessage);
       this.progressDialog = progressDialog;
@@ -483,7 +572,7 @@ public final class SmartCommands
    * @since 2010.06.08
    */
   public static abstract class GuardedDialogInterfaceClickListener
-      extends SmartCommands.GuardedCommand
+      extends SmartCommands.GuardedCommand<Activity>
       implements DialogInterface.OnClickListener
   {
 
@@ -510,7 +599,7 @@ public final class SmartCommands
    * @since 2010.06.08
    */
   public static abstract class GuardedViewClickListener
-      extends SmartCommands.GuardedCommand
+      extends SmartCommands.GuardedCommand<Activity>
       implements View.OnClickListener
   {
 
@@ -555,7 +644,7 @@ public final class SmartCommands
      *          the command to run
      * @see #submit(GuardedCommand)
      */
-    public void execute(SmartCommands.GuardedCommand guardedCommand)
+    public void execute(SmartCommands.GuardedCommand<?> guardedCommand)
     {
       super.execute(guardedCommand);
     }
@@ -568,7 +657,7 @@ public final class SmartCommands
      * @return the reference which enables to query the command execution status
      * @see #execute(GuardedCommand)
      */
-    public Future<?> submit(SmartCommands.GuardedCommand guardedCommand)
+    public Future<?> submit(SmartCommands.GuardedCommand<?> guardedCommand)
     {
       return super.submit(guardedCommand);
     }
@@ -645,7 +734,7 @@ public final class SmartCommands
    *          the command to be executed
    * @see #execute(Activity, Runnable)
    */
-  public static void execute(SmartCommands.GuardedCommand guardedCommand)
+  public static void execute(SmartCommands.GuardedCommand<?> guardedCommand)
   {
     SmartCommands.LOW_PRIORITY_THREAD_POOL.execute(guardedCommand);
   }
