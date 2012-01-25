@@ -35,8 +35,8 @@ import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
+import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * The class that should be used when extending a legacy class to support the whole droid4me framework features.
@@ -172,11 +172,16 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     else
     {
       // We call that routine asynchronously in a background thread
-      AppInternals.execute(activity, new Runnable()
+      stateContainer.execute(activity, component, new Runnable()
       {
         public void run()
         {
           if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
+          {
+            return;
+          }
+          // If the activity has been finished in the meantime, no need to update the UI
+          if (activity.isFinishing() == true)
           {
             return;
           }
@@ -393,7 +398,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onDestroy");
     }
-    stateContainer.unregisterBroadcastListeners();
+    stateContainer.onDestroy();
     if (shouldKeepOn() == false)
     {
       // We stop here if a redirection is needed or is something went wrong
@@ -642,6 +647,10 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       log.error("Cannot retrieve the business objects", throwable);
     }
     stateContainer.onStopLoading();
+    if (stateContainer.onInternalBusinessObjectAvailableExceptionWorkAround(throwable) == true)
+    {
+      return;
+    }
     // We need to invoke that method on the GUI thread, because that method may have been triggered from another thread
     onException(throwable, false);
   }

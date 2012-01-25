@@ -267,6 +267,10 @@ public abstract class SmartPreferenceActivity<AggregateClass>
       log.error("Cannot retrieve the business objects", throwable);
     }
     stateContainer.onStopLoading();
+    if (stateContainer.onInternalBusinessObjectAvailableExceptionWorkAround(throwable) == true)
+    {
+      return;
+    }
     // We need to invoke that method on the GUI thread, because that method may have been triggered from another thread
     onException(throwable, false);
   }
@@ -336,11 +340,16 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     else
     {
       // We call that routine asynchronously in a background thread
-      AppInternals.execute(SmartPreferenceActivity.this, new Runnable()
+      stateContainer.execute(this, null, new Runnable()
       {
         public void run()
         {
           if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
+          {
+            return;
+          }
+          // If the activity has been finished in the meantime, no need to update the UI
+          if (isFinishing() == true)
           {
             return;
           }
@@ -508,7 +517,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     }
     try
     {
-      stateContainer.unregisterBroadcastListeners();
+      stateContainer.onDestroy();
       if (shouldKeepOn() == false)
       {
         // We stop here if a redirection is needed or is something went wrong
