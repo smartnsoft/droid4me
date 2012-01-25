@@ -368,8 +368,17 @@ public final class SmartCommands
     protected final String warningDisplayMessage;
 
     /**
-     * Same as {@link SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)} with the last parameter equal to
+     * Same as {@link SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, Object, String, String)} with the last parameter equal to
      * {@code context.getString(warningDisplayMessageResourceId)}.
+     */
+    public AbstractSimpleGuardedCommand(ContextClass context, Object component, String warningLogMessage, int warningDisplayMessageResourceId)
+    {
+      this(context, component, warningLogMessage, context.getString(warningDisplayMessageResourceId));
+    }
+
+    /**
+     * Same as {@link SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, Object, String, String)} with the second parameter set to
+     * {@code null} and last parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
      */
     public AbstractSimpleGuardedCommand(ContextClass context, String warningLogMessage, int warningDisplayMessageResourceId)
     {
@@ -436,6 +445,11 @@ public final class SmartCommands
   public abstract static class SimpleGuardedCommand
       extends SmartCommands.AbstractSimpleGuardedCommand<Activity>
   {
+
+    public SimpleGuardedCommand(Activity context, Object component, String warningLogMessage, int warningDisplayMessageResourceId)
+    {
+      super(context, component, warningLogMessage, warningDisplayMessageResourceId);
+    }
 
     public SimpleGuardedCommand(Activity context, Object component, String warningLogMessage, String warningDisplayMessage)
     {
