@@ -18,6 +18,7 @@
 package com.smartnsoft.droid4me.app;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -31,6 +32,7 @@ import android.content.DialogInterface;
 import android.util.Log;
 import android.view.View;
 
+import com.smartnsoft.droid4me.app.ActivityController.ExceptionHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
@@ -316,8 +318,8 @@ public final class SmartCommands
     protected final String warningDisplayMessage;
 
     /**
-     * Same as {@link SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)} with the last parameter equal to {@code
-     * context.getString(warningDisplayMessageResourceId)}.
+     * Same as {@link SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)} with the last parameter equal to
+     * {@code context.getString(warningDisplayMessageResourceId)}.
      */
     public SimpleGuardedCommand(Context context, String warningLogMessage, int warningDisplayMessageResourceId)
     {
@@ -537,6 +539,9 @@ public final class SmartCommands
       extends ThreadPoolExecutor
   {
 
+    /**
+     * {@inheritDoc}
+     */
     public SmartThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue,
         ThreadFactory threadFactory)
     {
@@ -544,32 +549,11 @@ public final class SmartCommands
     }
 
     /**
-     * The same method as {@link #execute(Runnable)} except that it transfers the activity to the {@link ActivityController.ExceptionHandler} when an
-     * exception occurs.
-     * 
-     * @param activity
-     *          the activity which is responsible for running the piece of code
-     * @param command
-     *          the piece of code to execute
-     */
-    public void execute(Activity activity, Runnable command)
-    {
-      try
-      {
-        super.execute(command);
-      }
-      catch (Throwable throwable)
-      {
-        // We handle the exception
-        ActivityController.getInstance().handleException(activity, null, throwable);
-      }
-    }
-
-    /**
      * Executes the given command. Should be used when the {@link Runnable} may throw an {@link Exception}.
      * 
      * @param guardedCommand
      *          the command to run
+     * @see #submit(GuardedCommand)
      */
     public void execute(SmartCommands.GuardedCommand guardedCommand)
     {
@@ -577,15 +561,28 @@ public final class SmartCommands
     }
 
     /**
-     * Just calls its @{link #execute(Activity, Runnable)} counterpart, with a null activity.
+     * Executes the given command. Should be used when the {@link Runnable} may throw an {@link Exception}.
+     * 
+     * @param guardedCommand
+     *          the command to run
+     * @return the reference which enables to query the command execution status
+     * @see #execute(GuardedCommand)
+     */
+    public Future<?> submit(SmartCommands.GuardedCommand guardedCommand)
+    {
+      return super.submit(guardedCommand);
+    }
+
+    /**
+     * This method does the same thing as its parent {@link ThreadPoolExecutor#execute() super method}, but this form should not be used!
      * 
      * @deprecated should not be used!
      */
-    @Override
-    public void execute(Runnable command)
-    {
-      this.execute(null, command);
-    }
+    // @Override
+    // public void execute(Runnable command)
+    // {
+    // super.execute(command);
+    // }
 
   }
 
@@ -627,7 +624,18 @@ public final class SmartCommands
   });
 
   /**
-   * Simply executes the provided command via the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL}.
+   * Equivalent to invoking {@link SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(Runnable)}.
+   * 
+   * @see #execute(SmartCommands.GuardedCommand)
+   */
+  public static void execute(Runnable runnable)
+  {
+    SmartCommands.LOW_PRIORITY_THREAD_POOL.execute(runnable);
+  }
+
+  /**
+   * Simply executes the provided command via the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL}, which enables to run a command, and take benefit
+   * from the {@link ExceptionHandler} if the command triggers an exception.
    * 
    * <p>
    * Equivalent to invoking {@link SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(SmartCommands.GuardedCommand)}.
@@ -640,16 +648,6 @@ public final class SmartCommands
   public static void execute(SmartCommands.GuardedCommand guardedCommand)
   {
     SmartCommands.LOW_PRIORITY_THREAD_POOL.execute(guardedCommand);
-  }
-
-  /**
-   * Equivalent to invoking {@link SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(Activity, Runnable)}.
-   * 
-   * @see #execute(SmartCommands.GuardedCommand)
-   */
-  public static void execute(Activity activity, Runnable runnable)
-  {
-    SmartCommands.LOW_PRIORITY_THREAD_POOL.execute(activity, runnable);
   }
 
   /**

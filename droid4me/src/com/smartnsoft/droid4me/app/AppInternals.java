@@ -20,6 +20,7 @@ package com.smartnsoft.droid4me.app;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -176,6 +177,11 @@ final class AppInternals
     private AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay refreshBusinessObjectsAndDisplayNextTime;
 
     private AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay refreshBusinessObjectsAndDisplayPending;
+
+    /**
+     * Contains all the commands which have been registered.
+     */
+    private List<Future<?>> futures = new ArrayList<Future<?>>();
 
     /**
      * Should only be created by classes in the same package.
@@ -514,8 +520,8 @@ final class AppInternals
     }
 
     /**
-     * Invoked when the provided activity enters the {@link Activity#onStop()} method. We check whether to invoke the {@link ServiceLifeCycle}
-     * methods.
+     * Invoked when the underlying activity/fragment enters the {@link Activity#onStop()} method. We check whether to invoke the
+     * {@link ServiceLifeCycle} methods.
      */
     void onStop()
     {
@@ -535,6 +541,31 @@ final class AppInternals
               internalDisposeServices(forServices);
             }
           });
+        }
+      }
+    }
+
+    /**
+     * Invoked when the underlying activity/fragment enters the {@link Activity#onDestro()} method.
+     * 
+     * <p>
+     * The method unregisters the previously registered {@link AppPublics.BroadcastListener broadcast listeners}.
+     * </p>
+     */
+    void onDestroy()
+    {
+      unregisterBroadcastListeners();
+
+      // We cancel all the commands which are still running, or which have not yet been started
+      for (Future<?> future : futures)
+      {
+        if (future.isDone() == false)
+        {
+          final boolean result = future.cancel(true);
+          if (log.isDebugEnabled())
+          {
+            log.debug("Aborted " + (result == true ? "successfuly" : "unsucessfuly") + " a command which has not already been executed, or which is still being executing");
+          }
         }
       }
     }
@@ -646,6 +677,45 @@ final class AppInternals
       }
     }
 
+    /**
+     * Is responsible for executing the given runnable in background via the {@link AppInternals#THREAD_POOL internal threads pool}.
+     * 
+     * <p>
+     * The command will be remembered, so as to be able to abort/cancel/remove it when the underlying activity/fragment is destroyed.
+     * </p>
+     * 
+     * @param activity
+     *          the activity which is responsible for running the command
+     * @param component
+     *          the component which is responsible for running the command ; may be {@code null}
+     * @param runnable
+     *          the command to execute
+     */
+    void execute(Activity activity, Object component, Runnable runnable)
+    {
+      final Future<?> future = AppInternals.THREAD_POOL.submit(runnable);
+      futures.add(future);
+    }
+
+    /**
+     * This hook is there to handle the special case of the Fragment, which raises an IllegalStateException when the "getString()" method is invoked,
+     * whereas it is already detached. Regarding this discussion, see
+     * http://groups.google.com/group/android-developers/browse_frm/thread/ae9c7890201c9b0b
+     */
+    boolean onInternalBusinessObjectAvailableExceptionWorkAround(Throwable throwable)
+    {
+      if (component != null && throwable instanceof IllegalStateException)
+      {
+        final IllegalStateException illegalStateException = (IllegalStateException) throwable;
+        final String ILLEGAL_STATE_EXCEPTION_FRAGMENT_MESSAGE_SUFFIX = "not attached to Activity";
+        if (illegalStateException.getMessage() != null && illegalStateException.getMessage().endsWith(ILLEGAL_STATE_EXCEPTION_FRAGMENT_MESSAGE_SUFFIX) == true)
+        {
+          return true;
+        }
+      }
+      return false;
+    }
+
   }
 
   /**
@@ -680,11 +750,6 @@ final class AppInternals
       return thread;
     }
   });
-
-  static void execute(Activity activity, Runnable runnable)
-  {
-    AppInternals.THREAD_POOL.execute(activity, runnable);
-  }
 
   private AppInternals()
   {
