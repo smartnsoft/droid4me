@@ -491,12 +491,22 @@ public final class SmartCommands
     protected final ProgressDialog progressDialog;
 
     /**
-     * Same as {@link SmartCommands.ProgressDialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, ProgressDialog)} with the third
-     * parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
+     * Same as {@link SmartCommands.ProgressDialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, ProgressDialog)} with the
+     * second argument set to {@code null}.
      */
     public ProgressDialogGuardedCommand(Activity context, String warningLogMessage, int warningDisplayMessageResourceId, ProgressDialog progressDialog)
     {
-      this(context, warningLogMessage, context.getString(warningDisplayMessageResourceId), progressDialog);
+      this(context, null, warningLogMessage, warningDisplayMessageResourceId, progressDialog);
+    }
+
+    /**
+     * Same as {@link SmartCommands.ProgressDialogGuardedCommand#ProgressDialogGuardedCommand(Context, Object, String, String, ProgressDialog)} with
+     * the fourth parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
+     */
+    public ProgressDialogGuardedCommand(Activity context, Object component, String warningLogMessage, int warningDisplayMessageResourceId,
+        ProgressDialog progressDialog)
+    {
+      this(context, component, warningLogMessage, context.getString(warningDisplayMessageResourceId), progressDialog);
     }
 
     /**
@@ -508,6 +518,8 @@ public final class SmartCommands
      * @param context
      *          the context from which the execution originates, and which will be used when reporting a potential exception ; it is not allowed to be
      * @{code null}
+     * @param component
+     *          the component from which the execution originates, and which will be used when reporting a potential exception ; may be @{code null}
      * @param warningLogMessage
      *          the log message that will be output in case of exception
      * @param warningDisplayMessage
@@ -518,9 +530,10 @@ public final class SmartCommands
      *          {@link SmartCommands.SimpleGuardedCommand}
      * @see SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)
      */
-    public ProgressDialogGuardedCommand(Activity context, String warningLogMessage, String warningDisplayMessage, ProgressDialog progressDialog)
+    public ProgressDialogGuardedCommand(Activity context, Object component, String warningLogMessage, String warningDisplayMessage,
+        ProgressDialog progressDialog)
     {
-      super(context, warningLogMessage, warningDisplayMessage);
+      super(context, component, warningLogMessage, warningDisplayMessage);
       this.progressDialog = progressDialog;
     }
 
