@@ -387,12 +387,9 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   protected abstract Intent computeIntent(View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position);
 
   /**
-   * Does nothing by default.
+   * Enables to run an action of an event.
    */
-  protected boolean onObjectEvent(View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position)
-  {
-    return false;
-  }
+  protected abstract boolean onObjectEvent(View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position);
 
   protected BusinessObjectClass getSelectedObject()
   {
