@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -470,7 +471,7 @@ public final class SmartCommands
 
   /**
    * A handy {@link SmartCommands.SimpleGuardedCommand} which will issue systematically {@link DialogInterface#dismiss() dismiss} a
-   * {@link ProgressDialog} once the command execution is over.
+   * {@link Dialog} once the command execution is over.
    * 
    * <p>
    * This kind of command is especially useful when a {@link ProgressDialog} is being displayed just before the current command execution, and that it
@@ -479,7 +480,7 @@ public final class SmartCommands
    * 
    * @since 2011.11.03
    */
-  public abstract static class ProgressDialogGuardedCommand
+  public abstract static class DialogGuardedCommand
       extends SmartCommands.SimpleGuardedCommand
   {
 
@@ -488,25 +489,28 @@ public final class SmartCommands
      */
     public static boolean ALWAYS_DISMISS_DIALOG = false;
 
-    protected final ProgressDialog progressDialog;
+    /**
+     * The dialog box which will be dismissed by the current command.
+     */
+    protected final Dialog dialog;
 
     /**
-     * Same as {@link SmartCommands.ProgressDialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, ProgressDialog)} with the
+     * Same as {@link SmartCommands.DialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, Dialog)} with the
      * second argument set to {@code null}.
      */
-    public ProgressDialogGuardedCommand(Activity context, String warningLogMessage, int warningDisplayMessageResourceId, ProgressDialog progressDialog)
+    public DialogGuardedCommand(Activity context, String warningLogMessage, int warningDisplayMessageResourceId, Dialog dialog)
     {
-      this(context, null, warningLogMessage, warningDisplayMessageResourceId, progressDialog);
+      this(context, null, warningLogMessage, warningDisplayMessageResourceId, dialog);
     }
 
     /**
-     * Same as {@link SmartCommands.ProgressDialogGuardedCommand#ProgressDialogGuardedCommand(Context, Object, String, String, ProgressDialog)} with
+     * Same as {@link SmartCommands.DialogGuardedCommand#ProgressDialogGuardedCommand(Context, Object, String, String, Dialog)} with
      * the fourth parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
      */
-    public ProgressDialogGuardedCommand(Activity context, Object component, String warningLogMessage, int warningDisplayMessageResourceId,
-        ProgressDialog progressDialog)
+    public DialogGuardedCommand(Activity context, Object component, String warningLogMessage, int warningDisplayMessageResourceId,
+        Dialog dialog)
     {
-      this(context, component, warningLogMessage, context.getString(warningDisplayMessageResourceId), progressDialog);
+      this(context, component, warningLogMessage, context.getString(warningDisplayMessageResourceId), dialog);
     }
 
     /**
@@ -525,16 +529,16 @@ public final class SmartCommands
      * @param warningDisplayMessage
      *          the (supposedly i18ned) human readable that will be transfered to the {@link SmartCommands.GuardedException} in case of exception
      *          during the command execution
-     * @param progressDialog
+     * @param dialog
      *          the dialog to be dismissed at the end of the command execution ; may be {@code null}, and in that case, just behaves as its parent
      *          {@link SmartCommands.SimpleGuardedCommand}
      * @see SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)
      */
-    public ProgressDialogGuardedCommand(Activity context, Object component, String warningLogMessage, String warningDisplayMessage,
-        ProgressDialog progressDialog)
+    public DialogGuardedCommand(Activity context, Object component, String warningLogMessage, String warningDisplayMessage,
+        Dialog dialog)
     {
       super(context, component, warningLogMessage, warningDisplayMessage);
-      this.progressDialog = progressDialog;
+      this.dialog = dialog;
     }
 
     /**
@@ -547,7 +551,7 @@ public final class SmartCommands
         throws Exception;
 
     /**
-     * The implementation will invoke the {@link #runGuardedDialog()} method, and will eventually dismiss the {@link #progressDialog} if necessary,
+     * The implementation will invoke the {@link #runGuardedDialog()} method, and will eventually dismiss the {@link #dialog} if necessary,
      * whatever happens.
      * 
      * @see SmartCommands.SimpleGuardedCommand#runGuarded()
@@ -562,18 +566,18 @@ public final class SmartCommands
       }
       finally
       {
-        if (SmartCommands.ProgressDialogGuardedCommand.ALWAYS_DISMISS_DIALOG == true)
+        if (SmartCommands.DialogGuardedCommand.ALWAYS_DISMISS_DIALOG == true)
         {
           // This can be done from any thread, according to the documentation
-          if (progressDialog != null)
+          if (dialog != null)
           {
-            progressDialog.dismiss();
+            dialog.dismiss();
           }
         }
         else
         {
           // This can be done from any thread, according to the documentation
-          if (progressDialog != null && progressDialog.isShowing() == true)
+          if (dialog != null && dialog.isShowing() == true)
           {
             if (getContext() instanceof Activity)
             {
@@ -584,7 +588,7 @@ public final class SmartCommands
                 return;
               }
             }
-            progressDialog.dismiss();
+            dialog.dismiss();
           }
         }
       }
