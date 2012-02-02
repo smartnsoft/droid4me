@@ -21,6 +21,7 @@ package com.smartnsoft.droid4me.app;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.ContextMenu;
@@ -182,7 +183,17 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
       }
       if (intent != null)
       {
-        startActivity(intent);
+        try
+        {
+          startActivity(intent);
+        }
+        catch (ActivityNotFoundException exception)
+        {
+          if (log.isErrorEnabled())
+          {
+            log.error("Could not start the activity provided by the 'computeIntent()' method", exception);
+          }
+        }
         return true;
       }
       else
