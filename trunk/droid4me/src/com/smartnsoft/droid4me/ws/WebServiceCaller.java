@@ -215,6 +215,10 @@ public abstract class WebServiceCaller
    */
   public void setConnected(boolean isConnected)
   {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Setting the connectivity to " + isConnected);
+    }
     this.isConnected = isConnected;
   }
 
