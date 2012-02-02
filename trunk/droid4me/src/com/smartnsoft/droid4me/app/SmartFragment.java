@@ -38,7 +38,18 @@ public abstract class SmartFragment<AggregrateClass>
 
   protected static final Logger log = LoggerFactory.getInstance("SmartFragment");
 
-  private final Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>> droid4mizer = new Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>>(getActivity(), this, this, this, this);
+  private Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>> droid4mizer;
+
+  @Override
+  public void onAttach(Activity activity)
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("SmartFragment::onAttach");
+    }
+    super.onAttach(activity);
+    droid4mizer = new Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>>(activity, this, this, this, this);
+  }
 
   @Override
   public void onCreate(final Bundle savedInstanceState)
