@@ -592,12 +592,26 @@ public final class ActivityController
     {
       if (ActivityController.AbstractExceptionHandler.isAConnectivityProblem(throwable) == true)
       {
+        final LifeCycle lifeCycle;
+        if (component instanceof LifeCycle)
+        {
+          lifeCycle = (LifeCycle) component;
+        }
+        else if (activity instanceof LifeCycle)
+        {
+          lifeCycle = (LifeCycle) activity;
+        }
+        else
+        {
+          lifeCycle = null;
+        }
         activity.runOnUiThread(new Runnable()
         {
           public void run()
           {
-            if (connectivityUIExperience == ConnectivityUIExperience.Toast)
+            if (lifeCycle == null || connectivityUIExperience == ConnectivityUIExperience.Toast)
             {
+              // Either the activity/fragment is not droi4mized, or the end-user experience should be a toast
               Toast.makeText(activity, i18n.connectivityProblemHint, Toast.LENGTH_SHORT).show();
             }
             else
@@ -611,7 +625,7 @@ public final class ActivityController
                 {
                   public void onClick(DialogInterface dialog, int which)
                   {
-                    ((LifeCycle) activity).refreshBusinessObjectsAndDisplay(true, null, false);
+                    lifeCycle.refreshBusinessObjectsAndDisplay(true, null, false);
                     dialog.dismiss();
                   }
                 }).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener()
