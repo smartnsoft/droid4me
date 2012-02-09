@@ -41,7 +41,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 /**
  * Enables to store persistently on the internal/external device "hard-drive" some contents.
  * 
- * @author Édouard Mercier
+ * @author ï¿½douard Mercier
  * @since 2009.03.26
  */
 public abstract class Persistence
@@ -750,6 +750,7 @@ public abstract class Persistence
     {
       log.debug("Emptying the persistence instance " + instanceIndex);
     }
+    checkAndInitializeIfNecessary();
     if (storageBackendAvailable == true)
     {
       clearInstance();
