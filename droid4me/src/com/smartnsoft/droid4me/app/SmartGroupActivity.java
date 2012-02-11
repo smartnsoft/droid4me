@@ -73,7 +73,7 @@ public abstract class SmartGroupActivity<AggregateClass>
    * An animation that rotates the view on the Y axis between two specified angles. This animation also adds a translation on the Z axis (depth) to
    * improve the effect.
    */
-  protected final static class Rotate3dAnimation
+  public final static class Rotate3dAnimation
       extends Animation
   {
 
