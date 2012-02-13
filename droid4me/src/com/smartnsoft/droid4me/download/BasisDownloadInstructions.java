@@ -123,7 +123,7 @@ public class BasisDownloadInstructions
      * 
      * <p>
      * The callback is invoked when the {@link #getInputStream(String, Object, String, InputStreamDownloadInstructor)} method could not return a valid
-     * input stream.
+     * input stream. This callback will not be invoked if the {@link CoreBitmapDownloader#isConnected()} returns {@code false}.
      * </p>
      * 
      * @return the input stream corresponding to the bitmap ; the returned should not be {@code null} in case of failure, but the method should throw
