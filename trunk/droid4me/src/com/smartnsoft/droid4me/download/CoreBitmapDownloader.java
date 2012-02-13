@@ -48,8 +48,8 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   protected static final Logger log = LoggerFactory.getInstance("BitmapDownloader");
 
   /**
-   * A flag which enables to get debug information for the "BitmapDownloader" component: only defined for development purposes. Defaults to
-   * {@code false}.
+   * A flag which enables to get debug information for the "BitmapDownloader" component: only defined for development purposes. Defaults to {@code
+   * false}.
    */
   public static boolean IS_DEBUG_TRACE = false;
 
@@ -197,6 +197,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   public final long lowLevelMemoryWaterMarkInBytes;
 
   /**
+   * A flag which states whether the device currently has some Internet connectivity.
+   */
+  private boolean isConnected = true;
+
+  /**
    * Indicates whether the instance should let the Java garbage collector handle bitmap soft references.
    */
   public final boolean useReferences;
@@ -219,6 +224,28 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
     this.maxMemoryInBytes = maxMemoryInBytes;
     this.useReferences = useReferences;
     this.lowLevelMemoryWaterMarkInBytes = lowLevelMemoryWaterMarkInBytes;
+  }
+
+  /**
+   * @return {@code true} if and only if the current instance considers that the device has Internet connectivity
+   * @see #setConnected(boolean)
+   */
+  public final boolean isConnected()
+  {
+    return isConnected;
+  }
+
+  /**
+   * Notifies the instance about Internet connectivity. When set to {@code false}, the
+   * {@link BasisDownloadInstructions.Instructions#downloadInputStream(String, Object, String)} will not be invoked, and not bitmap will be
+   * downloaded.
+   * 
+   * @param isConnected
+   *          indicates the device current Internet connectivity
+   */
+  public final void setConnected(boolean isConnected)
+  {
+    this.isConnected = isConnected;
   }
 
   /**

@@ -1013,7 +1013,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
      * Is responsible for actually downloading the input stream corresponding to the bitmap.
      * 
      * @return the input stream corresponding to the bitmap ; should not return {@code null} but throw an exception instead when the input stream
-     *         cannot be downloaded
+     *         cannot be downloaded in case of download attempt error, and {@code null} if no Internet connectivity is available
      * @throws IOException
      *           if a problem occurred during the download
      */
@@ -1021,6 +1021,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         throws IOException
     {
       downloadStartTimestamp = System.currentTimeMillis();
+      if (isConnected() == false)
+      {
+        return null;
+      }
       final InputStream inputStream = instructions.downloadInputStream(bitmapUid, imageSpecs, url);
       final InputStream downloadedInputStream = onInputStreamDownloaded(inputStream);
       downloaded = true;
