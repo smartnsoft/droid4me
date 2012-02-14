@@ -48,8 +48,8 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   protected static final Logger log = LoggerFactory.getInstance("BitmapDownloader");
 
   /**
-   * A flag which enables to get debug information for the "BitmapDownloader" component: only defined for development purposes. Defaults to {@code
-   * false}.
+   * A flag which enables to get debug information for the "BitmapDownloader" component: only defined for development purposes. Defaults to
+   * {@code false}.
    */
   public static boolean IS_DEBUG_TRACE = false;
 
@@ -268,6 +268,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    *          will be used for performing GUI-thread operations
    * @param instructions
    *          the instructions that will be invoked during the retrieval workflow
+   * @see #get(boolean, boolean, Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)
    */
   public abstract void get(ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions);
@@ -276,10 +277,21 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * Provides the same feature as {@link #computeAndGetUrl(View, String, Object, HandlerClass, BasisBitmapDownloader.Instructions)}, except that it
    * may be called from the GUI thread and blocking.
    * 
-   * @param isBlocking
-   *          indicates whether the call is blocking. It {@code true}, the call must be done from the GUI thread!
+   * <p>
+   * Invoking that method with the two {@code isPreBlocking} and {@code isDownloadBlocking} parameters set to {@code true} will execute the command
+   * from the calling thread, which involves that the caller should be the UI thread, or that the provided {@code view} parameter is {@code null}.
+   * </p>
+   * 
+   * @param isPreBlocking
+   *          indicates whether the generated command first step will be executed directly from the calling thread. If {@code true}, the call must be
+   *          done from the GUI thread, or the provided {@code view} must be {@code null}!
+   * @param isDownloadBlocking
+   *          indicates whether the generated command second step will be executed directly from the calling thread. If the previous
+   *          {@code isPreBlocking} argument is set to {@code false}, this parameter is ignored. If {@code true}, the call must be done from the GUI
+   *          thread, or the provided {@code view} must be {@code null}!
+   * @see #get(Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)
    */
-  public abstract void get(boolean isBlocking, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+  public abstract void get(boolean isPreBlocking, boolean isDownloadBlocking, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions);
 
   /**
