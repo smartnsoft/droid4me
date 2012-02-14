@@ -150,7 +150,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       this.executeEnd = executeEnd;
     }
 
-    protected abstract void executeStart(boolean isFromGuiThread);
+    protected abstract void executeStart(boolean isFromGuiThread, boolean resumeWorkflowOnSameThread);
 
     /**
      * This method will always be executed in the UI thread.
@@ -167,7 +167,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         if (executeEnd == false)
         {
           executeEnd = true;
-          executeStart(false);
+          executeStart(false, false);
         }
         else
         {
@@ -257,7 +257,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
 
     @Override
-    protected void executeStart(boolean isFromGuiThread)
+    protected void executeStart(boolean isFromGuiThread, boolean resumeWorkflowOnSameThread)
     {
       if (IS_DEBUG_TRACE && log.isDebugEnabled())
       {
@@ -324,7 +324,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         return;
       }
 
-      downloadBitmap(url);
+      downloadBitmap(url, resumeWorkflowOnSameThread);
     }
 
     /**
@@ -538,7 +538,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       return false;
     }
 
-    private void downloadBitmap(final String url)
+    private void downloadBitmap(final String url, boolean resumeWorkflowOnSameThread)
     {
       // We want to remove any pending download command for the view
       if (view != null)
@@ -583,7 +583,15 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         prioritiesDownloadStack.put(view, downloadCommand);
         dump();
       }
-      BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.execute(downloadCommand);
+      if (resumeWorkflowOnSameThread == false)
+      {
+        BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.execute(downloadCommand);
+      }
+      else
+      {
+        // In that case, we want the workflow to keep on running from the calling thread
+        downloadCommand.executeStart(true, false);
+      }
     }
 
     @Override
@@ -618,7 +626,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
 
     @Override
-    protected void executeStart(boolean isFromGuiThread)
+    protected void executeStart(boolean isFromGuiThread, boolean resumeWorkflowOnSameThread)
     {
       if (IS_DEBUG_TRACE && log.isDebugEnabled())
       {
@@ -1110,6 +1118,9 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     asynchronousDownloadCommands = new HashSet<ViewClass>();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public final void get(ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
@@ -1163,11 +1174,14 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public final void get(boolean isBlocking, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+  public final void get(boolean isPreBlocking, boolean isDownloadBlocking, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
   {
-    if (isBlocking == false)
+    if (isPreBlocking == false)
     {
       get(view, bitmapUid, imageSpecs, handler, instructions);
     }
@@ -1180,7 +1194,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         prioritiesPreStack.put(view, preCommand);
         dump();
       }
-      preCommand.executeStart(true);
+      preCommand.executeStart(true, isDownloadBlocking);
     }
   }
 

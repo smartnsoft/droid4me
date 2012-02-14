@@ -166,9 +166,11 @@ public class BitmapDownloader
     get(view != null ? new ViewableView(view) : null, bitmapUid, imageSpecs, handler != null ? new HandlerableHander(handler) : null, instructions);
   }
 
-  public final void get(boolean isBlocking, View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions)
+  public final void get(boolean isPreBlocking, boolean isDownloadBlocking, View view, String bitmapUid, Object imageSpecs, Handler handler,
+      DownloadInstructions.Instructions instructions)
   {
-    get(isBlocking, view != null ? new ViewableView(view) : null, bitmapUid, imageSpecs, handler != null ? new HandlerableHander(handler) : null, instructions);
+    get(isPreBlocking, isDownloadBlocking, view != null ? new ViewableView(view) : null, bitmapUid, imageSpecs,
+        handler != null ? new HandlerableHander(handler) : null, instructions);
   }
 
   /**
