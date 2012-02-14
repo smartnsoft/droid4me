@@ -80,7 +80,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   /**
    * The default number of authorized threads available in the "download" threads pool.
    * 
-   * @see #setDownloadhreadPoolSize(int)
+   * @see #setDownloadThreadPoolSize(int)
    */
   public final static int DOWNLOAD_THREAD_POOL_DEFAULT_SIZE = 4;
 
@@ -90,7 +90,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
    * @param poolSize
    *          the maximum of threads will created for handling incoming commands ; defaults to {@link #DOWNLOAD_THREAD_POOL_DEFAULT_SIZE}
    */
-  public static void setDownloadhreadPoolSize(int poolSize)
+  public static void setDownloadThreadPoolSize(int poolSize)
   {
     BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.setCorePoolSize(poolSize);
   }
