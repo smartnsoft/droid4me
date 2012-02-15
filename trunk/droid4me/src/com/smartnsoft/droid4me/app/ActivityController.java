@@ -29,8 +29,8 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Environment;
@@ -82,6 +82,10 @@ public final class ActivityController
     /**
      * Will be invoked by the {@link ActivityController#needsRedirection(Activity) framework}, in order to know whether an {@link Activity} should be
      * started instead of the provided one, which is supposed to have just {@link Activity#onCreate(Bundle) started}.
+     * 
+     * <p>
+     * Caution: if an exception is thrown during the method execution, the application will crash!
+     * </p>
      * 
      * @param activity
      *          the activity which is bound to be displayed
@@ -186,6 +190,10 @@ public final class ActivityController
      * <p>
      * The method blocks the caller thread, which is sometimes the UI thread, hence the method should last a very short time!
      * <p>
+     * 
+     * <p>
+     * Caution: if an exception is thrown during the method execution, the application will crash!
+     * </p>
      * 
      * @param activity
      *          the activity on which a life cycle event occurs ; cannot be {@code null}
@@ -360,7 +368,7 @@ public final class ActivityController
      *          a list of exception classes to look after
      * @return {@code null} if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings( { "unchecked", "rawtypes" })
     public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
     {
       Throwable newThrowable = throwable;
