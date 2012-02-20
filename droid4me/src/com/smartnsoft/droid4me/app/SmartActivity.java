@@ -50,7 +50,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 // TODO: think of using the onRetainNonConfigurationInstance/getLastNonConfigurationInstance() when the screen orientation changes.
 public abstract class SmartActivity<AggregateClass>
     extends Activity
-    implements SmartableActivity<AggregateClass>
+    implements Smartable<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");

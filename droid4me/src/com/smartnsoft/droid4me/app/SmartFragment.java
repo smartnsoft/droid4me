@@ -33,10 +33,10 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartFragment<AggregrateClass>
     extends Fragment
-    implements Droid4mizerInterface, SmartableActivity<AggregrateClass>
+    implements Droid4mizerInterface, Smartable<AggregrateClass>
 {
 
-  protected static final Logger log = LoggerFactory.getInstance("SmartFragment");
+  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
 
   private Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>> droid4mizer;
 

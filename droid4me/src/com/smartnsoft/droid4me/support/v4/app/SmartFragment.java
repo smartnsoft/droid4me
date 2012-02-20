@@ -15,7 +15,7 @@ import android.view.MenuItem;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.Droid4mizerInterface;
-import com.smartnsoft.droid4me.app.SmartableActivity;
+import com.smartnsoft.droid4me.app.Smartable;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -36,10 +36,10 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartFragment<AggregateClass>
     extends Fragment
-    implements Droid4mizerInterface, SmartableActivity<AggregateClass>
+    implements Droid4mizerInterface, Smartable<AggregateClass>
 {
 
-  protected static final Logger log = LoggerFactory.getInstance("SmartFragment");
+  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
 
   private Droid4mizer<AggregateClass, SmartFragment<AggregateClass>> droid4mizer;
 

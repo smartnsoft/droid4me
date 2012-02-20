@@ -56,7 +56,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartMapActivity<AggregateClass>
     extends MapActivity
-    implements SmartableActivity<AggregateClass>
+    implements Smartable<AggregateClass>
 {
 
   protected final static Logger log = LoggerFactory.getInstance("SmartableActivity");
