@@ -48,7 +48,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * Is responsible for intercepting an activity starting and redirect it to a prerequisite one if necessary, and for handling globally exceptions.
  * 
  * <p>
- * Everything described here which involves the {@link Activity activities}, is applicable provided the activity is a {@link SmartableActivity}.
+ * Everything described here which involves the {@link Activity activities}, is applicable provided the activity is a {@link Smartable}.
  * </p>
  * 
  * <p>
@@ -420,7 +420,7 @@ public final class ActivityController
       {
         return true;
       }
-      else if (handleOtherCauses(activity, exception) == true)
+      else if (handleOtherCauses(activity, component, exception) == true)
       {
         return true;
       }
@@ -449,7 +449,7 @@ public final class ActivityController
       {
         return true;
       }
-      else if (handleOtherCauses(activity, exception) == true)
+      else if (handleOtherCauses(activity, component, exception) == true)
       {
         return true;
       }
@@ -478,7 +478,7 @@ public final class ActivityController
       {
         return true;
       }
-      else if (handleOtherCauses(activity, throwable) == true)
+      else if (handleOtherCauses(activity, component, throwable) == true)
       {
         return true;
       }
@@ -539,11 +539,13 @@ public final class ActivityController
      * 
      * @param activity
      *          the activity which has triggered the exception
+     * @param component
+     *          the component which has triggered the exception ; may be {@code null}
      * @param throwable
      *          the throwable to analyze
      * @return {@code true} if and only if the throwable has been handled; the current implementation returns {@code false}
      */
-    protected boolean handleOtherCauses(Activity activity, Throwable throwable)
+    protected boolean handleOtherCauses(Activity activity, Object component, Throwable throwable)
     {
       return false;
     }
