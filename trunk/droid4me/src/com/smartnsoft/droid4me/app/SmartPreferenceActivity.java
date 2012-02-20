@@ -49,7 +49,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartPreferenceActivity<AggregateClass>
     extends PreferenceActivity
-    implements SmartableActivity<AggregateClass>
+    implements Smartable<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");

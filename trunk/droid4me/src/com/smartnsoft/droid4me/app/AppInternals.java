@@ -67,7 +67,7 @@ final class AppInternals
      * being processed.
      * 
      * <p>
-     * Thanks to the {@link ActivityController.Redirector redirection controller}, it is possible to re-route any {@link SmartableActivity activity}
+     * Thanks to the {@link ActivityController.Redirector redirection controller}, it is possible to re-route any {@link Smartable activity}
      * when it starts, if some other activity needs to be executed beforehand.
      * </p>
      * 

@@ -51,7 +51,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  * @since 2011.06.14
  */
 public final class Droid4mizer<AggregateClass, ComponentClass>
-    implements SmartableActivity<AggregateClass>, Droid4mizerInterface
+    implements Smartable<AggregateClass>, Droid4mizerInterface
 {
 
   private static final Logger log = LoggerFactory.getInstance("SmartableActivity");
@@ -62,7 +62,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   private final ComponentClass interceptorComponent;
 
-  private final SmartableActivity<AggregateClass> smartableActivity;
+  private final Smartable<AggregateClass> smartableActivity;
 
   private final Droid4mizerInterface droid4mizerInterface;
 
@@ -83,7 +83,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    * @param interceptorComponent
    *          the declared component used to send life-cycle events to the {@link ActivityController.Interceptor}
    */
-  public Droid4mizer(Activity activity, SmartableActivity<AggregateClass> smartableActivity, Droid4mizerInterface droid4mizerInterface,
+  public Droid4mizer(Activity activity, Smartable<AggregateClass> smartableActivity, Droid4mizerInterface droid4mizerInterface,
       ComponentClass component, ComponentClass interceptorComponent)
   {
     this.activity = activity;

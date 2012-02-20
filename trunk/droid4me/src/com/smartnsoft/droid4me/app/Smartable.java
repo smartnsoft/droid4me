@@ -19,16 +19,17 @@
 package com.smartnsoft.droid4me.app;
 
 import android.app.Activity;
+import android.app.Fragment;
 
 import com.smartnsoft.droid4me.LifeCycle;
 
 /**
- * All {@link Activity activities} of the framework implement this composite interface.
+ * All {@link Activity activities} and {@link Fragment fragments} of the framework implement this composite interface.
  * 
  * @author Édouard Mercier
  * @since 2011.03.04
  */
-public interface SmartableActivity<AggregateClass>
+public interface Smartable<AggregateClass>
     extends Smarted<AggregateClass>, LifeCycle, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
 {
 

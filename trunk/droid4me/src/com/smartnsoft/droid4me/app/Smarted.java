@@ -21,13 +21,14 @@ package com.smartnsoft.droid4me.app;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.os.Handler;
 
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
- * Defines common methods for all {@link Activity activity classes} defined in the framework.
+ * Defines common methods for all {@link Activity activities} and {@link Fragment fragments} defined in the framework.
  * 
  * @author Édouard Mercier
  * @since 2010.07.10

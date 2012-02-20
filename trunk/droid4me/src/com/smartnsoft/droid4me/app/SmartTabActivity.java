@@ -50,7 +50,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartTabActivity<AggregateClass>
     extends TabActivity
-    implements SmartableActivity<AggregateClass>
+    implements Smartable<AggregateClass>
 {
 
   protected final static Logger log = LoggerFactory.getInstance("SmartableActivity");
