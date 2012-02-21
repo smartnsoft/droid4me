@@ -19,7 +19,10 @@
 package com.smartnsoft.droid4me.widget;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.ViewGroup;
+import android.widget.Gallery;
 import android.widget.ImageView;
 
 /**
@@ -98,17 +101,28 @@ public class SmartImageView
     this.ratio = ratio;
   }
 
+  /**
+   * The default value of the underlying flag is {@code false}.
+   * 
+   * @return {@code true} if and only if the {@link #requestLayout()} should do nothing
+   * @see #setFixedSized(boolean)
+   */
   public boolean isFixedSized()
   {
     return fixedSized;
   }
 
   /**
-   * Indicates that the underlying bitmap size never changes, and hence causing the {@link #requestLayout()} to do nothing. The default value is
-   * {@code false}
+   * Indicates that the underlying {@code ImageView} {@link Drawable} size never changes, and hence causing the {@link #requestLayout()} to do nothing
+   * (not invoking the parent method).
+   * 
+   * <p>
+   * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
+   * inside a {@link ViewGroup}.
+   * </p>
    * 
    * @param fixedSized
-   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and will do nothing
+   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
    */
   public void setFixedSized(boolean fixedSized)
   {
@@ -134,12 +148,12 @@ public class SmartImageView
   }
 
   @Override
-  protected void onSizeChanged(int w, int h, int oldw, int oldh)
+  protected void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight)
   {
-    super.onSizeChanged(w, h, oldw, oldh);
+    super.onSizeChanged(newWidth, newHeight, oldWidth, oldHeight);
     if (onSizeChangedListener != null)
     {
-      onSizeChangedListener.onSizeChanged(this, w, h, oldw, oldh);
+      onSizeChangedListener.onSizeChanged(this, newWidth, newHeight, oldWidth, oldHeight);
     }
   }
 
