@@ -20,11 +20,17 @@ package com.smartnsoft.droid4me.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Gallery;
 import android.widget.RelativeLayout;
 
 /**
  * Introduced in order to get notified when a container size changes, because there is no <code>OnSizeChangedListener</code> in Android {@link View},
  * whereas there is a {@link View#onSizeChanged()} method.
+ * 
+ * <p>
+ * In addition, this class enables to disable the {@link View#requestLayout()} method dynamically.
+ * </p>
  * 
  * <p>
  * Use this wrapper container every time you need to be notified when a {@link View widget} sizes changes.
@@ -47,6 +53,8 @@ public class SmartRelativeLayout
   }
 
   private SmartRelativeLayout.OnSizeChangedListener onSizeChangedListener;
+
+  private boolean requestLayoutEnabled;
 
   public SmartRelativeLayout(Context context, AttributeSet attrs, int defStyle)
   {
@@ -73,6 +81,33 @@ public class SmartRelativeLayout
     this.onSizeChangedListener = onSizeChangedListener;
   }
 
+  /**
+   * The default value of the underlying flag is {@code false}.
+   * 
+   * @return {@code true} if and only if the {@link #requestLayout()} method execution should do nothing
+   * @see #setRequestLayoutEnabled(boolean)
+   */
+  public boolean isRequestLayoutEnabled()
+  {
+    return requestLayoutEnabled;
+  }
+
+  /**
+   * Indicates that the view {@link #requestLayout()} method execution should do nothing (not invoking the parent method).
+   * 
+   * <p>
+   * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
+   * inside a {@link ViewGroup}.
+   * </p>
+   * 
+   * @param fixedSized
+   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
+   */
+  public void setRequestLayoutEnabled(boolean requestLayoutEnabled)
+  {
+    this.requestLayoutEnabled = requestLayoutEnabled;
+  }
+
   @Override
   protected void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight)
   {
@@ -80,6 +115,15 @@ public class SmartRelativeLayout
     if (onSizeChangedListener != null)
     {
       onSizeChangedListener.onSizeChanged(newWidth, newHeight, newHeight, oldHeight);
+    }
+  }
+
+  @Override
+  public void requestLayout()
+  {
+    if (requestLayoutEnabled == false)
+    {
+      super.requestLayout();
     }
   }
 
