@@ -24,7 +24,7 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
+import android.content.IntentFilter;
 import android.os.Environment;
 
 import com.smartnsoft.droid4me.LifeCycle;
@@ -43,9 +43,8 @@ import com.smartnsoft.droid4me.LifeCycle;
  */
 public abstract class SmartSplashScreenActivity<AggregateClass>
     extends SmartActivity<AggregateClass>
+    implements AppPublics.BroadcastListener
 {
-
-  private static final Map<String, Date> initialized = new HashMap<String, Date>();
 
   /**
    * @param splashScreenActivityClass
@@ -73,6 +72,16 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
     SmartSplashScreenActivity.initialized.remove(splashScreenActivityClass.getName());
   }
 
+  private static final String BUSINESS_OBJECTS_LOADED_ACTION = "com.smartnsoft.droid4me.action.BUSINESS_OBJECTS_LOADED";
+
+  private static final Map<String, Date> initialized = new HashMap<String, Date>();
+
+  private static boolean onRetrieveBusinessObjectsCustomStarted;
+
+  private static boolean onRetrieveBusinessObjectsCustomOver;
+
+  private static boolean onRetrieveBusinessObjectsCustomOverInvoked;
+
   private boolean stopActivity;
 
   private boolean pauseActivity;
@@ -80,12 +89,32 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
   private boolean hasStopped;
 
   /**
-   * Run that method once the application has been totally initialized and is ready for use. Should be invoked before the
-   * {@link #onFulfillDisplayObjects()} method has been called.
+   * This method is run internally, once the application has been totally initialized and is ready for use.
    */
-  protected void markAsInitialized()
+  private final void markAsInitialized()
   {
     SmartSplashScreenActivity.initialized.put(getClass().getName(), new Date());
+  }
+
+  @Override
+  protected void onStart()
+  {
+    super.onStart();
+
+    hasStopped = false;
+  }
+
+  @Override
+  protected void onStop()
+  {
+    try
+    {
+      hasStopped = true;
+    }
+    finally
+    {
+      super.onStop();
+    }
   }
 
   /**
@@ -111,6 +140,32 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
    */
   protected abstract void onRetrieveBusinessObjectsCustom()
       throws BusinessObjectUnavailableException;
+
+  /**
+   * This method will be invoked when the business objects retrieval is over. This is the ideal place to run something, before the splash screen is
+   * dismissed.
+   * 
+   * <p>
+   * This method may be invoked from any thread, hence do not make assumption on the fact that the caller is the UI thread!
+   * </p>
+   * 
+   * <p>
+   * It is ensured that this callback will be invoked only once for all {@code SmartSplashScreenActivity} instances.
+   * </p>
+   * 
+   * <p>
+   * The default implementation just invokes the provided {@code finishRunnable} {@link Runnable#run()} method, which {@link Activity#finish()
+   * finishes} the current splash screen.
+   * </p>
+   * 
+   * @param finishRunnable
+   *          the callback that should be {@link Runnable#run()} as soon as the splash screen should be ended. The provided callback may be invoked
+   *          from any thread.
+   */
+  protected void onRetrieveBusinessObjectsCustomOver(Runnable finishRunnable)
+  {
+    finishRunnable.run();
+  }
 
   /**
    * @return {@code true} if and only if the application requires an external storage to work
@@ -148,7 +203,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
   protected final void stopActivity()
   {
     this.stopActivity = true;
-    markAsUnitialized(getClass());
+    SmartSplashScreenActivity.markAsUnitialized(getClass());
   }
 
   /**
@@ -182,10 +237,34 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
     finishActivity();
   }
 
-  private boolean canWriteOnExternalStorage()
+  public IntentFilter getIntentFilter()
   {
-    // We test whether the SD card is available
-    return Environment.getExternalStorageDirectory().canWrite() == true;
+    final IntentFilter intentFilter = new IntentFilter(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION);
+    intentFilter.addCategory(getPackageName());
+    return intentFilter;
+  }
+
+  public void onReceive(Intent intent)
+  {
+    if (SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION.equals(intent.getAction()) == true)
+    {
+      markAsInitialized();
+      if (isFinishing() == false)
+      {
+        // We do not take into account the event on the activity instance which is over
+        if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked == false)
+        {
+          SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked = true;
+          onRetrieveBusinessObjectsCustomOver(new Runnable()
+          {
+            public void run()
+            {
+              finishActivity();
+            }
+          });
+        }
+      }
+    }
   }
 
   public final void onRetrieveDisplayObjects()
@@ -200,19 +279,6 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
     onRetrieveDisplayObjectsCustom();
   }
 
-  @Override
-  protected void onStop()
-  {
-    try
-    {
-      hasStopped = true;
-    }
-    finally
-    {
-      super.onStop();
-    }
-  }
-
   public final void onRetrieveBusinessObjects()
       throws BusinessObjectUnavailableException
   {
@@ -220,7 +286,32 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
     {
       return;
     }
-    onRetrieveBusinessObjectsCustom();
+    // We check whether another activity instance is already running the business objects retrieval
+    if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted == false)
+    {
+      SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted = true;
+      boolean onRetrieveBusinessObjectsCustomSuccess = false;
+      try
+      {
+        onRetrieveBusinessObjectsCustom();
+        onRetrieveBusinessObjectsCustomSuccess = true;
+      }
+      finally
+      {
+        // If the retrieval of the business objects is a failure, we assume as if it had not been started
+        if (onRetrieveBusinessObjectsCustomSuccess == false)
+        {
+          SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted = false;
+        }
+      }
+      SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver = true;
+      sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
+    }
+    else if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver == true)
+    {
+      // A previous activity instance has already completed the business objects retrieval, but the current instance was not active at this time
+      sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
+    }
   }
 
   /**
@@ -233,7 +324,20 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
     {
       return;
     }
-    finishActivity();
+  }
+
+  public void onSynchronizeDisplayObjects()
+  {
+    if (stopActivity == true)
+    {
+      return;
+    }
+  }
+
+  private boolean canWriteOnExternalStorage()
+  {
+    // We test whether the SD card is available
+    return Environment.getExternalStorageDirectory().canWrite() == true;
   }
 
   private void finishActivity()
@@ -289,22 +393,6 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
   protected Intent computeNextIntent()
   {
     return new Intent(getApplicationContext(), getNextActivity());
-  }
-
-  @Override
-  protected void onSaveInstanceState(Bundle outState)
-  {
-    super.onSaveInstanceState(outState);
-    // The activity is bound to be recreated, hence, we do not want to finish it, otherwise the newly created instance will be created as well
-    pauseActivity = true;
-  }
-
-  public void onSynchronizeDisplayObjects()
-  {
-    if (stopActivity == true)
-    {
-      return;
-    }
   }
 
 }
