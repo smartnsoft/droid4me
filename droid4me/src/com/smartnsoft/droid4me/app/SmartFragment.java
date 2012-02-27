@@ -36,7 +36,7 @@ public abstract class SmartFragment<AggregrateClass>
     implements Droid4mizerInterface, Smartable<AggregrateClass>
 {
 
-  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
+  protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
   private Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>> droid4mizer;
 
@@ -157,7 +157,7 @@ public abstract class SmartFragment<AggregrateClass>
   }
 
   /**
-   * SmartableActivity implementation.
+   * Smartable implementation.
    */
 
   public AggregrateClass getAggregate()

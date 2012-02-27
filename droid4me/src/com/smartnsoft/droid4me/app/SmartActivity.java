@@ -53,7 +53,7 @@ public abstract class SmartActivity<AggregateClass>
     implements Smartable<AggregateClass>
 {
 
-  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
+  protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
   public void onBusinessObjectsRetrieved()
   {
@@ -403,7 +403,17 @@ public abstract class SmartActivity<AggregateClass>
     stateContainer.markNotResumedForTheFirstTime();
     if (onOver != null)
     {
-      onOver.run();
+      try
+      {
+        onOver.run();
+      }
+      catch (Throwable throwable)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("An exception occurred while executing the 'refreshBusinessObjectsAndDisplay()' runnable!", throwable);
+        }
+      }
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
   }

@@ -59,7 +59,7 @@ public abstract class SmartMapActivity<AggregateClass>
     implements Smartable<AggregateClass>
 {
 
-  protected final static Logger log = LoggerFactory.getInstance("SmartableActivity");
+  protected final static Logger log = LoggerFactory.getInstance("Smartable");
 
   private final static float MILLION_AS_FLOAT = 1E6f;
 
@@ -634,7 +634,17 @@ public abstract class SmartMapActivity<AggregateClass>
     stateContainer.markNotResumedForTheFirstTime();
     if (onOver != null)
     {
-      onOver.run();
+      try
+      {
+        onOver.run();
+      }
+      catch (Throwable throwable)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("An exception occurred while executing the 'refreshBusinessObjectsAndDisplay()' runnable!", throwable);
+        }
+      }
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
   }
