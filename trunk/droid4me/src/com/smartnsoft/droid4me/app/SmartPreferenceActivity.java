@@ -52,7 +52,7 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     implements Smartable<AggregateClass>
 {
 
-  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
+  protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
   /**
    * Does nothing, but we can overload it in derived classes.
@@ -425,7 +425,17 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     stateContainer.markNotResumedForTheFirstTime();
     if (onOver != null)
     {
-      onOver.run();
+      try
+      {
+        onOver.run();
+      }
+      catch (Throwable throwable)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("An exception occurred while executing the 'refreshBusinessObjectsAndDisplay()' runnable!", throwable);
+        }
+      }
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
   }

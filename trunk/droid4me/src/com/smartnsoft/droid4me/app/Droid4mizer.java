@@ -54,7 +54,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     implements Smartable<AggregateClass>, Droid4mizerInterface
 {
 
-  private static final Logger log = LoggerFactory.getInstance("SmartableActivity");
+  private static final Logger log = LoggerFactory.getInstance("Smartable");
 
   private final Activity activity;
 
@@ -62,7 +62,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   private final ComponentClass interceptorComponent;
 
-  private final Smartable<AggregateClass> smartableActivity;
+  private final Smartable<AggregateClass> smartable;
 
   private final Droid4mizerInterface droid4mizerInterface;
 
@@ -73,7 +73,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    * 
    * @param activity
    *          the activity this instance relies on
-   * @param smartableActivity
+   * @param smartable
    *          the component to be droid4mized
    * @param droid4mizerInterface
    *          the extension used for extending the component behavior
@@ -83,11 +83,11 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    * @param interceptorComponent
    *          the declared component used to send life-cycle events to the {@link ActivityController.Interceptor}
    */
-  public Droid4mizer(Activity activity, Smartable<AggregateClass> smartableActivity, Droid4mizerInterface droid4mizerInterface,
-      ComponentClass component, ComponentClass interceptorComponent)
+  public Droid4mizer(Activity activity, Smartable<AggregateClass> smartable, Droid4mizerInterface droid4mizerInterface, ComponentClass component,
+      ComponentClass interceptorComponent)
   {
     this.activity = activity;
-    this.smartableActivity = smartableActivity;
+    this.smartable = smartable;
     this.droid4mizerInterface = droid4mizerInterface;
     this.component = component;
     this.interceptorComponent = interceptorComponent;
@@ -111,7 +111,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public List<StaticMenuCommand> getMenuCommands()
   {
-    return smartableActivity.getMenuCommands();
+    return smartable.getMenuCommands();
   }
 
   public void onException(Throwable throwable, boolean fromGuiThread)
@@ -536,23 +536,23 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onFulfillDisplayObjects()
   {
-    smartableActivity.onFulfillDisplayObjects();
+    smartable.onFulfillDisplayObjects();
   }
 
   public void onRetrieveBusinessObjects()
       throws BusinessObjectUnavailableException
   {
-    smartableActivity.onRetrieveBusinessObjects();
+    smartable.onRetrieveBusinessObjects();
   }
 
   public void onRetrieveDisplayObjects()
   {
-    smartableActivity.onRetrieveDisplayObjects();
+    smartable.onRetrieveDisplayObjects();
   }
 
   public void onSynchronizeDisplayObjects()
   {
-    smartableActivity.onSynchronizeDisplayObjects();
+    smartable.onSynchronizeDisplayObjects();
   }
 
   /*
@@ -625,14 +625,24 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     stateContainer.markNotResumedForTheFirstTime();
     if (onOver != null)
     {
-      onOver.run();
+      try
+      {
+        onOver.run();
+      }
+      catch (Throwable throwable)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("An exception occurred while executing the 'refreshBusinessObjectsAndDisplay()' runnable!", throwable);
+        }
+      }
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
   }
 
   private void businessObjectRetrievalAndResultHandlers()
   {
-    smartableActivity.refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), true);
+    smartable.refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), true);
     if (stateContainer.actionResultsRetrieved == false)
     {
       onRegisterResultHandlers(stateContainer.compositeActivityResultHandler);

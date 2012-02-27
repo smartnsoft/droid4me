@@ -64,8 +64,8 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 public abstract class SmartGroupActivity<AggregateClass>
     extends ActivityGroup
     implements Smartable<AggregateClass>/*
-                                                 * ,ViewTreeObserver . OnTouchModeChangeListener , OnFocusChangeListener
-                                                 */
+                                         * ,ViewTreeObserver . OnTouchModeChangeListener , OnFocusChangeListener
+                                         */
 {
   /**
    * This is taken from the Android API Demos source code!
@@ -194,7 +194,7 @@ public abstract class SmartGroupActivity<AggregateClass>
     }
   }
 
-  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
+  protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
   private final List<String> activitiesIds = new ArrayList<String>();
 
@@ -779,7 +779,17 @@ public abstract class SmartGroupActivity<AggregateClass>
     stateContainer.markNotResumedForTheFirstTime();
     if (onOver != null)
     {
-      onOver.run();
+      try
+      {
+        onOver.run();
+      }
+      catch (Throwable throwable)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("An exception occurred while executing the 'refreshBusinessObjectsAndDisplay()' runnable!", throwable);
+        }
+      }
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
   }
