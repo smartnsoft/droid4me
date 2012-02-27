@@ -41,7 +41,7 @@ import com.smartnsoft.droid4me.LifeCycle;
  * @author Édouard Mercier
  * @since 2010.01.05
  */
-public abstract class SmartSplashScreenActivity<AggregateClass>
+public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectClass>
     extends SmartActivity<AggregateClass>
     implements AppPublics.BroadcastListener
 {
@@ -82,6 +82,8 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
 
   private static boolean onRetrieveBusinessObjectsCustomOverInvoked;
 
+  private static Object businessObject;
+
   private boolean stopActivity;
 
   private boolean pauseActivity;
@@ -101,6 +103,10 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
   {
     super.onStart();
 
+    if (log.isDebugEnabled())
+    {
+      log.debug("Marking the splash screen as un-stopped");
+    }
     hasStopped = false;
   }
 
@@ -109,6 +115,10 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
   {
     try
     {
+      if (log.isDebugEnabled())
+      {
+        log.debug("Marking the splash screen as stopped");
+      }
       hasStopped = true;
     }
     finally
@@ -126,6 +136,10 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
    * The method that should be overriden, instead of the usual {@link LifeCycle#onRetrieveDisplayObjects()} method.
    * 
    * <p>
+   * This method will be invoked just once for the first {@link Activity} instance.
+   * </p>
+   * 
+   * <p>
    * This method is invoked even if an external storage is required and no external storage is available at runtime.
    * </p>
    */
@@ -137,8 +151,10 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
    * <p>
    * This method is not invoked when an external storage is required and no external storage is available at runtime.
    * </p>
+   * 
+   * @return a business object ; may be {@code null}
    */
-  protected abstract void onRetrieveBusinessObjectsCustom()
+  protected abstract BusinessObjectClass onRetrieveBusinessObjectsCustom()
       throws BusinessObjectUnavailableException;
 
   /**
@@ -146,11 +162,12 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
    * dismissed.
    * 
    * <p>
-   * This method may be invoked from any thread, hence do not make assumption on the fact that the caller is the UI thread!
+   * It is ensured that this method will be invoked from the UI thread!
    * </p>
    * 
    * <p>
-   * It is ensured that this callback will be invoked only once for all {@code SmartSplashScreenActivity} instances.
+   * It is ensured that this callback will be not be invoked anymore as soon as an instance has {@link Runnable#run()} the provided {@code
+   * finishRunnable} callback.
    * </p>
    * 
    * <p>
@@ -158,11 +175,13 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
    * finishes} the current splash screen.
    * </p>
    * 
+   * @param businessObject
+   *          the business object that has been returned by the {@link #onRetrieveDisplayObjectsCustom()} method ; may be {@code null}
    * @param finishRunnable
    *          the callback that should be {@link Runnable#run()} as soon as the splash screen should be ended. The provided callback may be invoked
    *          from any thread.
    */
-  protected void onRetrieveBusinessObjectsCustomOver(Runnable finishRunnable)
+  protected void onRetrieveBusinessObjectsCustomOver(BusinessObjectClass businessObject, Runnable finishRunnable)
   {
     finishRunnable.run();
   }
@@ -244,6 +263,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
     return intentFilter;
   }
 
+  @SuppressWarnings("unchecked")
   public void onReceive(Intent intent)
   {
     if (SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION.equals(intent.getAction()) == true)
@@ -254,12 +274,14 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
         // We do not take into account the event on the activity instance which is over
         if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked == false)
         {
-          SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked = true;
-          onRetrieveBusinessObjectsCustomOver(new Runnable()
+          onRetrieveBusinessObjectsCustomOver((BusinessObjectClass) SmartSplashScreenActivity.businessObject, new Runnable()
           {
             public void run()
             {
+              SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked = true;
               finishActivity();
+              // We release the shared business object
+              SmartSplashScreenActivity.businessObject = null;
             }
           });
         }
@@ -293,7 +315,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
       boolean onRetrieveBusinessObjectsCustomSuccess = false;
       try
       {
-        onRetrieveBusinessObjectsCustom();
+        SmartSplashScreenActivity.businessObject = onRetrieveBusinessObjectsCustom();
         onRetrieveBusinessObjectsCustomSuccess = true;
       }
       finally
@@ -318,7 +340,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
    * Redirects to the initial activity when a redirection is ongoing. The activity finishes anyway if has not been {@link #stopActivity stopped} nor
    * {@link #pauseActivity paused}.
    */
-  public final void onFulfillDisplayObjects()
+  public void onFulfillDisplayObjects()
   {
     if (stopActivity == true)
     {
@@ -348,6 +370,10 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
     }
     if (isFinishing() == false && hasStopped == false)
     {
+      if (log.isDebugEnabled())
+      {
+        log.debug("Starting the activity which follows the splash screen");
+      }
       if (getIntent().hasExtra(ActivityController.CALLING_INTENT) == true)
       {
         // We only resume the previous activity if the splash screen has not been dismissed
@@ -358,13 +384,20 @@ public abstract class SmartSplashScreenActivity<AggregateClass>
         // We only resume the previous activity if the splash screen has not been dismissed
         startActivity(computeNextIntent());
       }
-    }
-    stopActivity = false;
-    pauseActivity = false;
-    hasStopped = false;
-    if (isFinishing() == false)
-    {
+      stopActivity = false;
+      pauseActivity = false;
+      if (log.isDebugEnabled())
+      {
+        log.debug("Finishing the splash screen");
+      }
       finish();
+    }
+    else
+    {
+      if (log.isDebugEnabled())
+      {
+        log.debug("Gives up the starting the activity which follows the splash screen, because the splash screen is finishing or has been stopped");
+      }
     }
   }
 
