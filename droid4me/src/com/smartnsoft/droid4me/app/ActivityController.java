@@ -30,7 +30,6 @@ import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Environment;
@@ -424,20 +423,40 @@ public final class ActivityController
       {
         return true;
       }
+      return onBusinessObjectAvailableExceptionFallback(activity, component, exception);
+    }
+
+    /**
+     * This method will be invoked by the {@link #onBusinessObjectAvailableException()} method, as a fallback if the provided throwable has not been
+     * handled neither by the {@link #handleCommonCauses()} nor the {@link #handleOtherCauses()} methods.
+     * 
+     * <p>
+     * It is up to the implementation to pop up a dialog box or not. The implement is very likely to {@link Activity#finish()} the provided {@code
+     * activity}.
+     * </p>
+     * 
+     * @param activity
+     *          the activity from which the throwable has been thrown ; cannot be {@code null}
+     * @param component
+     *          the component responsible for having thrown the exception
+     * @param throwable
+     *          the throwable that has been triggered
+     */
+    protected boolean onBusinessObjectAvailableExceptionFallback(final Activity activity, Object component, BusinessObjectUnavailableException exception)
+    {
       // We make sure that the dialog is popped from the UI thread
       activity.runOnUiThread(new Runnable()
       {
         public void run()
         {
-          new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-              i18n.businessObjectAvailabilityProblemHint).setPositiveButton(android.R.string.ok, new OnClickListener()
+          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.businessObjectAvailabilityProblemHint, new DialogInterface.OnClickListener()
           {
-            public void onClick(DialogInterface dialogInterface, int which)
+            public void onClick(DialogInterface dialog, int which)
             {
               // We leave the activity, because we cannot go any further
               activity.finish();
             }
-          }).setCancelable(false).show();
+          }, null, null);
         }
       });
       return true;
@@ -458,15 +477,14 @@ public final class ActivityController
       {
         public void run()
         {
-          new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(i18n.serviceProblemHint).setPositiveButton(
-              android.R.string.ok, new OnClickListener()
-              {
-                public void onClick(DialogInterface dialogInterface, int which)
-                {
-                  // We leave the activity, because we cannot go any further
-                  activity.finish();
-                }
-              }).setCancelable(false).show();
+          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.serviceProblemHint, new DialogInterface.OnClickListener()
+          {
+            public void onClick(DialogInterface dialog, int which)
+            {
+              // We leave the activity, because we cannot go any further
+              activity.finish();
+            }
+          }, null, null);
         }
       });
       return true;
@@ -508,15 +526,14 @@ public final class ActivityController
       {
         public void run()
         {
-          new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(i18n.otherProblemHint).setPositiveButton(
-              android.R.string.ok, new OnClickListener()
-              {
-                public void onClick(DialogInterface dialogInterface, int i)
-                {
-                  // We leave the activity, because we cannot go any further
-                  activity.finish();
-                }
-              }).setCancelable(false).show();
+          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.otherProblemHint, new DialogInterface.OnClickListener()
+          {
+            public void onClick(DialogInterface dialog, int which)
+            {
+              // We leave the activity, because we cannot go any further
+              activity.finish();
+            }
+          }, null, null);
         }
       });
     }
@@ -597,7 +614,7 @@ public final class ActivityController
      *          indicates the end-user experience to provide if a connectivity problem has been detected
      * @return {@code true} if and only a connection issue has been detected
      */
-    protected final boolean handleConnectivityProblemInCause(final Activity activity, Object component, Throwable throwable,
+    protected boolean handleConnectivityProblemInCause(final Activity activity, Object component, Throwable throwable,
         final ActivityController.AbstractExceptionHandler.ConnectivityUIExperience connectivityUIExperience)
     {
       if (ActivityController.AbstractExceptionHandler.isAConnectivityProblem(throwable) == true)
@@ -627,41 +644,32 @@ public final class ActivityController
             else
             {
               final boolean retry = connectivityUIExperience == ConnectivityUIExperience.DialogRetry && activity instanceof LifeCycle;
-              final Builder builder = new AlertDialog.Builder(activity).setTitle(i18n.dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-                  retry == true ? i18n.connectivityProblemRetryHint : i18n.connectivityProblemHint).setPositiveButton(android.R.string.ok, null);
-              if (retry == true)
-              {
-                builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener()
-                {
-                  public void onClick(DialogInterface dialog, int which)
+              showDialog(activity, i18n.dialogBoxErrorTitle, retry == true ? i18n.connectivityProblemRetryHint : i18n.connectivityProblemHint,
+                  new DialogInterface.OnClickListener()
                   {
-                    lifeCycle.refreshBusinessObjectsAndDisplay(true, null, false);
-                    dialog.dismiss();
-                  }
-                }).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener()
-                {
-                  public void onClick(DialogInterface dialog, int which)
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                      if (retry == true)
+                      {
+                        lifeCycle.refreshBusinessObjectsAndDisplay(true, null, false);
+                        dialog.dismiss();
+                      }
+                    }
+                  }, retry == false ? null : new DialogInterface.OnClickListener()
                   {
-                    dialog.cancel();
-                    activity.finish();
-                  }
-                }).setOnCancelListener(new DialogInterface.OnCancelListener()
-                {
-                  public void onCancel(DialogInterface dialog)
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                      dialog.cancel();
+                      activity.finish();
+                    }
+                  }, retry == false ? null : new DialogInterface.OnCancelListener()
                   {
-                    activity.finish();
-                  }
-                }).show();
-              }
-              else
-              {
-                builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener()
-                {
-                  public void onClick(DialogInterface dialog, int which)
-                  {
-                  }
-                }).show();
-              }
+                    public void onCancel(DialogInterface dialog)
+                    {
+                      activity.finish();
+                    }
+                  });
+
             }
           }
         });
@@ -709,6 +717,45 @@ public final class ActivityController
         return true;
       }
       return false;
+    }
+
+    /**
+     * Is responsible for displaying a dialog box. This enables to customize in a centralized way the dialog boxes look & feel.
+     * 
+     * <p>
+     * It is ensured that this method will be invoked from the UI thread.
+     * </p>
+     * 
+     * @param activity
+     *          the activity which is bound to pop up the dialog box
+     * @param dialogTitle
+     *          the dialog box title
+     * @param dialogMessage
+     *          the dialog box message
+     * @param onOkClickListener
+     *          the callback which will be invoked from the UI thread when the end-user hits the "OK" button
+     * @param onNoClickListener
+     *          the callback which will be invoked from the UI thread when the end-user hits the "No" button ; may be {@code null}, and in that case,
+     *          the "No" button is hidden
+     * @param onCancelListener
+     *          the callback which will be invoked from the UI thread when the end-user hits the "back" button ; may be {@code null}, and in that
+     *          case, the dialog box will not be {@link Builder#setCancelable(boolean) cancelleable}
+     */
+    protected void showDialog(Activity activity, CharSequence dialogTitle, CharSequence dialogMessage, final DialogInterface.OnClickListener onOkClickListener,
+        final DialogInterface.OnClickListener onNoClickListener, final DialogInterface.OnCancelListener onCancelListener)
+    {
+      final Builder builder = new AlertDialog.Builder(activity).setTitle(dialogTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(dialogMessage).setPositiveButton(
+          android.R.string.ok, onOkClickListener);
+      builder.setCancelable(onCancelListener == null ? false : true);
+      if (onCancelListener != null)
+      {
+        builder.setOnCancelListener(onCancelListener);
+      }
+      if (onNoClickListener != null)
+      {
+        builder.setNegativeButton(android.R.string.no, onNoClickListener);
+      }
+      builder.show();
     }
 
   }
