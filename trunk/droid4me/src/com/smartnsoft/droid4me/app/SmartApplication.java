@@ -109,23 +109,6 @@ public abstract class SmartApplication
       this.retrievingLogProgressMessage = retrievingLogProgressMessage;
     }
 
-    // /**
-    // * @param stringResourcesId
-    // * the string array identifier which contains all textual resources required in the framework
-    // */
-    // public I18N(Context context, int stringResourcesId)
-    // {
-    // final String[] strings = context.getResources().getStringArray(stringResourcesId);
-    // this.dialogBoxErrorTitle = strings[0];
-    // this.businessObjectAvailabilityProblemHint = strings[1];
-    // this.serviceProblemHint = strings[2];
-    // this.connectivityProblemHint = strings[3];
-    // this.otherProblemHint = strings[4];
-    // this.applicationName = strings[5];
-    // this.reportButtonLabel = strings[6];
-    // this.retrievingLogProgressMessage = strings[7];
-    // }
-
   }
 
   protected class DefaultExceptionHandler
