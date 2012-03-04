@@ -26,6 +26,19 @@ import com.smartnsoft.droid4me.LifeCycle;
 /**
  * All {@link Activity activities} and {@link Fragment fragments} of the framework implement this composite interface.
  * 
+ * <p>
+ * Any entity implementing this interface is considered as droid4me-ready, and benefit from all the framework features.
+ * </p>
+ * 
+ * <p>
+ * When it is required to have an existing {@link Activity} or {@link Fragment} implement this interface, you may use the {@link Droid4mizer} on that
+ * purpose.
+ * </p>
+ * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * 
+ * @see Droid4mizer
  * @author Édouard Mercier
  * @since 2011.03.04
  */
