@@ -550,6 +550,11 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     smartable.onSynchronizeDisplayObjects();
   }
 
+  public SharedPreferences getPreferences()
+  {
+    return stateContainer.getPreferences(activity);
+  }
+
   /*
    * The specific methods.
    */
@@ -663,11 +668,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   private void onRegisterResultHandlers(CompositeHandler compositeActivityResultHandler)
   {
     // THINK: should we plug the feature?
-  }
-
-  public SharedPreferences getPreferences()
-  {
-    return stateContainer.getPreferences(activity);
   }
 
 }

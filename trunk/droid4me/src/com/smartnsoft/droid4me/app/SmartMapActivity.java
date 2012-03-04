@@ -268,20 +268,6 @@ public abstract class SmartMapActivity<AggregateClass>
     return (((double) pixelSpan / 256d) * EQUATOR_DISTANCE_IN_METERS) / (Math.pow(2, zoomLevel - 1));
   }
 
-  // public static final int convertLatitudeDistanceInMetersIntoSpan(int latitudeE6, float latitudeDistanceInMeters)
-  // {
-  // int zoomLevel = 1;
-  // double screenWidthInMeters = EQUATOR_DISTANCE_IN_METERS;
-  // final double radiusInMetersTakingAccountLatitude = SmartMapActivity.adjustWithLatitude(latitudeE6, latitudeDistanceInMeters);
-  // // We apply a dichotomy
-  // while ((screenWidthInMeters > radiusInMetersTakingAccountLatitude) && zoomLevel <= (21 + 1))
-  // {
-  // screenWidthInMeters = screenWidthInMeters / 2d;
-  // zoomLevel++;
-  // }
-  // return zoomLevel - 1 - 2;
-  // }
-
   /**
    * ------------------- Beginning of "Copied from the SmartActivity class" -------------------
    */
