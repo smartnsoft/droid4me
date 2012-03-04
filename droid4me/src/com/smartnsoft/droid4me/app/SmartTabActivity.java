@@ -98,6 +98,11 @@ public abstract class SmartTabActivity<AggregateClass>
     return stateContainer.getHandler();
   }
 
+  public SharedPreferences getPreferences()
+  {
+    return stateContainer.getPreferences(getApplicationContext());
+  }
+
   public final AggregateClass getAggregate()
   {
     return stateContainer.getAggregate();
@@ -121,10 +126,6 @@ public abstract class SmartTabActivity<AggregateClass>
   public final void onException(Throwable throwable, boolean fromGuiThread)
   {
     ActivityController.getInstance().handleException(this, null, throwable);
-  }
-
-  protected void onBeforeRetrievingDisplayObjects()
-  {
   }
 
   /**
@@ -168,7 +169,6 @@ public abstract class SmartTabActivity<AggregateClass>
     stateContainer.registerBroadcastListeners();
 
     stateContainer.initialize();
-    onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     try
     {
@@ -665,11 +665,6 @@ public abstract class SmartTabActivity<AggregateClass>
   public CompositeHandler getCompositeActivityResultHandler()
   {
     return stateContainer.compositeActivityResultHandler;
-  }
-
-  protected SharedPreferences getPreferences()
-  {
-    return stateContainer.getPreferences(getApplicationContext());
   }
 
   /**

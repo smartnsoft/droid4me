@@ -49,7 +49,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartPreferenceActivity<AggregateClass>
     extends PreferenceActivity
-    implements Smartable<AggregateClass>
+    implements Droid4mizerInterface, Smartable<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
@@ -112,6 +112,11 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     return stateContainer.getHandler();
   }
 
+  public SharedPreferences getPreferences()
+  {
+    return stateContainer.getPreferences(getApplicationContext());
+  }
+
   public final AggregateClass getAggregate()
   {
     return stateContainer.getAggregate();
@@ -135,10 +140,6 @@ public abstract class SmartPreferenceActivity<AggregateClass>
   public final void onException(Throwable throwable, boolean fromGuiThread)
   {
     ActivityController.getInstance().handleException(this, null, throwable);
-  }
-
-  protected void onBeforeRetrievingDisplayObjects()
-  {
   }
 
   /**
@@ -182,7 +183,6 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     stateContainer.registerBroadcastListeners();
 
     stateContainer.initialize();
-    onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     try
     {
@@ -679,11 +679,6 @@ public abstract class SmartPreferenceActivity<AggregateClass>
   public CompositeHandler getCompositeActivityResultHandler()
   {
     return stateContainer.compositeActivityResultHandler;
-  }
-
-  protected SharedPreferences getPreferences()
-  {
-    return stateContainer.getPreferences(getApplicationContext());
   }
 
   /**

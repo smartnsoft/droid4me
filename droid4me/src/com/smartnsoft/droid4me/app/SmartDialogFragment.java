@@ -3,11 +3,11 @@ package com.smartnsoft.droid4me.app;
 import java.util.List;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.DialogFragment;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,7 +20,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
- * A basis classes for designing a {@link Fragment} compatible with the framework, i.e. droid4me-ready.
+ * A basis classes for designing a {@link DialogFragment} compatible with the framework, i.e. droid4me-ready.
  * 
  * <p>
  * Warning: this class is only available for applications running under Android v3+, i.e. release 11+!
@@ -28,27 +28,27 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  * 
  * @param <AggregateClass>
  *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
- * @author Jocelyn Girard, Édouard Mercier
- * @since 2011.12.08
+ * @author Édouard Mercier
+ * @since 2012.03.04
  */
-public abstract class SmartFragment<AggregrateClass>
-    extends Fragment
-    implements Droid4mizerInterface, Smartable<AggregrateClass>
+public abstract class SmartDialogFragment<AggregateClass>
+    extends DialogFragment
+    implements Droid4mizerInterface, Smartable<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
-  private Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>> droid4mizer;
+  private Droid4mizer<AggregateClass, SmartDialogFragment<AggregateClass>> droid4mizer;
 
   @Override
   public void onAttach(Activity activity)
   {
     if (log.isDebugEnabled())
     {
-      log.debug("SmartFragment::onAttach");
+      log.debug("SmartDialogFragment::onAttach");
     }
     super.onAttach(activity);
-    droid4mizer = new Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>>(activity, this, this, this, this);
+    droid4mizer = new Droid4mizer<AggregateClass, SmartDialogFragment<AggregateClass>>(getActivity(), this, this, this, this);
   }
 
   @Override
@@ -58,7 +58,7 @@ public abstract class SmartFragment<AggregrateClass>
     {
       public void run()
       {
-        SmartFragment.super.onCreate(savedInstanceState);
+        SmartDialogFragment.super.onCreate(savedInstanceState);
       }
     }, savedInstanceState);
   }
@@ -160,12 +160,12 @@ public abstract class SmartFragment<AggregrateClass>
    * Smartable implementation.
    */
 
-  public AggregrateClass getAggregate()
+  public AggregateClass getAggregate()
   {
     return droid4mizer.getAggregate();
   }
 
-  public void setAggregate(AggregrateClass aggregate)
+  public void setAggregate(AggregateClass aggregate)
   {
     droid4mizer.setAggregate(aggregate);
   }
@@ -220,6 +220,26 @@ public abstract class SmartFragment<AggregrateClass>
     return droid4mizer.shouldKeepOn();
   }
 
+  /**
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
+   * 
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
+   */
+  public void refreshBusinessObjectsAndDisplay()
+  {
+    refreshBusinessObjectsAndDisplay(true, null, false);
+  }
+
+  /**
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, null, false)}.
+   * 
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
+   */
+  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
+  {
+    refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null, false);
+  }
+
   public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);
@@ -252,6 +272,23 @@ public abstract class SmartFragment<AggregrateClass>
   public List<StaticMenuCommand> getMenuCommands()
   {
     return null;
+  }
+
+  public void onFulfillDisplayObjects()
+  {
+  }
+
+  public void onRetrieveBusinessObjects()
+      throws BusinessObjectUnavailableException
+  {
+  }
+
+  public void onRetrieveDisplayObjects()
+  {
+  }
+
+  public void onSynchronizeDisplayObjects()
+  {
   }
 
   /**

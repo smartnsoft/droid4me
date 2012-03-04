@@ -63,7 +63,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartGroupActivity<AggregateClass>
     extends ActivityGroup
-    implements Smartable<AggregateClass>/*
+    implements Droid4mizerInterface, Smartable<AggregateClass>/*
                                          * ,ViewTreeObserver . OnTouchModeChangeListener , OnFocusChangeListener
                                          */
 {
@@ -466,6 +466,11 @@ public abstract class SmartGroupActivity<AggregateClass>
     return stateContainer.getHandler();
   }
 
+  public SharedPreferences getPreferences()
+  {
+    return stateContainer.getPreferences(getApplicationContext());
+  }
+
   public final AggregateClass getAggregate()
   {
     return stateContainer.getAggregate();
@@ -489,10 +494,6 @@ public abstract class SmartGroupActivity<AggregateClass>
   public final void onException(Throwable throwable, boolean fromGuiThread)
   {
     ActivityController.getInstance().handleException(this, null, throwable);
-  }
-
-  protected void onBeforeRetrievingDisplayObjects()
-  {
   }
 
   /**
@@ -536,7 +537,6 @@ public abstract class SmartGroupActivity<AggregateClass>
     stateContainer.registerBroadcastListeners();
 
     stateContainer.initialize();
-    onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     try
     {
@@ -1033,11 +1033,6 @@ public abstract class SmartGroupActivity<AggregateClass>
   public CompositeHandler getCompositeActivityResultHandler()
   {
     return stateContainer.compositeActivityResultHandler;
-  }
-
-  protected SharedPreferences getPreferences()
-  {
-    return stateContainer.getPreferences(getApplicationContext());
   }
 
   /**

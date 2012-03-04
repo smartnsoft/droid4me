@@ -138,7 +138,8 @@ public final class AppPublics
   }
 
   /**
-   * Indicates what kind of {@link Intent} are being listened to, and how to handle an intent.
+   * Indicates what kind of {@link Intent} are being listened to, and how to handle it. A simple abstraction of a {@link BroadcastReceiver}, which
+   * enables to express both some {@link Intent} filters, and their consumption at the same place.
    * 
    * @since 2010.02.04
    */
@@ -146,6 +147,8 @@ public final class AppPublics
   {
 
     /**
+     * This method will be invoked by the framework to determine what {@link IntentFilter} should be associated to the current listener.
+     * 
      * @return if not {@code null}, only the intents that match with this returned value, will be received by the activity
      */
     IntentFilter getIntentFilter();

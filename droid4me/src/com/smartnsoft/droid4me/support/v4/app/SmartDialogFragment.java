@@ -12,22 +12,23 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.Droid4mizerInterface;
 import com.smartnsoft.droid4me.app.Smartable;
-import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
+import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
- * A basis classes for designing an Android compatibility library {@link android.support.v4.app.DialogFragment} compatible with the framework, i.e.
+ * A basis class for designing an Android compatibility library {@link android.support.v4.app.DialogFragment} compatible with the framework, i.e.
  * droid4me-ready.
  * 
  * <p>
- * Warning: this class is only available for applications running under Android v1.6+, i.e. release 4+, with the compatibility library!
+ * Warning: this class is only available for applications running under Android v1.6+, i.e. API level 4+, with the <a
+ * href="http://developer.android.com/sdk/compatibility-library.html">Android Support Package</a>!
  * </p>
  * 
  * @param <AggregateClass>
@@ -161,7 +162,7 @@ public abstract class SmartDialogFragment<AggregateClass>
   }
 
   /**
-   * SmartableActivity implementation.
+   * Smartable implementation.
    */
 
   public AggregateClass getAggregate()
@@ -177,6 +178,11 @@ public abstract class SmartDialogFragment<AggregateClass>
   public Handler getHandler()
   {
     return droid4mizer.getHandler();
+  }
+
+  public SharedPreferences getPreferences()
+  {
+    return droid4mizer.getPreferences();
   }
 
   public void onException(Throwable throwable, boolean fromGuiThread)
@@ -248,11 +254,6 @@ public abstract class SmartDialogFragment<AggregateClass>
    * Droid4mizeInterface implementation.
    */
 
-  public void onBeforeRetrievingDisplayObjects()
-  {
-    droid4mizer.onBeforeRetrievingDisplayObjects();
-  }
-
   public Composite getCompositeActionHandler()
   {
     return droid4mizer.getCompositeActionHandler();
@@ -261,11 +262,6 @@ public abstract class SmartDialogFragment<AggregateClass>
   public CompositeHandler getCompositeActivityResultHandler()
   {
     return droid4mizer.getCompositeActivityResultHandler();
-  }
-
-  public SharedPreferences getPreferences()
-  {
-    return droid4mizer.getPreferences();
   }
 
   public void onActuallyCreated()

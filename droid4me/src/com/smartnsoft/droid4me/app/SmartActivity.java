@@ -50,7 +50,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 // TODO: think of using the onRetainNonConfigurationInstance/getLastNonConfigurationInstance() when the screen orientation changes.
 public abstract class SmartActivity<AggregateClass>
     extends Activity
-    implements Smartable<AggregateClass>
+    implements Droid4mizerInterface, Smartable<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
@@ -94,6 +94,11 @@ public abstract class SmartActivity<AggregateClass>
     return stateContainer.getHandler();
   }
 
+  public SharedPreferences getPreferences()
+  {
+    return stateContainer.getPreferences(getApplicationContext());
+  }
+
   public final AggregateClass getAggregate()
   {
     return stateContainer.getAggregate();
@@ -117,10 +122,6 @@ public abstract class SmartActivity<AggregateClass>
   public final void onException(Throwable throwable, boolean fromGuiThread)
   {
     ActivityController.getInstance().handleException(this, null, throwable);
-  }
-
-  protected void onBeforeRetrievingDisplayObjects()
-  {
   }
 
   /**
@@ -165,7 +166,6 @@ public abstract class SmartActivity<AggregateClass>
     stateContainer.registerBroadcastListeners();
 
     stateContainer.initialize();
-    onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     try
     {
@@ -650,11 +650,6 @@ public abstract class SmartActivity<AggregateClass>
   public CompositeHandler getCompositeActivityResultHandler()
   {
     return stateContainer.compositeActivityResultHandler;
-  }
-
-  protected SharedPreferences getPreferences()
-  {
-    return stateContainer.getPreferences(getApplicationContext());
   }
 
 }

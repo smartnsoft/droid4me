@@ -21,10 +21,12 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 
 /**
- * A basis classes for designing an Android compatibility library {@link android.support.v4.app.FragmentActivity} compatible with the framework.
+ * A basis class for designing an Android compatibility library {@link android.support.v4.app.FragmentActivity} compatible with the framework, i.e.
+ * droid4me-ready.
  * 
  * <p>
- * Warning: this class is only available for applications running under Android v1.6+, i.e. release 4+, with the compatibility library!
+ * Warning: this class is only available for applications running under Android v1.6+, i.e. API level 4+, with the <a
+ * href="http://developer.android.com/sdk/compatibility-library.html">Android Support Package</a>!
  * </p>
  * 
  * @author Jocelyn Girard, Édouard Mercier
@@ -35,7 +37,7 @@ public abstract class SmartFragmentActivity<AggregateClass>
     implements Droid4mizerInterface, Smartable<AggregateClass>
 {
 
-  protected static final Logger log = LoggerFactory.getInstance("SmartableActivity");
+  protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
   private final Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>>(this, this, this, this, null);
 
@@ -185,7 +187,7 @@ public abstract class SmartFragmentActivity<AggregateClass>
   }
 
   /**
-   * SmartableActivity implementation.
+   * Smartable implementation.
    */
 
   public AggregateClass getAggregate()
@@ -201,6 +203,11 @@ public abstract class SmartFragmentActivity<AggregateClass>
   public Handler getHandler()
   {
     return droid4mizer.getHandler();
+  }
+
+  public SharedPreferences getPreferences()
+  {
+    return droid4mizer.getPreferences();
   }
 
   public void onException(Throwable throwable, boolean fromGuiThread)
@@ -252,11 +259,6 @@ public abstract class SmartFragmentActivity<AggregateClass>
    * Droid4mizeInterface implementation.
    */
 
-  public void onBeforeRetrievingDisplayObjects()
-  {
-    droid4mizer.onBeforeRetrievingDisplayObjects();
-  }
-
   public Composite getCompositeActionHandler()
   {
     return droid4mizer.getCompositeActionHandler();
@@ -265,11 +267,6 @@ public abstract class SmartFragmentActivity<AggregateClass>
   public CompositeHandler getCompositeActivityResultHandler()
   {
     return droid4mizer.getCompositeActivityResultHandler();
-  }
-
-  public SharedPreferences getPreferences()
-  {
-    return droid4mizer.getPreferences();
   }
 
   public void onActuallyCreated()

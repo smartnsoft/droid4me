@@ -18,13 +18,13 @@
 package com.smartnsoft.droid4me.app;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
+import android.app.Fragment;
 
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.menu.MenuHandler;
 
 /**
- * Enables to define a common additional contract when extending an {@link Activity} which is to be droid4mized.
+ * Enables to define a common additional contract when extending an {@link Activity}/{@link Fragment} which needs to be droid4me-ready.
  * 
  * @see Droid4mizer
  * @author Édouard Mercier
@@ -33,12 +33,8 @@ import com.smartnsoft.droid4me.menu.MenuHandler;
 public interface Droid4mizerInterface
 {
 
-  void onBeforeRetrievingDisplayObjects();
-
   MenuHandler.Composite getCompositeActionHandler();
 
   CompositeHandler getCompositeActivityResultHandler();
-
-  SharedPreferences getPreferences();
 
 }

@@ -263,7 +263,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     stateContainer.registerBroadcastListeners();
 
     stateContainer.initialize();
-    droid4mizerInterface.onBeforeRetrievingDisplayObjects();
     // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     try
     {
@@ -519,10 +518,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   public Composite getCompositeActionHandler()
   {
     return stateContainer.compositeActionHandler;
-  }
-
-  public void onBeforeRetrievingDisplayObjects()
-  {
   }
 
   public CompositeHandler getCompositeActivityResultHandler()
