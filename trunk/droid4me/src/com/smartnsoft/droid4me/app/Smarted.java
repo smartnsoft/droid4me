@@ -28,7 +28,10 @@ import android.os.Handler;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
- * Defines common methods for all {@link Activity activities} and {@link Fragment fragments} defined in the framework.
+ * Defines common methods for all {@link Activity} and {@link Fragment} entities defined in the framework.
+ * 
+ * @param <AggregateClass>
+ *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
  * 
  * @author Édouard Mercier
  * @since 2010.07.10
@@ -79,7 +82,11 @@ public interface Smarted<AggregateClass>
   List<StaticMenuCommand> getMenuCommands();
 
   /**
-   * Can be invoked when an exception is thrown, so that the {@link ActivityController.ExceptionHandler} handles it.
+   * This is a centralized callback which will be invoked by the framework any time an exception is thrown by the implementing class.
+   * 
+   * <p>
+   * It may be invoked when an exception is thrown, so that the {@link ActivityController.ExceptionHandler} handles it.
+   * </p>
    * 
    * @param fromGuiThread
    *          indicates whether the call is done from the GUI thread

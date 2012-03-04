@@ -1,0 +1,47 @@
+#summary Activity and Fragment life cycle structured
+#labels Featured,Phase-Implementation
+
+= LifeCycle =
+
+The Android `Activity` (http://developer.android.com/reference/android/app/Activity.html#ActivityLifecycle) and `Fragment` (http://developer.android.com/reference/android/app/Fragment.html#Lifecycle) life cycles are quite rich and complex. It is utterly important to understand and integrate them, in order to develop good applications. However, having to override the right methods on every `Activity` or `Fragment` is a bit tedious, especially when it comes to run code (typically, invoking web services) from a detached thread.
+
+From our experience in Android development, we have identified a very usual pattern, and we have decided to capture it through a typical life cycle, that are now going to explain and detail.
+
+== The `LifeCycle` interface ==
+
+If you think of an `Activity` or a `Fragment` entity life cycle, you may probably conclude that the way it is built and fulfilled is very often the same:
+
+# you attach a layout to it and keep a reference on the widgets you need to customize later on ;
+# you retrieve the necessary business objects that are represented on the entity ;
+# once the business objects are available, you bind the widgets to the business objects, so that the entity graphical state reflects them ;
+# sometimes, you need to update that binding if the end-user goes one `Activity` deeper in the task stack.
+
+This pattern is not universal, but applies to a very vast majority of `Activity` and `Fragment` entities. The framework [http://droid4me.googlecode.com/svn/javadoc/com/smartnsoft/droid4me/LifeCycle.html LifeCycle] interface captures this pattern through callback methods which will be invoked at runtime. The 4 previously described stages are successively:
+
+* `onRetrieveDisplayObjects()`: this method is responsible for setting the entity layout, and extract its widgets that should be updated graphically, depending on the business objects it handles. This method is ensured to be invoked from the UI thread ;
+* `onRetrieveBusinessObjects()`: this method is responsible for getting the business objects which are handled by the entity. This method will be invoked from the UI thread provided the implementing entity does not implement the `BusinessObjectsRetrievalAsynchronousPolicy` interface (an empty interface, which is used as a kind of Java annotation): in that case, it will be invoked from a background thread. It is allowed to throw a `BusinessObjectUnavailableException` exception, to express that some of the business objects could not be loaded, and that the entity cannot recover from that status ;
+* `onFulfillDisplayObjects()`: this method is responsible for binding a first time its previously extracted widgets to its retrieve business objects. This method is ensured to be invoked from the UI thread ;
+* `onSynchronizeDisplayObjects()`: this method is responsible for binding once again the previously extracted widgets to its business objects, whose state may have changed in the meantime. This method is ensured to be invoked from the UI thread.
+
+Note that 3 out of those 4 callbacks will be necessarily from the UI thread: if the entity implements the `BusinessObjectsRetrievalAsynchronousPolicy` interface, the `onRetrieveBusinessObjects()` method will be invoked from a background thread, which enables to release the UI thread.
+
+In addition to these 4 main stages, the `onBusinessObjectsRetrieved()` callback is also invoked every time the `onRetrieveBusinessObjects()` has successfully been invoked. This callback is a hook that you may override, and which gives you the confirmation that the business objects have been retrieved.
+
+The framework `Activity` and `Fragment` sub-classes all implement this `LifeCycle` interface: hence, all the entities defined with the framework benefit from this simplified workflow.
+
+== A technico-functional workflow ==
+
+When deriving from the framework `LifeCycle` implementing basis classes, you just need to override the `LifeCycle` callback, and not the traditional `onCreate()`, `onStart()`, `onResume()` methods, even if you can still override them if necessary. This means that you just need to focus on the provided workflow. This workflow forces to structure in a systematic way your entity, and prompts the developer to focus on how splitting the responsibility of each key stage.
+
+However, the previously described workflow is rather abstract and does not indicate how it integrates with the built-in `onCreate()`, `onStart()`, `onResume()` methods. During the entity first display, here is some detail about when those callbacks are being invoked:
+
+* `onRetrieveDisplayObjects()` is invoked during the entity `onCreate()` method execution. This involves that this callback will be invoked only once during the entity entire life cycle ;
+* `onRetrieveBusinessObjects()` is invoked after the entity `onResume()` method execution has started, necessarily after the previous `onRetrieveDisplayObjects()` has successfully returned ;
+* `onFulfillDisplayObjects()` is invoked after the entity `onResume()` method execution has started, necessarily after the previous `onRetrieveBusinessObjects()` has successfully returned ;
+* `onSynchronizeDisplayObjects()` is invoked after the entity `onResume()` method execution has started, necessarily after the previous `onFulfillDisplayObjects()` has successfully returned.
+
+This interface also enables to reload the entity through the `refreshBusinessObjectsAndDisplay()` method: this method invokes successively the entity `onRetrieveBusinessObjects()` and `onSynchronizeDisplayObjects()` methods.It is especially useful when the entity needs to be reloaded, and prevents from having to code a specific method for retrieving the business objects, and then update the display accordingly.
+
+== Technical implementation details ==
+
+In the framework, the classes inheriting from that interface are responsible for respecting the hereby described workflow. Some extra care has been brought to those interface, so that they handle the potential exceptions through the ExceptionHandler, and that all background threads are taken from an internal efficient worker threads pool, just like in the SmartCommands.
