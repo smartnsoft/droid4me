@@ -20,7 +20,7 @@ import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
- * A basis classes for designing a {@link Fragment} compatible with the framework.
+ * A basis classes for designing a {@link Fragment} compatible with the framework, i.e. droid4me-ready.
  * 
  * <p>
  * Warning: this class is only available for applications running under Android v3+, i.e. release 11+!
@@ -175,6 +175,11 @@ public abstract class SmartFragment<AggregrateClass>
     return droid4mizer.getHandler();
   }
 
+  public SharedPreferences getPreferences()
+  {
+    return droid4mizer.getPreferences();
+  }
+
   public void onException(Throwable throwable, boolean fromGuiThread)
   {
     droid4mizer.onException(throwable, fromGuiThread);
@@ -224,11 +229,6 @@ public abstract class SmartFragment<AggregrateClass>
    * Droid4mizeInterface implementation.
    */
 
-  public void onBeforeRetrievingDisplayObjects()
-  {
-    droid4mizer.onBeforeRetrievingDisplayObjects();
-  }
-
   public Composite getCompositeActionHandler()
   {
     return droid4mizer.getCompositeActionHandler();
@@ -237,11 +237,6 @@ public abstract class SmartFragment<AggregrateClass>
   public CompositeHandler getCompositeActivityResultHandler()
   {
     return droid4mizer.getCompositeActivityResultHandler();
-  }
-
-  public SharedPreferences getPreferences()
-  {
-    return droid4mizer.getPreferences();
   }
 
   public void onActuallyCreated()

@@ -7,18 +7,22 @@ The droid4me framework has emerged from actual use cases. It has been incepted i
 
 Hence, the framework has been built from real use cases, from the various needs when developing several Android applications. When explaining it and documenting it, the various packages and components have been more clearly identified.
 
+== Pre-requisites ==
+
+The framework is compatible with Android v1.6+ and also works with Android v3+ with introduces the concept of `Fragment`. In order to use it, you just need to work on an Android project, which declares Android v1.6 (API level 4) as a minimum SDK version. The framework also support the "[http://developer.android.com/sdk/compatibility-library.html Android Support Package]". Then, you need to add its .jar library into the project classpath. No other external dependency is required.
+
 == Autonomous components ==
 
 Modularity was a major concern when developing this framework. We pay great attention not to couple too much various components, for two main reasons:
  * having clearly distinct components is a good way to split responsibilities and hence to provide a tool for each clearly identified usage. Moreover, you need to have separate units to write unitary tests ;
  * we want developers to be able to use a component, without using the rest of the framework. The typical cases are the "BitmapDownloader", the "ExceptionHandler", the "Persistence". You do not need to necessarily use the "SmartableActivity" to use other components.
 
-Our bet and our challenge is to provide valuable components out-of-the-box, which will tease developers to investigate about the framework itself. Some of the components of the framework have been unitary-tested, so as to adopt the industry best practices. The rest has been proofed against many professional Android applications, and it is really reliable and stable in terms of API.
+Our bet and our challenge is to provide valuable components out-of-the-box, which will tease developers to investigate about the framework itself. Some of the framework components have been unitary-tested, so as to adopt the industry best practices. The rest has been proofed against many professional Android applications, and it is really reliable and stable in terms of API.
 
 == A framework really, not a library? ==
 
-We think that the provided API is not just a library but a framework, because of the "SmartableActivity" component: the way developers write and architecture their Android activities with it, forces to adopt a certain way of thinking an `android.app.Activity`. For us, this is the core of the framework, and we believe that using it spares a lot of time to the developer, and makes hime focus on the functional part and the ergonomics of the application.
+We think that the provided API is not just a library but a framework, because of the "[SmartableInterface Smartable]" interface: the way developers write and architecture their Android Activity/Fragment with it, forces to adopt a certain way of thinking such entities. For us, this is the core of the framework, and we believe that using it spares a lot of time to the developer, and makes him focus on the functional part and the ergonomics of the application.
 
 == For advanced Android developers ==
 
-We suppose that the developer using the framework has already a steady understanding of Android, and some development experience. If you are a brand new Android developer, we think that it would be a good idea not to start your first application using the "SmartableActivity" component, but first write it directly based on the Android API...
+We suppose that the developer using the framework has already a steady understanding of Android, and some development experience. If you are a brand new Android developer, we think that it would be a good idea not to start your first application using the "[SmartableInterface Smartable]" interface, but first write it directly based on the Android API...

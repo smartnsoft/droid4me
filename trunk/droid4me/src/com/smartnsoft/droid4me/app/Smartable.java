@@ -27,7 +27,7 @@ import com.smartnsoft.droid4me.LifeCycle;
  * All {@link Activity activities} and {@link Fragment fragments} of the framework implement this composite interface.
  * 
  * <p>
- * Any entity implementing this interface is considered as droid4me-ready, and benefit from all the framework features.
+ * Any entity implementing this interface is considered as droid4me-ready (or droid4me-compliant) and benefit from all the framework features.
  * </p>
  * 
  * <p>

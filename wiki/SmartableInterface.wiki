@@ -1,0 +1,24 @@
+#summary droid4me-ready interface explanation
+#labels Featured,Phase-Implementation
+
+= The `Smartable` Interface =
+
+The droid4me LifeCycle framework has been designed to be extensible regarding the core Android `Activity` and `Fragment` entities. We do not want to impose the developer to necessarily start from the provided `Activity` and `Fragment` sub-classes.
+
+This is the reason why the framework needs an entry point for being able to design an `Activity` or a `Fragment`, and this entry point is the `Smartable` interface. This interface is a composite interface: among its ancestors is the `LifeCycle` interface.
+
+Any class implementing that interface properly is considered to be "droid4me-ready" (or "droid4me-compliant"), and will be considered by the framework as a first-class citizen component.
+
+== The `Smarted` interface ==
+
+This interface is an ancestor of the `Smartable` interface, and it offers 5 features:
+
+ * an aggregate: it enables to provide and extract common data from an entity, and is typically used by the `ActivityInterceptor`, which can handle it is a generic way through the entity life cycle events ;
+ * an Android `Handler` which is useful when some piece of code requires to be run in the UI thread ;
+ * a `registerBroadcastListeners()` method, which enables to register some `BroadcastListener`s (a `BroadcastListener` is just a wrapper around the Android built-in `BroadcastReceiver`) ;
+ * a `getMenuCommands()` which enables to declare how the entity contributes to the Android menu system ;
+ * a `onException()` method which enables to capture in one place all exceptions which may be thrown by the entity.
+
+== The `Droid4mizer` ==
+
+...

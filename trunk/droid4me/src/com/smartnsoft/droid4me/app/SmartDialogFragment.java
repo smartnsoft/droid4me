@@ -1,4 +1,4 @@
-package com.smartnsoft.droid4me.support.v4.app;
+package com.smartnsoft.droid4me.app;
 
 import java.util.List;
 
@@ -13,9 +13,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
-import com.smartnsoft.droid4me.app.Droid4mizer;
-import com.smartnsoft.droid4me.app.Droid4mizerInterface;
-import com.smartnsoft.droid4me.app.Smartable;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -23,18 +20,16 @@ import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
- * A basis class for designing an Android compatibility library {@link android.support.v4.app.DialogFragment} compatible with the framework, i.e.
- * droid4me-ready.
+ * A basis classes for designing a {@link DialogFragment} compatible with the framework, i.e. droid4me-ready.
  * 
  * <p>
- * Warning: this class is only available for applications running under Android v1.6+, i.e. API level 4+, with the <a
- * href="http://developer.android.com/sdk/compatibility-library.html">Android Support Package</a>!
+ * Warning: this class is only available for applications running under Android v3+, i.e. release 11+!
  * </p>
  * 
  * @param <AggregateClass>
  *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
  * @author Édouard Mercier
- * @since 2012.03.01
+ * @since 2012.03.04
  */
 public abstract class SmartDialogFragment<AggregateClass>
     extends DialogFragment
