@@ -250,6 +250,16 @@ public abstract class SmartFragmentActivity<AggregateClass>
     return droid4mizer.shouldKeepOn();
   }
 
+  public void onActuallyCreated()
+  {
+    droid4mizer.onActuallyCreated();
+  }
+
+  public void onActuallyDestroyed()
+  {
+    droid4mizer.onActuallyDestroyed();
+  }
+
   public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);
@@ -269,15 +279,9 @@ public abstract class SmartFragmentActivity<AggregateClass>
     return droid4mizer.getCompositeActivityResultHandler();
   }
 
-  public void onActuallyCreated()
-  {
-  }
-
-  public void onActuallyDestroyed()
-  {
-  }
-
-  // --------------
+  /**
+   * Own implementation.
+   */
 
   public List<StaticMenuCommand> getMenuCommands()
   {

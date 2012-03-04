@@ -241,19 +241,28 @@ public abstract class SmartFragment<AggregrateClass>
 
   public void onActuallyCreated()
   {
+    droid4mizer.onActuallyCreated();
   }
 
   public void onActuallyDestroyed()
   {
+    droid4mizer.onActuallyDestroyed();
   }
 
-  // --------------
+
+  /**
+   * Own implementation.
+   */
 
   public List<StaticMenuCommand> getMenuCommands()
   {
     return null;
   }
 
+  /**
+   * Specific implementation.
+   */
+  
   /**
    * Does the same thing as the {@link #getActivity()}, except that it throws an exception if the fragment has been detached, instead of returning
    * {@code null}
