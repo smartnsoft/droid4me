@@ -10,15 +10,15 @@ import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.Droid4mizerInterface;
 import com.smartnsoft.droid4me.app.Smartable;
-import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
+import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * A basis class for designing an Android compatibility library {@link android.support.v4.app.FragmentActivity} compatible with the framework, i.e.
@@ -57,7 +57,7 @@ public abstract class SmartFragmentActivity<AggregateClass>
   }
 
   @Override
-  public void onCreate(final Bundle savedInstanceState)
+  protected void onCreate(final Bundle savedInstanceState)
   {
     droid4mizer.onCreate(new Runnable()
     {
@@ -83,28 +83,28 @@ public abstract class SmartFragmentActivity<AggregateClass>
   }
 
   @Override
-  public void onResume()
+  protected void onResume()
   {
     super.onResume();
     droid4mizer.onResume();
   }
 
   @Override
-  public void onSaveInstanceState(Bundle outState)
+  protected void onSaveInstanceState(Bundle outState)
   {
     super.onSaveInstanceState(outState);
     droid4mizer.onSaveInstanceState(outState);
   }
 
   @Override
-  public void onStart()
+  protected void onStart()
   {
     super.onStart();
     droid4mizer.onStart();
   }
 
   @Override
-  public void onPause()
+  protected void onPause()
   {
     try
     {
@@ -117,7 +117,7 @@ public abstract class SmartFragmentActivity<AggregateClass>
   }
 
   @Override
-  public void onStop()
+  protected void onStop()
   {
     try
     {
@@ -130,7 +130,7 @@ public abstract class SmartFragmentActivity<AggregateClass>
   }
 
   @Override
-  public void onDestroy()
+  protected void onDestroy()
   {
     try
     {
@@ -180,7 +180,7 @@ public abstract class SmartFragmentActivity<AggregateClass>
   }
 
   @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent data)
+  protected void onActivityResult(int requestCode, int resultCode, Intent data)
   {
     super.onActivityResult(requestCode, resultCode, data);
     droid4mizer.onActivityResult(requestCode, resultCode, data);
