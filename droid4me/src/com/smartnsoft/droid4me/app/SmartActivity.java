@@ -235,17 +235,7 @@ public abstract class SmartActivity<AggregateClass>
     return droid4mizer.shouldKeepOn();
   }
 
-  public void onActuallyCreated()
-  {
-    droid4mizer.onActuallyCreated();
-  }
-
-  public void onActuallyDestroyed()
-  {
-    droid4mizer.onActuallyDestroyed();
-  }
-
-  public final void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
+  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
     refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, onOver, immediately, false);
   }

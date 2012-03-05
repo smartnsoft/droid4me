@@ -65,14 +65,6 @@ public abstract class SmartTabActivity<AggregateClass>
 
   private final AppInternals.StateContainer<AggregateClass, Activity> stateContainer = new AppInternals.StateContainer<AggregateClass, Activity>(this, this);
 
-  public void onActuallyCreated()
-  {
-  }
-
-  public void onActuallyDestroyed()
-  {
-  }
-
   public final boolean isFirstLifeCycle()
   {
     return stateContainer.isFirstLifeCycle();
@@ -163,7 +155,6 @@ public abstract class SmartTabActivity<AggregateClass>
     else
     {
       stateContainer.setFirstLifeCycle(true);
-      onActuallyCreated();
       ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
     stateContainer.registerBroadcastListeners();
@@ -521,7 +512,6 @@ public abstract class SmartTabActivity<AggregateClass>
       }
       if (stateContainer.isDoNotCallOnActivityDestroyed() == false)
       {
-        onActuallyDestroyed();
         ActivityController.getInstance().onLifeCycleEvent(this, null, ActivityController.Interceptor.InterceptorEvent.onActuallyDestroyedDone);
       }
       else
