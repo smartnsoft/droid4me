@@ -239,17 +239,6 @@ public abstract class SmartFragment<AggregrateClass>
     return droid4mizer.getCompositeActivityResultHandler();
   }
 
-  public void onActuallyCreated()
-  {
-    droid4mizer.onActuallyCreated();
-  }
-
-  public void onActuallyDestroyed()
-  {
-    droid4mizer.onActuallyDestroyed();
-  }
-
-
   /**
    * Own implementation.
    */

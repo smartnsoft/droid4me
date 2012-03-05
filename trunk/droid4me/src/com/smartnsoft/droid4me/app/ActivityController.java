@@ -97,10 +97,10 @@ public final class ActivityController
   }
 
   /**
-   * An interface which is queried during the various life cycle events of an {@link LifeCycle activity}.
+   * An interface which is queried during the various life cycle events of a {@link LifeCycle}.
    * 
    * <p>
-   * An interceptor is the ideal place for centralizing in one place many of the {@link Activity} life cycle events.
+   * An interceptor is the ideal place for centralizing in one place many of the {@link Activity}/{@link Fragment} entity life cycle events.
    * </p>
    * 
    * @see ActivityController#registerInterceptor(Interceptor)
@@ -131,19 +131,10 @@ public final class ActivityController
        * {@link ActivityController.Redirector activity redirection} is requested.
        */
       onContentChanged,
-      // /**
-      // * Called during the {@link Activity#onCreate} method, just before the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has
-      // been
-      // * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
-      // */
-      // onRetrieveDisplayObjectsBefore,
-      // /**
-      // * Called during the {@link Activity#onCreate} method, just after the {@link LifeCycle.ForActivity#onRetrieveDisplayObjects()} method has been
-      // * invoked, provided no {@link ActivityController.Redirector activity redirection} is requested.
-      // */
-      // onRetrieveDisplayObjectsAfter,
       /**
-       * Called just after the {@link AppInternals.LifeCycleInternals#onActuallyCreated} method.
+       * Called during the {@link Activity#onCreate} method, at the beginning of the method, but after the parent's call, provided no
+       * {@link ActivityController.Redirector activity redirection} is requested and that the instance has not been recreated due a configuration
+       * change.
        */
       onActuallyCreatedDone,
       /**
@@ -367,7 +358,7 @@ public final class ActivityController
      *          a list of exception classes to look after
      * @return {@code null} if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
-    @SuppressWarnings( { "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static final Throwable searchForCause(Throwable throwable, Class... exceptionClass)
     {
       Throwable newThrowable = throwable;
@@ -431,8 +422,8 @@ public final class ActivityController
      * handled neither by the {@link #handleCommonCauses()} nor the {@link #handleOtherCauses()} methods.
      * 
      * <p>
-     * It is up to the implementation to pop up a dialog box or not. The implement is very likely to {@link Activity#finish()} the provided {@code
-     * activity}.
+     * It is up to the implementation to pop up a dialog box or not. The implement is very likely to {@link Activity#finish()} the provided
+     * {@code activity}.
      * </p>
      * 
      * @param activity

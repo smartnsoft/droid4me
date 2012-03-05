@@ -55,7 +55,7 @@ final class AppInternals
 {
 
   /**
-   * Defines several contracts for all {@link Activity activities} of the framework.
+   * Defines several contracts for each {@link Activity activity}/{@link android.app.Fragment} entity of the framework.
    * 
    * @since 2010.01.05
    */
@@ -63,29 +63,16 @@ final class AppInternals
   {
 
     /**
-     * Indicates whether nothing went wrong during the implementing {@link Activity activity}, or if a {@link #isBeingRedirected() redirection} is
-     * being processed.
+     * Indicates whether nothing went wrong during the implementing entity, or if a {@link #isBeingRedirected() redirection} is being processed.
      * 
      * <p>
-     * Thanks to the {@link ActivityController.Redirector redirection controller}, it is possible to re-route any {@link Smartable activity}
-     * when it starts, if some other activity needs to be executed beforehand.
+     * Thanks to the {@link ActivityController.Redirector redirection controller}, it is possible to re-route any {@link Smartable} {@link Activity}
+     * when it starts, if some other {@code Activity} needs to be executed beforehand.
      * </p>
      * 
-     * @return {@code true} if and only if the implementing {@link Activity} should resume its execution
+     * @return {@code true} if and only if the implementing {@link Activity}/@{link android.app.Fragment} entity should resume its execution
      */
     boolean shouldKeepOn();
-
-    /**
-     * This callback method will be invoked when the activity is being created, during the {@link Activity#onCreate(Bundle)} method execution, but not
-     * when it is recreated due to a configuration change.
-     */
-    void onActuallyCreated();
-
-    /**
-     * This callback method will be invoked when the activity is being destroyed, during the {@link Activity#onDestroy()} method execution, but not
-     * when it is destroyed due to a configuration change.
-     */
-    void onActuallyDestroyed();
 
   }
 
@@ -698,8 +685,8 @@ final class AppInternals
     }
 
     /**
-     * This hook is there to handle the special case of the Fragment, which raises an IllegalStateException when the "getString()" method is invoked,
-     * whereas it is already detached. Regarding this discussion, see
+     * This hook is there to handle the special case of the Fragment, which raises an IllegalStateException when the "getString()"/"getResources()"
+     * method is invoked, whereas it is already detached. Regarding this discussion, see
      * http://groups.google.com/group/android-developers/browse_frm/thread/ae9c7890201c9b0b
      */
     boolean onInternalBusinessObjectAvailableExceptionWorkAround(Throwable throwable)

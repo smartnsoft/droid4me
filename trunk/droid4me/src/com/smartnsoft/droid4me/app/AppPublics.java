@@ -24,6 +24,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -87,8 +88,8 @@ public final class AppPublics
   }
 
   /**
-   * Because an Android {@link Activity} can be destroyed and then recreated, following a configuration change (a screen orientation change, for
-   * instance), this interface gives information about an entity life cycle.
+   * Because an Android {@link Activity}/{@link Fragment} entity can be destroyed and then recreated, following a configuration change (a screen
+   * orientation change, for instance), this interface gives information about an entity life cycle.
    * 
    * @author Édouard Mercier
    * @since 2010.01.05
@@ -107,11 +108,11 @@ public final class AppPublics
      * Provides information about the current entity life cycle.
      * 
      * <p>
-     * It is very handy when it comes to know whether the end-user can interact with the underlying activity.
+     * It is very handy when it comes to know whether the end-user can interact with the underlying {@link Activity}/{@link Fragment} entity.
      * </p>
      * 
-     * @return {@code true} if and only if the underlying {@link Activity} life-cycle is between the {@link Activity#onResume()} and
-     *         {@link Activity#onPause()} methods
+     * @return {@code true} if and only if the underlying {@link Activity}/{@link Fragment} entity life-cycle is between the
+     *         {@link Activity#onResume()}/{@link Fragment#onResume()} and {@link Activity#onPause()}/{@link Fragment#onPause()} methods
      */
     boolean isInteracting();
 
@@ -124,8 +125,8 @@ public final class AppPublics
     int getOnSynchronizeDisplayObjectsCount();
 
     /**
-     * Indicates whether the extending {@link Activity} also implementing the {@link LifeCycle} interface is in the middle of a
-     * {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} call.
+     * Indicates whether the extending {@link Activity}/{@link Fragment} entity also implementing the {@link LifeCycle} interface is in the middle of
+     * a {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} call.
      * 
      * <p>
      * It is very handy when it comes to disable certain things, like menu entries, while an {@link Activity} is loading.

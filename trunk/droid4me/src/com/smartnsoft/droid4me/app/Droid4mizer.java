@@ -94,6 +94,10 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     stateContainer = new AppInternals.StateContainer<AggregateClass, ComponentClass>(activity, component);
   }
 
+  /*
+   * The {@link Smarted} methods.
+   */
+
   public AggregateClass getAggregate()
   {
     return stateContainer.getAggregate();
@@ -126,11 +130,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onBusinessObjectsRetrieved()
   {
-  }
-
-  public boolean isRefreshingBusinessObjectsAndDisplay()
-  {
-    return stateContainer.isRefreshingBusinessObjectsAndDisplay();
   }
 
   /**
@@ -198,6 +197,15 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
   }
 
+  /*
+   * The {@link AppPublics.LifeCyclePublic} methods.
+   */
+
+  public boolean isRefreshingBusinessObjectsAndDisplay()
+  {
+    return stateContainer.isRefreshingBusinessObjectsAndDisplay();
+  }
+
   public final int getOnSynchronizeDisplayObjectsCount()
   {
     return stateContainer.getOnSynchronizeDisplayObjectsCount();
@@ -213,13 +221,9 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     return stateContainer.isInteracting();
   }
 
-  public void onActuallyCreated()
-  {
-  }
-
-  public void onActuallyDestroyed()
-  {
-  }
+  /*
+   * The {@link AppInternals.LifeCycleInternals} methods.
+   */
 
   public boolean shouldKeepOn()
   {
@@ -227,7 +231,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   }
 
   /*
-   * The {@link Activity} methods.
+   * The {@link Activity}/{@link Fragment} methods.
    */
 
   public void onCreate(Runnable superMethod, Bundle savedInstanceState)
@@ -257,13 +261,11 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     else
     {
       stateContainer.setFirstLifeCycle(true);
-      onActuallyCreated();
       ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
     stateContainer.registerBroadcastListeners();
 
     stateContainer.initialize();
-    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsBefore);
     try
     {
       onRetrieveDisplayObjects();
@@ -274,7 +276,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       onException(throwable, true);
       return;
     }
-    // ActivityController.getInstance().onLifeCycleEvent(this, ActivityController.Interceptor.InterceptorEvent.onRetrieveDisplayObjectsAfter);
     // We add the static menu commands
     droid4mizerInterface.getCompositeActionHandler().add(new MenuHandler.Static()
     {
@@ -341,7 +342,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       log.debug("Droid4mizer::onSaveInstanceState");
     }
     stateContainer.onSaveInstanceState(outState);
-    outState.putBoolean(AppInternals.ALREADY_STARTED, true);
   }
 
   public void onRestoreInstanceState(Bundle savedInstanceState)
@@ -405,7 +405,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     if (stateContainer.isDoNotCallOnActivityDestroyed() == false)
     {
-      onActuallyDestroyed();
       ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onActuallyDestroyedDone);
     }
     else
