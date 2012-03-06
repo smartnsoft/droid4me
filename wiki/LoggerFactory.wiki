@@ -24,6 +24,6 @@ So as to make this logging component even more flexible, we should let the devel
  * The `Logger` interface exposes some `isXXXEnabled()` methods, which enables to prevent from preparing a logging string for nothing if the logging level does not require it.
  * When running some code on a pure Java environment on which the Android runtime is not available, if you define the Java system property `droid4me.logging` to value `false`, then the standard output and the standard error output will be used to issue the logs (actually, it will use the `NativeLogger` implementation).
  * When logging, you do not need to specify a tag, and the log output uses the `Logger` declared category as a tag.
- * The whole framework uses that logging facility, hence you get logs in a consistent way. For instance, you can look in `adb` the logs for the tags "SmartableActivity", "Persistence", "BitmapDownloader", "ActivityController"...
+ * The whole framework uses that logging facility, hence you get logs in a consistent way. For instance, you can look in `adb` the logs for the tags "Smartable", "Persistence", "BitmapDownloader", "ActivityController", "SmartApplication" ...
 
 When submitting your application under production, do not forget to elevate the logging trigger level through the `LoggerFactory.logLevel` variable!

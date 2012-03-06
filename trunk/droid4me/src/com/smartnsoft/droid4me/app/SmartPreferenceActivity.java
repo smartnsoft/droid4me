@@ -45,12 +45,12 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartPreferenceActivity<AggregateClass>
     extends PreferenceActivity
-    implements Droid4mizerInterface, Smartable<AggregateClass>
+    implements Smartable<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
-  private final Droid4mizer<AggregateClass, SmartPreferenceActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartPreferenceActivity<AggregateClass>>(this, this, this, this, null);
+  private final Droid4mizer<AggregateClass, SmartPreferenceActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartPreferenceActivity<AggregateClass>>(this, this, this, null);
 
   @Override
   protected void onCreate(final Bundle savedInstanceState)
@@ -228,19 +228,19 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     return droid4mizer.isInteracting();
   }
 
-  public boolean shouldKeepOn()
-  {
-    return droid4mizer.shouldKeepOn();
-  }
-
   public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);
   }
 
   /**
-   * Droid4mizeInterface implementation.
+   * AppInternals.LifeCycleInternals implementation.
    */
+
+  public boolean shouldKeepOn()
+  {
+    return droid4mizer.shouldKeepOn();
+  }
 
   public Composite getCompositeActionHandler()
   {

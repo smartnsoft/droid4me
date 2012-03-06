@@ -51,7 +51,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  * @since 2011.06.14
  */
 public final class Droid4mizer<AggregateClass, ComponentClass>
-    implements Smartable<AggregateClass>, Droid4mizerInterface
+    implements Smartable<AggregateClass>
 {
 
   private static final Logger log = LoggerFactory.getInstance("Smartable");
@@ -64,8 +64,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   private final Smartable<AggregateClass> smartable;
 
-  private final Droid4mizerInterface droid4mizerInterface;
-
   private final AppInternals.StateContainer<AggregateClass, ComponentClass> stateContainer;
 
   /**
@@ -75,20 +73,16 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    *          the activity this instance relies on
    * @param smartable
    *          the component to be droid4mized
-   * @param droid4mizerInterface
-   *          the extension used for extending the component behavior
    * @param component
    *          the declared component used to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
    *          asynchronously}, and to {@linkplain #registerBroadcastListeners(BroadcastListener[]) register broadcast listeners}
    * @param interceptorComponent
    *          the declared component used to send life-cycle events to the {@link ActivityController.Interceptor}
    */
-  public Droid4mizer(Activity activity, Smartable<AggregateClass> smartable, Droid4mizerInterface droid4mizerInterface, ComponentClass component,
-      ComponentClass interceptorComponent)
+  public Droid4mizer(Activity activity, Smartable<AggregateClass> smartable, ComponentClass component, ComponentClass interceptorComponent)
   {
     this.activity = activity;
     this.smartable = smartable;
-    this.droid4mizerInterface = droid4mizerInterface;
     this.component = component;
     this.interceptorComponent = interceptorComponent;
     stateContainer = new AppInternals.StateContainer<AggregateClass, ComponentClass>(activity, component);
@@ -230,6 +224,16 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     return stateContainer.shouldKeepOn();
   }
 
+  public Composite getCompositeActionHandler()
+  {
+    return stateContainer.compositeActionHandler;
+  }
+
+  public CompositeHandler getCompositeActivityResultHandler()
+  {
+    return stateContainer.compositeActivityResultHandler;
+  }
+
   /*
    * The {@link Activity}/{@link Fragment} methods.
    */
@@ -277,7 +281,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       return;
     }
     // We add the static menu commands
-    droid4mizerInterface.getCompositeActionHandler().add(new MenuHandler.Static()
+    smartable.getCompositeActionHandler().add(new MenuHandler.Static()
     {
       @Override
       protected List<MenuCommand<Void>> retrieveCommands()
@@ -313,7 +317,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onContentChanged()
   {
-    if (stateContainer.shouldKeepOn() == false)
+    if (shouldKeepOn() == false)
     {
       return;
     }
@@ -507,21 +511,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     // return;
     // }
 
-    droid4mizerInterface.getCompositeActivityResultHandler().handle(requestCode, resultCode, data);
-  }
-
-  /*
-   * The Droid4mizerInterface interface implementation.
-   */
-
-  public Composite getCompositeActionHandler()
-  {
-    return stateContainer.compositeActionHandler;
-  }
-
-  public CompositeHandler getCompositeActivityResultHandler()
-  {
-    return stateContainer.compositeActivityResultHandler;
+    smartable.getCompositeActivityResultHandler().handle(requestCode, resultCode, data);
   }
 
   /*

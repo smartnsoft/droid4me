@@ -44,4 +44,4 @@ This interface also enables to reload the entity through the `refreshBusinessObj
 
 == Technical implementation details ==
 
-In the framework, the classes inheriting from that interface are responsible for respecting the hereby described workflow. Some extra care has been brought to those interface, so that they handle the potential exceptions through the ExceptionHandler, and that all background threads are taken from an internal efficient worker threads pool, just like in the SmartCommands.
+In the framework, the classes inheriting from that interface are responsible for respecting the hereby described workflow, just like the `[SmartableInterface Smartable]` interface. Some extra care has been brought to those interface, so that they handle the potential exceptions through the ExceptionHandler, and that all background threads are taken from an internal efficient worker threads pool, just like in the SmartCommands.

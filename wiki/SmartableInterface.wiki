@@ -3,7 +3,7 @@
 
 = The `Smartable` Interface =
 
-The droid4me LifeCycle framework has been designed to be extensible regarding the core Android `Activity` and `Fragment` entities. We do not want to impose the developer to necessarily start from the provided `Activity` and `Fragment` sub-classes.
+The droid4me LifeCycle framework has been designed to be extensible regarding the core Android `Activity` and `Fragment` entities. We do not want to impose the developer to necessarily start from the provided `Activity` and `Fragment` sub-classes. By the way, you can start designing your own `Acitivty`/`Fragment` entities by inheriting from the built-in `SmartXXXActivity` and `SmartXXXFragment` classes (all the ones implementing the `Smartable` interface).
 
 This is the reason why the framework needs an entry point for being able to design an `Activity` or a `Fragment`, and this entry point is the `Smartable` interface. This interface is a composite interface: among its ancestors is the `LifeCycle` interface.
 
@@ -21,4 +21,48 @@ This interface is an ancestor of the `Smartable` interface, and it offers 5 feat
 
 == The `Droid4mizer` ==
 
-...
+We need to have an easy and effective way to make an existing `Activity` or `Fragment` droid4me-ready: this is the reason of the `Droid4mizer` component. The `Droid4mizer` is a class, which implements all of the `Smartable` interface methods.
+
+=== How to make use of it ===
+
+When an `Activity`/`Fragment` class needs to be droid4me-ready, the developer just needs to:
+ # make the entity implement the `Smartable` interface,
+ # embed a `Droid4mizer` attribute as an aggregate in the target entity, initialize that `Droid4mizer` inside the `onCreate()`/`onAttach()` method,
+ # implement all the `Smartable` interface methods. Implement them by mostly delegating the execution to the `Droid4mizer` attribute, except for some of the following `LifeCycle` and `Smarted` interface methods, where you need to implement the entity own logic:
+  * `LifeCycle.onRetrieveDisplayObjects()`,
+  * `LifeCycle.onRetrieveBusinessObjects()`,
+  * `LifeCycle.onFulfillDisplayObjects()`,
+  * `LifeCycle.onSynchronizeDisplayObjects(),
+  * `Smarted.getMenuCommands().
+ # override the `Activity`/`Fragment` entity following methods:
+  * `Activity.onCreate()`/`Fragment.onCreate()`,
+  * `Activity.onNewIntent()`,
+  * `Activity.onContentChanged()`,
+  * `Activity.onResume()`/`Fragment.onResume()`,
+  * `Activity.onSaveInstanceState()`/`Fragment.onSaveInstanceState()`,
+  * `Activity.onStart()`/`Fragment.onStart()`,
+  * `Activity.onPause()`/`Fragment.onPause()`,
+  * `Activity.onStop()`/`Fragment.onStop()`,
+  * `Activity.onDestroy()`/`Fragment.onDestroy()`,
+  * `Activity.onCreateOptionsMenu()`/`Fragment.onCreateOptionsMenu()`,
+  * `Activity.onPrepareOptionsMenu()`/`Fragment.onPrepareOptionsMenu()`,
+  * `Activity.onOptionsItemSelected()`/`Fragment.onOptionsItemSelected()`,
+  * `Activity.onContextItemSelected()`/`Fragment.onContextItemSelected()`,
+  * `Activity.onActivityResult()`/`Fragment.onActivityResult()`.
+
+Replicate what has been done in the `SmartActivity` and the `SmartFragment` classes, just copy and paste and adapt. Most of the time, you will need to introduce an intermediate abstract class, which does the work, and let the derived classes implement the above methods own logic. As always in Android, if you intend to override any method, please always consider invoking its parent implementation.
+
+=== What it does for you ===
+
+This adds a bit of complexity in your bases class (this is the price to pay to get the framework working for non built-in entities), but this way, you may take whatever `Activity`/`Fragment` base class, and turn it into a droid4me-ready class, and start taking benefit of the framework.
+
+Once you have made your `Activity`/`Fragment` droid4me-ready thanks to the `Droid4mizer` component, you are given the following features:
+
+ * you take benefit of the `LifeCycle` entity life-cycle framework ;
+ * you are given the `ActivityController` services, namely:
+  * any exception thrown during your method implementation will be handled by the `ExceptionHandler`,
+  * any starting `Activity` may be redirected via the `ActivityController` `Redirector`,
+  * all the `Activity`/`Fragment` life cycle events are caught by the `ActivityController` `Interceptor` ;
+ * the background internal threads are handled by the `SmartCommands` high-priority worker threads pool ;
+ * the Android menu may be handled by the `MenuHandler` component ;
+ * the logging may be handled by the `LoggerFactory` component.
