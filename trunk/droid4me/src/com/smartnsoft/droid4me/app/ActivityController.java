@@ -100,7 +100,8 @@ public final class ActivityController
    * An interface which is queried during the various life cycle events of a {@link LifeCycle}.
    * 
    * <p>
-   * An interceptor is the ideal place for centralizing in one place many of the {@link Activity}/{@link Fragment} entity life cycle events.
+   * An interceptor is the ideal place for centralizing in one place many of the {@link Activity}/{@link android.app.Fragment} entity life cycle
+   * events.
    * </p>
    * 
    * @see ActivityController#registerInterceptor(Interceptor)
@@ -799,9 +800,20 @@ public final class ActivityController
   {
   }
 
-  public ActivityController.ExceptionHandler getExceptionHandler()
+  /**
+   * Attempts to decode from the provided {@code activity} the original {@code Intent} that was
+   * 
+   * @param activity
+   *          the Activity whose Intent will be analyzed
+   * @return an Intent that may be {@link Activity#startActivity(Intent) started} if the provided {@code activity} actually contains a reference to
+   *         another {@link Activity} ; {@code null} otherwise
+   * @see ActivityController#CALLING_INTENT
+   * @see #needsRedirection(Activity)
+   * @see #registerInterceptor(ActivityController. Interceptor)
+   */
+  public static Intent extractCallingIntent(Activity activity)
   {
-    return exceptionHandler;
+    return activity.getIntent().getParcelableExtra(ActivityController.CALLING_INTENT);
   }
 
   /**
@@ -830,10 +842,22 @@ public final class ActivityController
   }
 
   /**
+   * Gives access to the currently registered {@link ActivityController.ExceptionHandler}.
+   * 
+   * @return the currently registered exception handler ; may be {@code null}, which is the default status
+   * @see #registerExceptionHandler(ExceptionHandler)
+   */
+  public ActivityController.ExceptionHandler getExceptionHandler()
+  {
+    return exceptionHandler;
+  }
+
+  /**
    * Remembers the exception handler that will be used by the framework.
    * 
    * @param exceptionHandler
    *          the handler that will be invoked in case of exception; if {@code null}, no exception handler will be used
+   * @see #getExceptionHandler()
    */
   public synchronized void registerExceptionHandler(ActivityController.ExceptionHandler exceptionHandler)
   {
@@ -967,13 +991,14 @@ public final class ActivityController
   }
 
   /**
-   * Indicates whether a redirection is required before letting the activity continue its life cycle. Also launches the redirected {@link Activity} is
-   * a redirection is need, and provide to its {@link Intent} the initial activity {@link Intent} trough the extra {@link Parcelable}
+   * Indicates whether a redirection is required before letting the activity continue its life cycle. It launches the redirected {@link Activity} if a
+   * redirection is need, and provide to its {@link Intent} the initial activity {@link Intent} trough the extra {@link Parcelable}
    * {@link ActivityController#CALLING_INTENT} key.
    * 
    * @param activity
    *          the activity which is being proved against the {@link ActivityController.Redirector}
    * @return {@code true} if and only if the given activity should be paused (or ended) and if another activity should be launched instead
+   * @see ActivityController#extractCallingIntent(Activity)
    */
   public synchronized boolean needsRedirection(Activity activity)
   {
@@ -991,7 +1016,7 @@ public final class ActivityController
       log.debug("A redirection is needed");
     }
     activity.finish();
-    // We consider the parent activity in case it is embedded (like in a TabActivity)
+    // We consider the parent activity in case it is embedded (like in an ActivityGroup)
     intent.putExtra(ActivityController.CALLING_INTENT, (activity.getParent() != null ? activity.getParent().getIntent() : activity.getIntent()));
     // Disables the fact that the new started activity should belong to the tasks history and from the recent tasks
     // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);

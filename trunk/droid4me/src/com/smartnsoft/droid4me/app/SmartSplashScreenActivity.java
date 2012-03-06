@@ -166,8 +166,8 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
    * </p>
    * 
    * <p>
-   * It is ensured that this callback will be not be invoked anymore as soon as an instance has {@link Runnable#run()} the provided {@code
-   * finishRunnable} callback.
+   * It is ensured that this callback will be not be invoked anymore as soon as an instance has {@link Runnable#run()} the provided
+   * {@code finishRunnable} callback.
    * </p>
    * 
    * <p>
@@ -407,7 +407,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
    */
   protected void startCallingIntent()
   {
-    final Intent callingIntent = getIntent().getParcelableExtra(ActivityController.CALLING_INTENT);
+    final Intent callingIntent = ActivityController.extractCallingIntent(this);
     if (log.isDebugEnabled())
     {
       log.debug("Redirecting to the initial activity for the component with class '" + callingIntent.getComponent().getClassName() + "'");
