@@ -63,7 +63,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartGroupActivity<AggregateClass>
     extends ActivityGroup
-    implements Droid4mizerInterface, Smartable<AggregateClass>/*
+    implements Smartable<AggregateClass>/*
                                          * ,ViewTreeObserver . OnTouchModeChangeListener , OnFocusChangeListener
                                          */
 {

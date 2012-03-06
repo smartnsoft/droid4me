@@ -33,7 +33,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartFragment<AggregrateClass>
     extends Fragment
-    implements Droid4mizerInterface, Smartable<AggregrateClass>
+    implements Smartable<AggregrateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
@@ -48,7 +48,7 @@ public abstract class SmartFragment<AggregrateClass>
       log.debug("SmartFragment::onAttach");
     }
     super.onAttach(activity);
-    droid4mizer = new Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>>(activity, this, this, this, this);
+    droid4mizer = new Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>>(activity, this, this, this);
   }
 
   @Override
@@ -215,19 +215,19 @@ public abstract class SmartFragment<AggregrateClass>
     return droid4mizer.isInteracting();
   }
 
-  public boolean shouldKeepOn()
-  {
-    return droid4mizer.shouldKeepOn();
-  }
-
   public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);
   }
 
   /**
-   * Droid4mizeInterface implementation.
+   * AppInternals.LifeCycleInternals implementation.
    */
+
+  public boolean shouldKeepOn()
+  {
+    return droid4mizer.shouldKeepOn();
+  }
 
   public Composite getCompositeActionHandler()
   {
@@ -251,7 +251,7 @@ public abstract class SmartFragment<AggregrateClass>
   /**
    * Specific implementation.
    */
-  
+
   /**
    * Does the same thing as the {@link #getActivity()}, except that it throws an exception if the fragment has been detached, instead of returning
    * {@code null}

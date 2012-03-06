@@ -12,7 +12,6 @@ import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
-import com.smartnsoft.droid4me.app.Droid4mizerInterface;
 import com.smartnsoft.droid4me.app.Smartable;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
@@ -34,12 +33,12 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartFragmentActivity<AggregateClass>
     extends FragmentActivity
-    implements Droid4mizerInterface, Smartable<AggregateClass>
+    implements Smartable<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
-  private final Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>>(this, this, this, this, null);
+  private final Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>>(this, this, this, null);
 
   /**
    * The Intent which will be used in case the ActionBar home button is clicked.
@@ -245,19 +244,19 @@ public abstract class SmartFragmentActivity<AggregateClass>
     return droid4mizer.isInteracting();
   }
 
-  public boolean shouldKeepOn()
-  {
-    return droid4mizer.shouldKeepOn();
-  }
-
   public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);
   }
 
   /**
-   * Droid4mizeInterface implementation.
+   * AppInternals.LifeCycleInternals implementation.
    */
+
+  public boolean shouldKeepOn()
+  {
+    return droid4mizer.shouldKeepOn();
+  }
 
   public Composite getCompositeActionHandler()
   {

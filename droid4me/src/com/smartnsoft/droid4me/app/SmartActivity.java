@@ -47,12 +47,12 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 // TODO: think of using the onRetainNonConfigurationInstance/getLastNonConfigurationInstance() when the screen orientation changes.
 public abstract class SmartActivity<AggregateClass>
     extends Activity
-    implements Droid4mizerInterface, Smartable<AggregateClass>
+    implements Smartable<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
-  private final Droid4mizer<AggregateClass, SmartActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartActivity<AggregateClass>>(this, this, this, this, null);
+  private final Droid4mizer<AggregateClass, SmartActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartActivity<AggregateClass>>(this, this, this, null);
 
   @Override
   protected void onCreate(final Bundle savedInstanceState)
@@ -230,19 +230,19 @@ public abstract class SmartActivity<AggregateClass>
     return droid4mizer.isInteracting();
   }
 
-  public boolean shouldKeepOn()
-  {
-    return droid4mizer.shouldKeepOn();
-  }
-
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
     refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, onOver, immediately, false);
   }
 
   /**
-   * Droid4mizeInterface implementation.
+   * AppInternals.LifeCycleInternals implementation.
    */
+
+  public boolean shouldKeepOn()
+  {
+    return droid4mizer.shouldKeepOn();
+  }
 
   public Composite getCompositeActionHandler()
   {

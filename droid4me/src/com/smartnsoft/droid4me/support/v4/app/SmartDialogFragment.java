@@ -14,7 +14,6 @@ import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
-import com.smartnsoft.droid4me.app.Droid4mizerInterface;
 import com.smartnsoft.droid4me.app.Smartable;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
@@ -38,7 +37,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartDialogFragment<AggregateClass>
     extends DialogFragment
-    implements Droid4mizerInterface, Smartable<AggregateClass>
+    implements Smartable<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
@@ -53,7 +52,7 @@ public abstract class SmartDialogFragment<AggregateClass>
       log.debug("SmartDialogFragment::onAttach");
     }
     super.onAttach(activity);
-    droid4mizer = new Droid4mizer<AggregateClass, SmartDialogFragment<AggregateClass>>(getActivity(), this, this, this, this);
+    droid4mizer = new Droid4mizer<AggregateClass, SmartDialogFragment<AggregateClass>>(getActivity(), this, this, this);
   }
 
   @Override
@@ -220,11 +219,6 @@ public abstract class SmartDialogFragment<AggregateClass>
     return droid4mizer.isInteracting();
   }
 
-  public boolean shouldKeepOn()
-  {
-    return droid4mizer.shouldKeepOn();
-  }
-
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
    * 
@@ -251,8 +245,13 @@ public abstract class SmartDialogFragment<AggregateClass>
   }
 
   /**
-   * Droid4mizeInterface implementation.
+   * AppInternals.LifeCycleInternals implementation.
    */
+
+  public boolean shouldKeepOn()
+  {
+    return droid4mizer.shouldKeepOn();
+  }
 
   public Composite getCompositeActionHandler()
   {

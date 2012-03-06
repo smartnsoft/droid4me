@@ -74,6 +74,10 @@ final class AppInternals
      */
     boolean shouldKeepOn();
 
+    MenuHandler.Composite getCompositeActionHandler();
+
+    CompositeHandler getCompositeActivityResultHandler();
+
   }
 
   /**
