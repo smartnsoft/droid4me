@@ -20,10 +20,12 @@ package com.smartnsoft.droid4me.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.Gallery;
 
 /**
- * Introduced in order to get notified when a container size changes, because there is no <code>OnSizeChangedListener</code> in Android {@link View},
+ * Introduced in order to get notified when a container size changes, because there is no {@code OnSizeChangedListener} in Android {@link View},
  * whereas there is a {@link View#onSizeChanged()} method.
  * 
  * <p>
@@ -31,6 +33,8 @@ import android.widget.FrameLayout;
  * </p>
  * 
  * @see SmartRelativeLayout
+ * @see SmartLinearLayout
+ * 
  * @author Édouard Mercier, Willy Noel
  * @since 2011.03.11
  */
@@ -38,15 +42,9 @@ public class SmartFrameLayout
     extends FrameLayout
 {
 
-  /**
-   * The single interface method will be invoked every time its underlying {@View view} size {@link View#onSizeChanged() changes}.
-   */
-  public static interface OnSizeChangedListener
-  {
-    void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight);
-  }
+  private OnSizeChangedListener<SmartFrameLayout> onSizeChangedListener;
 
-  private SmartFrameLayout.OnSizeChangedListener onSizeChangedListener;
+  private boolean requestLayoutDisabled;
 
   public SmartFrameLayout(Context context, AttributeSet attrs, int defStyle)
   {
@@ -63,12 +61,12 @@ public class SmartFrameLayout
     super(context);
   }
 
-  public final SmartFrameLayout.OnSizeChangedListener getOnSizeChangedListener()
+  public final OnSizeChangedListener<SmartFrameLayout> getOnSizeChangedListener()
   {
     return onSizeChangedListener;
   }
 
-  public final void setOnSizeChangedListener(SmartFrameLayout.OnSizeChangedListener onSizeChangedListener)
+  public final void setOnSizeChangedListener(OnSizeChangedListener<SmartFrameLayout> onSizeChangedListener)
   {
     this.onSizeChangedListener = onSizeChangedListener;
   }
@@ -79,7 +77,43 @@ public class SmartFrameLayout
     super.onSizeChanged(newWidth, newHeight, newHeight, oldHeight);
     if (onSizeChangedListener != null)
     {
-      onSizeChangedListener.onSizeChanged(newWidth, newHeight, newHeight, oldHeight);
+      onSizeChangedListener.onSizeChanged(this, newWidth, newHeight, newHeight, oldHeight);
+    }
+  }
+
+  /**
+   * The default value of the underlying flag is {@code false}.
+   * 
+   * @return {@code true} if and only if the {@link #requestLayout()} method execution should do nothing
+   * @see #setRequestLayoutEnabled(boolean)
+   */
+  public boolean isRequestLayoutDisabled()
+  {
+    return requestLayoutDisabled;
+  }
+
+  /**
+   * Indicates that the view {@link #requestLayout()} method execution should do nothing (not invoking the parent method).
+   * 
+   * <p>
+   * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
+   * inside a {@link ViewGroup}.
+   * </p>
+   * 
+   * @param requestLayoutDisabled
+   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
+   */
+  public void setRequestLayoutDisabled(boolean requestLayoutDisabled)
+  {
+    this.requestLayoutDisabled = requestLayoutDisabled;
+  }
+
+  @Override
+  public void requestLayout()
+  {
+    if (requestLayoutDisabled == false)
+    {
+      super.requestLayout();
     }
   }
 

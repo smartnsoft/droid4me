@@ -40,30 +40,6 @@ public class SmartImageView
     extends ImageView
 {
 
-  /**
-   * Enables to capture the event when the image view size changes.
-   */
-  public static interface OnSizeChangedListener
-  {
-
-    /**
-     * Triggered when an image view size has changed, and in particular when it is known for the first time.
-     * 
-     * @param imageView
-     *          the image view related to that event
-     * @param width
-     *          the new width
-     * @param height
-     *          the new height
-     * @param oldWidth
-     *          the old width
-     * @param oldHeight
-     *          the old height
-     */
-    void onSizeChanged(SmartImageView imageView, int width, int height, int oldWidth, int oldHeight);
-
-  }
-
   public SmartImageView(Context context, AttributeSet attrs, int defStyle)
   {
     super(context, attrs, defStyle);
@@ -79,7 +55,7 @@ public class SmartImageView
     super(context);
   }
 
-  private SmartImageView.OnSizeChangedListener onSizeChangedListener;
+  private OnSizeChangedListener<SmartImageView> onSizeChangedListener;
 
   private float ratio = 9f / 16f;
 
@@ -129,10 +105,15 @@ public class SmartImageView
     this.fixedSized = fixedSized;
   }
 
+  public final OnSizeChangedListener<SmartImageView> getOnSizeChangedListener()
+  {
+    return onSizeChangedListener;
+  }
+
   /**
    * Indicates the interface to trigger when the image view size has changed.
    */
-  public void setOnSizeChangedListener(SmartImageView.OnSizeChangedListener onSizeChangedListener)
+  public void setOnSizeChangedListener(OnSizeChangedListener<SmartImageView> onSizeChangedListener)
   {
     this.onSizeChangedListener = onSizeChangedListener;
   }

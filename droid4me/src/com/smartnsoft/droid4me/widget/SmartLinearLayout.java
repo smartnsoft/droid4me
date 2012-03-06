@@ -22,7 +22,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Gallery;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 
 /**
  * Introduced in order to get notified when a container size changes, because there is no {@code OnSizeChangedListener} in Android {@link View},
@@ -36,41 +36,41 @@ import android.widget.RelativeLayout;
  * Use this wrapper container every time you need to be notified when a {@link View widget} sizes changes.
  * </p>
  * 
- * @see SmartLinearLayout
+ * @see SmartRelativeLayout
  * @see SmartFrameLayout
  * 
  * @author Édouard Mercier
- * @since 2011.04.01
+ * @since 2012.03.06
  */
-public class SmartRelativeLayout
-    extends RelativeLayout
+public class SmartLinearLayout
+    extends LinearLayout
 {
 
-  private OnSizeChangedListener<SmartRelativeLayout> onSizeChangedListener;
+  private OnSizeChangedListener<SmartLinearLayout> onSizeChangedListener;
 
   private boolean requestLayoutDisabled;
 
-  public SmartRelativeLayout(Context context, AttributeSet attrs, int defStyle)
+  public SmartLinearLayout(Context context, AttributeSet attrs, int defStyle)
   {
     super(context, attrs, defStyle);
   }
 
-  public SmartRelativeLayout(Context context, AttributeSet attrs)
+  public SmartLinearLayout(Context context, AttributeSet attrs)
   {
     super(context, attrs);
   }
 
-  public SmartRelativeLayout(Context context)
+  public SmartLinearLayout(Context context)
   {
     super(context);
   }
 
-  public final OnSizeChangedListener<SmartRelativeLayout> getOnSizeChangedListener()
+  public final OnSizeChangedListener<SmartLinearLayout> getOnSizeChangedListener()
   {
     return onSizeChangedListener;
   }
 
-  public final void setOnSizeChangedListener(OnSizeChangedListener<SmartRelativeLayout> onSizeChangedListener)
+  public final void setOnSizeChangedListener(OnSizeChangedListener<SmartLinearLayout> onSizeChangedListener)
   {
     this.onSizeChangedListener = onSizeChangedListener;
   }
