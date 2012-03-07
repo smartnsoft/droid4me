@@ -47,29 +47,40 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
 {
 
   /**
-   * @param splashScreenActivityClass
+   * Indicates whether an {@link Activity} is marked as initialized.
+   * 
+   * @param activityClass
    *          the class of the splash screen
-   * @return a non {@code null} date, if and only if the given splash screen has been initialized ; in that case, the returned date is the timestamp
-   *         when it has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class))}
+   * @return a non {@code null} date, if and only if the given screen has been initialized ; in that case, the returned date is the timestamp when it
+   *         has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class))}
    */
-  public static Date isInitialized(Class<? extends Activity> splashScreenActivityClass)
+  public static Date isInitialized(Class<? extends Activity> activityClass)
   {
-    return SmartSplashScreenActivity.initialized.get(splashScreenActivityClass.getName());
+    return SmartSplashScreenActivity.initialized.get(activityClass.getName());
   }
 
   /**
-   * Indicates to the framework that the provided splash screen should not be considered initialized anymore.
+   * Indicates whether the provided {@code activity} should be considered as initialized.
    * 
    * <p>
    * This is useful within an application which provides a "reset-to-factory" or "log-out" feature.
    * </p>
    * 
-   * @param splashScreenActivityClass
-   *          the class of the splash screen
+   * @param activityClass
+   *          the class of the screen
+   * @param isInitialized
+   *          the flag which indicates the provided activity initialization status
    */
-  public static void markAsUnitialized(Class<? extends Activity> splashScreenActivityClass)
+  public static void markAsInitialized(Class<? extends Activity> activityClass, boolean isInitialized)
   {
-    SmartSplashScreenActivity.initialized.remove(splashScreenActivityClass.getName());
+    if (isInitialized == false)
+    {
+      SmartSplashScreenActivity.initialized.remove(activityClass.getName());
+    }
+    else
+    {
+      SmartSplashScreenActivity.initialized.put(activityClass.getName(), new Date());
+    }
   }
 
   private static final String BUSINESS_OBJECTS_LOADED_ACTION = "com.smartnsoft.droid4me.action.BUSINESS_OBJECTS_LOADED";
@@ -95,7 +106,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
    */
   private final void markAsInitialized()
   {
-    SmartSplashScreenActivity.initialized.put(getClass().getName(), new Date());
+    SmartSplashScreenActivity.markAsInitialized(getClass(), true);
   }
 
   @Override
@@ -222,7 +233,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
   protected final void stopActivity()
   {
     this.stopActivity = true;
-    SmartSplashScreenActivity.markAsUnitialized(getClass());
+    SmartSplashScreenActivity.markAsInitialized(getClass(), false);
   }
 
   /**
