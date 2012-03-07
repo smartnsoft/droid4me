@@ -123,7 +123,7 @@ public final class Droid4SampleApplication
     final TitleBar titleBar = new TitleBar(homeActivityIntent, R.drawable.title_bar_home, R.style.Theme_Droid4Sample);
     return new ActivityController.Interceptor()
     {
-      public void onLifeCycleEvent(Activity activity, ActivityController.Interceptor.InterceptorEvent event)
+      public void onLifeCycleEvent(Activity activity, Object component, ActivityController.Interceptor.InterceptorEvent event)
       {
         titleBar.onLifeCycleEvent(activity, event);
       }
