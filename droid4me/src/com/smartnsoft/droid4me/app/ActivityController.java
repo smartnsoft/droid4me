@@ -433,6 +433,7 @@ public final class ActivityController
      *          the component responsible for having thrown the exception
      * @param throwable
      *          the throwable that has been triggered
+     * @return {@code true} if and only if the throwable has been handled
      */
     protected boolean onBusinessObjectAvailableExceptionFallback(final Activity activity, Object component, BusinessObjectUnavailableException exception)
     {
@@ -492,8 +493,7 @@ public final class ActivityController
       {
         return true;
       }
-      onOtherExceptionFallback(activity, component, throwable);
-      return true;
+      return onOtherExceptionFallback(activity, component, throwable);
     }
 
     /**
@@ -510,8 +510,9 @@ public final class ActivityController
      *          the component responsible for having thrown the exception
      * @param throwable
      *          the throwable that has been triggered
+     * @return {@code true} if and only if the throwable has been handled
      */
-    protected void onOtherExceptionFallback(final Activity activity, Object component, Throwable throwable)
+    protected boolean onOtherExceptionFallback(final Activity activity, Object component, Throwable throwable)
     {
       // We make sure that the dialog is popped from the UI thread
       activity.runOnUiThread(new Runnable()
@@ -528,6 +529,7 @@ public final class ActivityController
           }, null, null);
         }
       });
+      return true;
     }
 
     /**
