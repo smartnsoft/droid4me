@@ -626,6 +626,20 @@ public abstract class WebServiceCaller
     return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, getUrlEncoding());
   }
 
+  /**
+   * Computes a URI from its path elements.
+   * 
+   * @param methodUriPrefix
+   *          the URI prefix
+   * @param methodUriSuffix
+   *          the URI suffix ; a {@code /} separator will be appended after the {@code methodUriPrefix} parameter. May be {@code null}
+   * @param uriParameters
+   *          a dictionary with {@link String} keys and {@link String} values, which holds the URI parameters ; may be {@code null}. If a value is
+   *          {@code null}, an error log will be issued
+   * @param urlEnconding
+   *          the encoding used for writing the URI parameters values
+   * @return
+   */
   public static String encodeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters, String urlEnconding)
   {
     final StringBuffer buffer = new StringBuffer(methodUriPrefix);
@@ -638,6 +652,13 @@ public abstract class WebServiceCaller
     {
       for (Entry<String, String> entry : uriParameters.entrySet())
       {
+        if (entry.getValue() == null)
+        {
+          if (log.isErrorEnabled())
+          {
+            log.error("Could not encoce the URI parameter with key '" + entry.getKey() + "' because its value is null");
+          }
+        }
         if (first == true)
         {
           buffer.append("?");
