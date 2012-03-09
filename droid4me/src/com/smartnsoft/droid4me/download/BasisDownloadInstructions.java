@@ -69,6 +69,11 @@ public class BasisDownloadInstructions
     /**
      * Given the bitmap identifier, its extra specifications, returns its URL, which will be used for downloading it.
      * 
+     * <p>
+     * For performance reasons, the method does not manage {@link RuntimeException}: this is the reason why the implementation should make sure that
+     * no such error occurs ; in particular, pay attention to the {@link NullPointerException}
+     * </p>
+     * 
      * @return the URL that will be used to investigate on whether the bitmap is already in cache memory, persisted, and to download it from the
      *         network. If the method returns {@code null}, it will be considered that no bitmap is available for the {@code imageUid}
      */
