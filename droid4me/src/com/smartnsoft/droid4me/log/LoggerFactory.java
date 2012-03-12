@@ -35,18 +35,33 @@ import android.util.Log;
 public class LoggerFactory
 {
 
+  /**
+   * Tunes the logging system verbosity. The {@code Logger#isXXXEnabled()} method return values will depend on this trigger level. Defaults to
+   * {@code Log.WARN}.
+   * 
+   * <p>
+   * It uses the Android built-in {@link Log} {@code public static int} attributes for defining those log levels.
+   * </p>
+   */
   public static int logLevel = Log.WARN;
 
+  /**
+   * Remembers internally whether the logging system has been initialized.
+   */
   private static Boolean enabled;
 
+  /**
+   * @param category
+   * @return a new instance of {@link Logger} implementation, holding the provided {@code category}
+   */
   public static Logger getInstance(String category)
   {
-    return getInstance(category, null);
+    return LoggerFactory.getInstance(category, null);
   }
 
   public static Logger getInstance(Class<?> theClass)
   {
-    return getInstance(null, theClass);
+    return LoggerFactory.getInstance(null, theClass);
   }
 
   private static Logger getInstance(String category, Class<?> theClass)

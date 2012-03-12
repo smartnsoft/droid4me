@@ -39,7 +39,9 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.util.SendLogsTask;
 
 /**
- * To be derived from when using the framework.
+ * An abstract to be implemented when using the framework, because it initializes some of the components, and eases the development.
+ * 
+ * If you use your own implementation, do not forget to declare it in the {@code AndroidManifest.xml}.
  * 
  * @author Édouard Mercier
  * @since 2009.08.21
@@ -52,7 +54,7 @@ public abstract class SmartApplication
   protected final static Logger log = LoggerFactory.getInstance(SmartApplication.class);
 
   /**
-   * Contains various attributes in order to have the default dialog boxes related to exceptions I18Ned.
+   * Contains various attributes in order to have the default dialog boxes related to exceptions i18ned.
    */
   protected final static class I18N
   {
@@ -162,7 +164,13 @@ public abstract class SmartApplication
   }
 
   /**
-   * @return the e-mail address that will be used when submitting an error log message
+   * If the application uses an {@link SmartApplication.DefaultExceptionHandler} as an {@link ActivityController.ExceptionHandler}, when a managed
+   * exception is detected, and is not handled, a dialog box is submitted to the end-user, in order to propose to send the bug cause by inspecting the
+   * Android {@code logcat}. In that case, do not forget to declare the {@code android.permission.READ_LOGS} permission in the
+   * {@code AndroidManifest.xml}.
+   * 
+   * @return the e-mail address that will be used when submitting an error log message ; if it returns {@code null}, the application will not propose
+   *         to send the bug cause
    */
   protected abstract String getLogReportRecipient();
 
@@ -175,6 +183,9 @@ public abstract class SmartApplication
       implements Thread.UncaughtExceptionHandler
   {
 
+    /**
+     * The previous exception handler.
+     */
     private final Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler;
 
     /**
@@ -227,6 +238,10 @@ public abstract class SmartApplication
   private SharedPreferences preferences;
 
   /**
+   * <p>
+   * Caution: this method will return {@code null} as long as the parent {@link Application#onCreate()} has not been invoked.
+   * </p>
+   * 
    * @return the shared preferences of the application
    */
   protected final SharedPreferences getPreferences()
@@ -235,7 +250,7 @@ public abstract class SmartApplication
   }
 
   /**
-   * @return the version of the framework the application is using
+   * @return the human-readable version of the framework the application is using
    */
   public static String getFrameworkVersionString()
   {
@@ -289,7 +304,7 @@ public abstract class SmartApplication
    *         handled. Returns {@code null} by default
    * @see ActivityController#registerInterceptor(ActivityController.Interceptor)
    */
-  protected ActivityController.Interceptor getActivityInterceptor()
+  protected ActivityController.Interceptor getInterceptor()
   {
     return null;
   }
@@ -324,6 +339,23 @@ public abstract class SmartApplication
    */
   protected abstract SmartApplication.I18N getI18N();
 
+  /**
+   * The method will invoke the {@link SmartApplication#onCreateCustom()} method, provided the {@link #shouldBeSilent() method} returns {@code false},
+   * and will perform the following things:
+   * <ol>
+   * <li>set the {@link LoggerFactory#logLevel log level},</li>
+   * <li>register the {@link ActivityController.ExceptionHandler},</li>
+   * <li>register the {@link ActivityController.Redirector},</li>
+   * <li>register the {@link ActivityController.Interceptor},</li>
+   * <li>register an internal default {@link Thread.UncaughtExceptionHandler} for the UI and for the background threads,</li>
+   * <li>logs how much time the {@link #onCreate()} method execution took.</li>
+   * </ol>
+   * 
+   * @see #getLogLevel()
+   * @see #getExceptionHandler()
+   * @see #getActivityRedirector()
+   * @see #getInterceptor()
+   */
   @Override
   public final void onCreate()
   {
@@ -381,7 +413,7 @@ public abstract class SmartApplication
       ActivityController.getInstance().registerRedirector(redirector);
     }
 
-    final ActivityController.Interceptor interceptor = getActivityInterceptor();
+    final ActivityController.Interceptor interceptor = getInterceptor();
     if (interceptor != null)
     {
       ActivityController.getInstance().registerInterceptor(interceptor);
@@ -433,13 +465,20 @@ public abstract class SmartApplication
    * Keep in mind that this method should complete very quickly, in order to prevent from hanging the GUI thread, and thus causing a bad end-user
    * experience, and a potential ANR.
    * </p>
+   * 
+   * <p>
+   * The method does nothing, by default.
+   * </p>
    */
   protected void onCreateCustom()
   {
   }
 
   /**
-   * @return the log level trigger of the application
+   * This method will be invoked just once during the {@link Application#onCreate()} method, in order to set the {@link LoggerFactory#logLevel}.
+   * 
+   * @return the log level trigger of the application; defaults to {@link Log#WARN}
+   * @see LoggerFactory#logLevel
    */
   protected int getLogLevel()
   {
@@ -448,7 +487,7 @@ public abstract class SmartApplication
 
   /**
    * In addition to the default behavior, this event will be logged, and the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL} and
-   * {@link AppInternals#THREAD_POOL} thread pools stopped.
+   * {@link AppInternals#THREAD_POOL} thread pools shut down.
    */
   @Override
   public void onTerminate()
