@@ -9,7 +9,7 @@ Because the framework makes use of multiple components, it may be tedious to ini
 
 The `SmartApplication` class is abstract and derived from the Android built-in `Application` class. When using the framework, it is strongly advised to derive from it. It overrides and makes final the `Application.onCreate()` method, and proposes to overload the `SmartApplication.onCreateCustom()` method. Do not forget to declare it in the `AndroidManifest.xml`.
 
-The `SmartApplication.onCreateCustom()` method is the ideal place for initializing the BitmapDownloader and the Persistence components. You need to keep in mind that this method is invoked at the process start-up early stage in the UI thread, hence, you need to pay great attention to keep its execution typically under 200 ms.
+The `SmartApplication.onCreateCustom()` method is the ideal place for initializing the BitmapDownloader and the [Persistence Persistence] components. You need to keep in mind that this method is invoked at the process start-up early stage in the UI thread, hence, you need to pay great attention to keep its execution typically under 200 ms.
 
 The `SmartApplication.getLogLevel()` method will set the LoggerFactory component verbosity.
 
@@ -21,7 +21,7 @@ Among other things, the `SmartApplication.onCreate()` method will initialize the
  * `SmartApplication.getActivityRedirector()`: this will set the `Activity` `Redirector`,
  * `SmartApplication.getActivityInterceptor()`: this will set the `Activity` `Interceptor`.
  
- It is convenient to inline those components implementation inside your own derived `SmartApplication` implementation.
+It is convenient to inline those components implementation inside your own derived `SmartApplication` implementation.
 
 == i18n ==
 
