@@ -1,0 +1,47 @@
+#summary Extending the framework Android application
+#labels Featured,Phase-Implementation
+
+= SmartApplication =
+
+Because the framework makes use of multiple components, it may be tedious to initialize each of them. This is the reason why it exposes the `SmartApplication` class.
+
+== An Android `Application` class ==
+
+The `SmartApplication` class is abstract and derived from the Android built-in `Application` class. When using the framework, it is strongly advised to derive from it. It overrides and makes final the `Application.onCreate()` method, and proposes to overload the `SmartApplication.onCreateCustom()` method. Do not forget to declare it in the `AndroidManifest.xml`.
+
+The `SmartApplication.onCreateCustom()` method is the ideal place for initializing the BitmapDownloader and the Persistence components. You need to keep in mind that this method is invoked at the process start-up early stage in the UI thread, hence, you need to pay great attention to keep its execution typically under 200 ms.
+
+The `SmartApplication.getLogLevel()` method will set the LoggerFactory component verbosity.
+
+== ActivityController initialization ==
+
+Among other things, the `SmartApplication.onCreate()` method will initialize the `ActivityController` component, and you may tune this component by overloading the following methods:
+
+ * `SmartApplication.getExceptionHandler()`: this will set the ExceptionHandler,
+ * `SmartApplication.getActivityRedirector()`: this will set the `Activity` `Redirector`,
+ * `SmartApplication.getActivityInterceptor()`: this will set the `Activity` `Interceptor`.
+ 
+ It is convenient to inline those components implementation inside your own derived `SmartApplication` implementation.
+
+== i18n ==
+
+Because the default `SmartApplication.getExceptionHandler()` method returns a `DefaultExceptionHandler` instance, which issues Android toast and dialog boxes when required in a i18ned way, the `SmartApplication.getI18N()` abstract method needs to be implemented. This method just returns an internal `I18N` instance, which is just a place-holder for keeping a reference on the error messages strings.
+
+== Bug detection e-mailed ==
+
+The default `SmartApplication.getExceptionHandler()` method returns a `DefaultExceptionHandler` instance, which is able to read the Android logcat, and then propose to the end-user to send an e-mail with the bug context, as soon as a managed exception is detected and has not been handled. If you want to discard that feature, just let the `SmartApplication.get
+
+== The `UncaughtExceptionHandler` instances ==
+
+Because we may want to catch some "uncaught" exceptions (this may happen when running some of your application code in the UI thread in an unmanaged section), the `SmartApplication` registers:
+
+ * an `UncaughtExceptionHandler` for the UI thread, which will invoke the ExceptionHandler, if any, and then invoke the parent `UncaughtExceptionHandler.uncaughtException()` method ;
+ * a default `UncaughtExceptionHandler` for all other threads, which will invoke the ExceptionHandler, if any, and then invoke the parent `UncaughtExceptionHandler.uncaughtException()` method.
+
+This enables to keep track of some crashing issues.
+
+== How to disable the framework ==
+
+If, for some reason, you do not want the `SmartApplication` to be initialized, just override the `SmartApplication.shouldBeSilent()` method accordingly. If this method returns `true` (which is not the default value), then, the `ActivityController` will not be initialized, and no Java default `UncaughtExceptionHandler` will be registered.
+
+This may be necessary for instance, when two processes are declared for the same application, and that one the processes is running is the background, and that you do not want it to use the framework.

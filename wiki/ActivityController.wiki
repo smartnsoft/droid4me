@@ -16,9 +16,9 @@ To ease the developer to face and address in a centralized and consistent way th
 
 The `ActivityController` is a simple singleton object (accessible through the `ActivityController.getInstance()` method), which enables to register three types of components, namely:
 
- * an ExceptionHandler through the `ActivityController.registerExceptionHandler()' method. This `ExceptionHandler` will be invoked by the framework any time a managed exception is thrown ;
- * an `Activity` `Redirector` through the `ActivityController.registerRedirector()' method. This `Redirector` will be requested by the framework any time an `Activity` is being started ;
- * an `Activity`/`Fragment` `Interceptor` through the `ActivityController.registerInterceptor()' method. This `Interceptor` will be requested by the framewok on any droid4me-ready `Activity`/`Fragment` throughout its life cycle, through events depicted by the `InterceptorEvent` enumerated type.
+ * an ExceptionHandler through the `ActivityController.registerExceptionHandler()` method. This `ExceptionHandler` will be invoked by the framework any time a managed exception is thrown ;
+ * an `Activity` `Redirector` through the `ActivityController.registerRedirector()` method. This `Redirector` will be requested by the framework any time an `Activity` is being started ;
+ * an `Activity`/`Fragment` `Interceptor` through the `ActivityController.registerInterceptor()` method. This `Interceptor` will be requested by the framewok on any droid4me-ready `Activity`/`Fragment` throughout its life cycle, through events depicted by the `InterceptorEvent` enumerated type.
 
 == The `ExceptionHandler` interface ==
 
@@ -28,7 +28,9 @@ This interface behavior and responsibility is handled in the ExceptionHandler do
 
 The `Redirector` interface is very simple and exposes only one method:
 
+{{{
 Intent getRedirection(Activity activity)
+}}}
 
 This method will be invoked by the `ActivityController.needsRedirection()` method, during the `Activity.onCreate()` method. The created `Activity` reference is provided, and the `Redirector` interface implementation is responsible for returning a non-null `Activity` `Intent` if such an `Activity` is supposed to be started before the current `Activity`. This enables to handle workflows in a central place in the application code, just like a regular web controller would do.
 
@@ -38,7 +40,9 @@ In the case the `getRedirection()` method returns a non-null `Intent`, it will b
 
 The `Interceptor` interface is very simple and exposes a single method:
 
+{{{
 void onLifeCycleEvent(Activity activity, Object component, ActivityController.Interceptor.InterceptorEvent event)
+}}}
 
 This method will be invoked by the `ActivityController.onLifeCycleEvent()` method, during many of the `Activity`/`Fragment` life cycle events, as soon as those entities are droid4me-ready. Those events are described in the `InterceptorEvent` enumerated type documentation, and the framework ensures that this method will always be invoked from the UI thread.
 
