@@ -1,0 +1,51 @@
+#summary Handling exception, redirecting Activity, consuming Activity/Fragment life cycle events
+#labels Featured,Phase-Implementation
+
+= ActivityController =
+
+In many situation, when your application code starts to grow significantly, you have to face several challenges:
+
+ * report analytics systematically corresponding to the `Activity`/`Fragment` life cycle events ;
+ * do similar things, provide common interfaces and behavior in `Activities`/`Fragments` which cannot share common inheritance (think of the `MapActivity` or of the `ListActivity`, or the `GroupActivity` or even the `FragmentActivity`, which cannot share a customizable ancestor class) ;
+ * handling the exceptions systematically and in an homogeneous way. Many kind of exception may occur: while invoking web services, when the business objects states are not those expected, when using a faulty component, while executing things in background threads ;
+ * introduce some `Activities` workflows, typically when an `Activity` should be displayed before another one if some conditions are not met, like accessing to a screen which requires that an authentication/registration process has already been executed.
+
+To ease the developer to face and address in a centralized and consistent way those situations, the framework proposes a central component named the `ActivityController`.
+
+== The `ActivityController` component ==
+
+The `ActivityController` is a simple singleton object (accessible through the `ActivityController.getInstance()` method), which enables to register three types of components, namely:
+
+ * an ExceptionHandler through the `ActivityController.registerExceptionHandler()' method. This `ExceptionHandler` will be invoked by the framework any time a managed exception is thrown ;
+ * an `Activity` `Redirector` through the `ActivityController.registerRedirector()' method. This `Redirector` will be requested by the framework any time an `Activity` is being started ;
+ * an `Activity`/`Fragment` `Interceptor` through the `ActivityController.registerInterceptor()' method. This `Interceptor` will be requested by the framewok on any droid4me-ready `Activity`/`Fragment` throughout its life cycle, through events depicted by the `InterceptorEvent` enumerated type.
+
+== The `ExceptionHandler` interface ==
+
+This interface behavior and responsibility is handled in the ExceptionHandler documentation. It will be invoked by the `ActivityController.handleException()` method, which will decide which of the `ExceptionHandler` method to be invoked.
+
+== The `Redirector` interface ==
+
+The `Redirector` interface is very simple and exposes only one method:
+
+Intent getRedirection(Activity activity)
+
+This method will be invoked by the `ActivityController.needsRedirection()` method, during the `Activity.onCreate()` method. The created `Activity` reference is provided, and the `Redirector` interface implementation is responsible for returning a non-null `Activity` `Intent` if such an `Activity` is supposed to be started before the current `Activity`. This enables to handle workflows in a central place in the application code, just like a regular web controller would do.
+
+In the case the `getRedirection()` method returns a non-null `Intent`, it will be used to start the underlying `Activity`, and this intent will be appended the original `Intent` argument through the bundle `ActivityController.CALLING_INTENT` attribute. Later on, the redirected `Activity` may be resumed by using the `ActivityController.extractCallingIntent()` method.
+
+== The `Interceptor` interface ==
+
+The `Interceptor` interface is very simple and exposes a single method:
+
+void onLifeCycleEvent(Activity activity, Object component, ActivityController.Interceptor.InterceptorEvent event)
+
+This method will be invoked by the `ActivityController.onLifeCycleEvent()` method, during many of the `Activity`/`Fragment` life cycle events, as soon as those entities are droid4me-ready. Those events are described in the `InterceptorEvent` enumerated type documentation, and the framework ensures that this method will always be invoked from the UI thread.
+
+In cooperation with the `Activity`/`Fragment` [SmartableInterface Smartable] entity `Smarted.get/setAggregate()` method, this hook enables to perform transverse operation things in a very centralized way, without necessarily having to derive from a common class, which is very convenient because it is sometimes not possible, and it reduces components coupling.
+
+== Integration with the SmartApplication ==
+
+The `ActivityController` component is usually initialized in the `Application.onCreate()` method, which is a good candidate for registering the application `ExceptionHandler`, the `Redirector` and the `Interceptor`. And in order to ease even more this initialization, the framework offers three registration methods.
+
+If you intend to initialize the `ActivityController` component by yourself, think of initializing it early during the application execution, before any `Activity` has been started.

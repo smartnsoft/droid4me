@@ -32,7 +32,7 @@ When an `Activity`/`Fragment` class needs to be droid4me-ready, the developer ju
   * `LifeCycle.onRetrieveDisplayObjects()`,
   * `LifeCycle.onRetrieveBusinessObjects()`,
   * `LifeCycle.onFulfillDisplayObjects()`,
-  * `LifeCycle.onSynchronizeDisplayObjects(),
+  * `LifeCycle.onSynchronizeDisplayObjects()`,
   * `Smarted.getMenuCommands().
  # override the `Activity`/`Fragment` entity following methods:
   * `Activity.onCreate()`/`Fragment.onCreate()`,
@@ -58,11 +58,12 @@ This adds a bit of complexity in your bases class (this is the price to pay to g
 
 Once you have made your `Activity`/`Fragment` droid4me-ready thanks to the `Droid4mizer` component, you are given the following features:
 
- * you take benefit of the `LifeCycle` entity life-cycle framework ;
- * you are given the `ActivityController` services, namely:
-  * any exception thrown during your method implementation will be handled by the `ExceptionHandler`,
-  * any starting `Activity` may be redirected via the `ActivityController` `Redirector`,
-  * all the `Activity`/`Fragment` life cycle events are caught by the `ActivityController` `Interceptor` ;
- * the background internal threads are handled by the `SmartCommands` high-priority worker threads pool ;
- * the Android menu may be handled by the `MenuHandler` component ;
- * the logging may be handled by the `LoggerFactory` component.
+ * you take benefit of the LifeCycle entity life-cycle framework ;
+ * you are given the ActivityController services, namely:
+  * any exception thrown during your method implementation will be handled by the ExceptionHandler,
+  * any starting `Activity` may be redirected via the ActivityController `Redirector`,
+  * all the `Activity`/`Fragment` life cycle events are caught by the ActivityController `Interceptor` ;
+ * the background internal threads are handled by the SmartCommands high-priority worker threads pool ;
+ * you may register BroadcastListener instances is a very simple way ;
+ * the Android menu may be handled by the MenuHandler component ;
+ * the logging may be handled by the LoggerFactory component.

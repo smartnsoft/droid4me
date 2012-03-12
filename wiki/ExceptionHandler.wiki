@@ -18,10 +18,12 @@ In order to benefit from the "ExceptionHandler" component, you need to take the 
  # derive your Android activities from one of the `Smartable` classes provided by the framework ;
  # whenever you perform something in a background/detached thread, use the `SmartCommands.execute()` method.
 
-If you have registered an ExceptionHandler, it will be involved by the framework in two cases:
+If you have registered an ExceptionHandler, it will be involved by the framework in two `Exception` cases, which we refer to as "managed exceptions":
 
  # when retrieving business objects in your Android `Smartable` activities through the `LifeCycle.onRetrieveBusinessObjects`: when something goes wrong, throw a `LifeCycle.BusinessObjectUnavailableException` exception ;
  # when using the `SmartCommand.execute()` method and an exception is thrown during the command execution.
+
+If you derive your Android `Application` from the SmartApplication, you just need to implement the `SmartApplication.getExceptionHandler()` method and return your own implementation. The two previously mentioned cases will be automatically covered by the `ExceptionHandler`.
 
 == The `ExceptionHandler` interface methods ==
 
