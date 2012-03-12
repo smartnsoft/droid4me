@@ -9,6 +9,8 @@ com.smartnsoft.droid4me.framework
 com.smartnsoft.droid4me.graphics.drawable
 com.smartnsoft.droid4me.log
 com.smartnsoft.droid4me.menu
+com.smartnsoft.droid4me.support.v4.app
+com.smartnsoft.droid4me.support.v4.menu
 com.smartnsoft.droid4me.ui
 com.smartnsoft.droid4me.util
 com.smartnsoft.droid4me.widget
