@@ -176,10 +176,11 @@ public final class ActivityController
     }
 
     /**
-     * Invoked every time a new event occurs on the provided activity. Ideal for logging application usage analytics.
+     * Invoked every time a new event occurs on the provided {@code activity}/{@code component}. For instance, this is an ideal for logging
+     * application usage analytics.
      * 
      * <p>
-     * The method blocks the caller thread, which is sometimes the UI thread, hence the method should last a very short time!
+     * The framework ensures that this method will be invoked from the UI thread, hence the method implementation should last a very short time!
      * <p>
      * 
      * <p>
@@ -898,6 +899,11 @@ public final class ActivityController
    * method will return {@code false}.
    * </p>
    * 
+   * <p>
+   * Note that this method is {@code synchronized}, which prevents it from being invoking while it is already being executed, and which involves that
+   * only one {@link Throwable} may be handled at the same time.
+   * </p>
+   * 
    * @param context
    *          the context that originated the exception ; may be {@code null}
    * @param throwable
@@ -997,12 +1003,17 @@ public final class ActivityController
    * redirection is need, and provide to its {@link Intent} the initial activity {@link Intent} trough the extra {@link Parcelable}
    * {@link ActivityController#CALLING_INTENT} key.
    * 
+   * <p>
+   * Note that this method does not need to be marked as {@code synchronized}, because it is supposed to be invoked systematically from the UI thread.
+   * </p>
+   * 
    * @param activity
    *          the activity which is being proved against the {@link ActivityController.Redirector}
-   * @return {@code true} if and only if the given activity should be paused (or ended) and if another activity should be launched instead
+   * @return {@code true} if and only if the given activity should be paused (or ended) and if another activity should be launched instead through the
+   *         {@link Activity#startActivity(Intent)} method
    * @see ActivityController#extractCallingIntent(Activity)
    */
-  public synchronized boolean needsRedirection(Activity activity)
+  public boolean needsRedirection(Activity activity)
   {
     if (redirector == null)
     {

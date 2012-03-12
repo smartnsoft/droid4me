@@ -33,6 +33,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.smartnsoft.droid4me.app.ActivityController.ExceptionHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.util.SendLogsTask;
@@ -242,7 +243,7 @@ public abstract class SmartApplication
   }
 
   /**
-   * A callback method which enables to indicate whether the process newly created should use the usual workflow.
+   * A callback method which enables to indicate whether the process newly created should use the default {@link SmartApplication} workflow.
    * 
    * <p>
    * It is useful when having multiple processes for the same application, and that some of the processes should not use the framework.
@@ -256,10 +257,18 @@ public abstract class SmartApplication
   }
 
   /**
-   * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
+   * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Redirector}:
+   * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the redirection
+   * mechanism.
    * 
-   * @return an instance which indicates how to redirect {@link Activity activities} if necessary. Returns {@code null}, which means that no
-   *         redirection is handled by default ; override this method, in order to control the redirection mechanism
+   * <p>
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
+   * {@link Application#onCreate()} method execution.
+   * </p>
+   * 
+   * @return an instance which indicates how to redirect {@link Activity activities} if necessary. If {@code null}, this means that no redirection is
+   *         handled. Returns {@code null} by default
+   * @see ActivityController#registerRedirector(ActivityController.Redirector)
    */
   protected ActivityController.Redirector getActivityRedirector()
   {
@@ -267,10 +276,18 @@ public abstract class SmartApplication
   }
 
   /**
-   * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
+   * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Interceptor}:
+   * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the interception
+   * mechanism.
    * 
-   * @return an instance which will be invoked on every {@link Activity} life-cycle event. Returns {@code null}, which means that no interception is
-   *         handled by default ; override this method, in order to be notified of activities life-cycle events
+   * <p>
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
+   * {@link Application#onCreate()} method execution.
+   * </p>
+   * 
+   * @return an instance which will be invoked on every {@link Activity} life-cycle event. IF {@code null}, this means that no interception is
+   *         handled. Returns {@code null} by default
+   * @see ActivityController#registerInterceptor(ActivityController.Interceptor)
    */
   protected ActivityController.Interceptor getActivityInterceptor()
   {
@@ -278,11 +295,19 @@ public abstract class SmartApplication
   }
 
   /**
-   * It is ensured that the framework will only call once this method (unless you explicitly invoke it).
+   * This callback will be invoked by the application instance, in order to get a reference on the application
+   * {@link ActivityController.ExceptionHandler}: this method is responsible for creating an implementation of this component interface. Override this
+   * method, in order to handle more specifically some application-specific exceptions.
    * 
-   * @return an instance which will be invoked when an exception occurs during the application, provided the exception is handled by the framework.
-   *         Returns a {@link ActivityController.AbstractExceptionHandler} instance ; override this method, in order to handle more specifically some
-   *         application-specific exceptions
+   * <p>
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which should not be the case), during the
+   * {@link Application#onCreate()} method execution.
+   * </p>
+   * 
+   * @return an instance which will be invoked when an exception occurs during the application, provided the exception is handled by the framework ;
+   *         may be {@code null}, if no {@link ActivityController.ExceptionHandler} should be used by the application. Returns a new instance of
+   *         {@link SmartApplication.ExceptionHandler} by default
+   * @see ActivityController#registerExceptionHandler(ExceptionHandler)
    */
   protected ActivityController.ExceptionHandler getExceptionHandler()
   {
