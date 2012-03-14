@@ -106,23 +106,34 @@ public final class DbPersistence
       retentionDurationInMilliseconds = LastUpdateDbCleanUpPolicy.RETENTION_DURATION_IN_MILLISECONDS[instanceIndex];
     }
 
-    // TODO: improve the performance by running batched SQL queries
     public void cleanUp(SQLiteDatabase writeableDatabase, String tableName)
         throws SQLException
     {
       final Cursor cursor = getCursor(writeableDatabase, tableName);
-      final long now = System.currentTimeMillis();
-      while (cursor != null && cursor.moveToNext() == true)
+      if (cursor != null)
       {
-        if (shouldCleanUp(cursor, now) == true)
+        // The transaction is essential to get good performance
+        writeableDatabase.beginTransaction();
+        try
         {
-          if (log.isDebugEnabled())
+          final long now = System.currentTimeMillis();
+          while (cursor.moveToNext() == true)
           {
-            final String uri = cursor.getString(cursor.getColumnIndex(DbPersistence.CacheColumns.URI));
-            log.debug("Removing the entry from table '" + tableName + "' corresponding to the the URI '" + uri + "'");
+            if (shouldCleanUp(cursor, now) == true)
+            {
+              if (log.isDebugEnabled())
+              {
+                final String uri = cursor.getString(cursor.getColumnIndex(DbPersistence.CacheColumns.URI));
+                log.debug("Removing the entry from table '" + tableName + "' corresponding to the the URI '" + uri + "'");
+              }
+              final long id = cursor.getLong(cursor.getColumnIndex(DbPersistence.CacheColumns._ID));
+              writeableDatabase.delete(tableName, DbPersistence.CacheColumns._ID + " = " + id, null);
+            }
           }
-          final long id = cursor.getLong(cursor.getColumnIndex(DbPersistence.CacheColumns._ID));
-          writeableDatabase.delete(tableName, DbPersistence.CacheColumns._ID + " = " + id, null);
+        }
+        finally
+        {
+          writeableDatabase.endTransaction();
         }
       }
     }
