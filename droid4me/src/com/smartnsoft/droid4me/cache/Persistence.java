@@ -827,9 +827,10 @@ public abstract class Persistence
   public final synchronized void cleanUp()
       throws Persistence.PersistenceException
   {
-    if (log.isDebugEnabled())
+    final long start = System.currentTimeMillis();
+    if (log.isInfoEnabled())
     {
-      log.debug("Cleaning up the persistence instance " + instanceIndex);
+      log.info("Cleaning up the persistence instance " + instanceIndex);
     }
     checkAndInitializeIfNecessary();
     if (storageBackendAvailable == true)
@@ -838,6 +839,10 @@ public abstract class Persistence
     }
     uriUsages.clear();
     beingProcessed.clear();
+    if (log.isInfoEnabled())
+    {
+      log.info("Cleaning up the persistence instance " + instanceIndex + " took " + (System.currentTimeMillis() - start) + " ms");
+    }
   }
 
   /**
@@ -867,9 +872,9 @@ public abstract class Persistence
   public final synchronized void clear()
       throws Persistence.PersistenceException
   {
-    if (log.isDebugEnabled())
+    if (log.isInfoEnabled())
     {
-      log.debug("Emptying the persistence instance " + instanceIndex);
+      log.info("Emptying the persistence instance " + instanceIndex);
     }
     checkAndInitializeIfNecessary();
     if (storageBackendAvailable == true)
@@ -894,9 +899,9 @@ public abstract class Persistence
   public final synchronized void close()
       throws Persistence.PersistenceException
   {
-    if (log.isDebugEnabled())
+    if (log.isInfoEnabled())
     {
-      log.debug("Closing the persistence instance " + instanceIndex);
+      log.info("Closing the persistence instance " + instanceIndex);
     }
     if (storageBackendAvailable == true)
     {
