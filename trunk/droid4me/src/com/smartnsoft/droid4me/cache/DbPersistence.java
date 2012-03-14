@@ -61,6 +61,87 @@ public final class DbPersistence
 {
 
   /**
+   * The basis interface for all {@link DbPersistence} instances.
+   * <p>
+   * The implementing class must have a {@code public} constructor, which takes a single {@code int} as argument, which is the persistence instance
+   * index.
+   * </p>
+   * 
+   * @since 2012.03.13
+   */
+  public static interface DbCleanUpPolicy
+      extends Persistence.CleanUpPolicy
+  {
+
+    public void cleanUp(SQLiteDatabase writeableDatabase, String tableName)
+        throws SQLException;
+
+  }
+
+  /**
+   * A simple clean up strategy, which removes the entries older that a certain of time, which is customizable through the
+   * {@link LastUpdateDbCleanUpPolicy#RETENTION_DURATION_IN_MILLISECONDS} field.
+   * 
+   * @since 2012.03.13
+   */
+  public static class LastUpdateDbCleanUpPolicy
+      implements DbPersistence.DbCleanUpPolicy
+  {
+
+    /**
+     * Indicates for each persistence instance, when it uses this policy, how much time an entry should be kept in milliseconds.
+     * <p>
+     * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
+     * </p>
+     */
+    public static long[] RETENTION_DURATION_IN_MILLISECONDS = new long[] {};
+
+    /**
+     * The number of milliseconds each entry should be kept at most in the cache.
+     */
+    protected final long retentionDurationInMilliseconds;
+
+    public LastUpdateDbCleanUpPolicy(int instanceIndex)
+    {
+      retentionDurationInMilliseconds = LastUpdateDbCleanUpPolicy.RETENTION_DURATION_IN_MILLISECONDS[instanceIndex];
+    }
+
+    public void cleanUp(SQLiteDatabase writeableDatabase, String tableName)
+        throws SQLException
+    {
+      final Cursor cursor = getCursor(writeableDatabase, tableName);
+      final long now = System.currentTimeMillis();
+      while (cursor != null && cursor.moveToNext() == true)
+      {
+        if (shouldCleanUp(cursor, now) == true)
+        {
+          final String uri = cursor.getString(cursor.getColumnIndex(DbPersistence.CacheColumns.URI));
+          if (log.isDebugEnabled())
+          {
+            log.debug("Removing the entry from table '" + tableName + "' corresponding to the the URI '" + uri + "'");
+          }
+          final long id = cursor.getLong(cursor.getColumnIndex(DbPersistence.CacheColumns._ID));
+          writeableDatabase.delete(tableName, DbPersistence.CacheColumns._ID + " = " + id, null);
+        }
+      }
+    }
+
+    protected Cursor getCursor(SQLiteDatabase writeableDatabase, String tableName)
+        throws SQLException
+    {
+      return writeableDatabase.rawQuery(
+          "SELECT " + DbPersistence.CacheColumns._ID + ", " + DbPersistence.CacheColumns.URI + ", " + DbPersistence.CacheColumns.LAST_UPDATE + " FROM " + tableName + " ORDER BY " + DbPersistence.CacheColumns.LAST_UPDATE,
+          new String[0]);
+    }
+
+    protected boolean shouldCleanUp(Cursor cursor, long now)
+    {
+      return cursor.getLong(cursor.getColumnIndex(DbPersistence.CacheColumns.LAST_UPDATE)) < (now - retentionDurationInMilliseconds);
+    }
+
+  }
+
+  /**
    * Defined in order to set up the database columns.
    */
   private final static class CacheColumns
@@ -108,6 +189,16 @@ public final class DbPersistence
    * </p>
    */
   public static String[] TABLE_NAMES = new String[] { DbPersistence.DEFAULT_TABLE_NAME };
+
+  /**
+   * The fully qualified classes names of the {@link DbPersistence.DbCleanUpPolicy clean up policies} to use. Each array element may be {@code null},
+   * and in that case, no policy is attached to the corresponding instance.
+   * 
+   * <p>
+   * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
+   * </p>
+   */
+  public static String[] CLEAN_UP_POLICY_FQN = new String[] { null };
 
   /**
    * The number of simultaneous available threads in the pool.
@@ -514,6 +605,77 @@ public final class DbPersistence
     }
     // This is a single operation, no transaction is needed
     writeableDatabase.delete(tableName, DbPersistence.CacheColumns.URI + " = '" + uri + "'", null);
+  }
+
+  @Override
+  protected void computePolicyAndCleanUpInstance()
+      throws Persistence.PersistenceException
+  {
+    final DbPersistence.DbCleanUpPolicy cleanUpPolicy = computeCleanUpPolicy();
+    if (cleanUpPolicy == null)
+    {
+      return;
+    }
+    cleanUpInstance(cleanUpPolicy);
+  }
+
+  /**
+   * The implementation makes use of the {@link DbPersistence#CLEAN_UP_POLICY_FQN} to decide what {@link DbPersistence.DbCleanUpPolicy clean up
+   * policy} to use.
+   * 
+   * @see DbPersistence#CLEAN_UP_POLICY_FQN
+   */
+  @SuppressWarnings("unchecked")
+  @Override
+  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> CleanUpPolicyClass computeCleanUpPolicy()
+  {
+    if (instanceIndex >= DbPersistence.CLEAN_UP_POLICY_FQN.length)
+    {
+      return null;
+    }
+    final String policyClassFqn = DbPersistence.CLEAN_UP_POLICY_FQN[instanceIndex];
+    if (policyClassFqn == null)
+    {
+      return null;
+    }
+    try
+    {
+      final Class<?> policyClass = Class.forName(policyClassFqn);
+      final DbPersistence.DbCleanUpPolicy cleanUpPolicy = (DbPersistence.DbCleanUpPolicy) policyClass.getConstructor(int.class).newInstance(instanceIndex);
+      if (log.isDebugEnabled())
+      {
+        log.debug("Using the clean up policy implementation '" + cleanUpPolicy.getClass().getName() + "' for the persistence instance " + instanceIndex);
+      }
+      return (CleanUpPolicyClass) cleanUpPolicy;
+    }
+    catch (Exception exception)
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("Could not instantiate the Persistent CleanUpPolicy class with FQN '" + policyClassFqn + "',", exception);
+      }
+      return null;
+    }
+  }
+
+  @Override
+  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(CleanUpPolicyClass cleanUpPolicy)
+      throws Persistence.PersistenceException
+  {
+    // We know that the policy is a 'DbPersistence.DbCleanUpPolicy'
+    final DbPersistence.DbCleanUpPolicy dbCleanUpPolicy = (DbCleanUpPolicy) cleanUpPolicy;
+    try
+    {
+      dbCleanUpPolicy.cleanUp(writeableDatabase, tableName);
+    }
+    catch (SQLiteException exception)
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("A problem occurred while cleaning up the instance " + instanceIndex + " entries");
+      }
+      throw new Persistence.PersistenceException(exception);
+    }
   }
 
   protected void clearInstance()

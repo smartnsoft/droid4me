@@ -336,6 +336,33 @@ public final class FilePersistence
     return cacheInputStream(uri, inputAtom, false).inputStream;
   }
 
+  /**
+   * Does nothing.
+   */
+  @Override
+  protected void computePolicyAndCleanUpInstance()
+      throws Persistence.PersistenceException
+  {
+  }
+
+  /**
+   * @return {@code null}
+   */
+  @Override
+  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> CleanUpPolicyClass computeCleanUpPolicy()
+  {
+    return null;
+  }
+
+  /**
+   * This implementation does nothing.
+   */
+  @Override
+  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(CleanUpPolicyClass cleanUpPolicy)
+      throws PersistenceException
+  {
+  }
+
   protected void clearInstance()
       throws Persistence.PersistenceException
   {
@@ -429,7 +456,7 @@ public final class FilePersistence
       if (uriUsage == null)
       {
         uriUsage = new Persistence.UriUsage(filePath, uri);
-        uriUsage.accessCount++;
+        uriUsage.accessed();
         uriUsages.put(uri, uriUsage);
         properties.put(uri, filePath);
         fileIndexNeedsSaving = true;
@@ -464,10 +491,10 @@ public final class FilePersistence
     if (isStorageLimited() == true)
     {
       final Persistence.UriUsage uriUsage = uriUsages.get(uri);
-      uriUsage.accessCount++;
+      uriUsage.accessed();
       if (log.isDebugEnabled())
       {
-        log.debug("The URI '" + uri + "' has been accessed " + uriUsage.accessCount + " time(s)");
+        log.debug("The URI '" + uri + "' has been accessed " + uriUsage.getAccessCount() + " time(s)");
       }
     }
   }
@@ -515,7 +542,7 @@ public final class FilePersistence
         properties.remove(discardedUriUsage.uri);
         if (log.isDebugEnabled())
         {
-          log.debug("Removed from the cache the URI " + discardedUriUsage.uri + "' accessed " + discardedUriUsage.accessCount + " time(s), corresponding to the file '" + discardedUriUsage.storageFilePath);
+          log.debug("Removed from the cache the URI " + discardedUriUsage.uri + "' accessed " + discardedUriUsage.getAccessCount() + " time(s), corresponding to the file '" + discardedUriUsage.storageFilePath);
         }
       }
       // We reset the remaining usages

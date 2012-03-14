@@ -59,6 +59,24 @@ public class NullPersistence
   }
 
   @Override
+  protected void computePolicyAndCleanUpInstance()
+      throws Persistence.PersistenceException
+  {
+  }
+
+  @Override
+  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> CleanUpPolicyClass computeCleanUpPolicy()
+  {
+    return null;
+  }
+
+  @Override
+  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(CleanUpPolicyClass cleanUpPolicy)
+      throws PersistenceException
+  {
+  }
+
+  @Override
   protected void clearInstance()
       throws Persistence.PersistenceException
   {
