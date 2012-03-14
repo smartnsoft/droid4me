@@ -106,6 +106,7 @@ public final class DbPersistence
       retentionDurationInMilliseconds = LastUpdateDbCleanUpPolicy.RETENTION_DURATION_IN_MILLISECONDS[instanceIndex];
     }
 
+    // TODO: improve the performance by running batched SQL queries
     public void cleanUp(SQLiteDatabase writeableDatabase, String tableName)
         throws SQLException
     {
@@ -115,9 +116,9 @@ public final class DbPersistence
       {
         if (shouldCleanUp(cursor, now) == true)
         {
-          final String uri = cursor.getString(cursor.getColumnIndex(DbPersistence.CacheColumns.URI));
           if (log.isDebugEnabled())
           {
+            final String uri = cursor.getString(cursor.getColumnIndex(DbPersistence.CacheColumns.URI));
             log.debug("Removing the entry from table '" + tableName + "' corresponding to the the URI '" + uri + "'");
           }
           final long id = cursor.getLong(cursor.getColumnIndex(DbPersistence.CacheColumns._ID));
