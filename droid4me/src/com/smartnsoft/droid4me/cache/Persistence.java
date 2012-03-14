@@ -41,7 +41,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 /**
  * Enables to store persistently on the internal/external device "hard-drive" some contents.
  * 
- * @author ï¿½douard Mercier
+ * @author Édouard Mercier
  * @since 2009.03.26
  */
 public abstract class Persistence
@@ -49,7 +49,21 @@ public abstract class Persistence
 {
 
   /**
+   * Defines a basis policy/strategy interface used when {@link Persistence#cleanUp() cleaning up} the persistence instance.
+   * 
+   * @see Persistence#cleanUp()
+   * @since 2012.03.13
+   */
+  public static interface CleanUpPolicy
+  {
+  }
+
+  /**
    * The exception thrown when an error occurs during a persistence operation.
+   * 
+   * <p>
+   * For the time being, only the classes in the current package can create such exception.
+   * </p>
    */
   public final static class PersistenceException
       extends Error
@@ -59,6 +73,11 @@ public abstract class Persistence
 
     PersistenceException()
     {
+    }
+
+    PersistenceException(Throwable throwable)
+    {
+      super(throwable);
     }
 
     PersistenceException(String message)
@@ -83,7 +102,7 @@ public abstract class Persistence
     /**
      * How many times the URI has been accessed.
      */
-    public int accessCount = 0;
+    private int accessCount = 0;
 
     /**
      * If applicable, the file path of the persisted data.
@@ -99,6 +118,26 @@ public abstract class Persistence
     {
       this.storageFilePath = storageFilePath;
       this.uri = uri;
+    }
+
+    /**
+     * @return how many times the underlying URI has been accessed. Starts from {@code 0}
+     * @see #accessed()
+     */
+    protected final int getAccessCount()
+    {
+      return accessCount;
+    }
+
+    /**
+     * Indicates that the underlying URI has been accessed once again.
+     * 
+     * @return how many time the URI has been accessing, including the current call
+     * @see #getAccessCount()
+     */
+    public int accessed()
+    {
+      return ++accessCount;
     }
 
     public int compareTo(Persistence.UriUsage another)
@@ -254,15 +293,23 @@ public abstract class Persistence
   /**
    * The persistence index among all instances.
    */
-  private final int instanceIndex;
+  protected final int instanceIndex;
 
   /**
    * Indicates how the persisted URI are being accessed.
+   * 
+   * <p>
+   * All implementations are not required to update this field, it is just here to help.
+   * </p>
    */
-  protected final UriUsages uriUsages;
+  protected final UriUsages uriUsages = new UriUsages();
 
   /**
    * Holds all the URIs which are currently being persisted.
+   * 
+   * <p>
+   * All implementations are not required to update this field, it is just here to help.
+   * </p>
    */
   protected final Set<String> beingProcessed = new HashSet<String>();
 
@@ -451,7 +498,6 @@ public abstract class Persistence
   {
     this.instanceIndex = instanceIndex;
     this.storageDirectoryPath = storageDirectoryPath;
-    uriUsages = new UriUsages();
   }
 
   /**
@@ -466,7 +512,10 @@ public abstract class Persistence
   }
 
   /**
+   * Indicates whether the current instance has already been initialized.
+   * 
    * @return {@code true} if and only if the current instance is currently initialized
+   * @see #initializeInstance()
    */
   public final boolean isInitialized()
   {
@@ -511,6 +560,7 @@ public abstract class Persistence
    * 
    * @throws Persistence.PersistenceException
    *           if something went wrong during the initialization
+   * @see #isInitialized
    */
   protected abstract void initializeInstance()
       throws Persistence.PersistenceException;
@@ -702,6 +752,35 @@ public abstract class Persistence
       throws Persistence.PersistenceException;
 
   /**
+   * Enables to define the way the persistence cache clean up is performed.
+   * 
+   * <p>
+   * This method is supposed to be invoked by the {@link #cleanUpInstance()} method, when it attempts to determine the
+   * {@link Persistence.CleanUpPolicy} to use.
+   * </p>
+   * 
+   * @return a clean-up policy ; may be {@code null}, and in that case, the {@link #computePolicyAndCleanUpInstance()} should not run the
+   *         {@link #cleanUpInstance(CleanUpPolicy)} method
+   */
+  protected abstract <CleanUpPolicyClass extends Persistence.CleanUpPolicy> CleanUpPolicyClass computeCleanUpPolicy();
+
+  /**
+   * Cleans-up the persistence.
+   * 
+   * <p>
+   * This will remove persistent entries depending on the provided {@code cleanUpPolicy}.
+   * </p>
+   * 
+   * @param cleanUpPolicy
+   *          the policy to use for cleaning up the instance
+   * @throws if
+   *           any problem occurs while cleaning up the instance
+   * @see #cleanUp()
+   */
+  protected abstract <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(CleanUpPolicyClass cleanUpPolicy)
+      throws Persistence.PersistenceException;
+
+  /**
    * Empties the persistence.
    * 
    * <p>
@@ -727,6 +806,48 @@ public abstract class Persistence
    * @see #close()
    */
   protected abstract void closeInstance()
+      throws Persistence.PersistenceException;
+
+  /**
+   * Cleans up the cache related to the current instance. This will remove persistent entries depending on the computed
+   * {@link #computeCleanUpPolicy()} : if this policy is {@code null}, nothing is done. The method will invoke the
+   * {@link #computePolicyAndCleanUpInstance()} method.
+   * 
+   * <p>
+   * During this operation, the instance should not be accessed, and the implementation is not responsible for ensuring that: it is up to the caller
+   * to make sure that no other instance method is being invoked during its execution!
+   * </p>
+   * 
+   * @throws if
+   *           any problem occurs while cleaning up the instance
+   * @see #cleanUpInstance()
+   * @see #clear()
+   * @see #close()
+   */
+  public final synchronized void cleanUp()
+      throws Persistence.PersistenceException
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Cleaning up the persistence instance " + instanceIndex);
+    }
+    checkAndInitializeIfNecessary();
+    if (storageBackendAvailable == true)
+    {
+      computePolicyAndCleanUpInstance();
+    }
+    uriUsages.clear();
+    beingProcessed.clear();
+  }
+
+  /**
+   * Is responsible for invoking the {@link #computeCleanUpPolicy()} and then, if the returned value not {@code null}, invoke the
+   * {@link #cleanUpInstance(CleanUpPolicy)} method.
+   * 
+   * @throws Persistence.PersistenceException
+   *           if something goes wrong during the {@link #cleanUpInstance(CleanUpPolicy)} method execution
+   */
+  protected abstract void computePolicyAndCleanUpInstance()
       throws Persistence.PersistenceException;
 
   /**
@@ -788,7 +909,23 @@ public abstract class Persistence
   }
 
   /**
-   * Clears all persistence instances. The method will invoke the {@link #clear()} on each instance.
+   * Cleans up all persistence instances. The method will invoke the {@link #cleanUp()} method on each instance.
+   */
+  public static synchronized void cleanUpAll()
+      throws Persistence.PersistenceException
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Cleaning up all persistence instances");
+    }
+    for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
+    {
+      Persistence.getInstance(index).cleanUp();
+    }
+  }
+
+  /**
+   * Clears all persistence instances. The method will invoke the {@link #clear()} method on each instance.
    */
   public static synchronized void clearAll()
       throws Persistence.PersistenceException
@@ -804,7 +941,7 @@ public abstract class Persistence
   }
 
   /**
-   * Closes all persistence instances. The method will invoke the {@link #close()} on each instance.
+   * Closes all persistence instances. The method will invoke the {@link #close()} method on each instance.
    */
   public static synchronized void closeAll()
       throws Persistence.PersistenceException
