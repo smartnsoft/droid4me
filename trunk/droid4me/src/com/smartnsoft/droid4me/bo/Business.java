@@ -358,18 +358,26 @@ public final class Business
   {
 
     /**
-     * Is responsible for writing the persist the provided data.
+     * Is responsible for writing the provided data.
+     * 
+     * <p>
+     * The {@code returnStream} parameter enables to tune whether the implementation is supposed to return the provided input stream.
+     * </p>
      * 
      * @param uri
      *          the URI the data belongs to
      * @param inputAtom
      *          the wrapper that contains the data to be persisted the {@link Business.InputAtom#inputStream} is allowed to be null: in that case, a
      *          null-like object must be persisted
-     * @return a valid input stream corresponding to the persisted data; it is not allowed to be {@code null}
+     * @param returnStream
+     *          if set {@code true}, a valid {@link InputStream} corresponding to the provided {@link Business.InputAtom#inputStream} must be returned
+     *          ; if set to {@code false}, {@code null} must be returned
+     * @return a valid input stream corresponding to the persisted data; it is not allowed to be {@code null} when the {@code returnStream} parameter
+     *         is {@code true}. Otherwise, {@code null} must be returned
      * @throws Exception
      *           if any problem occurs while persisting the data
      */
-    InputStream writeInputStream(UriType uri, Business.InputAtom inputAtom)
+    InputStream writeInputStream(UriType uri, Business.InputAtom inputAtom, boolean returnStream)
         throws ExceptionType;
 
   }
@@ -425,10 +433,10 @@ public final class Business
       return ioStreamer.readInputStream(uri);
     }
 
-    public InputStream writeInputStream(String uri, Business.InputAtom inputAtom)
+    public InputStream writeInputStream(String uri, Business.InputAtom inputAtom, boolean returnStream)
         throws StreamerExceptionType
     {
-      return ioStreamer.writeInputStream(uri, inputAtom);
+      return ioStreamer.writeInputStream(uri, inputAtom, returnStream);
     }
 
     public Date getLastUpdate(String uri)
@@ -492,10 +500,10 @@ public final class Business
       return ioStreamer.readInputStream(uri);
     }
 
-    public final InputStream writeInputStream(String uri, Business.InputAtom inputAtom)
+    public final InputStream writeInputStream(String uri, Business.InputAtom inputAtom, boolean returnStream)
         throws Persistence.PersistenceException
     {
-      return ioStreamer.writeInputStream(uri, inputAtom);
+      return ioStreamer.writeInputStream(uri, inputAtom, returnStream);
     }
 
     public final Date getLastUpdate(String uri)

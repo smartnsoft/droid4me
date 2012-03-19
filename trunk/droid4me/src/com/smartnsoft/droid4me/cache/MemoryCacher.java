@@ -64,9 +64,9 @@ public class MemoryCacher<BusinessObjectType, ParameterType, ParseExceptionType 
   }
 
   @Override
-  protected InputStream onNewInputStream(ParameterType parameter, String uri, Business.InputAtom atom)
+  protected InputStream onNewInputStream(ParameterType parameter, String uri, Business.InputAtom atom, boolean returnStream)
   {
-    return atom.inputStream;
+    return returnStream == false ? null : atom.inputStream;
   }
 
   @Override

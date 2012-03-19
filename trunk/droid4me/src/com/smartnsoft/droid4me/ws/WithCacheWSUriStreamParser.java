@@ -150,11 +150,11 @@ public final class WithCacheWSUriStreamParser
       return ioStreamer.readInputStream(ioSourceKey.computeUri(uri.getParameter()));
     }
 
-    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom)
+    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom, boolean returnStream)
         throws StreamerExceptionType
     {
       final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
-      return ioStreamer.writeInputStream(ioSourceKey.computeUri(uri.getParameter()), inputAtom);
+      return ioStreamer.writeInputStream(ioSourceKey.computeUri(uri.getParameter()), inputAtom, returnStream);
     }
 
     public void remove(WSUriStreamParser.KeysAggregator<ParameterType> uri)
@@ -228,11 +228,11 @@ public final class WithCacheWSUriStreamParser
       return readInputStream(ioSourceKey.computeUri(uri.getParameter()));
     }
 
-    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom)
+    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom, boolean returnStream)
         throws StreamerExceptionType
     {
       final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
-      return writeInputStream(ioSourceKey.computeUri(uri.getParameter()), inputAtom);
+      return writeInputStream(ioSourceKey.computeUri(uri.getParameter()), inputAtom, returnStream);
     }
 
     public void remove(WSUriStreamParser.KeysAggregator<ParameterType> uri)
