@@ -604,7 +604,8 @@ public final class DbPersistence
   protected InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom, boolean returnStream)
       throws Persistence.PersistenceException
   {
-    return internalCacheInputStream(uri, inputAtom, true, false).inputStream;
+    final Business.InputAtom newInputAtom = internalCacheInputStream(uri, inputAtom, true, false);
+    return (returnStream == false || newInputAtom.inputStream == null) ? null : newInputAtom.inputStream;
   }
 
   @Override

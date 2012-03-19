@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.bo.Business.InputAtom;
 
 /**
  * Enables to store on the internal/external device "hard-drive" and cache in memory some contents.
@@ -333,8 +334,8 @@ public final class FilePersistence
   protected InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom, boolean returnStream)
       throws Persistence.PersistenceException
   {
-    final InputStream inputStream = cacheInputStream(uri, inputAtom, false).inputStream;
-    return returnStream == false ? null : inputStream;
+    final InputAtom newInputAtom = cacheInputStream(uri, inputAtom, false);
+    return (returnStream == false || newInputAtom.inputStream == null) ? null : newInputAtom.inputStream;
   }
 
   /**
