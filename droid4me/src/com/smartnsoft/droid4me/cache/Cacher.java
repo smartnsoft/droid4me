@@ -18,6 +18,9 @@
 
 package com.smartnsoft.droid4me.cache;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 
@@ -264,28 +267,97 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     }
 
     final Business.InputAtom atom = uriInputStreamer.getInputStream(uri);
-    if (atom == null && uriInputStreamer instanceof Business.NullableUriInputStreamer)
+    if (atom == null)
     {
-      final BusinessObjectType businessObject = ((Business.NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, InputExceptionType, InputExceptionType>) uriInputStreamer).onNullInputStream(
-          parameter, uri);
-      final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Business.Source.IOStreamer);
-      if (businessObject == null)
+      if (uriInputStreamer instanceof Business.NullableUriInputStreamer)
       {
-        ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), null));
-        return info;
-      }
-      else if (uriStreamParser instanceof Business.UriStreamParserSerializer<?, ?, ?, ?>)
-      {
-        // In that case, we put the business object in the cache
-        ioStreamer.writeInputStream(
-            uri,
-            new Business.InputAtom(new Date(), ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(
-                parameter, info.value)));
-        return info;
+        final BusinessObjectType businessObject = ((Business.NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, InputExceptionType, InputExceptionType>) uriInputStreamer).onNullInputStream(
+            parameter, uri);
+        final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Business.Source.IOStreamer);
+        if (businessObject == null)
+        {
+          ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), null), true);
+          return info;
+        }
+        else if (uriStreamParser instanceof Business.UriStreamParserSerializer<?, ?, ?, ?>)
+        {
+          // In that case, we put the business object in the cache
+          ioStreamer.writeInputStream(
+              uri,
+              new Business.InputAtom(new Date(), ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(
+                  parameter, info.value)), true);
+          return info;
+        }
+        else
+        {
+          return new Values.Info<BusinessObjectType>(null, new Date(), Business.Source.UriStreamer);
+        }
       }
     }
-    final InputStream inputStream = onNewInputStream(parameter, uri, atom);
-    final BusinessObjectType businessObject = uriStreamParser.parse(parameter, inputStream);
+    // We need to duplicate the input stream, because it will be closed when parsing it!
+    final InputStream markableInputStream;
+    if (atom.inputStream != null)
+    {
+      boolean duplicationSuccess = false;
+      final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      int read;
+      final byte[] data = new byte[32768];
+      try
+      {
+        while ((read = atom.inputStream.read(data, 0, data.length)) != -1)
+        {
+          buffer.write(data, 0, read);
+        }
+        buffer.flush();
+        duplicationSuccess = true;
+        atom.inputStream.close();
+      }
+      catch (IOException exception)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("Cannot duplicate the input stream corresponding to the URI '" + uri + "' and to the parameter '" + parameter + "'", exception);
+        }
+      }
+      if (duplicationSuccess == true)
+      {
+        // This input stream can be marked!
+        markableInputStream = new ByteArrayInputStream(buffer.toByteArray());
+        markableInputStream.mark(buffer.size());
+      }
+      else
+      {
+        markableInputStream = null;
+      }
+    }
+    else
+    {
+      markableInputStream = null;
+    }
+    // We first parse the input stream, so as to make sure that it is valid before persisting it
+    final BusinessObjectType businessObject = uriStreamParser.parse(parameter, markableInputStream);
+    boolean invokeOnNewInputStream = true;
+    if (markableInputStream != null)
+    {
+      try
+      {
+        markableInputStream.reset();
+      }
+      catch (IOException exception)
+      {
+        invokeOnNewInputStream = false;
+        if (log.isErrorEnabled())
+        {
+          log.error("Cannot reset and hence cannot persist the input stream corresponding to the URI '" + uri + "' and to the parameter '" + parameter + "'",
+              exception);
+        }
+      }
+    }
+    if (invokeOnNewInputStream == true)
+    {
+      // Now, we can persist the input stream corresponding to the business object
+      onNewInputStream(parameter, uri, markableInputStream == null ? atom : new Business.InputAtom(atom.timestamp, markableInputStream, atom.context), false);
+    }
 
     // We notify the instructions that the business object has been read from the URI streamer
     if (instructions != null)
@@ -309,7 +381,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
       ioStreamer.writeInputStream(
           uri,
           new Business.InputAtom(info.timestamp, ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(
-              parameter, info.value)));
+              parameter, info.value)), true);
     }
     else
     {
@@ -345,10 +417,10 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     ioStreamer.remove(computeUri(parameter));
   }
 
-  protected InputStream onNewInputStream(ParameterType parameter, UriType uri, Business.InputAtom atom)
+  protected InputStream onNewInputStream(ParameterType parameter, UriType uri, Business.InputAtom atom, boolean returnStream)
       throws StreamerExceptionType
   {
-    return ioStreamer.writeInputStream(uri, atom);
+    return ioStreamer.writeInputStream(uri, atom, returnStream);
   }
 
 }

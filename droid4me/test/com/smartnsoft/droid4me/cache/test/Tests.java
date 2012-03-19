@@ -82,9 +82,9 @@ public final class Tests
     final String persistedValue = new String("My persisted value");
     {
       final String uri1 = "myUri1";
-      persistence.writeInputStream(uri1, new InputAtom(timestamp, new ByteArrayInputStream(persistedValue.getBytes())));
-      persistence.writeInputStream(uri2, new InputAtom(timestamp, new ByteArrayInputStream(persistedValue.getBytes())));
-      persistence.writeInputStream(uri3, new InputAtom(timestamp, new ByteArrayInputStream(persistedValue.getBytes())));
+      persistence.writeInputStream(uri1, new InputAtom(timestamp, new ByteArrayInputStream(persistedValue.getBytes())), false);
+      persistence.writeInputStream(uri2, new InputAtom(timestamp, new ByteArrayInputStream(persistedValue.getBytes())), false);
+      persistence.writeInputStream(uri3, new InputAtom(timestamp, new ByteArrayInputStream(persistedValue.getBytes())), false);
     }
 
     {
@@ -100,7 +100,7 @@ public final class Tests
       final String persistedValue4 = new String("My persisted value 4");
       final ByteArrayInputStream inputStream3 = new ByteArrayInputStream(persistedValue4.getBytes());
       final String uri4 = "myUri4";
-      persistence.writeInputStream(uri4, new InputAtom(timestamp, inputStream3));
+      persistence.writeInputStream(uri4, new InputAtom(timestamp, inputStream3), false);
       final InputAtom atom = persistence.readInputStream(uri4);
       Assert.assertNotNull("The atom should not be null", atom);
       Assert.assertNotNull("The input stream should not be null", atom.inputStream);

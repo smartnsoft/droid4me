@@ -116,10 +116,10 @@ public class NullPersistence
   }
 
   @Override
-  protected InputStream writeInputStreamInstance(String uri, InputAtom inputAtom)
+  protected InputStream writeInputStreamInstance(String uri, InputAtom inputAtom, boolean returnStream)
       throws Persistence.PersistenceException
   {
-    return inputAtom.inputStream;
+    return returnStream == false ? null : inputAtom.inputStream;
   }
 
   @Override

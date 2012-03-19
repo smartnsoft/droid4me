@@ -706,11 +706,11 @@ public abstract class Persistence
    *           if a problem occurred while writing the data or if the storage back-end is not available
    * @see #writeInputStreamInstance()
    */
-  public final InputStream writeInputStream(String uri, Business.InputAtom inputAtom)
+  public final InputStream writeInputStream(String uri, Business.InputAtom inputAtom, boolean returnStream)
       throws Persistence.PersistenceException
   {
     checkAndInitializeIfNecessary();
-    return writeInputStreamInstance(uri, inputAtom);
+    return writeInputStreamInstance(uri, inputAtom, returnStream);
   }
 
   /**
@@ -720,11 +720,16 @@ public abstract class Persistence
    *          the URI which identifies the stream to persist
    * @param inputAtom
    *          the binary form of the data to store for the provided URI
+   * @param returnStream
+   *          if set {@code true}, a valid {@link InputStream} corresponding to the provided {@link Business.InputAtom#inputStream} must be returned ;
+   *          if set to {@code false}, {@code null} must be returned
+   * @return {@code null} if {@code returnStream} is set to {@code false} ; if {@code returnStream} is set to {@code true}, an input stream which
+   *         holds the same data as the provided {@code inputAtom} {@link Business.InputAtom#inputStream}
    * @throws Persistence.PersistenceException
    *           if a problem occurred while writing the data
    * @see #writeInputStream()
    */
-  protected abstract InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom)
+  protected abstract InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom, boolean returnStream)
       throws Persistence.PersistenceException;
 
   /**

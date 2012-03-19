@@ -597,14 +597,14 @@ public final class DbPersistence
   protected Business.InputAtom flushInputStreamInstance(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException
   {
-    return internalCacheInputStream(uri, inputAtom, false);
+    return internalCacheInputStream(uri, inputAtom, false, true);
   }
 
   @Override
-  protected InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom)
+  protected InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom, boolean returnStream)
       throws Persistence.PersistenceException
   {
-    return internalCacheInputStream(uri, inputAtom, true).inputStream;
+    return internalCacheInputStream(uri, inputAtom, true, false).inputStream;
   }
 
   @Override
@@ -735,7 +735,7 @@ public final class DbPersistence
     writeableDatabase = null;
   }
 
-  private Business.InputAtom internalCacheInputStream(final String uri, Business.InputAtom inputAtom, final boolean asynchronous)
+  private Business.InputAtom internalCacheInputStream(final String uri, Business.InputAtom inputAtom, final boolean asynchronous, boolean returnStream)
       throws Persistence.PersistenceException
   {
     // We do not allow null URIs
@@ -765,7 +765,7 @@ public final class DbPersistence
           outputStream.write(buffer, 0, length);
         }
         bytes = outputStream.toByteArray();
-        newInputStream = new ByteArrayInputStream(bytes);
+        newInputStream = returnStream == false ? null : new ByteArrayInputStream(bytes);
       }
       catch (IOException exception)
       {
@@ -819,7 +819,7 @@ public final class DbPersistence
         }
       });
     }
-    return new Business.InputAtom(timestamp, newInputStream, context);
+    return returnStream == false ? null : new Business.InputAtom(timestamp, newInputStream, context);
   }
 
   private void updateDb(String uri, Date timestamp, Serializable context, byte[] bytes, long start, boolean asynchronous)

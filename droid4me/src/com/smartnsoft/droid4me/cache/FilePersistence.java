@@ -330,10 +330,11 @@ public final class FilePersistence
   }
 
   @Override
-  protected InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom)
+  protected InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom, boolean returnStream)
       throws Persistence.PersistenceException
   {
-    return cacheInputStream(uri, inputAtom, false).inputStream;
+    final InputStream inputStream = cacheInputStream(uri, inputAtom, false).inputStream;
+    return returnStream == false ? null : inputStream;
   }
 
   /**
