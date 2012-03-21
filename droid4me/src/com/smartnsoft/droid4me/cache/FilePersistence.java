@@ -335,7 +335,7 @@ public final class FilePersistence
       throws Persistence.PersistenceException
   {
     final InputAtom newInputAtom = cacheInputStream(uri, inputAtom, false);
-    return (returnStream == false || newInputAtom.inputStream == null) ? null : newInputAtom.inputStream;
+    return (returnStream == false || newInputAtom == null || newInputAtom.inputStream == null) ? null : newInputAtom.inputStream;
   }
 
   /**

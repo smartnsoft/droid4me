@@ -605,7 +605,7 @@ public final class DbPersistence
       throws Persistence.PersistenceException
   {
     final Business.InputAtom newInputAtom = internalCacheInputStream(uri, inputAtom, true, false);
-    return (returnStream == false || newInputAtom.inputStream == null) ? null : newInputAtom.inputStream;
+    return (returnStream == false || newInputAtom == null || newInputAtom.inputStream == null) ? null : newInputAtom.inputStream;
   }
 
   @Override
