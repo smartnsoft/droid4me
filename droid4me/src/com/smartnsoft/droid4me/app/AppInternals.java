@@ -297,7 +297,7 @@ final class AppInternals
         final int count = broadcastListenersProvider.getBroadcastListenersCount();
         if (log.isDebugEnabled())
         {
-          log.debug("Found out that the activity supports " + count + " intent broadcast listeners");
+          log.debug("Found out that the entity supports " + count + " intent broadcast listeners");
         }
         final int startIndex = enrichBroadcastListeners(count);
         for (int index = 0; index < count; index++)
@@ -318,6 +318,10 @@ final class AppInternals
 
     private void registerBroadcastListeners(int index, final AppPublics.BroadcastListener broadcastListener)
     {
+      if (broadcastListener == null)
+      {
+        throw new NullPointerException("Cannot register a null 'broadcastListener'!");
+      }
       if (index == 0 && log.isDebugEnabled())
       {
         log.debug("Registering for listening to intent broadcasts");

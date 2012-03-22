@@ -470,8 +470,8 @@ public final class SmartCommands
   }
 
   /**
-   * A handy {@link SmartCommands.SimpleGuardedCommand} which will issue systematically {@link DialogInterface#dismiss() dismiss} a
-   * {@link Dialog} once the command execution is over.
+   * A handy {@link SmartCommands.SimpleGuardedCommand} which will issue systematically {@link DialogInterface#dismiss() dismiss} a {@link Dialog}
+   * once the command execution is over.
    * 
    * <p>
    * This kind of command is especially useful when a {@link ProgressDialog} is being displayed just before the current command execution, and that it
@@ -485,18 +485,13 @@ public final class SmartCommands
   {
 
     /**
-     * There, in order to understand why the "Dialog.dismiss()" method sometimes makes the application crash.
-     */
-    public static boolean ALWAYS_DISMISS_DIALOG = false;
-
-    /**
      * The dialog box which will be dismissed by the current command.
      */
     protected final Dialog dialog;
 
     /**
-     * Same as {@link SmartCommands.DialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, Dialog)} with the
-     * second argument set to {@code null}.
+     * Same as {@link SmartCommands.DialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, Dialog)} with the second argument set
+     * to {@code null}.
      */
     public DialogGuardedCommand(Activity context, String warningLogMessage, int warningDisplayMessageResourceId, Dialog dialog)
     {
@@ -504,11 +499,10 @@ public final class SmartCommands
     }
 
     /**
-     * Same as {@link SmartCommands.DialogGuardedCommand#ProgressDialogGuardedCommand(Context, Object, String, String, Dialog)} with
-     * the fourth parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
+     * Same as {@link SmartCommands.DialogGuardedCommand#ProgressDialogGuardedCommand(Context, Object, String, String, Dialog)} with the fourth
+     * parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
      */
-    public DialogGuardedCommand(Activity context, Object component, String warningLogMessage, int warningDisplayMessageResourceId,
-        Dialog dialog)
+    public DialogGuardedCommand(Activity context, Object component, String warningLogMessage, int warningDisplayMessageResourceId, Dialog dialog)
     {
       this(context, component, warningLogMessage, context.getString(warningDisplayMessageResourceId), dialog);
     }
@@ -534,8 +528,7 @@ public final class SmartCommands
      *          {@link SmartCommands.SimpleGuardedCommand}
      * @see SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Context, String, String)
      */
-    public DialogGuardedCommand(Activity context, Object component, String warningLogMessage, String warningDisplayMessage,
-        Dialog dialog)
+    public DialogGuardedCommand(Activity context, Object component, String warningLogMessage, String warningDisplayMessage, Dialog dialog)
     {
       super(context, component, warningLogMessage, warningDisplayMessage);
       this.dialog = dialog;
@@ -551,8 +544,8 @@ public final class SmartCommands
         throws Exception;
 
     /**
-     * The implementation will invoke the {@link #runGuardedDialog()} method, and will eventually dismiss the {@link #dialog} if necessary,
-     * whatever happens.
+     * The implementation will invoke the {@link #runGuardedDialog()} method, and will eventually dismiss the {@link #dialog} if necessary, whatever
+     * happens.
      * 
      * @see SmartCommands.SimpleGuardedCommand#runGuarded()
      */
@@ -566,29 +559,17 @@ public final class SmartCommands
       }
       finally
       {
-        if (SmartCommands.DialogGuardedCommand.ALWAYS_DISMISS_DIALOG == true)
+        // This can be done from any thread, according to the documentation
+        if (dialog != null && dialog.isShowing() == true)
         {
-          // This can be done from any thread, according to the documentation
-          if (dialog != null)
+          // We want to make sure that the dialog has been dismissed, in order to prevent from memory leaks
+          try
           {
             dialog.dismiss();
           }
-        }
-        else
-        {
-          // This can be done from any thread, according to the documentation
-          if (dialog != null && dialog.isShowing() == true)
+          catch (Throwable throwable)
           {
-            if (getContext() instanceof Activity)
-            {
-              // We want to prevent from dismissing the ProgressDialog once its creating Activity is already finished, and hence prevent from a crash
-              final Activity activity = (Activity) getContext();
-              if (activity.isFinishing() == true)
-              {
-                return;
-              }
-            }
-            dialog.dismiss();
+            // This may occur on certain versions of Android, but we ignore that exception!
           }
         }
       }
