@@ -19,6 +19,7 @@
 package com.smartnsoft.droid4me.util;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
@@ -27,8 +28,9 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
-import android.graphics.Bitmap.Config;
+import android.graphics.Rect;
 import android.graphics.Shader.TileMode;
+import android.widget.ImageView.ScaleType;
 
 /**
  * A toolbox of {@link Bitmap} functions, that handle bitmap transformations.
@@ -177,7 +179,7 @@ public final class BitmapToolbox
    * Resizes a bitmap so that it is filled with transparency in order to match the expected dimension. No scaling is performed.
    * 
    * <p>
-   * Warning, the original bitmap is recycled and cannot be used after this call; futhermore, it is supposed that the provided image is smaller in
+   * Warning, the original bitmap is recycled and cannot be used after this call; furthermore, it is supposed that the provided image is smaller in
    * both dimension that the provided dimensions!
    * </p>
    * 
@@ -199,6 +201,77 @@ public final class BitmapToolbox
     canvas.drawBitmap(bitmap, ((float) width - (float) bitmap.getWidth()) / 2f, ((float) height - (float) bitmap.getHeight()) / 2f, null);
     // We free the original bitmap image
     bitmap.recycle();
+    return resizedBitmap;
+  }
+
+  /**
+   * Generates a translucent bitmap with the provided dimensions, and draws inside (centered) the provided bitmap, while respecting its original
+   * ratio.
+   * 
+   * @param bitmap
+   *          the bitmap to draw
+   * @param scaleType
+   *          if set to {@code ScaleType#FIT_CENTER} and the provided bitmap both dimensions are smaller than the target frame, then the provided
+   *          bitmap is scaled so as to fill as much as possible the frame
+   * @param width
+   *          the target frame width
+   * @param height
+   *          the target frame height
+   * @param recycle
+   *          if set to {@code true}, the provided bitmap is {@link Bitmap#recycle() recycled}
+   * @return a bitmap with the provided dimensions
+   */
+  public static Bitmap scale(Bitmap bitmap, ScaleType scaleType, int width, int height, boolean recycle)
+  {
+    // Create a new bitmap with the final size
+    final Bitmap resizedBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
+    // Create a new Canvas with the bitmap that's big enough for the image, plus the gap, plus the reflection
+    final Canvas canvas = new Canvas(resizedBitmap);
+
+    // We compute the ratio to apply
+    final float widthRatio = (float) width / (float) bitmap.getWidth();
+    final float heightRatio = (float) height / (float) bitmap.getHeight();
+    final float ratio;
+    if (widthRatio < 1f && heightRatio < 1f)
+    {
+      // The bitmap is larger and higher than the frame
+      ratio = Math.min(widthRatio, heightRatio);
+    }
+    else if (widthRatio < 1f)
+    {
+      // The bitmap is larger but not higher than the frame
+      ratio = widthRatio;
+    }
+    else if (heightRatio < 1f)
+    {
+      // The bitmap is higher but not larger than the frame
+      ratio = heightRatio;
+    }
+    else
+    {
+      if (scaleType == ScaleType.FIT_CENTER)
+      {
+        ratio = Math.min(widthRatio, heightRatio);
+      }
+      else
+      {
+        ratio = 1f;
+      }
+    }
+    final int newBitmapWidth = (int) ((float) bitmap.getWidth() * ratio);
+    final int newBitmapHeight = (int) ((float) bitmap.getHeight() * ratio);
+
+    // Draw in the original image in the target frame
+    final int horizontalPadding = (width - newBitmapWidth) / 2;
+    final int verticalPadding = (height - newBitmapHeight) / 2;
+    final Paint paint = new Paint();
+    paint.setAntiAlias(true);
+    canvas.drawBitmap(bitmap, null, new Rect(horizontalPadding, verticalPadding, horizontalPadding + newBitmapWidth, verticalPadding + newBitmapHeight), paint);
+    // We free the original bitmap image
+    if (recycle == true)
+    {
+      bitmap.recycle();
+    }
     return resizedBitmap;
   }
 
