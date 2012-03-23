@@ -133,6 +133,7 @@ public final class DbPersistence
         }
         finally
         {
+          writeableDatabase.setTransactionSuccessful();
           writeableDatabase.endTransaction();
         }
       }
