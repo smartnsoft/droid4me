@@ -300,11 +300,30 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           break;
         case InCache:
-          if (instructions.onBindBitmap(false, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == false)
+          boolean success = false;
+          try
           {
-            // The binding is performed only if the instructions did not bind it
-            // THINK: what can we do?
-            // view.setImageBitmap(usedBitmap.getBitmap());
+            if (instructions.onBindBitmap(false, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == true)
+            {
+              success = true;
+            }
+          }
+          catch (OutOfMemoryError exception)
+          {
+            if (log.isWarnEnabled())
+            {
+              log.warn(logCommandId() + "Process exceeding available memory", exception);
+            }
+            cleanUpCache();
+            return;
+          }
+          finally
+          {
+            if (success == false)
+            {
+              instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
+              instructions.onOver(true, view, bitmapUid, imageSpecs);
+            }
           }
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
@@ -345,6 +364,9 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           break;
         }
+      }
+      finally
+      {
         // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
         if (state != FinalState.NotInCache)
         {
@@ -356,14 +378,6 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           dump();
         }
-      }
-      catch (OutOfMemoryError exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.warn(logCommandId() + "Process exceeding available memory", exception);
-        }
-        cleanUpCache();
       }
     }
 
@@ -699,25 +713,52 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         instructions.onOver(true, view, bitmapUid, imageSpecs);
         return;
       }
+
       try
       {
         if (usedBitmap != null)
         {
-          if (instructions.onBindBitmap(downloaded, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == false)
+          boolean success = false;
+          try
           {
-            // The binding is performed only if the instructions did not bind it
-            // THINK: what can we do?
+            if (instructions.onBindBitmap(downloaded, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == true)
+            {
+              success = true;
+            }
           }
-          if (IS_DEBUG_TRACE && log.isDebugEnabled())
+          catch (OutOfMemoryError exception)
           {
-            log.debug(logCommandId() + "Binded the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? ""
-                : (" and with specs '" + imageSpecs.toString() + "'")));
+            if (log.isWarnEnabled())
+            {
+              log.warn(logCommandId() + "Process exceeding available memory", exception);
+            }
+            cleanUpCache();
+            return;
           }
-          usedBitmap.forgetBitmap();
-          usedBitmap.rememberBinding(view);
+          finally
+          {
+            if (success == false)
+            {
+              instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
+              instructions.onOver(true, view, bitmapUid, imageSpecs);
+            }
+          }
+          if (success == true)
+          {
+            if (IS_DEBUG_TRACE && log.isDebugEnabled())
+            {
+              log.debug(logCommandId() + "Binded the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? ""
+                  : (" and with specs '" + imageSpecs.toString() + "'")));
+            }
+            usedBitmap.forgetBitmap();
+            usedBitmap.rememberBinding(view);
+          }
         }
         instructions.onBitmapBound(usedBitmap != null, view, bitmapUid, imageSpecs);
         instructions.onOver(false, view, bitmapUid, imageSpecs);
+      }
+      finally
+      {
         // We clear the priorities stack because the work is over for that command
         {
           prioritiesStack.remove(view);
@@ -729,14 +770,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           dump();
         }
       }
-      catch (OutOfMemoryError exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.warn(logCommandId() + "Process exceeding available memory", exception);
-        }
-        cleanUpCache();
-      }
+
     }
 
     public final void setAsynchronous()
@@ -1163,6 +1197,19 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     asynchronousDownloadCommands = new HashSet<ViewClass>();
     BasisBitmapDownloader.ensurePreThreadPool();
     BasisBitmapDownloader.ensureDownloadThreadPool();
+  }
+
+  /**
+   * Used for the unitary tests, in order to retrieve and control the internal state of the instance.
+   */
+  public final void getStacks(AtomicInteger prioritiesPreStack, AtomicInteger prioritiesStack, AtomicInteger prioritiesDownloadStack,
+      AtomicInteger inProgressDownloads, AtomicInteger asynchronousDownloadCommands)
+  {
+    prioritiesPreStack.set(this.prioritiesPreStack.size());
+    prioritiesStack.set(this.prioritiesStack.size());
+    prioritiesDownloadStack.set(this.prioritiesDownloadStack.size());
+    inProgressDownloads.set(this.inProgressDownloads.size());
+    asynchronousDownloadCommands.set(this.asynchronousDownloadCommands.size());
   }
 
   /**

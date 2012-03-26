@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
@@ -279,7 +280,6 @@ public final class Tests
     {
       expectations.onBitmapBound++;
       expectations.onBitmapBoundResult = result;
-      expectations.onOver();
     }
 
     public DummyBitmapable convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
@@ -849,6 +849,7 @@ public final class Tests
             }).start();
             return null;
           }
+
         });
 
     expectations.waitForOnOver();
@@ -867,6 +868,85 @@ public final class Tests
     final Boolean onBitmapBoundResult = Boolean.TRUE;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+  }
+
+  @Test
+  public void onBindBitmapException()
+      throws InterruptedException
+  {
+    onBindBitmapExceptionInternal(false, new NullPointerException(), null);
+  }
+
+  @Test
+  public void onBindBitmapExceptionFromCache()
+      throws InterruptedException
+  {
+    onBindBitmapExceptionInternal(false, new NullPointerException(), null);
+    onBindBitmapExceptionInternal(true, new NullPointerException(), null);
+  }
+
+  @Test
+  public void onBindBitmapOutOfMemoryException()
+      throws InterruptedException
+  {
+    onBindBitmapExceptionInternal(false, null, new OutOfMemoryError());
+  }
+
+  @Test
+  public void onBindBitmapOutOfMemoryExceptionFromCache()
+      throws InterruptedException
+  {
+    onBindBitmapExceptionInternal(false, null, new OutOfMemoryError());
+    onBindBitmapExceptionInternal(true, null, new OutOfMemoryError());
+  }
+
+  private void onBindBitmapExceptionInternal(boolean fromCache, final RuntimeException exception, final Error error)
+      throws InterruptedException
+  {
+    final Expectations expectations = new Expectations();
+    bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
+        new ExpectedInstructions(expectations, false, false, ExpectedInstructions.SimulationdMethod.ActuallyRun)
+        {
+
+          @Override
+          public boolean onBindBitmap(boolean downloaded, DummyViewable view, DummyBitmapable bitmap, String bitmapUid, Object imageSpecs)
+          {
+            super.onBindBitmap(downloaded, view, bitmap, bitmapUid, imageSpecs);
+            if (exception != null)
+            {
+              throw exception;
+            }
+            else
+            {
+              throw error;
+            }
+          }
+
+        });
+
+    expectations.waitForOnOver();
+    final boolean onOver = true;
+    final int computeUrl = 1;
+    final int hasLocalBitmap = 1;
+    final int hasTemporaryBitmap = fromCache == false ? 1 : 0;
+    final int onBindLocalBitmap = 0;
+    final int onBindTemporaryBitmap = 0;
+    final int getInputStream = fromCache == false ? 1 : 0;
+    final int onInputStreamDownloaded = fromCache == false ? 1 : 0;
+    final int onBitmapReady = 1;
+    final int onBindBitmap = 1;
+    final int onBitmapBound = 1;
+    final int convert = fromCache == false ? 1 : 0;
+    final Boolean onBitmapBoundResult = Boolean.FALSE;
+    assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
+        onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    final AtomicInteger prioritiesPreStack = new AtomicInteger();
+    final AtomicInteger prioritiesStack = new AtomicInteger();
+    final AtomicInteger prioritiesDownloadStack = new AtomicInteger();
+    bitmapDownloader.getStacks(prioritiesPreStack, prioritiesStack, prioritiesDownloadStack, new AtomicInteger(), new AtomicInteger());
+    Assert.assertEquals("The 'prioritiesPreStack' size does not have the right size", 0, prioritiesPreStack.get());
+    Assert.assertEquals("The 'prioritiesStack' size does not have the right size", 0, prioritiesStack.get());
+    Assert.assertEquals("The 'prioritiesDownloadStack' size does not have the right size", 0, prioritiesDownloadStack.get());
   }
 
   private void assertAllExpectations(final Expectations expectations, boolean onOver, final int computeUrl, final int hasLocalBitmap,
