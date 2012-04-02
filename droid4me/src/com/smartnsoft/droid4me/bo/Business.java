@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.util.Date;
 
 import com.smartnsoft.droid4me.cache.Persistence;
@@ -202,6 +203,43 @@ public final class Business
       implements Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, Business.BusinessException>
   {
 
+    /**
+     * A hook for creating an {@link ObjectInputStream} when attempting to deserialize the underlying object.
+     * 
+     * <p>
+     * This implementation just returns {@code new ObjectInputStream(inputStream)}.
+     * </p>
+     * 
+     * @param inputStream
+     *          the stream which holds the object representation
+     * @return a valid object input stream, which will be used when deserializing the object
+     * @throws StreamCorruptedException
+     * @throws IOException
+     */
+    protected ObjectInputStream createObjectInputStream(InputStream inputStream)
+        throws StreamCorruptedException, IOException
+    {
+      return new ObjectInputStream(inputStream);
+    }
+
+    /**
+     * A hook for creating an {@link ObjectOutputStream} when attempting to serialize the underlying object.
+     * 
+     * <p>
+     * This implementation just returns {@code new ObjectOutputStream(outputStream)}.
+     * </p>
+     * 
+     * @param outputStream
+     *          the stream which will hold the object representation
+     * @return a valid object object stream, which will be used when serializing the object
+     * @throws IOException
+     */
+    protected ObjectOutputStream createObjectOutputStream(OutputStream outputStream)
+        throws IOException
+    {
+      return new ObjectOutputStream(outputStream);
+    }
+
     @SuppressWarnings("unchecked")
     public final BusinessObjectType parse(ParameterType parameter, InputStream inputStream)
         throws Business.BusinessException
@@ -209,7 +247,7 @@ public final class Business
       final long start = System.currentTimeMillis();
       try
       {
-        final ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+        final ObjectInputStream objectInputStream = createObjectInputStream(inputStream);
         try
         {
           final BusinessObjectType object = (BusinessObjectType) objectInputStream.readObject();
@@ -251,7 +289,7 @@ public final class Business
       {
         try
         {
-          final ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+          final ObjectOutputStream objectOutputStream = createObjectOutputStream(byteArrayOutputStream);
           try
           {
             objectOutputStream.writeObject(businessObject);
