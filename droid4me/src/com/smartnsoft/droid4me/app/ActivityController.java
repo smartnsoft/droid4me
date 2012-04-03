@@ -448,6 +448,7 @@ public final class ActivityController
             public void onClick(DialogInterface dialog, int which)
             {
               // We leave the activity, because we cannot go any further
+              dialog.dismiss();
               activity.finish();
             }
           }, null, null);
@@ -476,6 +477,7 @@ public final class ActivityController
             public void onClick(DialogInterface dialog, int which)
             {
               // We leave the activity, because we cannot go any further
+              dialog.dismiss();
               activity.finish();
             }
           }, null, null);
@@ -524,6 +526,7 @@ public final class ActivityController
           {
             public void onClick(DialogInterface dialog, int which)
             {
+              dialog.dismiss();
               // We leave the activity, because we cannot go any further
               activity.finish();
             }
@@ -647,8 +650,8 @@ public final class ActivityController
                       if (retry == true)
                       {
                         lifeCycle.refreshBusinessObjectsAndDisplay(true, null, false);
-                        dialog.dismiss();
                       }
+                      dialog.dismiss();
                     }
                   }, retry == false ? null : new DialogInterface.OnClickListener()
                   {
@@ -661,6 +664,7 @@ public final class ActivityController
                   {
                     public void onCancel(DialogInterface dialog)
                     {
+                      dialog.dismiss();
                       activity.finish();
                     }
                   });
