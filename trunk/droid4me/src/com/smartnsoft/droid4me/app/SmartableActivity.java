@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+ * (C) Copyright 2009-2012 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,39 +12,35 @@
  * Lesser General Public License for more details.
  *
  * Contributors:
- *     E2M - initial API and implementation
  *     Smart&Soft - initial API and implementation
  */
 
 package com.smartnsoft.droid4me.app;
 
+import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
-
-import com.smartnsoft.droid4me.LifeCycle;
+import android.content.Intent;
 
 /**
- * All {@link Activity activities} and {@link Fragment fragments} of the framework must at least implement this composite interface.
- * 
- * <p>
- * Any entity implementing this interface is considered as droid4me-ready (or droid4me-compliant) and benefit from all the framework features.
- * </p>
- * 
- * <p>
- * When it is required to have an existing {@link Activity} or {@link Fragment} implement this interface, you may use the {@link Droid4mizer} on that
- * purpose.
- * </p>
+ * All {@link Activity activities} of the framework must at least implement this interface.
  * 
  * @param <AggregateClass>
  *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
  * 
- * @see SmartableActivity
  * @see Droid4mizer
  * @author Édouard Mercier
- * @since 2011.03.04
+ * @since 2012.04.04
  */
-public interface Smartable<AggregateClass>
-    extends Smarted<AggregateClass>, LifeCycle, AppPublics.LifeCyclePublic, AppInternals.LifeCycleInternals
+public interface SmartableActivity<AggregateClass>
+    extends Smartable<AggregateClass>
 {
+
+  /**
+   * Indicates the {@link Activity} {@link Intent} to be launched when the {@link ActionBar} "Home" button is hit.
+   * 
+   * @param intent
+   *          a valid {@code Intent}
+   */
+  void setHomeIntent(Intent intent);
 
 }

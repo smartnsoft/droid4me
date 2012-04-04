@@ -12,7 +12,7 @@ import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
-import com.smartnsoft.droid4me.app.Smartable;
+import com.smartnsoft.droid4me.app.SmartableActivity;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -33,27 +33,12 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartFragmentActivity<AggregateClass>
     extends FragmentActivity
-    implements Smartable<AggregateClass>
+    implements SmartableActivity<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
   private final Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>>(this, this, this, null);
-
-  /**
-   * The Intent which will be used in case the ActionBar home button is clicked.
-   */
-  private Intent homeIntent;
-
-  public final Intent getHomeIntent()
-  {
-    return homeIntent;
-  }
-
-  public final void setHomeIntent(Intent homeIntent)
-  {
-    this.homeIntent = homeIntent;
-  }
 
   @Override
   protected void onCreate(final Bundle savedInstanceState)
@@ -156,20 +141,7 @@ public abstract class SmartFragmentActivity<AggregateClass>
   @Override
   public boolean onOptionsItemSelected(MenuItem item)
   {
-    switch (item.getItemId())
-    {
-    case android.R.id.home:
-      final Intent homeIntent = getHomeIntent();
-      if (homeIntent != null)
-      {
-        startActivity(homeIntent);
-        // In case the home intent does not set the Intent.FLAG_ACTIVITY_CLEAR_TOP flag, and just returns to the previous screen
-        finish();
-      }
-      return true;
-    default:
-      return droid4mizer.onOptionsItemSelected(super.onOptionsItemSelected(item), item);
-    }
+    return droid4mizer.onOptionsItemSelected(super.onOptionsItemSelected(item), item);
   }
 
   @Override
@@ -183,6 +155,15 @@ public abstract class SmartFragmentActivity<AggregateClass>
   {
     super.onActivityResult(requestCode, resultCode, data);
     droid4mizer.onActivityResult(requestCode, resultCode, data);
+  }
+
+  /**
+   * SmartableActivity implementation.
+   */
+
+  public final void setHomeIntent(Intent homeIntent)
+  {
+    droid4mizer.setHomeIntent(homeIntent);
   }
 
   /**

@@ -45,7 +45,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  */
 public abstract class SmartPreferenceActivity<AggregateClass>
     extends PreferenceActivity
-    implements Smartable<AggregateClass>
+    implements SmartableActivity<AggregateClass>
 {
 
   protected static final Logger log = LoggerFactory.getInstance("Smartable");
@@ -167,6 +167,15 @@ public abstract class SmartPreferenceActivity<AggregateClass>
   {
     super.onActivityResult(requestCode, resultCode, data);
     droid4mizer.onActivityResult(requestCode, resultCode, data);
+  }
+
+  /**
+   * SmartableActivity implementation.
+   */
+
+  public final void setHomeIntent(Intent intent)
+  {
+    droid4mizer.setHomeIntent(intent);
   }
 
   /**
