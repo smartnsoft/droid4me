@@ -111,7 +111,7 @@ public interface Smarted<AggregateClass>
   /**
    * This callback will be invoked by the framework, so as to discover how the entity contributes to the Android menu system.
    * 
-   * @return all the static menu commands that the activity wants to make available ; may return {@code null}, and in that case, this entity will not
+   * @return all the static menu commands that the entity wants to make available ; may return {@code null}, and in that case, this entity will not
    *         expose any menu entry
    */
   List<StaticMenuCommand> getMenuCommands();
