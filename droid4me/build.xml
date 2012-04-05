@@ -137,18 +137,18 @@ This Ant buildfile requires that you have included the following Ant library ext
 
   <target
     name="build"
-    depends="init, jar"
-    description="Builds the library."
+    depends="init, jar.library, jar.sources, jar.javaDoc"
+    description="Builds the framework library artefacts."
   />
 
   <target
-    name="jar"
+    name="jar.library"
     depends="init, tweakCode"
     description="Builds a raw jar of the library."
   >
+    <echo>Compiling the source code for Android v${androidPlatform.version}</echo>
     <delete dir="${classes.directoryPath}"/>
     <mkdir dir="${classes.directoryPath}"/>
-    <echo>Compiling for Android v${androidPlatform.version}</echo>
     <javac
       encoding="ISO-8859-1"
       target="1.5"
@@ -166,9 +166,168 @@ This Ant buildfile requires that you have included the following Ant library ext
       basedir="${classes.directoryPath}"
       destfile="${droid4meJar.filePath}"
       update="false"
+    >
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <jar
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-log.jar"
+      update="false"
+    >
+      <fileset dir="${classes.directoryPath}">
+        <include name="${droid4me.packagePath}/log/**/*"/>
+      </fileset>
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <jar
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-core.jar"
+      update="false"
+    >
+      <fileset dir="${classes.directoryPath}">
+        <include name="${droid4me.packagePath}/*.class"/>
+        <include name="${droid4me.packagePath}/app/**/*"/>
+        <include name="${droid4me.packagePath}/appwidget/**/*"/>
+        <include name="${droid4me.packagePath}/content/**/*"/>
+        <include name="${droid4me.packagePath}/framework/**/*"/>
+        <include name="${droid4me.packagePath}/menu/**/*"/>
+        <include name="${droid4me.packagePath}/util/**/*"/>
+        <include name="${droid4me.packagePath}/ui/**/*"/>
+        <include name="${droid4me.packagePath}/widget/**/*"/>
+      </fileset>
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <jar
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-download.jar"
+      update="false"
+    >
+      <fileset dir="${classes.directoryPath}">
+        <include name="${droid4me.packagePath}/download/**/*"/>
+      </fileset>
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <jar
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-cache.jar"
+      update="false"
+    >
+      <fileset dir="${classes.directoryPath}">
+        <include name="${droid4me.packagePath}/bo/**/*"/>
+        <include name="${droid4me.packagePath}/cache/**/*"/>
+      </fileset>
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <jar
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-ws.jar"
+      update="false"
+    >
+      <fileset dir="${classes.directoryPath}">
+        <include name="${droid4me.packagePath}/ws/**/*"/>
+      </fileset>
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <jar
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-wscache.jar"
+      update="false"
+    >
+      <fileset dir="${classes.directoryPath}">
+        <include name="${droid4me.packagePath}/wscache/**/*"/>
+      </fileset>
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <jar
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-ui.jar"
+      update="false"
+    >
+      <fileset dir="${classes.directoryPath}">
+        <include name="${droid4me.packagePath}/graphics/**/*"/>
+        <include name="${droid4me.packagePath}/widget/**/*"/>
+      </fileset>
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <jar
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-support.v4.jar"
+      update="false"
+    >
+      <fileset dir="${classes.directoryPath}">
+        <include name="${droid4me.packagePath}/support/v4/**/*"/>
+      </fileset>
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <!--delete dir="${classes.directoryPath}"/>
+    <delete dir="${tweakedSource.directoryPath}"/-->
+  </target>
+
+  <target
+    name="jar.sources"
+    depends="init, tweakCode"
+    description="Builds a jar of the library sources."
+  >
+    <property
+      name="sourceJar.filePath"
+      location="${distribution.directoryPath}/${droid4me.packageName}-sources.jar"
     />
-    <delete dir="${classes.directoryPath}"/>
-    <delete dir="${tweakedSource.directoryPath}"/>
+    <echo>Generating a .jar with the framework source code into file '${sourceJar.filePath}'...</echo>
+    <delete file="${sourceJar.filePath}"/>
+    <mkdir dir="${distribution.directoryPath}"/>
+    <jar
+      basedir="${tweakedSource.directoryPath}"
+      destfile="${sourceJar.filePath}"
+      update="false"
+    >
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+  </target>
+
+  <target
+    name="jar.javaDoc"
+    depends="init, javaDoc"
+    description="Builds a jar of the library JavaDoc."
+  >
+    <property
+      name="javaDocJar.filePath"
+      location="${distribution.directoryPath}/${droid4me.packageName}-javadoc.jar"
+    />
+    <echo>Generating a .jar with the framework JavaDoc into file '${javaDocJar.filePath}'...</echo>
+    <delete file="${javaDocJar.filePath}"/>
+    <mkdir dir="${distribution.directoryPath}"/>
+    <jar
+      basedir="${javaDoc.directoryPath}"
+      destfile="${javaDocJar.filePath}"
+      update="false"
+    >
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+  </jar>
   </target>
 
   <target
@@ -258,6 +417,7 @@ This Ant buildfile requires that you have included the following Ant library ext
       includenosourcepackages="true"
       windowtitle="droid4me API"
       overview="src/com/smartnsoft/droid4me/overview.html"
+      stylesheetfile="${javaDoc.directoryPath}/stylesheet.css"
     >
       <classpath refid="droid4me.classpath"/>
       <packageset dir="src">
