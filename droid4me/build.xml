@@ -267,6 +267,18 @@ This Ant buildfile requires that you have included the following Ant library ext
       />
     </jar>
     <jar
+      destfile="${distribution.directoryPath}/${droid4me.packageName}-config.jar"
+      update="false"
+    >
+      <fileset dir="${classes.directoryPath}">
+        <include name="${droid4me.packagePath}/config/**/*"/>
+      </fileset>
+      <zipfileset
+        file="LICENSE.txt"
+        prefix="META-INF"
+      />
+    </jar>
+    <jar
       destfile="${distribution.directoryPath}/${droid4me.packageName}-support.v4.jar"
       update="false"
     >
@@ -435,10 +447,6 @@ This Ant buildfile requires that you have included the following Ant library ext
         packages="${droid4me.packageName}:${droid4me.packageName}.app:${droid4me.packageName}.appwidget:${droid4me.packageName}.content:${droid4me.packageName}.log"
       />
       <group
-        title="Android Support Package"
-        packages="${droid4me.packageName}.support.v4:${droid4me.packageName}.support.v4.*"
-      />
-      <group
         title="Shared in the framework"
         packages="${droid4me.packageName}.bo:${droid4me.packageName}.framework"
       />
@@ -447,8 +455,16 @@ This Ant buildfile requires that you have included the following Ant library ext
         packages="${droid4me.packageName}.cache:${droid4me.packageName}.ws:${droid4me.packageName}.wscache"
       />
       <group
+        title="Configuration"
+        packages="${droid4me.packageName}.config"
+      />
+      <group
         title="Bitmap downloader"
         packages="${droid4me.packageName}.download"
+      />
+      <group
+        title="Android Support Package"
+        packages="${droid4me.packageName}.support.v4:${droid4me.packageName}.support.v4.*"
       />
       <group
         title="User Interface"
