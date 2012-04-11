@@ -97,6 +97,22 @@ public final class ActivityController
   }
 
   /**
+   * An empty interface which should be used as a marker on an {@link Activity}, which does not want to be requested by the
+   * {@link ActivityController.Redirector}.
+   * 
+   * <p>
+   * When an {@link Activity} implements this interface, the {@link ActivityController.Redirector#getRedirection(Activity)} method will not be
+   * invoked.
+   * </p>
+   * 
+   * @since 2012.04.11
+   * @see ActivityController#needsRedirection(Activity)
+   */
+  public interface EscapeToRedirector
+  {
+  }
+
+  /**
    * An interface which is queried during the various life cycle events of a {@link LifeCycle}.
    * 
    * <p>
@@ -1008,6 +1024,10 @@ public final class ActivityController
    * {@link ActivityController#CALLING_INTENT} key.
    * 
    * <p>
+   * If the provided {@code activity} implements the {@link ActivityController.EscapeToRedirector} interface, the method returns {@code false}.
+   * </p>
+   * 
+   * <p>
    * Note that this method does not need to be marked as {@code synchronized}, because it is supposed to be invoked systematically from the UI thread.
    * </p>
    * 
@@ -1016,11 +1036,21 @@ public final class ActivityController
    * @return {@code true} if and only if the given activity should be paused (or ended) and if another activity should be launched instead through the
    *         {@link Activity#startActivity(Intent)} method
    * @see ActivityController#extractCallingIntent(Activity)
+   * @see ActivityController.Redirector#getRedirection(Activity)
+   * @see ActivityController.EscapeToRedirector
    */
   public boolean needsRedirection(Activity activity)
   {
     if (redirector == null)
     {
+      return false;
+    }
+    if (activity instanceof ActivityController.EscapeToRedirector)
+    {
+      if (log.isDebugEnabled())
+      {
+        log.debug("The Activity with class '" + activity.getClass().getName() + "' is escaped regarding the Redirector");
+      }
       return false;
     }
     final Intent intent = redirector.getRedirection(activity);
@@ -1034,7 +1064,8 @@ public final class ActivityController
     }
     activity.finish();
     // We consider the parent activity in case it is embedded (like in an ActivityGroup)
-    intent.putExtra(ActivityController.CALLING_INTENT, (activity.getParent() != null ? activity.getParent().getIntent() : activity.getIntent()));
+    final Intent formerIntent = activity.getParent() != null ? activity.getParent().getIntent() : activity.getIntent();
+    intent.putExtra(ActivityController.CALLING_INTENT, formerIntent);
     // Disables the fact that the new started activity should belong to the tasks history and from the recent tasks
     // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
     // intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);

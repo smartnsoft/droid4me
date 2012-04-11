@@ -425,7 +425,17 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
     }
     // This is essential, in order for the activity to be displayed
     callingIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    startActivity(callingIntent);
+    try
+    {
+      startActivity(callingIntent);
+    }
+    catch (Throwable throwable)
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("Cannot start the Activity with Intent '" + callingIntent + "'", throwable);
+      }
+    }
   }
 
   /**
