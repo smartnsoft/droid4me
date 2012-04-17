@@ -33,11 +33,13 @@ import android.widget.RelativeLayout;
  * </p>
  * 
  * <p>
- * Use this wrapper container every time you need to be notified when a {@link View widget} sizes changes.
+ * Use this wrapper container every time you need to be notified when a {@link View widget} sizes changes, or when you want to limit the widget
+ * maximum size.
  * </p>
  * 
  * @see SmartLinearLayout
  * @see SmartFrameLayout
+ * @see SmartImageView
  * 
  * @author Édouard Mercier
  * @since 2011.04.01
@@ -46,9 +48,25 @@ public class SmartRelativeLayout
     extends RelativeLayout
 {
 
+  /**
+   * The interface which will be invoked if the widget size changes.
+   */
   private OnSizeChangedListener<SmartRelativeLayout> onSizeChangedListener;
 
+  /**
+   * A flag which states whether the {@link #requestLayout()} calls should be disabled.
+   */
   private boolean requestLayoutDisabled;
+
+  /**
+   * Holds the widget maximum width.
+   */
+  protected int maxWidth = Integer.MAX_VALUE;
+
+  /**
+   * Holds the widget maximum height.
+   */
+  protected int maxHeight = Integer.MAX_VALUE;
 
   public SmartRelativeLayout(Context context, AttributeSet attrs, int defStyle)
   {
@@ -65,24 +83,45 @@ public class SmartRelativeLayout
     super(context);
   }
 
+  /**
+   * Sets the widget maximum width. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
+   * 
+   * @param maxWidth
+   *          the new widget maximum width
+   */
+  public void setMaxWidth(int maxWidth)
+  {
+    this.maxWidth = maxWidth;
+  }
+
+  /**
+   * Sets the widget maximum height. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
+   * 
+   * @param maxHeight
+   *          the new widget maximum height
+   */
+  public void setMaxHeight(int maxHeight)
+  {
+    this.maxHeight = maxHeight;
+  }
+
+  /**
+   * @return the currently registered interface which listens for the widget size changes events ; is {@code null} by default
+   */
   public final OnSizeChangedListener<SmartRelativeLayout> getOnSizeChangedListener()
   {
     return onSizeChangedListener;
   }
 
+  /**
+   * Sets the interface that will be invoked when the widget size changes.
+   * 
+   * @param onSizeChangedListener
+   *          may be {@code null}, and in that case, no interface will be notified
+   */
   public final void setOnSizeChangedListener(OnSizeChangedListener<SmartRelativeLayout> onSizeChangedListener)
   {
     this.onSizeChangedListener = onSizeChangedListener;
-  }
-
-  @Override
-  protected void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight)
-  {
-    super.onSizeChanged(newWidth, newHeight, newHeight, oldHeight);
-    if (onSizeChangedListener != null)
-    {
-      onSizeChangedListener.onSizeChanged(this, newWidth, newHeight, newHeight, oldHeight);
-    }
   }
 
   /**
@@ -119,6 +158,25 @@ public class SmartRelativeLayout
     {
       super.requestLayout();
     }
+  }
+
+  @Override
+  protected void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight)
+  {
+    super.onSizeChanged(newWidth, newHeight, newHeight, oldHeight);
+    if (onSizeChangedListener != null)
+    {
+      onSizeChangedListener.onSizeChanged(this, newWidth, newHeight, newHeight, oldHeight);
+    }
+  }
+
+  @Override
+  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+  {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    final int measuredWidth = Math.min(getMeasuredWidth(), maxWidth);
+    final int measuredHeight = Math.min(getMeasuredHeight(), maxHeight);
+    setMeasuredDimension(measuredWidth, measuredHeight);
   }
 
 }

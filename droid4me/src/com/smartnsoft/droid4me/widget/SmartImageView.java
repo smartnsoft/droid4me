@@ -19,7 +19,6 @@
 package com.smartnsoft.droid4me.widget;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.Gallery;
@@ -30,8 +29,12 @@ import android.widget.ImageView;
  * layout requests.
  * 
  * <p>
- * This is especially useful when an image width is set to a specific width policy and that the height should be set accordingly.
+ * This is especially useful when an image width is set to a specific width policy and that the height should be set accordingly, and vice-versa.
  * </p>
+ * 
+ * @see SmartFrameLayout
+ * @see SmartRelativeLayout
+ * @see SmartLinearLayout
  * 
  * @author Édouard Mercier
  * @since 2010.02.27
@@ -57,9 +60,15 @@ public class SmartImageView
 
   private OnSizeChangedListener<SmartImageView> onSizeChangedListener;
 
+  /**
+   * Holds the widget current ratio;
+   */
   private float ratio = 9f / 16f;
 
-  private boolean fixedSized;
+  /**
+   * A flag which states whether the {@link #requestLayout()} calls should be disabled.
+   */
+  private boolean requestLayoutDisabled;
 
   public float getRatio()
   {
@@ -67,10 +76,18 @@ public class SmartImageView
   }
 
   /**
-   * Sets the ratio between the height and the width of the image. The default value is <code>9 / 16</code>.
+   * Sets the ratio between the height and the width of the image. The default value is {@code 9 / 16}.
+   * 
+   * <p>
+   * <ul>
+   * <li>When set to a positive value, the image width is taken as a reference to force the height.</li>
+   * <li>When set to a negative value, the image height is taken as a reference to force the width, and the {@code ratio} argument absolute value is
+   * taken.</li>
+   * </ul>
+   * </p>
    * 
    * @param ratio
-   *          when set to <code>-1</code>, no ratio is applied
+   *          when set to {@code 0}, no ratio is applied
    */
   public void setRatio(float ratio)
   {
@@ -78,53 +95,75 @@ public class SmartImageView
   }
 
   /**
-   * The default value of the underlying flag is {@code false}.
-   * 
-   * @return {@code true} if and only if the {@link #requestLayout()} should do nothing
-   * @see #setFixedSized(boolean)
+   * @return the currently registered interface which listens for the widget size changes events ; is {@code null} by default
    */
-  public boolean isFixedSized()
-  {
-    return fixedSized;
-  }
-
-  /**
-   * Indicates that the underlying {@code ImageView} {@link Drawable} size never changes, and hence causing the {@link #requestLayout()} to do nothing
-   * (not invoking the parent method).
-   * 
-   * <p>
-   * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
-   * inside a {@link ViewGroup}.
-   * </p>
-   * 
-   * @param fixedSized
-   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
-   */
-  public void setFixedSized(boolean fixedSized)
-  {
-    this.fixedSized = fixedSized;
-  }
-
   public final OnSizeChangedListener<SmartImageView> getOnSizeChangedListener()
   {
     return onSizeChangedListener;
   }
 
   /**
-   * Indicates the interface to trigger when the image view size has changed.
+   * Sets the interface that will be invoked when the widget size changes.
+   * 
+   * @param onSizeChangedListener
+   *          may be {@code null}, and in that case, no interface will be notified
    */
-  public void setOnSizeChangedListener(OnSizeChangedListener<SmartImageView> onSizeChangedListener)
+  public final void setOnSizeChangedListener(OnSizeChangedListener<SmartImageView> onSizeChangedListener)
   {
     this.onSizeChangedListener = onSizeChangedListener;
+  }
+
+  /**
+   * The default value of the underlying flag is {@code false}.
+   * 
+   * @return {@code true} if and only if the {@link #requestLayout()} method execution should do nothing
+   * @see #setRequestLayoutEnabled(boolean)
+   */
+  public boolean isRequestLayoutDisabled()
+  {
+    return requestLayoutDisabled;
+  }
+
+  /**
+   * Indicates that the view {@link #requestLayout()} method execution should do nothing (not invoking the parent method).
+   * 
+   * <p>
+   * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
+   * inside a {@link ViewGroup}.
+   * </p>
+   * 
+   * @param requestLayoutDisabled
+   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
+   */
+  public void setRequestLayoutDisabled(boolean requestLayoutDisabled)
+  {
+    this.requestLayoutDisabled = requestLayoutDisabled;
+  }
+
+  @Override
+  public void requestLayout()
+  {
+    if (requestLayoutDisabled == false)
+    {
+      super.requestLayout();
+    }
   }
 
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
   {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    if (ratio != -1f)
+    if (ratio > 0f)
     {
-      setMeasuredDimension(getMeasuredWidth(), (int) (getMeasuredWidth() * ratio));
+      final int measuredWidth = getMeasuredWidth();
+      final int newHeight = (int) ((float) getMeasuredWidth() * ratio);
+      setMeasuredDimension(measuredWidth, newHeight);
+    }
+    else if (ratio < 0f)
+    {
+      final int measuredHeight = getMeasuredHeight();
+      final int newWidth = (int) (getMeasuredHeight() * ratio) * -1;
+      setMeasuredDimension(newWidth, measuredHeight);
     }
   }
 
@@ -135,15 +174,6 @@ public class SmartImageView
     if (onSizeChangedListener != null)
     {
       onSizeChangedListener.onSizeChanged(this, newWidth, newHeight, oldWidth, oldHeight);
-    }
-  }
-
-  @Override
-  public void requestLayout()
-  {
-    if (fixedSized == false)
-    {
-      super.requestLayout();
     }
   }
 
