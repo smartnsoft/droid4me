@@ -25,13 +25,18 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.WindowManager;
 
 import com.smartnsoft.droid4me.app.ActivityController.ExceptionHandler;
 import com.smartnsoft.droid4me.log.Logger;
@@ -367,7 +372,7 @@ public abstract class SmartApplication
 
     LoggerFactory.logLevel = getLogLevel();
     // This boilerplate is printed whatever the log level
-    log.info("Application powered by droid4me " + SmartApplication.getFrameworkVersionString() + " - Copyright Smart&Soft");
+    log.info("Application  with package name '" + getPackageName() + "' powered by droid4me " + SmartApplication.getFrameworkVersionString() + " - Copyright Smart&Soft");
     if (log.isDebugEnabled())
     {
       log.debug("Application starting");
@@ -385,7 +390,7 @@ public abstract class SmartApplication
     uiUncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(uiBuiltinUuncaughtExceptionHandler);
     if (log.isDebugEnabled())
     {
-      log.debug("The application " + (uiBuiltinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in GUI uncaught exception handler");
+      log.debug("The application with package name '" + getPackageName() + "' " + (uiBuiltinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in GUI uncaught exception handler");
     }
     Thread.currentThread().setUncaughtExceptionHandler(uiUncaughtExceptionHandler);
     // We make sure that other uncaught exceptions will be intercepted and handled
@@ -393,14 +398,14 @@ public abstract class SmartApplication
     uncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(builtinUuncaughtExceptionHandler);
     if (log.isDebugEnabled())
     {
-      log.debug("The application " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
+      log.debug("The application with package name '" + getPackageName() + "' " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
     }
     Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
 
     // We check the license of the framework
     if (log.isDebugEnabled())
     {
-      log.debug("Checking the droid4me license");
+      log.debug("Checking the droid4me license for the application with package name '" + getPackageName() + "'");
     }
     checkLicense(this);
 
@@ -423,7 +428,7 @@ public abstract class SmartApplication
 
     if (log.isInfoEnabled())
     {
-      log.info("The application has started in " + (System.currentTimeMillis() - start) + " ms");
+      log.info("The application with package name '" + getPackageName() + "' has started in " + (System.currentTimeMillis() - start) + " ms");
     }
   }
 
@@ -529,6 +534,38 @@ public abstract class SmartApplication
       log.warn("Application low memory");
     }
     super.onLowMemory();
+  }
+
+  /**
+   * Logs in {@link Log#INFO} verbosity the hosting device information, such as its model, density, screen size.
+   */
+  protected void logDeviceInformation()
+  {
+    if (log.isInfoEnabled())
+    {
+      final DisplayMetrics displayMetrics = new DisplayMetrics();
+      ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(displayMetrics);
+      final int screenLayout = getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+      final String screenLayoutString;
+      switch (screenLayout)
+      {
+      case Configuration.SCREENLAYOUT_SIZE_SMALL:
+        screenLayoutString = "small";
+        break;
+      case Configuration.SCREENLAYOUT_SIZE_NORMAL:
+        screenLayoutString = "normal";
+        break;
+      case Configuration.SCREENLAYOUT_SIZE_LARGE:
+        screenLayoutString = "large";
+        break;
+      case 4:
+        screenLayoutString = "xlarge";
+        break;
+      default:
+        screenLayoutString = "unknown: " + screenLayout;
+      }
+      log.info("The application with package name '" + getPackageName() + "' is running on the device '" + Build.MODEL + "' with density in dpi '" + displayMetrics.densityDpi + "', density '" + displayMetrics.density + "', screen size '" + screenLayoutString + "' (" + displayMetrics.widthPixels + "x" + displayMetrics.heightPixels + ")");
+    }
   }
 
 }
