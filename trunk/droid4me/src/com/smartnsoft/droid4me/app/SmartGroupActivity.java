@@ -165,19 +165,24 @@ public abstract class SmartGroupActivity<AggregateClass>
       super(context);
     }
 
+    // We want the header to get back the focus if possible
     @Override
     public boolean dispatchKeyEvent(KeyEvent event)
     {
-      // We want the header to get back the focus if possible
-      final boolean handled = super.dispatchKeyEvent(event);
+      // This is a work-around against the following exception, as discussed at
+      // https://groups.google.com/forum/?fromgroups#!topic/android-developers/dOrPnXoy-NM
+      //
+      // java.lang.IllegalStateException: Can not perform this action after onSaveInstanceState
+      // 04-18 11:59:03.575: ERROR/AndroidRuntime(6414): at android.app.FragmentManagerImpl.checkStateLoss(FragmentManager.java:1213)
+      // 04-18 11:59:03.575: ERROR/AndroidRuntime(6414): at android.app.FragmentManagerImpl.popBackStackImmediate(FragmentManager.java:442)
+      // 04-18 11:59:03.575: ERROR/AndroidRuntime(6414): at android.app.Activity.onBackPressed(Activity.java:2121)
+      // 04-18 11:59:03.575: ERROR/AndroidRuntime(6414): at android.app.Activity.onKeyUp(Activity.java:2099)
+      final boolean actuallyDispathKeyEvent = event.getAction() != KeyEvent.ACTION_UP || event.getKeyCode() != KeyEvent.KEYCODE_BACK;
+      final boolean handled = actuallyDispathKeyEvent == true ? super.dispatchKeyEvent(event) : false;
 
       // unhandled key ups change focus to tab indicator for embedded activities
       // when there is nothing that will take focus from default focus searching
-      if (!handled && (event.getAction() == KeyEvent.ACTION_DOWN) && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) /*
-                                                                                                                       * &&
-                                                                                                                       * (frameLayout.isRootNamespace
-                                                                                                                       * ())
-                                                                                                                       */&& (contentView.hasFocus()) && (contentView.findFocus().focusSearch(
+      if (actuallyDispathKeyEvent == true && !handled && (event.getAction() == KeyEvent.ACTION_DOWN) && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) && (contentView.hasFocus()) && (contentView.findFocus().focusSearch(
           View.FOCUS_UP) == null))
       {
         if (headerView != null)
@@ -189,6 +194,7 @@ public abstract class SmartGroupActivity<AggregateClass>
       }
       return handled;
     }
+
   }
 
   private final List<String> activitiesIds = new ArrayList<String>();
