@@ -621,6 +621,9 @@ public abstract class WebServiceCaller
     return response.getEntity().getContent();
   }
 
+  /**
+   * Just invokes {@code #encodeUri(String, String, Map, String)}, with {@code #getUrlEncoding()} as last parameter.
+   */
   public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
   {
     return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, getUrlEncoding());
@@ -632,13 +635,14 @@ public abstract class WebServiceCaller
    * @param methodUriPrefix
    *          the URI prefix
    * @param methodUriSuffix
-   *          the URI suffix ; a {@code /} separator will be appended after the {@code methodUriPrefix} parameter. May be {@code null}
+   *          the URI suffix ; a {@code /} separator will be appended after the {@code methodUriPrefix} parameter, if not {@code null}. May be {@code null}
    * @param uriParameters
-   *          a dictionary with {@link String} keys and {@link String} values, which holds the URI parameters ; may be {@code null}. If a value is
-   *          {@code null}, an error log will be issued
+   *          a dictionary with {@link String} keys and {@link String} values, which holds the URI query parameters ; may be {@code null}. If a value
+   *          is {@code null}, an error log will be issued. If a value is the empty string ({@code ""}), the dictionary key will be used as the
+   *          name+value URI parameter ; this is especially useful when the parameter value should not be encoded
    * @param urlEnconding
-   *          the encoding used for writing the URI parameters values
-   * @return
+   *          the encoding used for writing the URI query parameters values
+   * @return a valid URI that may be used for running an HTTP request, for instance
    */
   public static String encodeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters, String urlEnconding)
   {
@@ -652,11 +656,13 @@ public abstract class WebServiceCaller
     {
       for (Entry<String, String> entry : uriParameters.entrySet())
       {
-        if (entry.getValue() == null)
+        final String rawParameterName = entry.getKey();
+        final String rawParameterValue = entry.getValue();
+        if (rawParameterValue == null)
         {
           if (log.isErrorEnabled())
           {
-            log.error("Could not encoce the URI parameter with key '" + entry.getKey() + "' because its value is null");
+            log.error("Could not encoce the URI parameter with key '" + rawParameterName + "' because its value is null");
           }
         }
         if (first == true)
@@ -670,7 +676,15 @@ public abstract class WebServiceCaller
         }
         try
         {
-          buffer.append(entry.getKey()).append("=").append(URLEncoder.encode(entry.getValue(), urlEnconding));
+          if (rawParameterValue.length() <= 0)
+          {
+            // The value is empty, and in that case we use the key as a pair URI parameter name+value
+            buffer.append(rawParameterName);
+          }
+          else
+          {
+            buffer.append(rawParameterName).append("=").append(URLEncoder.encode(rawParameterValue, urlEnconding));
+          }
         }
         catch (UnsupportedEncodingException exception)
         {
