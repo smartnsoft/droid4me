@@ -219,7 +219,7 @@ public class SmartRelativeLayout
     super.onSizeChanged(newWidth, newHeight, newHeight, oldHeight);
     if (onSizeChangedListener != null)
     {
-      onSizeChangedListener.onSizeChanged(this, newWidth, newHeight, newHeight, oldHeight);
+      onSizeChangedListener.onSizeChanged(this, newWidth, newHeight, oldWidth, oldHeight);
     }
   }
 
