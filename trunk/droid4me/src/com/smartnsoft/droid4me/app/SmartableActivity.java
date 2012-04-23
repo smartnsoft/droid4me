@@ -39,7 +39,7 @@ public interface SmartableActivity<AggregateClass>
    * Indicates the {@link Activity} {@link Intent} to be launched when the {@link ActionBar} "Home" button is hit.
    * 
    * @param intent
-   *          a valid {@code Intent}
+   *          a valid {@code Intent} ; if {@code null}, the current {@link Activity} will be simply {@link Activity#finish() finished}
    */
   void setHomeIntent(Intent intent);
 
