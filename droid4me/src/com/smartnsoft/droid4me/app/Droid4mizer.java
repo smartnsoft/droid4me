@@ -475,12 +475,21 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       final Intent homeIntent = getHomeIntent();
       if (homeIntent != null)
       {
-        activity.startActivity(homeIntent);
-        // In case the home intent does not set the Intent.FLAG_ACTIVITY_CLEAR_TOP flag, and just returns to the previous screen
-        activity.finish();
-        return true;
+        try
+        {
+          activity.startActivity(homeIntent);
+        }
+        catch (Throwable throwable)
+        {
+          if (log.isErrorEnabled())
+          {
+            log.error("Could not start the home Intent " + homeIntent, throwable);
+          }
+        }
       }
-      return false;
+      // In case the home intent does not set the Intent.FLAG_ACTIVITY_CLEAR_TOP flag, and just returns to the previous screen
+      activity.finish();
+      return true;
     }
     if (stateContainer.compositeActionHandler != null)
     {
