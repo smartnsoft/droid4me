@@ -31,8 +31,9 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
@@ -261,6 +262,28 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   private final Activity activity;
 
+  protected OnEventObjectListener<BusinessObjectClass> onEventObjectListener;
+
+  protected LinearLayout wrapperLayout;
+
+  protected LinearLayout headerLayout;
+
+  protected boolean headerAdded;
+
+  protected LinearLayout footerLayout;
+
+  protected boolean footerAdded;
+
+  protected LinearLayout leftLayout;
+
+  protected boolean leftAdded;
+
+  protected LinearLayout rightLayout;
+
+  protected boolean rightAdded;
+
+  protected LinearLayout listWrapperLayout;
+
   protected abstract ForList<BusinessObjectClass, ViewClass> getForListProvider();
 
   /**
@@ -317,28 +340,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   protected abstract void setSelected(int position);
 
-  protected OnEventObjectListener<BusinessObjectClass> onEventObjectListener;
-
-  protected LinearLayout wrapperLayout;
-
-  protected LinearLayout headerLayout;
-
-  protected boolean headerAdded;
-
-  protected LinearLayout footerLayout;
-
-  protected boolean footerAdded;
-
-  protected LinearLayout leftLayout;
-
-  protected boolean leftAdded;
-
-  protected LinearLayout rightLayout;
-
-  protected boolean rightAdded;
-
-  protected LinearLayout listWrapperLayout;
-
   public WrappedListView(Activity activity)
   {
     this.activity = activity;
@@ -372,7 +373,19 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     filterText = text;
   }
 
-  public final ViewGroup createWrapperLayout(Context context)
+  /**
+   * Is responsible for creating the {@link ViewGroup wrapper widget} which will hold the underlying {@link ListView}.
+   * 
+   * <p>
+   * This method is responsible for creating the {@link #wrapperLayout} and {@link #listWrapperLayout} widget objects, and for adding the
+   * {@link #getListView()} to the created {@link #getListWrapperLayout()}.
+   * </p>
+   * 
+   * @param context
+   *          the Android context
+   * @return the created wrapper widget
+   */
+  public ViewGroup createWrapperLayout(Context context)
   {
     wrapperLayout = new LinearLayout(context);
     wrapperLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT));
