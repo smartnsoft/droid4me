@@ -51,6 +51,7 @@ import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
@@ -114,7 +115,12 @@ public abstract class WebServiceCaller
 
     public SensibleHttpClient()
     {
-      super();
+      this(null, null);
+    }
+
+    public SensibleHttpClient(HttpParams params)
+    {
+      this(null, params);
     }
 
     public SensibleHttpClient(ClientConnectionManager connectionManager, HttpParams params)
@@ -122,16 +128,11 @@ public abstract class WebServiceCaller
       super(connectionManager, params);
     }
 
-    public SensibleHttpClient(HttpParams params)
-    {
-      super(params);
-    }
-
     @Override
     protected HttpContext createHttpContext()
     {
       // Same as DefaultHttpClient.createHttpContext() minus the cookie store
-      HttpContext context = new BasicHttpContext();
+      final HttpContext context = new BasicHttpContext();
       context.setAttribute(ClientContext.AUTHSCHEME_REGISTRY, getAuthSchemes());
       context.setAttribute(ClientContext.COOKIESPEC_REGISTRY, getCookieSpecs());
       context.setAttribute(ClientContext.CREDS_PROVIDER, getCredentialsProvider());
@@ -528,18 +529,21 @@ public abstract class WebServiceCaller
       request = httpDelete;
       break;
     }
-    if (log.isDebugEnabled())
-    {
-      log.debug("Running the HTTP " + callType + " query '" + uri + "'");
-    }
     final HttpClient httpClient = getHttpClient();
     onBeforeHttpRequestExecution(httpClient, request);
+    if (log.isDebugEnabled())
+    {
+      log.debug("Running the HTTP " + callType + " request '" + uri + "'");
+    }
     final HttpResponse response = httpClient.execute(request);
-    final long stop = System.currentTimeMillis();
+    if (log.isDebugEnabled())
+    {
+      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms");
+    }
     final int statusCode = response.getStatusLine().getStatusCode();
     if (log.isInfoEnabled())
     {
-      log.info("The call to the HTTP " + callType + " query '" + uri + "' took " + (stop - start) + " ms with status code " + statusCode);
+      log.info("The call to the HTTP " + callType + " request '" + uri + "' returned the status code " + statusCode);
     }
     if (!(statusCode >= HttpStatus.SC_OK && statusCode <= HttpStatus.SC_MULTI_STATUS))
     {
@@ -635,7 +639,8 @@ public abstract class WebServiceCaller
    * @param methodUriPrefix
    *          the URI prefix
    * @param methodUriSuffix
-   *          the URI suffix ; a {@code /} separator will be appended after the {@code methodUriPrefix} parameter, if not {@code null}. May be {@code null}
+   *          the URI suffix ; a {@code /} separator will be appended after the {@code methodUriPrefix} parameter, if not {@code null}. May be
+   *          {@code null}
    * @param uriParameters
    *          a dictionary with {@link String} keys and {@link String} values, which holds the URI query parameters ; may be {@code null}. If a value
    *          is {@code null}, an error log will be issued. If a value is the empty string ({@code ""}), the dictionary key will be used as the
@@ -746,6 +751,11 @@ public abstract class WebServiceCaller
       final DefaultHttpClient initialHttpClient = new DefaultHttpClient();
       final ClientConnectionManager clientConnectionManager = initialHttpClient.getConnectionManager();
       final HttpParams params = initialHttpClient.getParams();
+
+      // Taken from https://github.com/android/platform_frameworks_base/blob/master/core/java/android/net/http/AndroidHttpClient.java
+      // This turns off stale checking. Our connections breaks all the time anyway, and it's not worth it to pay the penalty of checking every time
+      HttpConnectionParams.setStaleCheckingEnabled(params, false);
+
       @SuppressWarnings("deprecation")
       final ThreadSafeClientConnManager threadSafeClientConnectionManager = new ThreadSafeClientConnManager(params, clientConnectionManager.getSchemeRegistry());
       return new SensibleHttpClient(threadSafeClientConnectionManager, params);
