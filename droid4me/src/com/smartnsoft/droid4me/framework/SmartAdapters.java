@@ -145,7 +145,8 @@ public abstract class SmartAdapters
       return computeIntent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent, position);
     }
 
-    public Intent computeIntent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position)
+    public Intent computeIntent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent,
+        int position)
     {
       return null;
     }
@@ -155,7 +156,8 @@ public abstract class SmartAdapters
       return onObjectEvent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent, position);
     }
 
-    public boolean onObjectEvent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position)
+    public boolean onObjectEvent(Activity activity, Object viewAttributes, View view, BusinessObjectClass businessObject,
+        SmartAdapters.ObjectEvent objectEvent, int position)
     {
       return false;
     }
@@ -178,7 +180,7 @@ public abstract class SmartAdapters
           {
             return objectMenuCommand.executable.isVisible((BusinessObjectClass) businessObject.getBusinessObject());
           }
-          
+
           @SuppressWarnings("unchecked")
           public boolean isEnabled(BusinessViewWrapper<?> businessObject)
           {
@@ -221,9 +223,21 @@ public abstract class SmartAdapters
       return view;
     }
 
+    /**
+     * Should only be invoked once the {@link #setNewView(Activity, View)} method has already been invoked.
+     * 
+     * @param view
+     *          the {@code View} which holds the business object representation
+     * @return the view attributes that have been attached to the provided view
+     */
+    public final Object getViewAttributes(View view)
+    {
+      return view.getTag();
+    }
+
     public final void updateView(Activity activity, View view, int position)
     {
-      updateView(activity, view.getTag(), view, getBusinessObject(), position);
+      updateView(activity, getViewAttributes(view), view, getBusinessObject(), position);
     }
 
   }
