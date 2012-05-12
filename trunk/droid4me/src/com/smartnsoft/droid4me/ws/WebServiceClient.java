@@ -248,7 +248,7 @@ public interface WebServiceClient
    *          {@code null} otherwise
    * @return the input stream resulting to the HTTP request, which is taken from the response
    * @throws WebServiceClient.CallException
-   *           in case an error occurred during the HTTP request execution
+   *           in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
   public InputStream getInputStream(String uri, WebServiceClient.CallType callType, HttpEntity body)
       throws WebServiceClient.CallException;
