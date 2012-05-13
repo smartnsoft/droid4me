@@ -102,6 +102,18 @@ public class PropertiesConfigurationLoader
       {
         propertyValue = Long.parseLong(rawPropertyValue);
       }
+      else if (field.getType() == boolean.class)
+      {
+        propertyValue = Boolean.parseBoolean(rawPropertyValue);
+      }
+      else if (field.getType() == float.class)
+      {
+        propertyValue = Float.parseFloat(rawPropertyValue);
+      }
+      else if (field.getType() == double.class)
+      {
+        propertyValue = Double.parseDouble(rawPropertyValue);
+      }
       else
       {
         propertyValue = rawPropertyValue;
