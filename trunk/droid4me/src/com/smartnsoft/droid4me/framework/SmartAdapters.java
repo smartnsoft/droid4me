@@ -273,7 +273,8 @@ public abstract class SmartAdapters
     @Override
     protected View createNewView(Activity activity, BusinessObjectClass businessObjectClass)
     {
-      return LayoutInflater.from(activity.getApplicationContext()).inflate(layoutResourceId, null);
+      // It is important that the activity itself be used as a basis context, otherwise, the inflated View context is limited!
+      return LayoutInflater.from(activity).inflate(layoutResourceId, null);
     }
 
   }
