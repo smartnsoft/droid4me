@@ -112,10 +112,9 @@ public final class DbPersistence
       final Cursor cursor = getCursor(writeableDatabase, tableName);
       if (cursor != null)
       {
-        // The transaction is essential to get good performance
-        writeableDatabase.beginTransaction();
         try
         {
+          final List<Long> toDeleteIds = new ArrayList<Long>();
           final long now = System.currentTimeMillis();
           while (cursor.moveToNext() == true)
           {
@@ -127,15 +126,59 @@ public final class DbPersistence
                 log.debug("Removing the entry from table '" + tableName + "' corresponding to the the URI '" + uri + "'");
               }
               final long id = cursor.getLong(cursor.getColumnIndex(DbPersistence.CacheColumns._ID));
-              writeableDatabase.delete(tableName, DbPersistence.CacheColumns._ID + " = " + id, null);
+              toDeleteIds.add(id);
+            }
+          }
+          if (toDeleteIds.size() >= 1)
+          {
+            // We close the cursor, so as to free the current transaction
+            cursor.close();
+
+            final int batchSize = 50;
+            final int batchesCount = (int) Math.ceil((double) toDeleteIds.size() / (double) batchSize);
+            for (int batchIndex = 0; batchIndex < batchesCount; batchIndex++)
+            {
+              final StringBuilder sb = new StringBuilder();
+              sb.append("DELETE FROM ");
+              sb.append(tableName);
+              sb.append(" WHERE ");
+              sb.append(DbPersistence.CacheColumns._ID);
+              sb.append(" IN (");
+              final int startIndex = batchIndex * batchSize;
+              final int endIndex = Math.min((batchIndex + 1) * batchSize, toDeleteIds.size());
+
+              for (int index = startIndex; index < endIndex; index++)
+              {
+                sb.append(toDeleteIds.get(index));
+                if (index < (endIndex - 1))
+                {
+                  sb.append(",");
+                }
+              }
+              sb.append(")");
+              if (log.isDebugEnabled())
+              {
+                log.debug("Deleting from table '" + tableName + "' " + (endIndex - startIndex) + " row(s)");
+              }
+              final long start = System.currentTimeMillis();
+              writeableDatabase.execSQL(sb.toString());
+              if (log.isDebugEnabled())
+              {
+                log.debug("Deleted from table '" + tableName + "' " + (endIndex - startIndex) + " row(s) in " + (System.currentTimeMillis() - start) + " ms");
+              }
+            }
+            if (log.isInfoEnabled())
+            {
+              log.info("Cleaned up the table '" + tableName + "' and deleted " + toDeleteIds.size() + " row(s)");
             }
           }
         }
         finally
         {
-          writeableDatabase.setTransactionSuccessful();
-          writeableDatabase.endTransaction();
-          cursor.close();
+          if (cursor.isClosed() == false)
+          {
+            cursor.close();
+          }
         }
       }
     }
@@ -293,6 +336,10 @@ public final class DbPersistence
     try
     {
       DbPersistence.ensureDatabaseAvailability(dbFilePath, tableName);
+      if (log.isDebugEnabled())
+      {
+        log.debug("The database located at '" + dbFilePath + "' for the table '" + tableName + "' has been initialized");
+      }
     }
     catch (SQLiteException exception)
     {
@@ -334,6 +381,10 @@ public final class DbPersistence
       throw new Persistence.PersistenceException("Cannot initialize properly", exception);
     }
     setStorageBackendAvailable(true);
+    if (log.isInfoEnabled())
+    {
+      log.info("The database located at '" + dbFilePath + "' for the table '" + tableName + "' is now ready to be used");
+    }
   }
 
   /**
@@ -644,6 +695,10 @@ public final class DbPersistence
   @Override
   protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> CleanUpPolicyClass computeCleanUpPolicy()
   {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Computing the clean-up policy for the persistence instance " + instanceIndex + " with table '" + tableName + "'");
+    }
     if (instanceIndex >= DbPersistence.CLEAN_UP_POLICY_FQN.length)
     {
       return null;
