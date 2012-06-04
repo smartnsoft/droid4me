@@ -54,6 +54,11 @@ public class SmartFrameLayout
   private OnSizeChangedListener<SmartFrameLayout> onSizeChangedListener;
 
   /**
+   * Holds the widget current vertical/horizontal dimensions ratio;
+   */
+  private float ratio = 0f;
+
+  /**
    * A flag which states whether the {@link #requestLayout()} calls should be disabled.
    */
   private boolean requestLayoutDisabled;
@@ -81,6 +86,34 @@ public class SmartFrameLayout
   public SmartFrameLayout(Context context)
   {
     super(context);
+  }
+
+  /**
+   * @return the vertical/horizontal ratio ; when set to {@code 0}, no ratio is applied {@link #setRatio(float)}
+   */
+  public float getRatio()
+  {
+    return ratio;
+  }
+
+  /**
+   * Sets the ratio between the width and the height of the image. The default value is {@code 9 / 16}.
+   * 
+   * <p>
+   * <ul>
+   * <li>When set to a positive value, the image width is taken as a reference to force the height.</li>
+   * <li>When set to a negative value, the image height is taken as a reference to force the width, and the {@code ratio} argument absolute value is
+   * taken.</li>
+   * </ul>
+   * </p>
+   * 
+   * @param ratio
+   *          when set to {@code 0}, no ratio is applied
+   * @see #getRatio()
+   */
+  public void setRatio(float ratio)
+  {
+    this.ratio = ratio;
   }
 
   /**
@@ -174,9 +207,24 @@ public class SmartFrameLayout
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
   {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    final int measuredWidth = Math.min(getMeasuredWidth(), maxWidth);
-    final int measuredHeight = Math.min(getMeasuredHeight(), maxHeight);
-    setMeasuredDimension(measuredWidth, measuredHeight);
+    if (ratio > 0f)
+    {
+      final int measuredWidth = getMeasuredWidth();
+      final int newHeight = (int) (getMeasuredWidth() * ratio);
+      setMeasuredDimension(measuredWidth, newHeight);
+    }
+    else if (ratio < 0f)
+    {
+      final int measuredHeight = getMeasuredHeight();
+      final int newWidth = (int) (getMeasuredHeight() * ratio) * -1;
+      setMeasuredDimension(newWidth, measuredHeight);
+    }
+    else
+    {
+      final int measuredWidth = Math.min(getMeasuredWidth(), maxWidth);
+      final int measuredHeight = Math.min(getMeasuredHeight(), maxHeight);
+      setMeasuredDimension(measuredWidth, measuredHeight);
+    }
   }
 
 }

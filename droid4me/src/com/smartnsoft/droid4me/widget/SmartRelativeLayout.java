@@ -54,7 +54,7 @@ public class SmartRelativeLayout
   private OnSizeChangedListener<SmartRelativeLayout> onSizeChangedListener;
 
   /**
-   * Holds the widget current ratio;
+   * Holds the widget current vertical/horizontal dimensions ratio;
    */
   private float ratio = 0f;
 
@@ -88,13 +88,16 @@ public class SmartRelativeLayout
     super(context);
   }
 
+  /**
+   * @return the vertical/horizontal ratio ; when set to {@code 0}, no ratio is applied {@link #setRatio(float)}
+   */
   public float getRatio()
   {
     return ratio;
   }
 
   /**
-   * Sets the ratio between the height and the width of the image. The default value is {@code 9 / 16}.
+   * Sets the ratio between the width and the height of the image. The default value is {@code 9 / 16}.
    * 
    * <p>
    * <ul>
@@ -106,6 +109,7 @@ public class SmartRelativeLayout
    * 
    * @param ratio
    *          when set to {@code 0}, no ratio is applied
+   * @see #getRatio()
    */
   public void setRatio(float ratio)
   {
