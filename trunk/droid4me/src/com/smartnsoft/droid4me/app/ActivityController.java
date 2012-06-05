@@ -738,7 +738,8 @@ public final class ActivityController
      * Is responsible for displaying a dialog box. This enables to customize in a centralized way the dialog boxes look & feel.
      * 
      * <p>
-     * It is ensured that this method will be invoked from the UI thread.
+     * It is ensured that the framework will invoke that method from the UI thread, and when invoking that method directly, this must be done from the
+     * UI thread as well.
      * </p>
      * 
      * @param activity
