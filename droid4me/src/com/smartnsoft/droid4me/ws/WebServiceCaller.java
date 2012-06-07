@@ -626,11 +626,19 @@ public abstract class WebServiceCaller
   }
 
   /**
-   * Just invokes {@code #encodeUri(String, String, Map, String)}, with {@code #getUrlEncoding()} as last parameter.
+   * Just invokes {@code #computeUri(String, String, Map, boolean)}, with {@code false} as last parameter.
    */
   public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
   {
-    return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, getUrlEncoding());
+    return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, false, getUrlEncoding());
+  }
+
+  /**
+   * Just invokes {@code #encodeUri(String, String, Map, boolean, String)}, with {@code #getUrlEncoding()} as last parameter.
+   */
+  public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters, boolean alreadyContainsQuestionMark)
+  {
+    return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, alreadyContainsQuestionMark, getUrlEncoding());
   }
 
   /**
@@ -645,11 +653,16 @@ public abstract class WebServiceCaller
    *          a dictionary with {@link String} keys and {@link String} values, which holds the URI query parameters ; may be {@code null}. If a value
    *          is {@code null}, an error log will be issued. If a value is the empty string ({@code ""}), the dictionary key will be used as the
    *          name+value URI parameter ; this is especially useful when the parameter value should not be encoded
+   * @param indicates
+   *          whether the provided {@code methodUriPrefix} or the {@code methodUriSuffix} parameters already contain a question mark {@code ?}, so
+   *          that, when computing the URI with the additional {@code uriParameters}, it is not appended again. This is especially useful when
+   *          building an URI from a basis URI, which already contains a {@code ?} for declaring URI parameters
    * @param urlEnconding
    *          the encoding used for writing the URI query parameters values
    * @return a valid URI that may be used for running an HTTP request, for instance
    */
-  public static String encodeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters, String urlEnconding)
+  public static String encodeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters, boolean alreadyContainsQuestionMark,
+      String urlEnconding)
   {
     final StringBuffer buffer = new StringBuffer(methodUriPrefix);
     if (methodUriSuffix != null && methodUriSuffix.length() > 0)
@@ -672,7 +685,10 @@ public abstract class WebServiceCaller
         }
         if (first == true)
         {
-          buffer.append("?");
+          if (alreadyContainsQuestionMark == false)
+          {
+            buffer.append("?");
+          }
           first = false;
         }
         else
