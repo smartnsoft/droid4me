@@ -685,10 +685,7 @@ public abstract class WebServiceCaller
         }
         if (first == true)
         {
-          if (alreadyContainsQuestionMark == false)
-          {
-            buffer.append("?");
-          }
+          buffer.append(alreadyContainsQuestionMark == false ? "?" : "&");
           first = false;
         }
         else
