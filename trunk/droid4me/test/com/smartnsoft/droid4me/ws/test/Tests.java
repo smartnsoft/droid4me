@@ -344,7 +344,7 @@ public final class Tests
 
       public String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
       {
-        return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, HTTP.UTF_8);
+        return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, false, HTTP.UTF_8);
       }
 
       public InputStream getInputStream(String uri, CallType callType, HttpEntity body)
