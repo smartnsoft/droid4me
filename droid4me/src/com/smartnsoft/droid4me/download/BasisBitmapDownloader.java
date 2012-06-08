@@ -314,6 +314,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
             {
               log.warn(logCommandId() + "Process exceeding available memory", exception);
             }
+            outOfMemoryOccurences++;
             cleanUpCache();
             return;
           }
@@ -732,6 +733,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
             {
               log.warn(logCommandId() + "Process exceeding available memory", exception);
             }
+            outOfMemoryOccurences++;
             cleanUpCache();
             return;
           }
@@ -791,6 +793,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         {
           log.warn(logCommandId() + "Process exceeding available memory", exception);
         }
+        outOfMemoryOccurences++;
         cleanUpCache();
         return;
       }
@@ -917,6 +920,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         {
           log.warn(logCommandId() + "Cannot decode the downloaded bitmap because it exceeds the allowed memory", exception);
         }
+        outOfMemoryOccurences++;
         cleanUpCache();
         return null;
       }
@@ -983,6 +987,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         {
           log.warn(logCommandId() + "Process exceeding available memory", exception);
         }
+        outOfMemoryOccurences++;
         cleanUpCache();
         return null;
       }
@@ -1079,6 +1084,9 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
    */
   private static ThreadPoolExecutor DOWNLOAD_THREAD_POOL;
 
+  /**
+   * The counter of all commands, which is incremented on every new command, so as to identify them.
+   */
   private static int commandsCount = 0;
 
   /**
@@ -1110,7 +1118,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   private final Set<ViewClass> asynchronousDownloadCommands;
 
   /**
-   * The counter of all commands, which is incremented on every new command, so as to identify them.
+   * The internal unique identifier of a command.
    */
   private int commandIdCount = -1;
 
@@ -1186,9 +1194,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
   }
 
-  public BasisBitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  public BasisBitmapDownloader(int instanceIndex, String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences,
+      boolean recycleMap)
   {
-    super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
+    super(instanceIndex, name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
     prioritiesStack = new Hashtable<ViewClass, Integer>();// Collections.synchronizedMap(new IdentityHashMap<ViewClass, Integer>());
     prioritiesPreStack = new Hashtable<ViewClass, PreCommand>();// Collections.synchronizedMap(new IdentityHashMap<ViewClass, PreCommand>());
     prioritiesDownloadStack = new Hashtable<ViewClass, DownloadBitmapCommand>();// Collections.synchronizedMap(new IdentityHashMap<ViewClass,
@@ -1321,14 +1330,13 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     return new DownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);
   }
 
-  /**
-   * Dumps the statistics about the current state of the instance.
-   */
+  @Override
   protected void dump()
   {
+    super.dump();
     if (IS_DUMP_TRACE && IS_DEBUG_TRACE && log.isDebugEnabled())
     {
-      log.debug("'" + name + "' statistics: " + "prioritiesStack.size()=" + prioritiesStack.size() + " - " + "prioritiesPreStack.size()=" + prioritiesPreStack.size() + " - " + "prioritiesDownloadStack.size()=" + prioritiesDownloadStack.size() + " - " + "inProgressDownloads.size()=" + inProgressDownloads.size() + " - " + "cache.size()=" + cache.size());
+      log.debug("'" + name + "' statistics: " + "prioritiesStack.size()=" + prioritiesStack.size() + " - " + "prioritiesPreStack.size()=" + prioritiesPreStack.size() + " - " + "prioritiesDownloadStack.size()=" + prioritiesDownloadStack.size() + " - " + "inProgressDownloads.size()=" + inProgressDownloads.size());
     }
   }
 
