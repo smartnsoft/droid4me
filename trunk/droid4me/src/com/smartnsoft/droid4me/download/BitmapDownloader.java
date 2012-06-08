@@ -21,8 +21,15 @@ package com.smartnsoft.droid4me.download;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.smartnsoft.droid4me.download.DownloadInstructions.BitmapableBitmap;
 import com.smartnsoft.droid4me.download.DownloadInstructions.HandlerableHander;
@@ -38,6 +45,99 @@ import com.smartnsoft.droid4me.download.DownloadInstructions.ViewableView;
 public class BitmapDownloader
     extends BasisBitmapDownloader<BitmapableBitmap, ViewableView, HandlerableHander>
 {
+
+  public static class AnalyticsDisplayer
+      implements CoreBitmapDownloader.AnalyticsListener
+  {
+
+    private final static class JaugeView
+        extends View
+    {
+
+      private final Paint jaugePaint;
+
+      private final Paint markPaint;
+
+      private final Paint textPaint;
+
+      private final Paint errorTextPaint;
+
+      private final String label;
+
+      private float jaugeLevel;
+
+      private float jaugeWaterLevel;
+
+      private CoreBitmapDownloader.AnalyticsData analyticsData;
+
+      public JaugeView(Context context, String label)
+      {
+        super(context);
+        this.label = label;
+        jaugePaint = new Paint();
+        jaugePaint.setColor(Color.CYAN);
+        markPaint = new Paint();
+        markPaint.setColor(Color.GRAY);
+        textPaint = new Paint();
+        textPaint.setColor(Color.BLACK);
+        errorTextPaint = new Paint();
+        errorTextPaint.setColor(Color.RED);
+      }
+
+      @Override
+      protected void onDraw(Canvas canvas)
+      {
+        super.onDraw(canvas);
+
+        canvas.drawRect(new Rect(0, getHeight() - (int) ((float) getHeight() * jaugeLevel), getWidth(), getHeight()), jaugePaint);
+        final int markY = getHeight() - (int) ((float) getHeight() * jaugeWaterLevel);
+        canvas.drawLine(0, markY, getWidth(), markY, markPaint);
+        canvas.drawText(label, 0, getHeight(), textPaint);
+        if (analyticsData != null)
+        {
+          final int textOffset = 20;
+          canvas.drawText(Integer.toString(analyticsData.cleanUpsCount), 0, textOffset, textPaint);
+          canvas.drawText(Integer.toString(analyticsData.bitmapsCount), getWidth() - textOffset, getHeight(), textPaint);
+          canvas.drawText(Integer.toString(analyticsData.outOfMemoryOccurences), getWidth() - textOffset, textOffset, errorTextPaint);
+        }
+      }
+
+    }
+
+    public static int HEIGHT = 150;
+
+    protected JaugeView[] jauges;
+
+    public ViewGroup getView(Context context)
+    {
+      jauges = new JaugeView[BitmapDownloader.INSTANCES_COUNT];
+      final LinearLayout container = new LinearLayout(context);
+      container.setOrientation(LinearLayout.HORIZONTAL);
+      for (int index = 0; index < BitmapDownloader.INSTANCES_COUNT; index++)
+      {
+        final JaugeView jauge = new JaugeView(context, Integer.toString(index));
+        jauges[index] = jauge;
+        final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, AnalyticsDisplayer.HEIGHT, 1f);
+        layoutParams.leftMargin = layoutParams.rightMargin = 3;
+        container.addView(jauge, layoutParams);
+      }
+      return container;
+    }
+
+    public void plug()
+    {
+      CoreBitmapDownloader.ANALYTICS_LISTENER = this;
+    }
+
+    public void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader, CoreBitmapDownloader.AnalyticsData analyticsData)
+    {
+      jauges[coreBitmapDownloader.instanceIndex].jaugeLevel = (float) coreBitmapDownloader.getMemoryConsumptionInBytes() / (float) coreBitmapDownloader.highLevelMemoryWaterMarkInBytes;
+      jauges[coreBitmapDownloader.instanceIndex].jaugeWaterLevel = (float) coreBitmapDownloader.lowLevelMemoryWaterMarkInBytes / (float) coreBitmapDownloader.highLevelMemoryWaterMarkInBytes;
+      jauges[coreBitmapDownloader.instanceIndex].analyticsData = analyticsData;
+      jauges[coreBitmapDownloader.instanceIndex].postInvalidate();
+    }
+
+  }
 
   /**
    * The number of instances of {@link BitmapDownloader} that will be created.
@@ -128,8 +228,8 @@ public class BitmapDownloader
           {
             final Class<? extends BitmapDownloader> implementationClass = (Class<? extends BitmapDownloader>) Class.forName(BitmapDownloader.IMPLEMENTATION_FQN);
             final BitmapDownloader[] newInstances = (BitmapDownloader[]) Array.newInstance(implementationClass, BitmapDownloader.INSTANCES_COUNT);
-            final Constructor<? extends BitmapDownloader> constructor = implementationClass.getDeclaredConstructor(String.class, long.class, long.class,
-                boolean.class, boolean.class);
+            final Constructor<? extends BitmapDownloader> constructor = implementationClass.getDeclaredConstructor(int.class, String.class, long.class,
+                long.class, boolean.class, boolean.class);
             for (int instanceIndex = 0; instanceIndex < BitmapDownloader.INSTANCES_COUNT; instanceIndex++)
             {
               final long highWaterMark = BitmapDownloader.MAX_MEMORY_IN_BYTES == null ? BitmapDownloader.DEFAULT_MAX_MEMORY_IN_BYTES
@@ -138,7 +238,8 @@ public class BitmapDownloader
                   : BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[instanceIndex];
               final boolean references = BitmapDownloader.USE_REFERENCES == null ? false : BitmapDownloader.USE_REFERENCES[instanceIndex];
               final boolean recycle = BitmapDownloader.RECYCLE_BITMAP == null ? false : BitmapDownloader.RECYCLE_BITMAP[instanceIndex];
-              newInstances[instanceIndex] = constructor.newInstance("BitmapDownloader-" + instanceIndex, highWaterMark, lowWaterMark, references, recycle);
+              newInstances[instanceIndex] = constructor.newInstance(instanceIndex, "BitmapDownloader-" + instanceIndex, highWaterMark, lowWaterMark,
+                  references, recycle);
             }
             // We only assign the instances class variable here, once all instances have actually been created
             BitmapDownloader.instances = newInstances;
@@ -156,9 +257,10 @@ public class BitmapDownloader
     return BitmapDownloader.instances[index];
   }
 
-  protected BitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  protected BitmapDownloader(int instanceIndex, String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences,
+      boolean recycleMap)
   {
-    super(name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
+    super(instanceIndex, name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
   }
 
   public final void get(View view, String bitmapUid, Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions)

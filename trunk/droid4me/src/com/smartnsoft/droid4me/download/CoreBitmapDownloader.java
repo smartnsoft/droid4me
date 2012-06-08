@@ -45,6 +45,55 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewClass extends Viewable, HandlerClass extends Handlerable>
 {
 
+  /**
+   * Contains information about a {@link CoreBitmapDownloader} instance internal state.
+   * 
+   * @since 2012.06.07
+   */
+  public static class AnalyticsData
+  {
+
+    public final int bitmapsCount;
+
+    public final int cleanUpsCount;
+
+    public final int outOfMemoryOccurences;
+
+    public AnalyticsData(int bitmapsCount, int cleanUpsCount, int outOfMemoryOccurences)
+    {
+      this.bitmapsCount = bitmapsCount;
+      this.cleanUpsCount = cleanUpsCount;
+      this.outOfMemoryOccurences = outOfMemoryOccurences;
+    }
+
+  }
+
+  /**
+   * When defining the {@link CoreBitmapDownloader#ANALYTICS_LISTENER} variable with an implementation of this interface, it will be notified as soon
+   * as the cache internal state changes.
+   * 
+   * @since 2012.06.07
+   */
+  public static interface AnalyticsListener
+  {
+
+    /**
+     * Is invoked every time the underlying attached {@link CoreBitmapDownloader} internal state changes.
+     * 
+     * <p>
+     * In particular, this method will be invoked when the instance cache is {@link CoreBitmapDownloader#cleanUpCache() cleaned up}, or when an
+     * {@link OutOfMemoryError} occurs.
+     * </p>
+     * 
+     * @param coreBitmapDownloader
+     *          the instance involved in the internal state change
+     * @param analyticsData
+     *          the information about the instance internal state
+     */
+    void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader, CoreBitmapDownloader.AnalyticsData analyticsData);
+
+  }
+
   protected static final Logger log = LoggerFactory.getInstance("BitmapDownloader");
 
   /**
@@ -58,6 +107,13 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * {@link CoreBitmapDownloader#IS_DEBUG_TRACE} is set to {@code true}: only defined for development purposes. Defaults to {@code false}.
    */
   public static boolean IS_DUMP_TRACE = false;
+
+  /**
+   * When set, i.e. not {@code null} (which is the default), each instance will be notified as soon as its internal state changes.
+   * 
+   * @see #notifiyAnalyticsListener()
+   */
+  public static CoreBitmapDownloader.AnalyticsListener ANALYTICS_LISTENER;
 
   protected final class UsedBitmap
       implements Comparable<UsedBitmap>
@@ -182,6 +238,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   }
 
   /**
+   * The index of the instance, mostly useful for the logs and the analytics.
+   */
+  public final int instanceIndex;
+
+  /**
    * The name of the instance, mostly useful for the logs.
    */
   public final String name;
@@ -189,7 +250,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * Indicates the upper limit of memory that the cache is allowed to reach.
    */
-  public final long maxMemoryInBytes;
+  public final long highLevelMemoryWaterMarkInBytes;
 
   /**
    * When the cache is being cleaned-up, indicates the lower limit of memory that the cache is allowed to reach.
@@ -213,17 +274,42 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    */
   protected final Map<String, UsedBitmap> cache = new HashMap<String, UsedBitmap>();
 
-  private long memoryConsumption = 0;
+  private long memoryConsumptionInBytes = 0;
 
   private boolean cleanUpInProgress;
 
-  protected CoreBitmapDownloader(String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
+  /**
+   * The number of times the {@link #cleanUpCache()} method has actually cleaned up the cache.
+   */
+  private int cleanUpsCount = 0;
+
+  /**
+   * The number of times an {@link OutOfMemoryError} has occurred for this instance.
+   */
+  protected int outOfMemoryOccurences = 0;
+
+  /**
+   * @param instanceIndex
+   *          the index of the current instance. When creating multiple instances, it is important to provide a unique index, so that the
+   *          {@link CoreBitmapDownloader.AnalyticsListener} knows what instance is at stake
+   * @param name
+   *          the name of the instance, used for the logs and the analytics
+   * @param highLevelMemoryWaterMarkInBytes
+   *          the number of maximum bytes space that this instance will allow cached bitmaps to take in memory
+   * @param lowLevelMemoryWaterMarkInBytes
+   *          when the instance has been {@link #cleanUpCache() cleaned up}, how much space the cached bitmap will take at most
+   * @param useReferences
+   * @param recycleMap
+   */
+  protected CoreBitmapDownloader(int instanceIndex, String name, long highLevelMemoryWaterMarkInBytes, long lowLevelMemoryWaterMarkInBytes,
+      boolean useReferences, boolean recycleMap)
   {
+    this.instanceIndex = instanceIndex;
     this.name = name;
     this.recycleMap = recycleMap;
-    this.maxMemoryInBytes = maxMemoryInBytes;
-    this.useReferences = useReferences;
+    this.highLevelMemoryWaterMarkInBytes = highLevelMemoryWaterMarkInBytes;
     this.lowLevelMemoryWaterMarkInBytes = lowLevelMemoryWaterMarkInBytes;
+    this.useReferences = useReferences;
   }
 
   /**
@@ -246,6 +332,14 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   public final void setConnected(boolean isConnected)
   {
     this.isConnected = isConnected;
+  }
+
+  /**
+   * @return the current cache memory consumption, expressed in bytes
+   */
+  public final long getMemoryConsumptionInBytes()
+  {
+    return memoryConsumptionInBytes;
   }
 
   /**
@@ -318,7 +412,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
         else
         {
           // The underlying bitmap has been garbaged, and we discard it
-          memoryConsumption -= usedBitmap.getMemoryConsumption();
+          memoryConsumptionInBytes -= usedBitmap.getMemoryConsumption();
           cache.remove(url);
         }
       }
@@ -336,7 +430,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       {
         // This may happen if the same bitmap URL has been asked several times while being downloaded
         // We can consider the previous entry as released
-        memoryConsumption -= previousUsedBitmap.getMemoryConsumption();
+        memoryConsumptionInBytes -= previousUsedBitmap.getMemoryConsumption();
         usedBitmap.rememberAccessed(previousUsedBitmap);
       }
     }
@@ -347,17 +441,18 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
     final int bitmapSize = usedBitmap.getMemoryConsumption();
     if (IS_DEBUG_TRACE && log.isDebugEnabled())
     {
-      log.debug("The bitmap consumes " + bitmapSize + " (" + memoryConsumption + ") bytes and corresponds to the url '" + url + "'");
+      log.debug("The bitmap consumes " + bitmapSize + " (" + memoryConsumptionInBytes + ") bytes and corresponds to the url '" + url + "'");
     }
-    memoryConsumption += bitmapSize;
+    memoryConsumptionInBytes += bitmapSize;
     usedBitmap.rememberAccessed();
 
     // If the cache water mark upper limit has been reached, the cache is cleared
-    if (memoryConsumption > maxMemoryInBytes)
+    if (memoryConsumptionInBytes > highLevelMemoryWaterMarkInBytes)
     {
       cleanUpCache();
     }
 
+    notifiyAnalyticsListener();
     return usedBitmap;
   }
 
@@ -399,10 +494,10 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
         }
         Collections.sort(toBeDiscardedUsedBitmaps);
         int index = 0;
-        while (memoryConsumption > lowLevelMemoryWaterMarkInBytes && index < toBeDiscardedUsedBitmaps.size())
+        while (memoryConsumptionInBytes > lowLevelMemoryWaterMarkInBytes && index < toBeDiscardedUsedBitmaps.size())
         {
           final UsedBitmap discardedUsedCache = cache.remove(toBeDiscardedUsedBitmaps.get(index).url);
-          memoryConsumption -= discardedUsedCache.getMemoryConsumption();
+          memoryConsumptionInBytes -= discardedUsedCache.getMemoryConsumption();
           // We make the bitmap as recycled, so that it is actually removed from memory, only if it not being used
           if (recycleMap == true && discardedUsedCache.bindingCount <= 0)
           {
@@ -426,14 +521,37 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
         }
         if (log.isInfoEnabled())
         {
-          log.info("The bitmap cache '" + name + "' has been cleaned-up in " + (System.currentTimeMillis() - start) + " ms (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumption + " bytes");
+          log.info("The bitmap cache '" + name + "' has been cleaned-up in " + (System.currentTimeMillis() - start) + " ms (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumptionInBytes + " bytes");
         }
       }
+      cleanUpsCount++;
     }
     finally
     {
       cleanUpInProgress = false;
-      System.gc();
+    }
+  }
+
+  /**
+   * Dumps the analytics about the current state of the instance.
+   */
+  protected void dump()
+  {
+    if (IS_DUMP_TRACE && IS_DEBUG_TRACE && log.isDebugEnabled())
+    {
+      log.debug("'" + name + "' statistics: " + "cache.size()=" + cache.size());
+    }
+    notifiyAnalyticsListener();
+  }
+
+  /**
+   * If the {@link CoreBitmapDownloader#ANALYTICS_LISTENER} is not {@code null}, it notifies it.
+   */
+  protected final void notifiyAnalyticsListener()
+  {
+    if (CoreBitmapDownloader.ANALYTICS_LISTENER != null)
+    {
+      CoreBitmapDownloader.ANALYTICS_LISTENER.onAnalytics(this, new CoreBitmapDownloader.AnalyticsData(cache.size(), cleanUpsCount, outOfMemoryOccurences));
     }
   }
 

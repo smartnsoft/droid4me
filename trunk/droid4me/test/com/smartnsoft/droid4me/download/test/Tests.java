@@ -321,7 +321,7 @@ public final class Tests
   {
     super.setup();
     BasisBitmapDownloader.IS_DEBUG_TRACE = true;
-    bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>("0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
+    bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>(0, "0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
     view = new DummyViewable(1234);
     handler = new DummyHandlerable();
   }
