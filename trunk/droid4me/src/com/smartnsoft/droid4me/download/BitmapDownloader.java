@@ -46,6 +46,16 @@ public class BitmapDownloader
     extends BasisBitmapDownloader<BitmapableBitmap, ViewableView, HandlerableHander>
 {
 
+  /**
+   * A component which is able to display graphically the state of the {@link BitmapDownloader#getInstance(int) instances}.
+   * 
+   * <p>
+   * It is very handy for fine-tuning the {@link CoreBitmapDownloader#highLevelMemoryWaterMarkInBytes} and the
+   * {@link CoreBitmapDownloader#lowLevelMemoryWaterMarkInBytes} parameters.
+   * </p>
+   * 
+   * @since 2012.06.08
+   */
   public static class AnalyticsDisplayer
       implements CoreBitmapDownloader.AnalyticsListener
   {
@@ -108,6 +118,19 @@ public class BitmapDownloader
 
     protected JaugeView[] jauges;
 
+    /**
+     * Creates on the fly a new Android {@link ViewGroup} which is able to display the data exposed by an
+     * {@link CoreBitmapDownloader.AnalyticsListener} implementaton.
+     * 
+     * <p>
+     * The container widget displays as many jauges as declared through the {@link BitmapDownloader#INSTANCES_COUNT} attribute, each jauge supposed to
+     * represent its underlying {@link CoreBitmapDownloader} state.
+     * </p>
+     * 
+     * @param context
+     *          the context that will host the created widget
+     * @return an Android {@link ViewGroup}, that you may add to a widgets hierarchy
+     */
     public ViewGroup getView(Context context)
     {
       jauges = new JaugeView[BitmapDownloader.INSTANCES_COUNT];
@@ -124,6 +147,10 @@ public class BitmapDownloader
       return container;
     }
 
+    /**
+     * Plugs the current {@link CoreBitmapDownloader.AnalyticsListener} to the {@link CoreBitmapDownloader#ANALYTICS_LISTENER}, so that the current
+     * instance listens to all analytics events.
+     */
     public void plug()
     {
       CoreBitmapDownloader.ANALYTICS_LISTENER = this;

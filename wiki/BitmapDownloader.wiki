@@ -84,6 +84,29 @@ The "BitmapDownloader" lets you set, for each instance, define how much memory, 
 
 You may want to empty the cache yourself: on that purpose, you may invoke the `empty()` method.
 
+== The `AnalyticsListener` for listening to the `BitmapDownloader` internal state ==
+
+When using multiple `BitmapDownloader` instances in a picture very demanding application, it is very often important to be able to tune properly the cache memory water marks:
+
+* too large high level water marks will result in many `OutOfMemoryError` situations: even if the `BitmapDownloader` is supposed to gracefully support those cases, this causes repeating garbage collections, incurring CPU consumption, and a feeling that the hosting application GUI is hanging, or lagging ;
+* too small high-level water marks, or too low low-level water marks will result in the `BitmapDownloader` to invoke too often its `cleanUpCache()` method: this will empty bitmaps cached in memory to be flushed, and them to be fetched back from either the local persistence or from the Internet once again, which obviously will induce either battery usage in one case, and network consumption in the other case, and in old case a CPU waste and a lagging application GUI.
+
+This is where the `AnalyticsListener` comes in hand: this interface exposes a single method, which will be invoked as soon as the `BitmapDownloader` internal state changes. You may set an implementation of this interface though the `BitmapDownloader.ANALYTICS_LISTENER` static attribute ; by default, this attribute is set to `null`. The interface `onAnalytics()` method will be invoked by providing an `AnalyticsData` Plain Old Java Object, which contains information about the `BitmapDownloader` current internal state. This method will be invoked in the following cases:
+
+* the `BitmapDownloader.cleanUpCache()` has end-up its processing ;
+* a new bitmap has been promoted to the cache memory ;
+* an `OutOfMemoryError` exception has occurred.
+
+Those events are very handy, because they provided `AnalyticsData` POJO reveals:
+
+* the number of bitmaps currently in the cache,
+* the number of times the `BitmapDownloader.cleanUpCache()` method has been invoked since its inception,
+* and the number of `OutOfMemoryError` exceptions have been detected since its inception.
+
+Note that you may access to the cache current memory usage by invoking the `BitmapDownloader.getMemoryConsumptionInBytes()` method. This is especially handy when fine-tuning the cache water mark levels.
+
+As a bonus track, you may use the `BitmapDownloader.AnalyticsDisplayer` component, which implements the `AnalyticsListener` interface, and exposes an Android `View` which reports graphical jauges about each `BitmapDownloader` instance.
+
 == How to couple the "BitmapDownloader" with the "[Persistence Persistence]" component ==
 
 If you want the downloaded bitmaps to be persisted, implement the following methods of the `DownloadInstructions.AbstractInstructions` class:
@@ -104,5 +127,6 @@ Now, in a stressed environment, it is important that the component behaves prope
  * memory conservation: because an application may display a huge bunch of bitmaps, it is very important that it does not get saturated by its caching system. The component can be split into several instances, and each instance can state how it should behave regarding the memory consumption, through a memory low/high water mark mechanism.
 
 This is the reason why, when you invoke the `BitmapDownloader.get()` method, i.e. run a "command", some considerations are taken into account:
- # a first internal command is triggered, and the following workflow is run…
- # the instance will look whether the same command is already been executed…Ò
+ # a first internal command is triggered, and the following workflow is run ;
+ # the instance will look whether the same command is already been executed.
+ 
