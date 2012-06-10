@@ -167,7 +167,7 @@ public class BitmapDownloader
   }
 
   /**
-   * The number of instances of {@link BitmapDownloader} that will be created.
+   * The number of instances of {@link BitmapDownloader} that will be created. Defaults to {@code 1}.
    * 
    * <p>
    * Set that parameter before invoking the {@link BitmapDownloader#get} method, because a later change has no effect.
@@ -176,26 +176,27 @@ public class BitmapDownloader
   public static int INSTANCES_COUNT = 1;
 
   /**
-   * The fully qualified name of the {@link BasisBitmapDownloader} instances implementation.
+   * The fully qualified name of the {@link BasisBitmapDownloader} instances implementation. Defaults to {@link BitmapDownloader}.
    */
   public static String IMPLEMENTATION_FQN = BitmapDownloader.class.getName();
 
   /**
-   * Indicates the upper limit of memory that each cache is allowed to reach.
+   * Indicates the upper limit of memory that each cache is allowed to reach. When that limit is reached, the instance cache memory is
+   * {@link #cleanUpCache() cleaned up}.
    * 
    * <p>
-   * If not set, the {@link #DEFAULT_MAX_MEMORY_IN_BYTES} value will be used for all instances.
+   * If not set, the {@link #DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES} value will be used for all instances.
    * </p>
    */
-  public static long[] MAX_MEMORY_IN_BYTES;
+  public static long[] HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES;
 
   /**
    * Indicates the default upper limit of memory that each cache is allowed to reach.
    */
-  public static final long DEFAULT_MAX_MEMORY_IN_BYTES = 3l * 1024l * 1024l;
+  public static final long DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 3l * 1024l * 1024l;
 
   /**
-   * When the cache is being cleaned-up, indicates the lower limit of memory that each cache is allowed to reach.
+   * When the cache is being {@link #cleanUpCache() cleaned-up}, it indicates the lower limit of memory that each cache is allowed to reach.
    * 
    * <p>
    * If not set, the {@link #DEFAULT_LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES} value will be used for all instances.
@@ -235,6 +236,11 @@ public class BitmapDownloader
    * If no instance had been created at the time of the call, the instances will be created on the fly, which respects the lazy loading pattern.
    * </p>
    * 
+   * <p>
+   * You may tune the actual implementation of {@link BitmapDownloader} to use by setting beforehand the {@link BitmapDownloader#IMPLEMENTATION_FQN}
+   * attribute.
+   * </p>
+   * 
    * @param index
    *          the instance to be returned
    * @return a valid bitmap downloader instance, ready to use
@@ -259,8 +265,8 @@ public class BitmapDownloader
                 long.class, boolean.class, boolean.class);
             for (int instanceIndex = 0; instanceIndex < BitmapDownloader.INSTANCES_COUNT; instanceIndex++)
             {
-              final long highWaterMark = BitmapDownloader.MAX_MEMORY_IN_BYTES == null ? BitmapDownloader.DEFAULT_MAX_MEMORY_IN_BYTES
-                  : BitmapDownloader.MAX_MEMORY_IN_BYTES[instanceIndex];
+              final long highWaterMark = BitmapDownloader.HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES == null ? BitmapDownloader.DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES
+                  : BitmapDownloader.HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES[instanceIndex];
               final long lowWaterMark = BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES == null ? BitmapDownloader.DEFAULT_LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES
                   : BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[instanceIndex];
               final boolean references = BitmapDownloader.USE_REFERENCES == null ? false : BitmapDownloader.USE_REFERENCES[instanceIndex];
@@ -304,6 +310,8 @@ public class BitmapDownloader
 
   /**
    * Totally clears all instances memory caches.
+   * 
+   * @see #clear()
    */
   public static synchronized void clearAll()
   {

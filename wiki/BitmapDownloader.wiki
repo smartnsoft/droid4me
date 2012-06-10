@@ -34,22 +34,22 @@ Here are the steps that you need to take:
 
 The component will handle everything for you, and in particular, if the bitmap is already in memory, no HTTP request will be performed.
 
-== The "BitmapDownloader" command workflow ==
+== The "BitmapDownloader" job workflow ==
 
-To ease the explanation, we will refer to the "command" term to refer to the action of invoking the `BitmapDownloader.get()`: this command is defined by the couple of the `android.view.View` and `bitmapUid` provided as parameters.
+To ease the explanation, we will refer to the "job" term to refer to the action of invoking the `BitmapDownloader.get()`: this job is defined by the couple of the `android.view.View` and `bitmapUid` provided as parameters.
 
-When you invoke the `BitmapDownloader.get()` method, i.e. run a "command", the "BitmapDownloader" follows this overall workflow:
- # first, it asks the `DownloadInstructions` if it can provide the bitmap "locally", that is to say from a resource bundled in the application .apk. This is done by invoking the `DownloadInstructions.hasLocalBitmap()` method: if the method answers `true`, then the `DownloadInstructions.onBindLocalBitmap()` method is invoked, and the command ends;
+When you invoke the `BitmapDownloader.get()` method, i.e. run a "job", the "BitmapDownloader" follows this overall workflow:
+ # first, it asks the `DownloadInstructions` if it can provide the bitmap "locally", that is to say from a resource bundled in the application .apk. This is done by invoking the `DownloadInstructions.hasLocalBitmap()` method: if the method answers `true`, then the `DownloadInstructions.onBindLocalBitmap()` method is invoked, and the job ends;
  # then, it turns the bitmap `imageUid` into a URL, by invoking the `DownloadInstructions.computeUrl()` method. The fact to turn the bitmap unique identifier into an actual URL is very convenient, because it enables you to centralize in one place that computation. It may appear overkill at first sight, but with the help of the additionally provided `imageSpecs` parameter, you can re-use the same `DonwloadItructions` for various purposes.
- # then, it looks whether the bitmap asks for would not be already in memory, based on the previously computed URL. If this is the case, the binding is run and the command completes ;
- # then, it asks the `DownloadInstructions` whether a temporary bitmap is available while the rest of the command is executed (which may take time, and we'd prefer the `View` to be temporarily binded to a bitmap). This is done through the `DownloadInstructions.hasTemporaryBitmap()` method call: if the method returns `true`, then the `DownloadInstructions.onBindTemporaryBitmap()` is invoked. Whatever, the rest of the command execution continues.
- # at this stage, we know that the bitmap is not in memory cache. It then asks if the bitmap could not be retrieved from a local persistent instance: this is done by invoking the `DownladInstructions.getInputStream()` method: if the method returns a non-null `InputStream`, it will be used to re-create the bitmap, bind it via the `DownloadInstruction.onBindBitmap()` method, and the command ends. This is where you can plug the persistence.
- # at this stage, we know that the bitmap is neither available in memory cache, nor in the local persistent: the component needs to download it. It invokes the `DownladInstructions.downloadInputStream()`: if this method succeeds, it returns an `InputStream`. Otherwise the command ends ;
+ # then, it looks whether the bitmap asks for would not be already in memory, based on the previously computed URL. If this is the case, the binding is run and the job completes ;
+ # then, it asks the `DownloadInstructions` whether a temporary bitmap is available while the rest of the job is executed (which may take time, and we'd prefer the `View` to be temporarily binded to a bitmap). This is done through the `DownloadInstructions.hasTemporaryBitmap()` method call: if the method returns `true`, then the `DownloadInstructions.onBindTemporaryBitmap()` is invoked. Whatever, the rest of the job execution continues.
+ # at this stage, we know that the bitmap is not in memory cache. It then asks if the bitmap could not be retrieved from a local persistent instance: this is done by invoking the `DownladInstructions.getInputStream()` method: if the method returns a non-null `InputStream`, it will be used to re-create the bitmap, bind it via the `DownloadInstruction.onBindBitmap()` method, and the job ends. This is where you can plug the persistence.
+ # at this stage, we know that the bitmap is neither available in memory cache, nor in the local persistent: the component needs to download it. It invokes the `DownladInstructions.downloadInputStream()`: if this method succeeds, it returns an `InputStream`. Otherwise the job ends ;
  # then, the previously retrieved `InputStream` will be provided to the `DownloadInstructions.onInputStreamDownloaded()` method that the "BitmapDownloader" will invoke. This is a placeholder where you may want to persist locally the bitmap ;
  # then, the previously retrieved `InputStream` needs to be turned into an actual `Bitmap`. On that purpose, the "BitmapDownloader" invokes the `DownloadInstructions.convert()` method: this is a good place to perform graphical operations to the bitmap, if necessary ;
- # at last, the `DownloadInstruction.onBindBitmap()` method is invoked with the extracted bitmap and the command ends. 
+ # at last, the `DownloadInstruction.onBindBitmap()` method is invoked with the extracted bitmap and the job ends. 
 
-The strategy used internally during that workflow is a kind of last-in-first-out (LIFO) when serving the commands, because, in the case the component is used in a `ListView`, we prefer to have the lastly displayed rows properly updated graphically, instead of the ones which have already disappeared from the screen because the `ListView` has already been scrolled vertically. This policy has shown that it is a good choice, when confronted to the reality.
+The strategy used internally during that workflow is a kind of last-in-first-out (LIFO) when serving the jobs, because, in the case the component is used in a `ListView`, we prefer to have the lastly displayed rows properly updated graphically, instead of the ones which have already disappeared from the screen because the `ListView` has already been scrolled vertically. This policy has shown that it is a good choice, when confronted to the reality.
 
 Three major things:
  * When using the `BitmapDownloader.get()` method which takes a `boolean` as a first argument, it is supposed that the caller is the UI thread, and the component attempts to perform some optimizations, which will be effective if the bitmap asks for is already in RAM.
@@ -58,22 +58,26 @@ Three major things:
 
 == The `DownloadInstructions` notifications ==
 
-As we have seen, the `DownloadInstructions` is requested so as to guide the bitmap "command", but the `BitmapDownloader` also notifies during the command execution workflow. Here are the methods which may be invoked:
+As we have seen, the `DownloadInstructions` is requested so as to guide the bitmap "job", but the `BitmapDownloader` also notifies during the job execution workflow. Here are the methods which may be invoked:
 
- * `DownloadInstructions.onBitmapReady()`: this method will be invoked by the "BitmapDownloader" to indicate when the bitmap is eventually available at the end of the command. It is even invoked when the provided `view` parameter is `null`. The parameters enable to get more information.
+ * `DownloadInstructions.onBitmapReady()`: this method will be invoked by the "BitmapDownloader" to indicate when the bitmap is eventually available at the end of the job. It is even invoked when the provided `view` parameter is `null`. The parameters enable to get more information.
  * `DownloadInstructions.onBitmapBound()`: this method will be invoked by the "BitmapDownloader", always after the `DownloadInstructions.onBindTemporaryBitmap()/onBindLocalBitmap()/onBindBitmap()` method it has been invoked, to indicate that the binding process is over. The parameters enable to get more information.
 
 == Some built-in `imageSpecs` classes ==
 
 You will find in the `DownloadSpecs` container class, some convenient classes, which helps to implements the `DownloadInstruction` interface:
 
- * `TemporaryImageSpecs`: this class holds a reference to the Android resource identifier where a temporary bitmap may be extracted from, while the rest of the `BitmapDownloader` instance is running a command ;
+ * `TemporaryImageSpecs`: this class holds a reference to the Android resource identifier where a temporary bitmap may be extracted from, while the rest of the `BitmapDownloader` instance is running a job ;
  * `TemporaryAndNoImageSpecs`: this class is a `TemporaryImageSpecs`, and holds an alternative Android resource identifier, if the bitmap could not be downloaded ;
  * `DefaultImageSpecs`: this class is a `TemporaryImageSpecs`, and holds a size (an `int`) information ;
  * `OrientedImageSpecs`: this class holds a size (an `int`) information, and an orientation flag (a `boolean`) ;
  * `SizedImageSpecs`: this class is a `TemporaryImageSpecs`, and holds a width and a height information (two `int`).
 
 The idea behind those built-in classes, is to implement the `DownloadInstructions` methods by testing the actual class of the provided `imageSpecs` argument.
+
+== Notifying about Internet connectivity ==
+
+In order to save the device CPU and battery, and to speed up a `BitmapDownloader` job, the `BitmapDownloader.setConnected()` method enables to indicate in real time whether the device running the hosting application has Internet connectivity. When it is `false`, the `Instruction.downloadInputStream()` method will not be invoked when the `BitmapDownloader` detects that it needs to download the bitmap. If you listen to the device connectivity and plug that real-time information to all `BitmapDownloader` instances, this will optimize their behavior.
 
 == The memory water marks ==
 
@@ -88,24 +92,22 @@ You may want to empty the cache yourself: on that purpose, you may invoke the `e
 
 When using multiple `BitmapDownloader` instances in a picture very demanding application, it is very often important to be able to tune properly the cache memory water marks:
 
-* too large high level water marks will result in many `OutOfMemoryError` situations: even if the `BitmapDownloader` is supposed to gracefully support those cases, this causes repeating garbage collections, incurring CPU consumption, and a feeling that the hosting application GUI is hanging, or lagging ;
-* too small high-level water marks, or too low low-level water marks will result in the `BitmapDownloader` to invoke too often its `cleanUpCache()` method: this will empty bitmaps cached in memory to be flushed, and them to be fetched back from either the local persistence or from the Internet once again, which obviously will induce either battery usage in one case, and network consumption in the other case, and in old case a CPU waste and a lagging application GUI.
+ * too large high level water marks will result in many `OutOfMemoryError` situations: even if the `BitmapDownloader` is supposed to gracefully support those cases, this causes repeating garbage collections, incurring CPU consumption, and a feeling that the hosting application GUI is hanging, or lagging ;
+ * too small high-level water marks, or too low low-level water marks will result in the `BitmapDownloader` to invoke too often its `cleanUpCache()` method: this will cause memory-cached bitmaps to be flushed, and them to be fetched back later on when displaying them, from either the local persistence or from the Internet once again, which obviously will induce either battery usage in one case, and network consumption in the other case, and in all cases a CPU waste and a lagging application GUI.
 
-This is where the `AnalyticsListener` comes in hand: this interface exposes a single method, which will be invoked as soon as the `BitmapDownloader` internal state changes. You may set an implementation of this interface though the `BitmapDownloader.ANALYTICS_LISTENER` static attribute ; by default, this attribute is set to `null`. The interface `onAnalytics()` method will be invoked by providing an `AnalyticsData` Plain Old Java Object, which contains information about the `BitmapDownloader` current internal state. This method will be invoked in the following cases:
+This is where the `AnalyticsListener` comes in hand: this interface exposes a single method, which will be invoked every time the `BitmapDownloader` internal state changes. You may set an implementation of this interface though the `BitmapDownloader.ANALYTICS_LISTENER` static attribute ; by default, this attribute is set to `null`. The interface `onAnalytics()` method will be invoked by providing an `AnalyticsData` Plain Old Java Object, which contains information about the `BitmapDownloader` current internal state. This method will be invoked in the following cases:
 
-* the `BitmapDownloader.cleanUpCache()` has end-up its processing ;
-* a new bitmap has been promoted to the cache memory ;
-* an `OutOfMemoryError` exception has occurred.
+ * the `BitmapDownloader.cleanUpCache()` has end-up its processing ;
+ * a new bitmap has been promoted to the cache memory ;
+ * an `OutOfMemoryError` exception has occurred.
 
 Those events are very handy, because they provided `AnalyticsData` POJO reveals:
 
-* the number of bitmaps currently in the cache,
-* the number of times the `BitmapDownloader.cleanUpCache()` method has been invoked since its inception,
-* and the number of `OutOfMemoryError` exceptions have been detected since its inception.
+ * the number of bitmaps currently in the cache,
+ * the number of times the `BitmapDownloader.cleanUpCache()` method has been invoked since its inception,
+ * and the number of `OutOfMemoryError` exceptions have been detected since its inception.
 
 Note that you may access to the cache current memory usage by invoking the `BitmapDownloader.getMemoryConsumptionInBytes()` method. This is especially handy when fine-tuning the cache water mark levels.
-
-As a bonus track, you may use the `BitmapDownloader.AnalyticsDisplayer` component, which implements the `AnalyticsListener` interface, and exposes an Android `View` which reports graphical jauges about each `BitmapDownloader` instance.
 
 == How to couple the "BitmapDownloader" with the "[Persistence Persistence]" component ==
 
@@ -116,17 +118,40 @@ If you want the downloaded bitmaps to be persisted, implement the following meth
 
 This will ensure that, when the bitmap is not already in memory cache, a first attempt to retrieve from the persistence layer will be performed, and once the bitmap has been downloaded, it will be persisted.
 
-== Some noteworthy `BitmapDownloader` internal implementation details ==
+== Some noteworthy `BitmapDownloader` internal implementation details, and fine tuning ==
 
-The component uses two thread pools, in order to run two kinds of commands...
+When using the `BitmapDownloader.get()` job, the component uses two internal thread pools, in order to run two kinds of commands:
 
-Now, in a stressed environment, it is important that the component behaves properly, and we have done our best to handle this situation properly. The component takes great care about:
+ # a first "pre"-command, which queries the memory whether a bitmap is available: in that case, the binding is done. The first threads pool is used to run that command. All operations are done in memory, hence, the execution of the job execution is very fast, and typically below the millisecond ;
+ # a second and final "download"-command which is responsible for generating the bitmap from a local persistence, if any, and them from Internet if necessary. The second threads pool is used to run that command. If the `BitmapDownloader` is bound to a local persistence cache, that command will perform storage access operations, which are CPU, battery and time consuming. When that command needs to download the bitmap bytes, it consumes battery, CPU and network band. This command is hence a magnitude more expensive than the previous one, and this is the reason why the `BitmapDownloader` must be properly fine-tuned..
+
+In order to tune the `BitmapDownloader`, here are some key key parameters to set.
+
+ * The number of instances: this is set through the `BitmapDownlader.INSTANCES_COUNT` static attribute. When designing the application which resorts to this component, it is important to define logical bitmaps units, depending on their physical dimensions, the screens they are displayed on, the number of times they are accessed, the end-user experience. Each instance is independent of the others in terms of memory management, even if all instances share the same two internal pre and download-command threads pools. Declaring multiple instances does not cause significant memory overhead.
+ * For each instance, its memory water marks: when using multiple instances, depending of the nature of their bitmaps, mostly regarding their dimensions, it is important to properly tune those water markers through the `BitmapDownloader.HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES` and `BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES' static attributes.
+ * The number of core threads inside the pre and download threads pool which are customizable through the `BitmapDownloader.setPreThreadPoolSize()` and `BitmapDownloader.setDownloadThreadPoolSize()` static methods.
+
+As a bonus track, you may use the `BitmapDownloader.AnalyticsDisplayer` component, which implements the `AnalyticsListener` interface, and exposes an Android `View` which reports graphical jauges about each `BitmapDownloader` instance. Displaying graphically the state of the various `BitmapDownloader` instances in real time teaches the developer a lot about how each instance should be tuned.
+
+== Running a synchronous `BitmapDownloader.get()` job ==
+
+If, for some reason like automatically downloading some content for further off-line access, you need to download a bitmap in a synchronous way, the `BitmapDownloader` component offers an alternate `get()` method for running that job, which takes two boolean first arguments:
+
+ # `isPreBlocking`: this flag indicates whether the first command of the job should be performed from the calling thread ;
+ # `isDownloadBlocking`: this flag indicates whether the second command of the job, if any, should executer in the same thread as the calling job thread.
+ 
+ If you invoke the `get(true, true, null, ...)` job, you are ensured that the whole download and binding job is done from the current thread, and this enables to pre-fetch the bitmap, and have it available in the cache (persistence and/or memory).
+
+== Using your own `BitmapDownloader` implementation ==
+
+The design of the `BitmapDownloader` is open, and you are free to use whatever implementation by setting the `BitmapDownloader.IMPLEMENTATION_FQN` static attribute.
+
+If you are not happy with the current `CoreBitmapDownloader` implementation, which defaults to the `BitmapDownloader`, it is up to you to derive from the `BitmapDownloader` and, for instance, override the `BitmapDownloader.cleanUpCacheInstance()` method.
+
+== Conclusion ==
+
+In a stressed environment, it is important that the component behaves properly, and we have done our best to handle this situation properly. The component takes great care about:
 
  * optimization: invoking many times that component, and especially for the same `View` for different URLs or for the same URL, should not incur useless operations, like retrieving the actual bitmap from the persistence, from the Internet, like binding the bitmap to the view ;
  * end-user experience: no matter how the end-user interacts with the User Interface, his screen should be always as much as possible up-to-date regarding the displayed images.
  * memory conservation: because an application may display a huge bunch of bitmaps, it is very important that it does not get saturated by its caching system. The component can be split into several instances, and each instance can state how it should behave regarding the memory consumption, through a memory low/high water mark mechanism.
-
-This is the reason why, when you invoke the `BitmapDownloader.get()` method, i.e. run a "command", some considerations are taken into account:
- # a first internal command is triggered, and the following workflow is run ;
- # the instance will look whether the same command is already been executed.
- 
