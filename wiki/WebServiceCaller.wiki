@@ -1,0 +1,6 @@
+#summary Easing the web services consumption
+#labels Featured,Phase-Implementation
+
+= WebServiceCaller =
+
+Should be available one day...
