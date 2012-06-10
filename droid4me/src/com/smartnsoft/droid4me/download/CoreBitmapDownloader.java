@@ -235,6 +235,16 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       return memoryConsumption;
     }
 
+    protected int getAccessCount()
+    {
+      return accessCount;
+    }
+
+    protected int getBindingCount()
+    {
+      return bindingCount;
+    }
+
   }
 
   /**
@@ -258,7 +268,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   public final long lowLevelMemoryWaterMarkInBytes;
 
   /**
-   * A flag which states whether the device currently has some Internet connectivity.
+   * A flag which states whether the device currently has some Internet connectivity. Defaults to {@code true}.
    */
   private boolean isConnected = true;
 
@@ -270,12 +280,23 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   public final boolean recycleMap;
 
   /**
+   * Holds the instance bitmap memory cache. The {@link Map} {@link String} entry if the
+   * {@link BasisDownloadInstructions.Instructions#computeUrl(String, Object) URL} of a cached bitmap.
+   * 
+   * <p>
    * A {@link HashMap} is used instead of a {@link java.util.Hashtable}, because we want to allow null values.
+   * </p>
    */
   protected final Map<String, UsedBitmap> cache = new HashMap<String, UsedBitmap>();
 
+  /**
+   * How much memory is currently used by the bitmap memory cache.
+   */
   private long memoryConsumptionInBytes = 0;
 
+  /**
+   * Indicates whether a {@link #cleanUpCache() clean up} is already running.
+   */
   private boolean cleanUpInProgress;
 
   /**
@@ -313,8 +334,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   }
 
   /**
+   * Indicates the instance assumption regarding the device Internet current connectivity.
+   * 
    * @return {@code true} if and only if the current instance considers that the device has Internet connectivity
    * @see #setConnected(boolean)
+   * @see BasisDownloadInstructions.Instructions#downloadInputStream(String, Object, String)
    */
   public final boolean isConnected()
   {
@@ -344,11 +368,20 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * This method will retrieve the bitmap corresponding to the provided identifier along with the provided instructions, and bind it to the provided
-   * {@link View}.
+   * {@link View}. This instruction is considered as a download and binding job.
    * 
    * <p>
-   * Can be invoked from any thread, not only the GUI's! The method is non-blocking.
+   * Can be invoked from any thread, not only the GUI's! The method is non-blocking, which means that the job is done in an asynchronous way.
    * </p>
+   * 
+   * Here are some noteworthy contracts that the component enforces:
+   * <ul>
+   * <li>The component ensures that any {@link OutOfMemoryError} exception thrown during the commands of the job are caught properly, so that the
+   * caller does not have to deal with potential memory saturation problems.</li>
+   * <li>The component will only download once the bitmap corresponding to a given
+   * {@link BasisDownloadInstructions.Instructions#computeUrl(String, Object) URL}, even if several commands are run successively for the same URL, in
+   * order to save battery and network band usage.</li>
+   * </ul>
    * 
    * @param view
    *          the view that will be bound with the retrieved {@link Bitmap}. May be {@code null}, which enables to simply download a bitmap and put it
@@ -374,6 +407,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * <p>
    * Invoking that method with the two {@code isPreBlocking} and {@code isDownloadBlocking} parameters set to {@code true} will execute the command
    * from the calling thread, which involves that the caller should be the UI thread, or that the provided {@code view} parameter is {@code null}.
+   * This type of invocation is especially useful when the download and bind command must be run in a synchronous way.
    * </p>
    * 
    * @param isPreBlocking
@@ -457,7 +491,13 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   }
 
   /**
-   * Is responsible for emptying the cache, until the low-level memory water mark is reached.
+   * Is responsible for cleaning up the cache, until the low-level memory water mark is reached.
+   * 
+   * <p>
+   * If o clean-up is already {@link #cleanUpInProgress in progress}, the method returns immediately without processing anything.
+   * </p>
+   * 
+   * @see #cleanUpCacheInstance()
    */
   protected final void cleanUpCache()
   {
@@ -476,59 +516,78 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
     {
       synchronized (cache)
       {
-        int discardedCount = 0;
-        int recycledCount = 0;
-        final List<UsedBitmap> toBeDiscardedUsedBitmaps = new ArrayList<UsedBitmap>(cache.values());
-        if (recycleMap == true)
-        {
-          // First, we clean up the references to all garbage-collected bitmaps
-          final Iterator<UsedBitmap> iterator = toBeDiscardedUsedBitmaps.iterator();
-          while (iterator.hasNext())
-          {
-            final UsedBitmap usedBitmap = (UsedBitmap) iterator.next();
-            if (usedBitmap.getBitmap() == null)
-            {
-              iterator.remove();
-            }
-          }
-        }
-        Collections.sort(toBeDiscardedUsedBitmaps);
-        int index = 0;
-        while (memoryConsumptionInBytes > lowLevelMemoryWaterMarkInBytes && index < toBeDiscardedUsedBitmaps.size())
-        {
-          final UsedBitmap discardedUsedCache = cache.remove(toBeDiscardedUsedBitmaps.get(index).url);
-          memoryConsumptionInBytes -= discardedUsedCache.getMemoryConsumption();
-          // We make the bitmap as recycled, so that it is actually removed from memory, only if it not being used
-          if (recycleMap == true && discardedUsedCache.bindingCount <= 0)
-          {
-            if (discardedUsedCache.getBitmap() != null)
-            {
-              discardedUsedCache.getBitmap().recycle();
-              recycledCount++;
-            }
-          }
-          discardedCount++;
-          if (IS_DEBUG_TRACE && log.isDebugEnabled())
-          {
-            log.debug("Removed from the cache the bitmap with URL '" + discardedUsedCache.url + "' accessed " + discardedUsedCache.accessCount + " time(s) and currently bound " + discardedUsedCache.bindingCount + " time(s)");
-          }
-          index++;
-        }
-        // We reset the remaining usages
-        for (UsedBitmap uriUsage : cache.values())
-        {
-          uriUsage.accessCount = 0;
-        }
-        if (log.isInfoEnabled())
-        {
-          log.info("The bitmap cache '" + name + "' has been cleaned-up in " + (System.currentTimeMillis() - start) + " ms (" + discardedCount + " discarded and " + recycledCount + " recycled) and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumptionInBytes + " bytes");
-        }
+        cleanUpCacheInstance();
+      }
+      if (log.isInfoEnabled())
+      {
+        log.info("The bitmap cache '" + name + "' has been cleaned-up in " + (System.currentTimeMillis() - start) + " ms and it now contains " + cache.size() + " item(s), and it now consumes " + memoryConsumptionInBytes + " byte(s)");
       }
       cleanUpsCount++;
     }
     finally
     {
       cleanUpInProgress = false;
+    }
+  }
+
+  /**
+   * This method is responsible for actually cleaning up the memory cache, by enforcing the {@link #highLevelMemoryWaterMarkInBytes} and
+   * {@link #lowLevelMemoryWaterMarkInBytes} limits. This method is aimed at being overridden, so as to set up another clean up policy.
+   * 
+   * <p>
+   * It is responsible for cleaning up the {@link #cache} attribute and update the {@link #memoryConsumptionInBytes} attribute accordingly.
+   * </p>
+   * 
+   * @see #cleanUpCache()
+   */
+  protected void cleanUpCacheInstance()
+  {
+    int discardedCount = 0;
+    int recycledCount = 0;
+    final List<UsedBitmap> toBeDiscardedUsedBitmaps = new ArrayList<UsedBitmap>(cache.values());
+    if (recycleMap == true)
+    {
+      // First, we clean up the references to all garbage-collected bitmaps
+      final Iterator<UsedBitmap> iterator = toBeDiscardedUsedBitmaps.iterator();
+      while (iterator.hasNext())
+      {
+        final UsedBitmap usedBitmap = (UsedBitmap) iterator.next();
+        if (usedBitmap.getBitmap() == null)
+        {
+          iterator.remove();
+        }
+      }
+    }
+    Collections.sort(toBeDiscardedUsedBitmaps);
+    int index = 0;
+    while (memoryConsumptionInBytes > lowLevelMemoryWaterMarkInBytes && index < toBeDiscardedUsedBitmaps.size())
+    {
+      final UsedBitmap discardedUsedCache = cache.remove(toBeDiscardedUsedBitmaps.get(index).url);
+      memoryConsumptionInBytes -= discardedUsedCache.getMemoryConsumption();
+      // We make the bitmap as recycled, so that it is actually removed from memory, only if it not being used
+      if (recycleMap == true && discardedUsedCache.bindingCount <= 0)
+      {
+        if (discardedUsedCache.getBitmap() != null)
+        {
+          discardedUsedCache.getBitmap().recycle();
+          recycledCount++;
+        }
+      }
+      discardedCount++;
+      if (IS_DEBUG_TRACE && log.isDebugEnabled())
+      {
+        log.debug("Removed from the cache the bitmap with URL '" + discardedUsedCache.url + "' accessed " + discardedUsedCache.accessCount + " time(s) and currently bound " + discardedUsedCache.bindingCount + " time(s)");
+      }
+      index++;
+    }
+    // We reset the remaining usages
+    for (UsedBitmap uriUsage : cache.values())
+    {
+      uriUsage.accessCount = 0;
+    }
+    if (log.isInfoEnabled())
+    {
+      log.info("The cleaning up the bitmap cache '" + name + "' statistics are: " + discardedCount + " discarded and " + recycledCount + " recycled");
     }
   }
 
