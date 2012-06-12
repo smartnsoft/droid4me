@@ -162,7 +162,7 @@ public class SmartImageView
     else if (ratio < 0f)
     {
       final int measuredHeight = getMeasuredHeight();
-      final int newWidth = (int) (getMeasuredHeight() * ratio) * -1;
+      final int newWidth = (int) ((float) getMeasuredHeight() * ratio) * -1;
       setMeasuredDimension(newWidth, measuredHeight);
     }
   }

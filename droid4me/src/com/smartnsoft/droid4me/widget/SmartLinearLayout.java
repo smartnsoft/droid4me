@@ -209,13 +209,13 @@ public class SmartLinearLayout
     if (ratio > 0f)
     {
       final int measuredWidth = getMeasuredWidth();
-      final int newHeight = (int) (getMeasuredWidth() * ratio);
+      final int newHeight = (int) ((float) getMeasuredWidth() * ratio);
       setMeasuredDimension(measuredWidth, newHeight);
     }
     else if (ratio < 0f)
     {
       final int measuredHeight = getMeasuredHeight();
-      final int newWidth = (int) (getMeasuredHeight() * ratio) * -1;
+      final int newWidth = (int) ((float) getMeasuredHeight() * ratio) * -1;
       setMeasuredDimension(newWidth, measuredHeight);
     }
     else
