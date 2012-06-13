@@ -259,13 +259,20 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
     return true;
   }
 
-  public final void onRetrieveBusinessObjects()
+  /**
+   * When overriding this method, you must invoke the super class method.
+   */
+  public void onRetrieveBusinessObjects()
       throws BusinessObjectUnavailableException
   {
     wrappedListView.onRetrieveBusinessObjects();
   }
 
-  public final void onBusinessObjectsRetrieved()
+  /**
+   * When overriding this method, you must invoke the super class method.
+   */
+  @Override
+  public void onBusinessObjectsRetrieved()
   {
     wrappedListView.onBusinessObjectsRetrieved();
   }
