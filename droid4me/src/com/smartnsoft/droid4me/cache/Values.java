@@ -166,6 +166,7 @@ public final class Values
   public static interface CacheableValue<BusinessObjectType, ExceptionType extends Exception, ProblemExceptionType extends Exception>
   {
 
+    // TODO: document this
     boolean isEmpty();
 
     BusinessObjectType getLoadedValue();
@@ -899,6 +900,7 @@ public final class Values
     /**
      * If two setting and getting methods are called concurrently, the consistency of the results are not granted!
      */
+    // TODO: why is this method overloaded?
     @Override
     public final BusinessObjectType getValue(Values.Instructions<BusinessObjectType, Values.CacheException, Values.CacheException> instructions,
         Values.CachingEvent cachingEvent, ParameterType parameter)
@@ -1008,7 +1010,8 @@ public final class Values
       }
     }
 
-    public final void safeSet(ParameterType parameter, BusinessObjectType businessObject)
+    public final void setValue(ParameterType parameter, BusinessObjectType businessObject)
+        throws Values.CacheException
     {
       final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Business.Source.Memory);
       // We modify the memory first, so as to make sure that it is actually modified
@@ -1019,9 +1022,21 @@ public final class Values
       }
       catch (Throwable throwable)
       {
+        throw new Values.CacheException(throwable);
+      }
+    }
+
+    public final void safeSet(ParameterType parameter, BusinessObjectType businessObject)
+    {
+      try
+      {
+        setValue(parameter, businessObject);
+      }
+      catch (Values.CacheException exception)
+      {
         if (log.isWarnEnabled())
         {
-          log.warn("Failed to save to the cache the business object with parameter '" + parameter + "': only taken into account in memory!", throwable);
+          log.warn("Failed to save to the cache the business object with parameter '" + parameter + "': only taken into account in memory!", exception);
         }
       }
     }
