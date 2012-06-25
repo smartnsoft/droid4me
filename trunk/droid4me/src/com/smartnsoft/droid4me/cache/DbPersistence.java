@@ -201,17 +201,29 @@ public final class DbPersistence
   /**
    * Defined in order to set up the database columns.
    */
-  private final static class CacheColumns
+  public final static class CacheColumns
       implements BaseColumns
   {
 
-    private static final String URI = "uri";
+    /**
+     * The URI corresponding to the data. This is a {@code String}.
+     */
+    public static final String URI = "uri";
 
-    private static final String CONTENTS = "contents";
+    /**
+     * The data themselves. This is a {@code blob}.
+     */
+    public static final String CONTENTS = "contents";
 
-    private static final String LAST_UPDATE = "lastUpdate";
+    /**
+     * The timestamp corresponding to the data last update. This is a {@code long}.
+     */
+    public static final String LAST_UPDATE = "lastUpdate";
 
-    private static final String CONTEXT = "context";
+    /**
+     * The context (which is free) associated with the data. This is a {@code blob}.
+     */
+    public static final String CONTEXT = "context";
 
     private CacheColumns()
     {
