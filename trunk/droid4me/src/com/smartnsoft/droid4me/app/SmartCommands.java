@@ -584,23 +584,46 @@ public final class SmartCommands
    * @since 2010.06.08
    */
   public static abstract class GuardedDialogInterfaceClickListener
-      extends SmartCommands.GuardedCommand<Activity>
       implements DialogInterface.OnClickListener
   {
 
+    protected final Context context;
+
     /**
-     * @param activity
-     *          the activity from which the execution originates, and which will be used when reporting a potential exception
+     * @param context
+     *          the context from which the execution originates, and which will be used when reporting a potential exception
      */
-    public GuardedDialogInterfaceClickListener(Activity activity)
+    public GuardedDialogInterfaceClickListener(Context context)
     {
-      super(activity);
+      this.context = context;
     }
 
-    public final void onClick(DialogInterface dialog, int which)
+    public final void onClick(final DialogInterface dialog, final int which)
     {
-      SmartCommands.execute(this);
+      SmartCommands.execute(new SmartCommands.GuardedCommand<Context>(context)
+      {
+        @Override
+        protected void runGuarded()
+            throws Exception
+        {
+          GuardedDialogInterfaceClickListener.this.runGuarded(dialog, which);
+        }
+      });
     }
+
+    /**
+     * The method to implement, and which will be invoked when the {@link #onClick(DialogInterface, int)} method will be invoked.
+     * 
+     * @param dialog
+     *          the parameter transmitted from the {@link #onClick(DialogInterface, int)} method
+     * @param which
+     *          the parameter transmitted from the {@link #onClick(DialogInterface, int)} method
+     * @throws Exception
+     *           the method is allowed to throw an {@link Exception}, which will be handled by the {@link SmartCommands#execute(GuardedCommand)}
+     *           method
+     */
+    protected abstract void runGuarded(DialogInterface dialog, int which)
+        throws Exception;
 
   }
 
@@ -611,23 +634,44 @@ public final class SmartCommands
    * @since 2010.06.08
    */
   public static abstract class GuardedViewClickListener
-      extends SmartCommands.GuardedCommand<Activity>
       implements View.OnClickListener
   {
+
+    protected final Context context;
 
     /**
      * @param activity
      *          the activity from which the execution originates, and which will be used when reporting a potential exception
      */
-    public GuardedViewClickListener(Activity activity)
+    public GuardedViewClickListener(Context context)
     {
-      super(activity);
+      this.context = context;
     }
 
-    public final void onClick(View view)
+    public final void onClick(final View view)
     {
-      SmartCommands.execute(this);
+      SmartCommands.execute(new SmartCommands.GuardedCommand<Context>(context)
+      {
+        @Override
+        protected void runGuarded()
+            throws Exception
+        {
+          GuardedViewClickListener.this.runGuarded(view);
+        }
+      });
     }
+
+    /**
+     * The method to implement, and which will be invoked when the {@link #onClick(View)} method will be invoked.
+     * 
+     * @param view
+     *          the parameter transmitted from the {@link #onClick(View)} method
+     * @throws Exception
+     *           the method is allowed to throw an {@link Exception}, which will be handled by the {@link SmartCommands#execute(GuardedCommand)}
+     *           method
+     */
+    protected abstract void runGuarded(View view)
+        throws Exception;
 
   }
 
