@@ -3,7 +3,7 @@
 
 = TokenKeeper =
 
-When working on an application which needs to keep track in several places some reminders, like the need to retrieve some precise business objects data from a web service, or like a specific action should be performed the next time a screen will be displayed, and that you need some specific parts of your code to be notified, for instance, the `TokenKeeper` comes in hand.
+When working on an application which needs to keep track in several places some reminders, like the need to retrieve some precise business objects data from a web service, like the need to define a complex caching policy, or like a specific action should be performed the next time a screen will be displayed, and that you need some specific parts of your code to be notified, for instance, the `TokenKeeper` comes in hand.
 
 == A simple API ==
 
@@ -15,10 +15,10 @@ This is the first usage of the `TokenKeeper`, which enables to keep track of var
 
 The following methods deal with tokens that need to be remembered or discarded.
 
-# `TokenKeeper.rememeberToken()`: just remembers the provided token ;
-# `TokenKeeper.discardToken()`: just the opposite of the previous method, and this forgets the provided token ;
-# `TokenKeeper.hasToken()`: indicates whether the given token is being remembered ;
-# `TokenKeeper.missesToken()`: a convenience method which just returns the opposite boolean value of the previous method.
+ # `TokenKeeper.rememeberToken()`: just remembers the provided token ;
+ # `TokenKeeper.discardToken()`: just the opposite of the previous method, and this forgets the provided token ;
+ # `TokenKeeper.hasToken()`: indicates whether the given token is being remembered ;
+ # `TokenKeeper.missesToken()`: a convenience method which just returns the opposite boolean value of the previous method.
 
 Most of those methods expose variable length number of arguments forms.
 
@@ -28,8 +28,8 @@ This is the second facet of the `TokenKeeper`, which enables to broadcast an `In
 
 The following methods involved in that feature.
 
-# `TokenKeeper.broadcast()`: turns the provided token into a key and broadcast it as `Intent` action with that key ;
-# `TokenKeeper.rememberTokenAndBroadcast()`: remembers the provided token and broadcasts it through the previous method.
+ # `TokenKeeper.broadcast()`: turns the provided token into a key and broadcast it as `Intent` action with that key ;
+ # `TokenKeeper.rememberTokenAndBroadcast()`: remembers the provided token and broadcasts it through the previous method.
 
 Most of those methods expose variable length number of arguments forms.
 
