@@ -11,6 +11,7 @@ Have you developed an Android application which uses droid4me? Please, let us kn
 
 The best ambassadors of droid4me are the Android applications which already integrate it:
 
+ * [http://market.android.com/details?id=fr.anatoleapps.almanachdanatole L'Almanach d'Anatole]
  * [http://market.android.com/details?id=com.smartnsoft.kapps Kapps]
  * [http://market.android.com/details?id=com.soouat.memokidsanimals MemoKids Animals] and its 4 flavours, SD, SD lite, HD, and HD lite
  * [http://market.android.com/details?id=com.smartnsoft.magicapps.magicchoice MagicChoice]
@@ -19,15 +20,18 @@ The best ambassadors of droid4me are the Android applications which already inte
  * [http://market.android.com/details?id=com.smartnsoft.slapps Slapps]
  * [http://market.android.com/details?id=com.smartnsoft.smarties Smarties]
  * [http://market.android.com/details?id=com.smartnsoft.pronofoot PronoFoot]
- * [http://market.android.com/details?id=fr.parcasterix.android Parc Astérix]
+ * [http://market.android.com/details?id=fr.parcasterix.android Parc Ast√©rix]
  * [http://market.android.com/details?id=be.delhaize Delhaize]
  * [http://market.android.com/details?id=com.familywall FamilyWall]
+ * [http://market.android.com/details?id=com.garnier.sunshinemoment Sunshine Moments]
  * [http://market.android.com/details?id=com.smartnsoft.lesapplicationsandroid Les Applications Android]
  * [http://market.android.com/details?id=com.keldelice Keldelice]
- * [http://market.android.com/details?id=com.smartnsoft.metro Metro]
- * [http://market.android.com/details?id=com.tellmewhere Dismoioù v1]
+ * [http://market.android.com/details?id=com.smartnsoft.metro Metro France]
+ * [http://market.android.com/details?id=com.metrofrance.tablet Metro France Tablet]
+ * [http://market.android.com/details?id=com.tellmewhere Dismoio√π v1]
  * [http://market.android.com/details?id=com.lemonde.androidapp Le Monde]
  * [http://market.android.com/details?id=net.orangevallee.luorson Orson]
+ * [http://market.android.com/details?id=com.maximiles.site Maximiles]
  * [http://market.android.com/details?id=com.smartnsoft.prendsmoi Prends-Moi]
  * [http://market.android.com/details?id=com.smartnsoft.netanswer.ensae Ensae]
  * [http://market.android.com/details?id=com.citizenside.android Citizenside]

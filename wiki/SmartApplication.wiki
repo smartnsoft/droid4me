@@ -3,7 +3,7 @@
 
 = SmartApplication =
 
-Because the framework makes use of multiple components, it may be tedious to initialize each of them. This is the reason why it exposes the `SmartApplication` class.
+Because the framework makes use of multiple components, it may be tedious to initialize each of them. This is the reason why it exposes the `SmartApplication` class, which ensures a glue between many components, and which is a good candidate for initializing them.
 
 == An Android `Application` class ==
 
@@ -29,7 +29,7 @@ Because the default `SmartApplication.getExceptionHandler()` method returns a `D
 
 == Bug detection e-mailed ==
 
-The default `SmartApplication.getExceptionHandler()` method returns a `DefaultExceptionHandler` instance, which is able to read the Android logcat, and then propose to the end-user to send an e-mail with the bug context, as soon as a managed exception is detected and has not been handled. If you want to discard that feature, just let the `SmartApplication.get
+The default `SmartApplication.getExceptionHandler()` method returns a `DefaultExceptionHandler` instance, which is able to read the Android logcat, and then propose to the end-user to send an e-mail with the bug context, as soon as a managed exception is detected and has not been handled. If you want to discard that feature, just let the `SmartApplication.getLogReportRecipient()` method return `null`.
 
 == The `UncaughtExceptionHandler` instances ==
 

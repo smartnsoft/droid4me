@@ -1,0 +1,43 @@
+#summary How to make Activity and Fragment droid4me-ready
+#labels Featured,Phase-Implementation
+
+= Droid4mizer =
+
+The droid4me framework has been built with the following requirement in mind: make it possible to take legacy code compatible with it. This is especially true when it comes to build an application which also needs to use a library which forces to use basis `Activity` and `Fragment` classes.
+
+On that purpose, the core of the droid4me `Activity` and `Fragment` basis classes use the `Droid4mizer` component, which is used to instrument those entities, and make them first citizen classes of the framework, so that they are turned into "droid4me-ready" entities.
+
+== Making an `Activity`/`Fragment` entity droid4me-ready ==
+
+The framework imposes the following constraints, so that entities benefit from all facets of the framework:
+
+ # make them implement the `Smartable` interface. More specifically, the `Activity` must implement the `SmartableActivity` interface ;
+ # delegate the implementation of the previous interface methods to a `Droid4mizer` interface ;
+ # override the traditional Android `Activity`/`Entity` workflow methods:
+  # `onCreate()`
+  # `onResume()`
+  # `onStart()`
+  # `onPause()`
+  # `onStop()`
+  # `onDestroy()`
+  # `onSaveInstanceState()`
+  The menu-related methods:
+  # `onCreateOptionsMenu()`
+  # `onPrepareOptionsMenu()`
+  # `onOptionsItemSelected()`
+  # `onContextItemSelected()`
+  The `Activity` result activity:
+  # `onActivityResult()`
+  The `Activity` should moreover override the following methods:
+  # `onNewIntent()`
+  # `onContentChanged()`
+  The `Fragment` should moreover override the following method:
+  # `onAttach()`
+ 
+ Those constraints are both true for the `Activity` and `Fragment` entity classes. Once those methods have been overloaded, plus the one specific to the `Smartable` interface, your class is a first-citizen class of the framework, and it benefits all its facets.
+
+Because this process requires a lot of boilerplate code, and because, we have not found another way to achieve those steps another way, copy, pasting & adapting the source code of the `SmartActivity`.
+
+== Nature of a droid4me-ready `Activity`/`Fragment` ==
+
+...
