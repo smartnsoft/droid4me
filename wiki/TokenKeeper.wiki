@@ -1,0 +1,58 @@
+#summary Keep track of flags in a straightforward way
+#labels Featured,Phase-Implementation
+
+= TokenKeeper =
+
+When working on an application which needs to keep track in several places some reminders, like the need to retrieve some precise business objects data from a web service, or like a specific action should be performed the next time a screen will be displayed, and that you need some specific parts of your code to be notified, for instance, the `TokenKeeper` comes in hand.
+
+== A simple API ==
+
+The `TokenKeeper` is a very simple component, which eases a lot those kind of tasks. It is a container that remembers tokens, which just need to be `Serializable` and implement properly the `Object.toString()` method. This container persists those tokens, and is able to discard some of them. It is also able to broadcast an `Intent` action related to a token that has just been remembered, or an any time.
+
+=== Remembering and discarding tokens ===
+
+This is the first usage of the `TokenKeeper`, which enables to keep track of various tokens in a persisted way.
+
+The following methods deal with tokens that need to be remembered or discarded.
+
+# `TokenKeeper.rememeberToken()`: just remembers the provided token ;
+# `TokenKeeper.discardToken()`: just the opposite of the previous method, and this forgets the provided token ;
+# `TokenKeeper.hasToken()`: indicates whether the given token is being remembered ;
+# `TokenKeeper.missesToken()`: a convenience method which just returns the opposite boolean value of the previous method.
+
+Most of those methods expose variable length number of arguments forms.
+
+=== Broadcasting tokens ===
+
+This is the second facet of the `TokenKeeper`, which enables to broadcast an `Intent` when a token is remembered, or simply broadcast this `Intent` on demand.
+
+The following methods involved in that feature.
+
+# `TokenKeeper.broadcast()`: turns the provided token into a key and broadcast it as `Intent` action with that key ;
+# `TokenKeeper.rememberTokenAndBroadcast()`: remembers the provided token and broadcasts it through the previous method.
+
+Most of those methods expose variable length number of arguments forms.
+
+== The `TokenMultiplier` interface ==
+
+Because remembering multiple tokens at the same time may be tedious, we need a way to remember in a simple way "sub"-tokens related to a given token. This is where the `TokenMultiplier` comes in play.
+
+The `TokenMultiplier` interface may be registered through the `TokenKeeper.setTokenMultiplier()` method. Once set, every time a token will be remembered, the `TokenMultiplier.getSubTokens()` method, for determining the "sub"-tokens that should also be remembered at the same time.
+
+=== Disabling/enabling the `TokenKeeper`===
+
+At any time, you can disable the `TokenKeeper` by invoking the `TokenKeeper.setEnabled(false)` method: all the tokens actions will be discarded, which enables to make tests.
+
+== In practice ==
+
+When using this component, most of the time, you will need to set a single instance, because you need tokens to be shared across your application. A good way to achieve is to instantiate a static `TokenKeeper` instance from your `Application.onCreate()` method, and to provide an accessor for it. Hence, you can access to it from anywhere from your application, and you are ensured that it will have been instantiated from the process start.
+
+Since the `TokenKeeper` enables to broadcast tokens, if you couple it with an `Activity`/`Fragment` entity by registering a `BroadcastReceiver`, or even more integrated in the framework to a `BroadcastListerneProvider`, it is very easy to listen to token events, and implement actions depending on those events, like reloading an `Activity`/`Fragment` (through the `LifeCycle.refreshBusinessObjectsAndDisplay()` method, for instance), updating your UI...
+
+In addition, if you request the `TokenKeeper` at the web service level with a cache layer like the `BackedCachedValue` or the `BackedCachedMap`, it becomes very easy to determine dynamically whether an actual web service call should be run or not (it that case, read the business object data from the cache), and to discard a token if an actual web service has been run through the `CachingEvent`.
+
+== An extensible component ==
+
+If you need to change the way the token are stored, you may override the `TokenKeeper.hasPersistedToken()` and `TokenKeeper.storeToken()` methods, because the current implementation resorts to the Android built-in `SharedPreferences`.
+
+If you want to have a control on the way the token is turned into a key for being stored and broadcasted, you just need to override the `TokenKeeper.computeTokenKey()` method.

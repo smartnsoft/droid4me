@@ -26,4 +26,4 @@ So as to make this logging component even more flexible, we should let the devel
  * When logging, you do not need to specify a tag, and the log output uses the `Logger` declared category as a tag.
  * The whole framework uses that logging facility, hence you get logs in a consistent way. For instance, you can look in `adb` the logs for the tags "[SmartableInterface Smartable]", "[Persistence Persistence]", "BitmapDownloader", "ActivityController", "SmartApplication" ...
 
-When submitting your application under production, do not forget to elevate the logging trigger level through the `LoggerFactory.logLevel` variable!
+When submitting your application under production, do not forget to increase the logging trigger level through the `LoggerFactory.logLevel` variable!
