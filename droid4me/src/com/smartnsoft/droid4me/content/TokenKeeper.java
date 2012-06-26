@@ -45,7 +45,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * 
  * <p>
  * The implementation uses the Android {@link SharedPreferences} to store persistently the tokens, and it resorts to {@link Intent intents} when it
- * comes to {@link #broadcast(Enum)} a token to the rest of the application: this is the reason why the template class must carefully implement the
+ * comes to {@link #broadcast(Token)} a token to the rest of the application: this is the reason why the template class must carefully implement the
  * {@link #toString()} method.
  * </p>
  * 
@@ -61,8 +61,8 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * </p>
  * 
  * @param <Token>
- *          a serializable type which implements properly the {@link #toString()} method
- * @author ï¿½douard Mercier
+ *          a {@link Serializable} type which implements properly the {@link #toString()} method
+ * @author Édouard Mercier
  * @since 2011.07.27
  */
 public class TokenKeeper<Token extends Serializable>
@@ -70,13 +70,17 @@ public class TokenKeeper<Token extends Serializable>
 
   /**
    * An interface, which enables to "multiply" a token.
+   * 
+   * @param <Token>
+   *          a {@link Serializable} type which implements properly the {@link #toString()} method
+   * @see TokenKeeper#setTokenMultiplier(TokenMultiplier)
    */
-  public static interface TokenMultiplier<Token>
+  public static interface TokenMultiplier<Token extends Serializable>
   {
 
     /**
-     * Is invoked only by the {@link TokenKeeper#rememberToken(Enum)}, in order to determine the tokens that should be remembered along with the
-     * provided one.
+     * Is invoked only by the {@link TokenKeeper#rememberToken(Token)}, in order to determine the tokens that should be remembered along with the
+     * provided one. However, this method will not be invoked when {@link TokenKeeper#discardToken(Token) discarding} a token.
      * 
      * <p>
      * This method will not be run recursively on each returned token.
@@ -84,8 +88,9 @@ public class TokenKeeper<Token extends Serializable>
      * 
      * @param token
      *          the token that should be analyzed
-     * @return the tokens related to the provided token. If {@code null}, it will be considered that no sub-token is available for the given
-     *         token. The array should not contain the provided token (for better performances)
+     * @return the tokens related to the provided token. If {@code null}, it will be considered that no sub-token is available for the given token.
+     *         The array should not contain the provided token (for better performances). The returned token will just be
+     *         {@link TokenKeeper#rememberToken(Token) remembered} but not {@link TokenKeeper#rememberToken(Token) remembered}
      */
     Token[] getSubTokens(Token token);
 
@@ -110,7 +115,7 @@ public class TokenKeeper<Token extends Serializable>
    *          it will be used to create an internal {@link SharedPreferences} instance, but also to invoke the {@link Context#sendBroadcast(Intent)}
    *          method when broadcasting
    * @param prefix
-   *          a string, which will be used when storing the token in the {@link SharedPreferences preferences}, and when {@link #broadcast(Enum)
+   *          a string, which will be used when storing the token in the {@link SharedPreferences preferences}, and when {@link #broadcast(Token)
    *          broadcasting} it; can be {@code null}
    */
   public TokenKeeper(Context context, String prefix)
@@ -134,11 +139,12 @@ public class TokenKeeper<Token extends Serializable>
    * turn it off, while running tests.
    * 
    * <p>
-   * When turned-off, no token will be remembered not broadcast.
+   * When turned-off, no token will be remembered, discarded, nor broadcast.
    * <p>
    * 
    * @param enabled
    *          whether the token keeper should be on or off
+   * @see #isEnabled()
    */
   public final void setEnabled(boolean enabled)
   {
@@ -155,17 +161,17 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * When {@link #rememberToken(Enum) remembering a token}, it may be useful to remember other tokens which depend on it. By default, no token
+   * When {@link #rememberToken(Token) remembering a token}, it may be useful to remember other tokens which depend on it. By default, no token
    * multiplier is registered. This method enables to register an interface, which enables to remember other tokens than the provided one at the same
    * time.
    * 
    * <p>
-   * This method has no impact on the {@link #broadcast(Enum) token broadcasting}.
+   * This method has no impact on the {@link #broadcast(Token) token broadcasting}.
    * </p>
    * 
    * @param tokenMultiplier
    *          the interface that will be used to "multiply" the remembered token; it should be set to {@code null}, if that feature needs to be
-   *          disabled
+   *          disabled, which is the default
    */
   public final void setTokenMultiplier(TokenMultiplier<Token> tokenMultiplier)
   {
@@ -190,7 +196,7 @@ public class TokenKeeper<Token extends Serializable>
   {
     for (Token token : tokens)
     {
-      intentFilter.addAction(computeIntentAction(token));
+      intentFilter.addAction(computeTokenKey(token));
     }
     return this;
   }
@@ -214,7 +220,7 @@ public class TokenKeeper<Token extends Serializable>
     }
     for (Token token : tokens)
     {
-      if (action.equals(computeIntentAction(token)) == true)
+      if (action.equals(computeTokenKey(token)) == true)
       {
         return true;
       }
@@ -228,18 +234,18 @@ public class TokenKeeper<Token extends Serializable>
    * @param token
    *          the token to search for
    * @return {@code true} if and only if the notification kind token is present
-   * @see #missesToken(Enum)
+   * @see #missesToken(Token)
    */
   public boolean hasToken(Token token)
   {
-    final String key = computeIntentAction(token);
-    return preferences.getBoolean(key, false);
+    final String key = computeTokenKey(token);
+    return hasPersistedToken(key);
   }
 
   /**
-   * Returns the opposite value of the {@link #hasToken(Enum)} method.
+   * Returns the opposite value of the {@link #hasToken(Token)} method.
    * 
-   * @see #hasToken(Enum)
+   * @see #hasToken(Token)
    */
   public boolean missesToken(Token token)
   {
@@ -247,11 +253,12 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Sets persistently a token for the given notification kind, so that a {@link #hasToken(Enum) subsequent call} returns {@code true}.
+   * Sets persistently a token for the given notification kind, so that a {@link #hasToken(Token) subsequent call} returns {@code true}.
    * 
    * @param token
    *          the token to set and remember
-   * @see #discardToken(Enum)
+   * @see #discardToken(Token)
+   * @see #rememberTokenAndBroadcast(Token)
    */
   public void rememberToken(Token token)
   {
@@ -270,7 +277,7 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Invokes successively the {@link #rememberToken(Enum)} method on each provided token.
+   * Invokes successively the {@link #rememberToken(Token)} method on each provided token.
    * 
    * @param tokens
    *          the list of tokens to set and remember
@@ -284,7 +291,10 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Invokes consequently the {@link #rememberToken(Enum)} and {@link #broadcast(Enum)} methods.
+   * Invokes consequently the {@link #rememberToken(Token)} and {@link #broadcast(Token)} methods.
+   * 
+   * @see #broadcast(Token)
+   * @see #rememberTokensAndBroadcast(Token...)
    */
   public void rememberTokenAndBroadcast(Token token)
   {
@@ -293,10 +303,11 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Invokes successively the {@link #rememberTokenAndBroadcast(Enum)} method for each provided token.
+   * Invokes successively the {@link #rememberTokenAndBroadcast(Token)} method for each provided token.
    * 
    * @param tokens
    *          the list of tokens to handle
+   * @see #rememberTokenAndBroadcast(Token)
    */
   public void rememberTokensAndBroadcast(Token... tokens)
   {
@@ -307,15 +318,16 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Triggers an Android broadcast with the provided token as the single {@link Intent#setAction(String) action}.
+   * Triggers an Android broacast {@link Intent} with the provided token as the single {@link Intent#setAction(String) action}.
    * 
    * <p>
-   * This method will trigger a {@link Context#sendBroadcast(Intent)} method.
+   * This method will invoke the {@link Context#sendBroadcast(Intent)} method.
    * </p>
    * 
    * @param token
-   *          the token to be broadcast
-   * @see #discardToken(Enum)
+   *          the token to be broadcast, which will be used to compute the broadcast {@link Intent} action through the
+   * @see #discardToken(Token)
+   * @see #computeTokenKey(Token)
    */
   public void broadcast(Token token)
   {
@@ -323,12 +335,12 @@ public class TokenKeeper<Token extends Serializable>
     {
       return;
     }
-    final Intent intent = new Intent(computeIntentAction(token));
+    final Intent intent = new Intent(computeTokenKey(token));
     context.sendBroadcast(intent);
   }
 
   /**
-   * Invokes successively the {@link #broadcast(Enum)} method for each provided token.
+   * Invokes successively the {@link #broadcast(Token)} method for each provided token.
    * 
    * @param tokens
    *          the list of tokens to handle
@@ -342,20 +354,100 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Discards the given token, so as a {@link #hasToken(Enum) subsequent method call} returns {@code false}.
+   * Discards the given token, so as a {@link #hasToken(Token) subsequent method call} returns {@code false}.
    * 
    * @param token
    *          the token to discard
-   * @see #rememberToken(Enum)
+   * @see #rememberToken(Token)
    */
   public void discardToken(Token token)
   {
     setToken(token, false);
   }
 
+  /**
+   * Indicates whether the token corresponding to the provided key is currently persisted and available.
+   * 
+   * <p>
+   * Overriding this method enables to change the way the token persistence is ensured. The current implementation relies on the {@link #preferences}.
+   * </p>
+   * 
+   * @param tokenKey
+   *          the key of the token which is requested
+   * @return {@code true} if and only if the given token is currently stored at the persistence level
+   * @see #storeToken(String, boolean)
+   */
+  protected boolean hasPersistedToken(String tokenKey)
+  {
+    return preferences.getBoolean(tokenKey, false);
+  }
+
+  /**
+   * This is the place where the token is being stored at the persistence level. This method will eventually be invoked when a token is remembered or
+   * discarded.
+   * 
+   * <p>
+   * The default implementation stores the token in the {@link #preferences}: overriding this method enables to customize the token persistence
+   * implementation.
+   * </p>
+   * 
+   * @param tokenKey
+   *          the key resulting from the {@code Token.toString()} method call invoked on the parameter provided to the {@link #rememberToken(Token)}/
+   *          {@link #discardToken(Token)} methods
+   * @param value
+   *          {@code true} and if only if the token needs to be remembered
+   * @see #rememberToken(Token)
+   * @see #discardToken(Token)
+   * @see #hasPersistedToken(String)
+   */
+  protected void storeToken(String tokenKey, boolean value)
+  {
+    final Editor editor = preferences.edit();
+    if (value == false)
+    {
+      editor.remove(tokenKey);
+    }
+    else
+    {
+      editor.putBoolean(tokenKey, value);
+    }
+    editor.commit();
+  }
+
+  /**
+   * The method responsible for generating a {@link String} from a token, so that the token key may be serialized when persisting it, or when
+   * computing the related broadcast {@link Intent} action.
+   * 
+   * <p>
+   * By overriding this method, it is possible to tune the way the token key is stored in the persistence layer. The default implementation resorts to
+   * the {@link #prefix} value for computing the string prefix.
+   * </p>
+   * 
+   * @param token
+   *          the token to deal with
+   * @return a string which identifies the provided token
+   * @see #prefix
+   * @see #rememberToken(Token)
+   * @see #discardToken(Token)
+   * @see #broadcast(Token)
+   */
+  protected String computeTokenKey(Token token)
+  {
+    return prefix + token.toString();
+  }
+
+  /**
+   * Is responsible for turning the token into a key and persist it. If the {@link #enabled} flag is set to {@code false}, the token persistence
+   * should be ignored.
+   * 
+   * @param token
+   *          the token to remember and persist
+   * @param value
+   *          whether the token should be remembered or discarded
+   */
   private void setToken(Token token, boolean value)
   {
-    final String key = computeIntentAction(token);
+    final String key = computeTokenKey(token);
     if (log.isDebugEnabled())
     {
       log.debug("Setting the notification token '" + key + "' to " + value);
@@ -364,21 +456,7 @@ public class TokenKeeper<Token extends Serializable>
     {
       return;
     }
-    final Editor editor = preferences.edit();
-    if (value == false)
-    {
-      editor.remove(key);
-    }
-    else
-    {
-      editor.putBoolean(key, value);
-    }
-    editor.commit();
-  }
-
-  private String computeIntentAction(Token token)
-  {
-    return prefix + token.toString();
+    storeToken(key, value);
   }
 
 }
