@@ -270,6 +270,7 @@ public abstract class SmartApplication
    * </p>
    * 
    * @return {@code true} if and only if you want the framework to be ignored for the process. Returns {@code false} by default
+   * @see #onCreateCustomSilent()
    */
   protected boolean shouldBeSilent()
   {
@@ -365,12 +366,22 @@ public abstract class SmartApplication
   public final void onCreate()
   {
     final long start = System.currentTimeMillis();
+
+    LoggerFactory.logLevel = getLogLevel();
+    // We initialize the preferences very soon, so that they are available
+    preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
     if (shouldBeSilent() == true)
     {
+      if (log.isDebugEnabled())
+      {
+        log.debug("Application starting in silent mode");
+      }
+      super.onCreate();
+      onCreateCustomSilent();
       return;
     }
 
-    LoggerFactory.logLevel = getLogLevel();
     // This boilerplate is printed whatever the log level
     log.info("Application  with package name '" + getPackageName() + "' powered by droid4me " + SmartApplication.getFrameworkVersionString() + " - Copyright Smart&Soft");
     if (log.isDebugEnabled())
@@ -378,9 +389,6 @@ public abstract class SmartApplication
       log.debug("Application starting");
     }
     super.onCreate();
-
-    // We initialize the preferences very soon, so that they are available
-    preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
     // We register the application exception handler as soon as possible, in order to be able to handle exceptions
     ActivityController.getInstance().registerExceptionHandler(getExceptionHandler());
@@ -430,6 +438,19 @@ public abstract class SmartApplication
     {
       log.info("The application with package name '" + getPackageName() + "' has started in " + (System.currentTimeMillis() - start) + " ms");
     }
+  }
+
+  /**
+   * This method will be invoked if and only if the {@link #shouldBeSilent()} method has returned {@code true}.
+   * 
+   * <p>
+   * This enables to execute some code, even if the application runs in silent mode.
+   * </p>
+   * 
+   * @see #shouldBeSilent()
+   */
+  protected void onCreateCustomSilent()
+  {
   }
 
   /**
