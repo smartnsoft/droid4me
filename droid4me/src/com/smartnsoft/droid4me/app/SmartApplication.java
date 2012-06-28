@@ -518,17 +518,17 @@ public abstract class SmartApplication
   @Override
   public void onTerminate()
   {
-    if (shouldBeSilent() == true)
-    {
-      return;
-    }
-
-    if (log.isDebugEnabled())
-    {
-      log.debug("Application terminating");
-    }
     try
     {
+      if (shouldBeSilent() == true)
+      {
+        return;
+      }
+
+      if (log.isDebugEnabled())
+      {
+        log.debug("Application terminating");
+      }
       // We stop the threads pools
       SmartCommands.LOW_PRIORITY_THREAD_POOL.shutdown();
       AppInternals.THREAD_POOL.shutdown();
@@ -545,16 +545,22 @@ public abstract class SmartApplication
   @Override
   public void onLowMemory()
   {
-    if (shouldBeSilent() == true)
+    try
     {
-      return;
-    }
+      if (shouldBeSilent() == true)
+      {
+        return;
+      }
 
-    if (log.isWarnEnabled())
-    {
-      log.warn("Application low memory");
+      if (log.isWarnEnabled())
+      {
+        log.warn("Application low memory");
+      }
     }
-    super.onLowMemory();
+    finally
+    {
+      super.onLowMemory();
+    }
   }
 
   /**
