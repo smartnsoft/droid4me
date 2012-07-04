@@ -36,8 +36,6 @@ import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
@@ -257,8 +255,6 @@ public abstract class SmartMapActivity<AggregateClass>
   {
     return (((double) pixelSpan / 256d) * EQUATOR_DISTANCE_IN_METERS) / (Math.pow(2, zoomLevel - 1));
   }
-
-  protected final static Logger log = LoggerFactory.getInstance("Smartable");
 
   private final Droid4mizer<AggregateClass, SmartMapActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartMapActivity<AggregateClass>>(this, this, this, null);
 

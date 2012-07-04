@@ -30,8 +30,6 @@ import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
@@ -49,8 +47,6 @@ public abstract class SmartActivity<AggregateClass>
     extends Activity
     implements SmartableActivity<AggregateClass>
 {
-
-  protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
   private final Droid4mizer<AggregateClass, SmartActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartActivity<AggregateClass>>(this, this, this, null);
 

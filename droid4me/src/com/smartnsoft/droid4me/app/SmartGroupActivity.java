@@ -44,8 +44,6 @@ import android.widget.LinearLayout.LayoutParams;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
@@ -82,6 +80,8 @@ public abstract class SmartGroupActivity<AggregateClass>
 
     private final float mCenterY;
 
+    private final boolean isVertical;
+
     private final float mDepthZ;
 
     private final boolean mReverse;
@@ -107,13 +107,14 @@ public abstract class SmartGroupActivity<AggregateClass>
      * @param reverse
      *          true if the translation should be reversed, false otherwise
      */
-    public Rotate3dAnimation(float fromDegrees, float toDegrees, float centerX, float centerY, float depthZ, boolean reverse)
+    public Rotate3dAnimation(float fromDegrees, float toDegrees, float centerX, float centerY, boolean isVertical, float depthZ, boolean reverse)
     {
       mFromDegrees = fromDegrees;
       mToDegrees = toDegrees;
       mCenterX = centerX;
       mCenterY = centerY;
       mDepthZ = depthZ;
+      this.isVertical = isVertical;
       mReverse = reverse;
     }
 
@@ -146,7 +147,15 @@ public abstract class SmartGroupActivity<AggregateClass>
       {
         camera.translate(0.0f, 0.0f, mDepthZ * (1.0f - interpolatedTime));
       }
-      camera.rotateY(degrees + (mReverse == true ? 180 : 0));
+      final float currentDegrees = degrees + (mReverse == true ? 180 : 0);
+      if (isVertical == false)
+      {
+        camera.rotateY(currentDegrees);
+      }
+      else
+      {
+        camera.rotateX(currentDegrees);
+      }
       camera.getMatrix(matrix);
       camera.restore();
 
@@ -422,8 +431,6 @@ public abstract class SmartGroupActivity<AggregateClass>
     // wrapperView.setOnFocusChangeListener(this);
     setContentView(wrapperView);
   }
-
-  protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
   private final Droid4mizer<AggregateClass, SmartGroupActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartGroupActivity<AggregateClass>>(this, this, this, null);
 

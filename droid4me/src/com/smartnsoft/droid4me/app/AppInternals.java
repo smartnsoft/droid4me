@@ -272,26 +272,12 @@ final class AppInternals
     }
 
     /**
-     * If the activity implements either the {@link AppPublics.BroadcastListener} or {@link AppPublics.BroadcastListenerProvider} or
+     * If the {@link #component} implements either the {@link AppPublics.BroadcastListener} or {@link AppPublics.BroadcastListenerProvider} or
      * {@link AppPublics.BroadcastListenersProvider} interface, it will register for listening to some broadcast intents.
      */
     void registerBroadcastListeners()
     {
-      final AppPublics.BroadcastListener broadcastListener;
-      if (component instanceof AppPublics.BroadcastListenerProvider)
-      {
-        broadcastListener = ((AppPublics.BroadcastListenerProvider) component).getBroadcastListener();
-        if (broadcastListener != null)
-        {
-          registerBroadcastListeners(enrichBroadcastListeners(1), broadcastListener);
-        }
-      }
-      else if (component instanceof AppPublics.BroadcastListener)
-      {
-        broadcastListener = (AppPublics.BroadcastListener) component;
-        registerBroadcastListeners(enrichBroadcastListeners(1), broadcastListener);
-      }
-      else if (component instanceof AppPublics.BroadcastListenersProvider)
+      if (component instanceof AppPublics.BroadcastListenersProvider)
       {
         final AppPublics.BroadcastListenersProvider broadcastListenersProvider = (AppPublics.BroadcastListenersProvider) component;
         final int count = broadcastListenersProvider.getBroadcastListenersCount();
@@ -304,6 +290,27 @@ final class AppInternals
         {
           registerBroadcastListeners(startIndex + index, broadcastListenersProvider.getBroadcastListener(index));
         }
+      }
+      else if (component instanceof AppPublics.BroadcastListenerProvider)
+      {
+        if (log.isDebugEnabled())
+        {
+          log.debug("Found out that the entity supports a single intent broadcast listener");
+        }
+        final AppPublics.BroadcastListener broadcastListener = ((AppPublics.BroadcastListenerProvider) component).getBroadcastListener();
+        if (broadcastListener != null)
+        {
+          registerBroadcastListeners(enrichBroadcastListeners(1), broadcastListener);
+        }
+      }
+      else if (component instanceof AppPublics.BroadcastListener)
+      {
+        if (log.isDebugEnabled())
+        {
+          log.debug("Found out that the entity implements a single intent broadcast listener");
+        }
+        final AppPublics.BroadcastListener broadcastListener = (AppPublics.BroadcastListener) component;
+        registerBroadcastListeners(enrichBroadcastListeners(1), broadcastListener);
       }
     }
 

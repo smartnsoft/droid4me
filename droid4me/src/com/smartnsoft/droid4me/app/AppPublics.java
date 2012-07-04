@@ -24,8 +24,6 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.Application;
-import android.app.Fragment;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -88,8 +86,8 @@ public final class AppPublics
   }
 
   /**
-   * Because an Android {@link Activity}/{@link Fragment} entity can be destroyed and then recreated, following a configuration change (a screen
-   * orientation change, for instance), this interface gives information about an entity life cycle.
+   * Because an Android {@link Activity}/{@link android.app.Fragment} entity can be destroyed and then recreated, following a configuration change (a
+   * screen orientation change, for instance), this interface gives information about an entity life cycle.
    * 
    * @author Édouard Mercier
    * @since 2010.01.05
@@ -108,11 +106,13 @@ public final class AppPublics
      * Provides information about the current entity life cycle.
      * 
      * <p>
-     * It is very handy when it comes to know whether the end-user can interact with the underlying {@link Activity}/{@link Fragment} entity.
+     * It is very handy when it comes to know whether the end-user can interact with the underlying {@link Activity}/{@link android.app.Fragment}
+     * entity.
      * </p>
      * 
-     * @return {@code true} if and only if the underlying {@link Activity}/{@link Fragment} entity life-cycle is between the
-     *         {@link Activity#onResume()}/{@link Fragment#onResume()} and {@link Activity#onPause()}/{@link Fragment#onPause()} methods
+     * @return {@code true} if and only if the underlying {@link Activity}/{@link android.app.Fragment} entity life-cycle is between the
+     *         {@link Activity#onResume()}/{@link android.app.Fragment#onResume()} and {@link Activity#onPause()}/
+     *         {@link android.app.Fragment#onPause()} methods
      */
     boolean isInteracting();
 
@@ -125,8 +125,8 @@ public final class AppPublics
     int getOnSynchronizeDisplayObjectsCount();
 
     /**
-     * Indicates whether the extending {@link Activity}/{@link Fragment} entity also implementing the {@link LifeCycle} interface is in the middle of
-     * a {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} call.
+     * Indicates whether the extending {@link Activity}/{@link android.app.Fragment} entity also implementing the {@link LifeCycle} interface is in
+     * the middle of a {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} call.
      * 
      * <p>
      * It is very handy when it comes to disable certain things, like menu entries, while an {@link Activity} is loading.
@@ -139,9 +139,28 @@ public final class AppPublics
   }
 
   /**
-   * Indicates what kind of {@link Intent} are being listened to, and how to handle it. A simple abstraction of a {@link BroadcastReceiver}, which
-   * enables to express both some {@link Intent} filters, and their consumption at the same place.
+   * This interface is a wrapper around a regular Android native {@link android.content.BroadcastReceiver}, by capturing the
+   * {@link Context#registerReceiver(android.content.BroadcastReceiver, IntentFilter)} invocation and implementation is one place. When a
+   * {@link Activity} or {@link android.app.Fragment} {@link Smartable} entity implements that interface, the framework will
+   * {@link Context#registerReceiver(android.content.BroadcastReceiver, IntentFilter) register} a {@link android.content.BroadcastReceiver}, and
+   * {@link Context#unregisterReceiver(android.content.BroadcastReceiver) unregister} automatically during its life cycle.
    * 
+   * <p>
+   * It indicates what kind of broadcast {@link Intent} are being listened to, and how to handle them, and enables to express both some {@link Intent}
+   * filters, and their consumption at the same place.
+   * </p>
+   * 
+   * <p>
+   * The framework will request this interface methods during the {@link Activity#onCreate(android.os.Bundle)} or
+   * {@link android.app.Fragment#onCreate(android.os.Bundle)} methods, create a corresponding {@link android.content.BroadcastReceiver} and
+   * {@link Context#registerReceiver(android.content.BroadcastReceiver, IntentFilter) register it}. This created
+   * {@link android.content.BroadcastReceiver} will be {@link Context#unregisterReceiver(android.content.BroadcastReceiver) unregistered} during the
+   * {@link Activity#onDestroy()} or {@link android.app.Fragment#onDestroy()} method.
+   * </p>
+   * 
+   * @see Smarted#registerBroadcastListeners(BroadcastListener[])
+   * @see AppPublics.BroadcastListenerProvider
+   * @see AppPublics.BroadcastListenersProviders
    * @since 2010.02.04
    */
   public interface BroadcastListener
@@ -150,56 +169,99 @@ public final class AppPublics
     /**
      * This method will be invoked by the framework to determine what {@link IntentFilter} should be associated to the current listener.
      * 
-     * @return if not {@code null}, only the intents that match with this returned value, will be received by the activity
+     * <p>
+     * The returned value of the method will be used to invoke the {@link Context#registerReceiver(android.content.BroadcastReceiver, IntentFilter)}
+     * method.
+     * </p>
+     * 
+     * @return if not {@code null}, only the {@link Intent intents} that match with this returned value, will be received by the activity
+     * @see #onReceive(Intent)
      */
     IntentFilter getIntentFilter();
 
     /**
      * Is invoked every time an intent that matches is received by the underlying activity.
+     * 
+     * @param intent
+     *          the broadcast {@link Intent} which has been received, and which matches the declared {@link IntentFilter}
+     * 
+     * @see #getIntentFilter()
      */
     void onReceive(Intent intent);
 
   }
 
   /**
-   * States that the Android {@link Activity} which implements this interface is able to provide an intent broadcast listener.
+   * States that the Android {@link Activity} or {@link android.app.Fragment} entity which implements this interface is able to provide a single
+   * {@link AppPublics.BroadcastListener}.
    * 
    * <p>
-   * This method will be invoked by the framework during the {@link Activity#onCreate()} method, which will register the underlying
-   * {@link BroadcastReceiver}, and this receiver will be unregistered by the {@link Activity#onDestroy()} method.
+   * As soon as a {@link Smartable} entity implements this interface, it is able to register a wrapped {@link android.content.BroadcastReceiver}
+   * instance through the concept of {@link BroadcastListener}: this is handy, because it enables to integrate an independent reusable
+   * {@link BroadcastListener} at the same time, and because the framework takes care of
+   * {@link Context#unregisterReceiver(android.content.BroadcastReceiver) unregistering} it when the embedding entity is destroyed.
    * </p>
    * 
-   * @see AppPublics#BroadcastListenersProvider
+   * @see Smarted#registerBroadcastListeners(BroadcastListener[])
+   * @see AppPublics.BroadcastListener
+   * @see AppPublics.BroadcastListenersProviders
    * @since 2010.02.04
    */
   public interface BroadcastListenerProvider
   {
 
     /**
-     * @return the broadcast listener that this provider exposes ; can be {@code null}
+     * This method will be invoked by the framework for registering a {@link AppPublics.BroadcastListener}.
+     * 
+     * @return the broadcast listener that this provider exposes ; can be {@code null}, and in that case, no {@link AppPublics.BroadcastListener} will
+     *         be registered
      */
     AppPublics.BroadcastListener getBroadcastListener();
 
   }
 
   /**
-   * States that the Android {@link Activity} which implements this interface is able to provide several broadcast listener.
+   * States that the Android {@link Activity} or {@link android.app.Fragment} entity which implements this interface is able to provide several
+   * {@link AppPublics.BroadcastListener}.
    * 
-   * @see AppPublics#BroadcastListenerProvider
+   * <p>
+   * As soon as a {@link Smartable} entity implements this interface, it is able to register several wrapped {@link android.content.BroadcastReceiver}
+   * instances through the concept of {@link BroadcastListener}: this is handy, because it enables to aggregate several independent reusable
+   * {@link BroadcastListener} at the same time, and because the framework takes care of
+   * {@link Context#unregisterReceiver(android.content.BroadcastReceiver) unregistering} them when the embedding entity is destroyed.
+   * </p>
+   * 
+   * <p>
+   * This interface has been split into two distinct methods, {@link #getBroadcastListenersCount() one} for determining how many
+   * {@link AppPublics.BroadcastListener broadcast listeners} the entity exposes, {@link #getBroadcastListener(int) one} for getting each individual
+   * {@link AppPublics.BroadcastListener}. This split is mostly due to performance issues.
+   * </p>
+   * 
+   * @see Smarted#registerBroadcastListeners(BroadcastListener[])
+   * @see AppPublics.BroadcastListener
+   * @see AppPublics.BroadcastListenersProvider
    * @since 2010.11.07
    */
   public interface BroadcastListenersProvider
   {
 
     /**
+     * This method will be invoked by the framework, so that it knows how many {@link AppPublics.BroadcastListener} it exposes.
+     * 
      * @return the number of {@link AppPublics.BroadcastListener} which are supported
+     * @see #getBroadcastListener(int)
      */
     int getBroadcastListenersCount();
 
     /**
+     * This method is bound to be invoked successfully by the framework with a {@code index} argument ranging from {@code 0} to
+     * {@code  getBroadcastListenersCount() - 1}. The method implementation is responsible for returning all the {@link AppPublics.BroadcastListener}
+     * that this entity is supposed to expose.
+     * 
      * @param the
      *          index of the {@link AppPublics.BroadcastListener} to return
-     * @return is not allowed to be null!
+     * @return the {@link AppPublics.BroadcastListener} for the provided {@code index} parameter; it is not allowed to be null
+     * @see #getBroadcastListenersCount()
      */
     AppPublics.BroadcastListener getBroadcastListener(int index);
 
@@ -505,7 +567,7 @@ public final class AppPublics
      * selection/unselection.
      * 
      * <p>
-     * Usually invoked from the {@link BroadcastReceiver} which is listening to business objects selection events}.
+     * Usually invoked from the {@link android.content.BroadcastReceiver} which is listening to business objects selection events}.
      * </p>
      * 
      * @param intent
