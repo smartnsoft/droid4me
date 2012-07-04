@@ -14,8 +14,6 @@ import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
@@ -35,8 +33,6 @@ public abstract class SmartDialogFragment<AggregateClass>
     extends DialogFragment
     implements Smartable<AggregateClass>
 {
-
-  protected static final Logger log = LoggerFactory.getInstance("Smartable");
 
   private Droid4mizer<AggregateClass, SmartDialogFragment<AggregateClass>> droid4mizer;
 
