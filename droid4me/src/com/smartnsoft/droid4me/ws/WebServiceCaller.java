@@ -719,7 +719,8 @@ public abstract class WebServiceCaller
   }
 
   /**
-   * Is responsible for returning an HTTP client instance, used for actually running the HTTP request.
+   * Is responsible for returning an HTTP client instance, used for actually running the HTTP requests. The method implementation relies on the
+   * {@link #computeHttpClient()} method, if no {@link HttpClient} is currently created.
    * 
    * <p>
    * The current implementation returns a {@link SensibleHttpClient} instance, which is thread-safe, in case the extending class implements the
@@ -728,8 +729,9 @@ public abstract class WebServiceCaller
    * 
    * @return a valid HTTP client
    * @see #computeHttpClient()
+   * @see #resetHttpClient()
    */
-  protected final HttpClient getHttpClient()
+  protected synchronized final HttpClient getHttpClient()
   {
     if (this instanceof WebServiceCaller.ReuseHttpClient)
     {
@@ -743,6 +745,25 @@ public abstract class WebServiceCaller
     {
       return new SensibleHttpClient();
     }
+  }
+
+  /**
+   * Forces the internal {@link HttpClient} to be renewed the next time the {@link #getHttpClient()} method will be invoked, i.e. the next time an
+   * HTTP method will be executed a new {@link HttpClient} instance will be created. This will not affect any pending HTTP method execution.
+   * 
+   * <p>
+   * It is up to the caller to previously {@link ClientConnectionManager#shutdown()} the connection manager if necessary.
+   * </p>
+   * 
+   * @see #getHttpClient()
+   */
+  protected synchronized final void resetHttpClient()
+  {
+    if (log.isInfoEnabled())
+    {
+      log.info("Resetting the HTTP client");
+    }
+    httpClient = null;
   }
 
   /**

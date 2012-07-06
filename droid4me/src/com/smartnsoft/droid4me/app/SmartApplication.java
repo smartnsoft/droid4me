@@ -32,6 +32,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.os.Build.VERSION;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
@@ -591,7 +592,7 @@ public abstract class SmartApplication
       default:
         screenLayoutString = "unknown: " + screenLayout;
       }
-      log.info("The application with package name '" + getPackageName() + "' is running on the device '" + Build.MODEL + "' with density in dpi '" + displayMetrics.densityDpi + "', density '" + displayMetrics.density + "', screen size '" + screenLayoutString + "' (" + displayMetrics.widthPixels + "x" + displayMetrics.heightPixels + ")");
+      log.info("The application with package name '" + getPackageName() + "' is running on the device '" + Build.MODEL + "', running Android API level " + VERSION.SDK_INT + " (v" + VERSION.RELEASE + ") with density in dpi '" + displayMetrics.densityDpi + "', density '" + displayMetrics.density + "', screen size '" + screenLayoutString + "' (" + displayMetrics.widthPixels + "x" + displayMetrics.heightPixels + ")");
     }
   }
 
