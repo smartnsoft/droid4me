@@ -459,15 +459,16 @@ public final class ActivityController
       {
         public void run()
         {
-          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.businessObjectAvailabilityProblemHint, new DialogInterface.OnClickListener()
-          {
-            public void onClick(DialogInterface dialog, int which)
-            {
-              // We leave the activity, because we cannot go any further
-              dialog.dismiss();
-              activity.finish();
-            }
-          }, null, null);
+          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.businessObjectAvailabilityProblemHint, activity.getString(android.R.string.ok),
+              new DialogInterface.OnClickListener()
+              {
+                public void onClick(DialogInterface dialog, int which)
+                {
+                  // We leave the activity, because we cannot go any further
+                  dialog.dismiss();
+                  activity.finish();
+                }
+              }, null, null, null);
         }
       });
       return true;
@@ -488,15 +489,16 @@ public final class ActivityController
       {
         public void run()
         {
-          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.serviceProblemHint, new DialogInterface.OnClickListener()
-          {
-            public void onClick(DialogInterface dialog, int which)
-            {
-              // We leave the activity, because we cannot go any further
-              dialog.dismiss();
-              activity.finish();
-            }
-          }, null, null);
+          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.serviceProblemHint, activity.getString(android.R.string.ok),
+              new DialogInterface.OnClickListener()
+              {
+                public void onClick(DialogInterface dialog, int which)
+                {
+                  // We leave the activity, because we cannot go any further
+                  dialog.dismiss();
+                  activity.finish();
+                }
+              }, null, null, null);
         }
       });
       return true;
@@ -538,7 +540,7 @@ public final class ActivityController
       {
         public void run()
         {
-          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.otherProblemHint, new DialogInterface.OnClickListener()
+          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.otherProblemHint, activity.getString(android.R.string.ok), new DialogInterface.OnClickListener()
           {
             public void onClick(DialogInterface dialog, int which)
             {
@@ -546,7 +548,7 @@ public final class ActivityController
               // We leave the activity, because we cannot go any further
               activity.finish();
             }
-          }, null, null);
+          }, null, null, null);
         }
       });
       return true;
@@ -659,7 +661,7 @@ public final class ActivityController
             {
               final boolean retry = connectivityUIExperience == ConnectivityUIExperience.DialogRetry && activity instanceof LifeCycle;
               showDialog(activity, i18n.dialogBoxErrorTitle, retry == true ? i18n.connectivityProblemRetryHint : i18n.connectivityProblemHint,
-                  new DialogInterface.OnClickListener()
+                  activity.getString(android.R.string.ok), new DialogInterface.OnClickListener()
                   {
                     public void onClick(DialogInterface dialog, int which)
                     {
@@ -669,7 +671,7 @@ public final class ActivityController
                       }
                       dialog.dismiss();
                     }
-                  }, retry == false ? null : new DialogInterface.OnClickListener()
+                  }, activity.getString(android.R.string.no), retry == false ? null : new DialogInterface.OnClickListener()
                   {
                     public void onClick(DialogInterface dialog, int which)
                     {
@@ -748,28 +750,33 @@ public final class ActivityController
      *          the dialog box title
      * @param dialogMessage
      *          the dialog box message
-     * @param onOkClickListener
-     *          the callback which will be invoked from the UI thread when the end-user hits the "OK" button
-     * @param onNoClickListener
-     *          the callback which will be invoked from the UI thread when the end-user hits the "No" button ; may be {@code null}, and in that case,
-     *          the "No" button is hidden
+     * @param positiveButton
+     *          the label to display for the dialog box positive button ; may be {@code null} if {@code positiveClickListener} is also {@code null}
+     * @param positiveClickListener
+     *          the callback which will be invoked from the UI thread when the end-user hits the positive button
+     * @param negativeButton
+     *          the label to display for the dialog box positive button ; may be {@code null} if {@code negativeClickListener} is also {@code null}
+     * @param negativeClickListener
+     *          the callback which will be invoked from the UI thread when the end-user hits the negative button ; may be {@code null}, and in that
+     *          case, the "No" button is hidden
      * @param onCancelListener
      *          the callback which will be invoked from the UI thread when the end-user hits the "back" button ; may be {@code null}, and in that
      *          case, the dialog box will not be {@link Builder#setCancelable(boolean) cancelleable}
      */
-    protected void showDialog(Activity activity, CharSequence dialogTitle, CharSequence dialogMessage, final DialogInterface.OnClickListener onOkClickListener,
-        final DialogInterface.OnClickListener onNoClickListener, final DialogInterface.OnCancelListener onCancelListener)
+    protected void showDialog(Activity activity, CharSequence dialogTitle, CharSequence dialogMessage, CharSequence positiveButton,
+        DialogInterface.OnClickListener positiveClickListener, CharSequence negativeButton, DialogInterface.OnClickListener negativeClickListener,
+        DialogInterface.OnCancelListener onCancelListener)
     {
       final Builder builder = new AlertDialog.Builder(activity).setTitle(dialogTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(dialogMessage).setPositiveButton(
-          android.R.string.ok, onOkClickListener);
+          positiveButton, positiveClickListener);
       builder.setCancelable(onCancelListener == null ? false : true);
       if (onCancelListener != null)
       {
         builder.setOnCancelListener(onCancelListener);
       }
-      if (onNoClickListener != null)
+      if (negativeClickListener != null)
       {
-        builder.setNegativeButton(android.R.string.no, onNoClickListener);
+        builder.setNegativeButton(negativeButton, negativeClickListener);
       }
       builder.show();
     }
