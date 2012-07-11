@@ -22,7 +22,6 @@ import java.io.File;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
@@ -145,22 +144,28 @@ public abstract class SmartApplication
           {
             final I18N i18n = getI18N();
             // If the logger recipient is not set, no e-mail submission is proposed
-            new AlertDialog.Builder(activity).setTitle(getI18N().dialogBoxErrorTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(
-                getI18N().otherProblemHint).setNegativeButton(android.R.string.cancel, new OnClickListener()
-            {
-              public void onClick(DialogInterface dialogInterface, int which)
-              {
-                // We leave the activity, because we cannot go any further
-                activity.finish();
-              }
-            }).setPositiveButton(i18n.reportButtonLabel, new OnClickListener()
+            showDialog(activity, getI18N().dialogBoxErrorTitle, getI18N().otherProblemHint, i18n.reportButtonLabel, new OnClickListener()
             {
               public void onClick(DialogInterface dialogInterface, int which)
               {
                 new SendLogsTask(activity, i18n.retrievingLogProgressMessage, "[" + i18n.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
                     null, null);
               }
-            }).setCancelable(false).show();
+            }, activity.getString(android.R.string.cancel), new OnClickListener()
+            {
+              public void onClick(DialogInterface dialogInterface, int which)
+              {
+                // We leave the activity, because we cannot go any further
+                activity.finish();
+              }
+            }, new DialogInterface.OnCancelListener()
+            {
+              public void onCancel(DialogInterface dialog)
+              {
+                // We leave the activity, because we cannot go any further
+                activity.finish();
+              }
+            });
           }
         });
         return true;
