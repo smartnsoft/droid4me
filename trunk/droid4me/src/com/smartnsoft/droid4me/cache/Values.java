@@ -302,18 +302,21 @@ public final class Values
 
   }
 
+  /**
+   * The exception which may be triggered to indicate that a caching method has failed.
+   */
   public final static class CacheException
       extends Business.BusinessException
   {
 
     private static final long serialVersionUID = -2742319642305884562L;
 
-    private CacheException(String message, Throwable cause)
+    public CacheException(String message, Throwable cause)
     {
       super(message, cause);
     }
 
-    private CacheException(Throwable cause)
+    public CacheException(Throwable cause)
     {
       super(cause);
     }
