@@ -389,7 +389,7 @@ public abstract class SmartApplication
     }
 
     // This boilerplate is printed whatever the log level
-    log.info("Application  with package name '" + getPackageName() + "' powered by droid4me " + SmartApplication.getFrameworkVersionString() + " - Copyright Smart&Soft");
+    log.info("Application with package name '" + getPackageName() + "' powered by droid4me " + SmartApplication.getFrameworkVersionString() + " - Copyright Smart&Soft");
     if (log.isDebugEnabled())
     {
       log.debug("Application starting");
