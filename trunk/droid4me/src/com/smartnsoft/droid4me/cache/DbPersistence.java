@@ -357,7 +357,7 @@ public final class DbPersistence
     {
       if (log.isInfoEnabled())
       {
-        log.info("The cache database seems to be unexisting, unavailable or corrupted: it is now re-initialized");
+        log.info("The cache database located at '" + dbFilePath + "' seems to be unexisting, unavailable or corrupted: it is now re-initialized");
       }
       try
       {
@@ -366,13 +366,17 @@ public final class DbPersistence
         databaseFile.getParentFile().mkdirs();
         DbPersistence.ensureDatabaseAvailability(dbFilePath, tableName);
       }
-      catch (Exception otherException)
+      catch (Throwable otherThrowable)
       {
         if (log.isErrorEnabled())
         {
-          log.error("Cannot properly initialize the database: no database is available!", otherException);
+          log.error("Cannot properly initialize the database located at '" + dbFilePath + "': no database is available!", otherThrowable);
         }
-        throw new Persistence.PersistenceException("Cannot initialize properly", exception);
+        if (otherThrowable instanceof Persistence.PersistenceException)
+        {
+          throw (Persistence.PersistenceException) otherThrowable;
+        }
+        throw new Persistence.PersistenceException("Cannot initialize properly the database located at '" + dbFilePath + "'", exception);
       }
     }
     try
@@ -448,8 +452,17 @@ public final class DbPersistence
   }
 
   private static void ensureDatabaseAvailability(String dbFilePath, String tableName)
+      throws Persistence.PersistenceException
   {
-    final SQLiteDatabase database = SQLiteDatabase.openDatabase(dbFilePath, null, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.OPEN_READWRITE);
+    final SQLiteDatabase database;
+    try
+    {
+      database = SQLiteDatabase.openDatabase(dbFilePath, null, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.OPEN_READWRITE);
+    }
+    catch (SQLException exception)
+    {
+      throw new Persistence.PersistenceException("Cannot open the database file '" + dbFilePath + "'", exception);
+    }
     database.setLockingEnabled(true);
     try
     {
