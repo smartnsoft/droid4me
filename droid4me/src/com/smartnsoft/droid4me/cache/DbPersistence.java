@@ -345,8 +345,10 @@ public final class DbPersistence
     {
       log.debug("Initializing the database located at '" + dbFilePath + "' for the table '" + tableName + "'");
     }
+    final File databaseFile = new File(dbFilePath);
     try
     {
+      databaseFile.getParentFile().mkdirs();
       DbPersistence.ensureDatabaseAvailability(dbFilePath, tableName);
       if (log.isDebugEnabled())
       {
@@ -361,9 +363,7 @@ public final class DbPersistence
       }
       try
       {
-        final File databaseFile = new File(dbFilePath);
         databaseFile.delete();
-        databaseFile.getParentFile().mkdirs();
         DbPersistence.ensureDatabaseAvailability(dbFilePath, tableName);
       }
       catch (Throwable otherThrowable)
@@ -452,17 +452,8 @@ public final class DbPersistence
   }
 
   private static void ensureDatabaseAvailability(String dbFilePath, String tableName)
-      throws Persistence.PersistenceException
   {
-    final SQLiteDatabase database;
-    try
-    {
-      database = SQLiteDatabase.openDatabase(dbFilePath, null, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.OPEN_READWRITE);
-    }
-    catch (SQLException exception)
-    {
-      throw new Persistence.PersistenceException("Cannot open the database file '" + dbFilePath + "'", exception);
-    }
+    final SQLiteDatabase database = SQLiteDatabase.openDatabase(dbFilePath, null, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.OPEN_READWRITE);
     database.setLockingEnabled(true);
     try
     {
