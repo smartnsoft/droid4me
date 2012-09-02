@@ -11,6 +11,7 @@ Have you developed an Android application which uses droid4me? Please, let us kn
 
 The best ambassadors of droid4me are the Android applications which already integrate it:
 
+ * [http://market.android.com/details?id=com.aheadsolutions.hangman Hangman Deluxe Premium]
  * [http://market.android.com/details?id=fr.anatoleapps.almanachdanatole L'Almanach d'Anatole]
  * [http://market.android.com/details?id=com.smartnsoft.kapps Kapps]
  * [http://market.android.com/details?id=com.soouat.memokidsanimals MemoKids Animals] and its 4 flavours, SD, SD lite, HD, and HD lite
