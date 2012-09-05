@@ -64,23 +64,23 @@ public abstract class SmartApplication
   protected final static class I18N
   {
 
-    public final CharSequence dialogBoxErrorTitle;
+    public CharSequence dialogBoxErrorTitle;
 
-    public final CharSequence businessObjectAvailabilityProblemHint;
+    public CharSequence businessObjectAvailabilityProblemHint;
 
-    public final CharSequence serviceProblemHint;
+    public CharSequence serviceProblemHint;
 
-    public final CharSequence connectivityProblemHint;
+    public CharSequence connectivityProblemHint;
 
-    public final CharSequence connectivityProblemRetryHint;
+    public CharSequence connectivityProblemRetryHint;
 
-    public final CharSequence otherProblemHint;
+    public CharSequence otherProblemHint;
 
-    public final String applicationName;
+    public String applicationName;
 
-    public final CharSequence reportButtonLabel;
+    public CharSequence reportButtonLabel;
 
-    public final String retrievingLogProgressMessage;
+    public String retrievingLogProgressMessage;
 
     /**
      * @param dialogBoxErrorTitle
