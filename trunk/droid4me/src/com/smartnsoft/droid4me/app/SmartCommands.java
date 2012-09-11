@@ -29,6 +29,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.util.Log;
 import android.view.View;
@@ -559,12 +560,13 @@ public final class SmartCommands
       }
       finally
       {
-        // This can be done from any thread, according to the documentation
-        if (dialog != null && dialog.isShowing() == true)
+        final Activity associatedActivity = DialogGuardedCommand.getAssociatedActivity(dialog);
+        if (dialog != null && dialog.isShowing() == true && (associatedActivity != null && associatedActivity.isFinishing() == false))
         {
           // We want to make sure that the dialog has been dismissed, in order to prevent from memory leaks
           try
           {
+            // This can be done from any thread, according to the documentation
             dialog.dismiss();
           }
           catch (Throwable throwable)
@@ -573,6 +575,31 @@ public final class SmartCommands
           }
         }
       }
+    }
+
+    /**
+     * Method pointed out by Benoît Lubek, taken from the {@link Dialog} source code, because it is {@code private}.
+     * 
+     * @return The activity associated with this dialog, or null if there is no associated activity.
+     * @since 2012.09.08
+     */
+    private static Activity getAssociatedActivity(Dialog dialog)
+    {
+      Activity activity = dialog.getOwnerActivity();
+      Context context = dialog.getContext();
+      while (activity == null && context != null)
+      {
+        if (context instanceof Activity)
+        {
+          activity = (Activity) context; // found it!
+        }
+        else
+        {
+          context = context instanceof ContextWrapper ? ((ContextWrapper) context).getBaseContext() : // unwrap one level
+              null; // done
+        }
+      }
+      return activity;
     }
 
   }
