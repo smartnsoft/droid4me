@@ -196,7 +196,7 @@ public class TokenKeeper<Token extends Serializable>
   {
     for (Token token : tokens)
     {
-      intentFilter.addAction(computeTokenKey(token));
+      intentFilter.addAction(computeTokenKey(token, false));
     }
     return this;
   }
@@ -220,7 +220,7 @@ public class TokenKeeper<Token extends Serializable>
     }
     for (Token token : tokens)
     {
-      if (action.equals(computeTokenKey(token)) == true)
+      if (action.equals(computeTokenKey(token, false)) == true)
       {
         return true;
       }
@@ -238,7 +238,7 @@ public class TokenKeeper<Token extends Serializable>
    */
   public boolean hasToken(Token token)
   {
-    final String key = computeTokenKey(token);
+    final String key = computeTokenKey(token, true);
     return hasPersistedToken(key);
   }
 
@@ -327,7 +327,8 @@ public class TokenKeeper<Token extends Serializable>
    * @param token
    *          the token to be broadcast, which will be used to compute the broadcast {@link Intent} action through the
    * @see #discardToken(Token)
-   * @see #computeTokenKey(Token)
+   * @see #computeTokenKey(Token, boolean)
+   * @see #enrichBroadcast(Serializable, Intent)
    */
   public void broadcast(Token token)
   {
@@ -335,7 +336,8 @@ public class TokenKeeper<Token extends Serializable>
     {
       return;
     }
-    final Intent intent = new Intent(computeTokenKey(token));
+    final Intent intent = new Intent(computeTokenKey(token, false));
+    enrichBroadcast(token, intent);
     context.sendBroadcast(intent);
   }
 
@@ -375,7 +377,7 @@ public class TokenKeeper<Token extends Serializable>
    * @param tokenKey
    *          the key of the token which is requested
    * @return {@code true} if and only if the given token is currently stored at the persistence level
-   * @see #storeToken(String, boolean)
+   * @see #persistToken(String, boolean)
    */
   protected boolean hasPersistedToken(String tokenKey)
   {
@@ -400,7 +402,7 @@ public class TokenKeeper<Token extends Serializable>
    * @see #discardToken(Token)
    * @see #hasPersistedToken(String)
    */
-  protected void storeToken(String tokenKey, boolean value)
+  protected void persistToken(String tokenKey, boolean value)
   {
     final Editor editor = preferences.edit();
     if (value == false)
@@ -425,15 +427,36 @@ public class TokenKeeper<Token extends Serializable>
    * 
    * @param token
    *          the token to deal with
+   * @param forPersistence
+   *          indicates whether the stringified representation of the token should be computed for the persistence, or for the broadcast
+   *          {@link Intent} ; returning two different values for the same token enables to broadcast a more generic version while storing a more
+   *          specific
    * @return a string which identifies the provided token
    * @see #prefix
    * @see #rememberToken(Token)
    * @see #discardToken(Token)
    * @see #broadcast(Token)
    */
-  protected String computeTokenKey(Token token)
+  protected String computeTokenKey(Token token, boolean forPersistence)
   {
-    return prefix + token.toString();
+    return prefix + "." + token.toString();
+  }
+
+  /**
+   * Enables to enrich the {@link Intent} that is bound to be broadcast.
+   * 
+   * <p>
+   * The method does nothing, and it may be overriden.
+   * </p>
+   * 
+   * @param token
+   *          then token which generates the broadcast
+   * @param intent
+   *          the {@link Intent} that has just been generated with the token token action
+   * @see #broadcast(Serializable)
+   */
+  protected void enrichBroadcast(Token token, Intent intent)
+  {
   }
 
   /**
@@ -447,7 +470,7 @@ public class TokenKeeper<Token extends Serializable>
    */
   private void setToken(Token token, boolean value)
   {
-    final String key = computeTokenKey(token);
+    final String key = computeTokenKey(token, true);
     if (log.isDebugEnabled())
     {
       log.debug("Setting the notification token '" + key + "' to " + value);
@@ -456,7 +479,7 @@ public class TokenKeeper<Token extends Serializable>
     {
       return;
     }
-    storeToken(key, value);
+    persistToken(key, value);
   }
 
 }
