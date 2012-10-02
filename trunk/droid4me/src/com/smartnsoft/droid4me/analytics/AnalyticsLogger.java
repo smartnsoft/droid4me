@@ -89,6 +89,7 @@ public interface AnalyticsLogger
    * </p>
    * 
    * @see AnalyticsLogger.AnalyticsTagLogger
+   * @see AnalyticsLogger.AnalyticsTagLoggerAnnotation
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
@@ -99,6 +100,24 @@ public interface AnalyticsLogger
      * @return the tag that will be used when reporting some usage information about the underlying entity ; it may return {@code null}
      */
     String tag();
+
+  }
+
+  /**
+   * An annotation which enables to express that an entity, usually an {@link Activity} or a {@link Fragment}, does not wish to report any analytics
+   * usage.
+   * 
+   * <p>
+   * Use this annotation, when you do not want the underlying entity to report any activity.
+   * </p>
+   * 
+   * @see AnalyticsLogger.AnalyticsTagLogger
+   * @see AnalyticsLogger.AnalyticsTagLoggerAnnotation
+   */
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.TYPE)
+  public static @interface AnalyticsDisabledLoggerAnnotation
+  {
 
   }
 
