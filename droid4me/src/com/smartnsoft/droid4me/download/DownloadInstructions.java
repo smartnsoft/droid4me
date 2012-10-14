@@ -23,6 +23,7 @@ import java.net.URLConnection;
 import java.util.Map;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.view.View;
@@ -72,7 +73,8 @@ public class DownloadInstructions
 
     public int getSizeInBytes()
     {
-      return bitmap == null ? 0 : bitmap.getWidth() * bitmap.getHeight() * 4;
+      return bitmap == null ? 0 : (bitmap.getWidth() * bitmap.getHeight()) * (bitmap.getConfig() == Config.ARGB_8888 ? 4
+          : (bitmap.getConfig() == Config.ALPHA_8 ? 1 : 2));
     }
 
     public void recycle()
