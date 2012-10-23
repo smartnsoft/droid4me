@@ -559,6 +559,10 @@ public final class ActivityController
      */
     public boolean onContextException(Context context, Object component, Throwable throwable)
     {
+      if (handleMemoryProblemInCause(context, throwable) == true)
+      {
+        return true;
+      }
       return false;
     }
 
@@ -703,19 +707,19 @@ public final class ActivityController
      * Environment.getExternalStorageDirectory()}, and the exact name of this file will be traced.
      * </p>
      * 
-     * @param activity
-     *          the activity responsible for triggering the exception
+     * @param context
+     *          the context responsible for triggering the exception
      * @param throwable
      *          the exception to be inspected
      * @return {@code true} if and only a memory saturation issue has been detected
      */
-    protected final boolean handleMemoryProblemInCause(Activity activity, Throwable throwable)
+    protected final boolean handleMemoryProblemInCause(Context context, Throwable throwable)
     {
       if (ActivityController.AbstractExceptionHandler.isAMemoryProblem(throwable) == true)
       {
         // We first run a garbage collection, in the hope to free some memory ;(
         System.gc();
-        final File file = new File(Environment.getExternalStorageDirectory(), activity.getApplication().getPackageName() + "-outofmemory-" + System.currentTimeMillis() + ".hprof");
+        final File file = new File(Environment.getExternalStorageDirectory(), context.getPackageName() + "-outofmemory-" + System.currentTimeMillis() + ".hprof");
         if (log.isErrorEnabled())
         {
           log.error("A memory saturation issue has been detected: dumping the memory usage to file '" + file.getAbsolutePath() + "'", throwable);
@@ -947,14 +951,14 @@ public final class ActivityController
       {
         if (log.isWarnEnabled())
         {
-          log.warn("Caught an exception during the processing of the context with name '" + (context == null ? "null" : context.getClass().getName()) + "'",
-              throwable);
+          log.warn("Caught an exception which will not be handled during the processing of the context with name '" + (context == null ? "null"
+              : context.getClass().getName()) + "'", throwable);
         }
       }
       return false;
     }
     final Activity activity;
-    if (context != null && context instanceof Activity)
+    if (context instanceof Activity)
     {
       activity = (Activity) context;
     }

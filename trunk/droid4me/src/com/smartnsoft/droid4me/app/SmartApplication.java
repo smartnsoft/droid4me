@@ -195,6 +195,11 @@ public abstract class SmartApplication
   {
 
     /**
+     * The context in which the exception handler lives.
+     */
+    private final Context context;
+
+    /**
      * The previous exception handler.
      */
     private final Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler;
@@ -203,8 +208,9 @@ public abstract class SmartApplication
      * @param builtinUncaughtExceptionHandler
      *          the built-in uncaught exception handler that will be invoked eventually.
      */
-    public SmartUncaughtExceptionHandler(Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler)
+    public SmartUncaughtExceptionHandler(Context context, Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler)
     {
+      this.context = context;
       this.builtinUncaughtExceptionHandler = builtinUncaughtExceptionHandler;
     }
 
@@ -212,7 +218,7 @@ public abstract class SmartApplication
     {
       try
       {
-        ActivityController.getInstance().handleException(null, null, throwable);
+        ActivityController.getInstance().handleException(context, null, throwable);
       }
       finally
       {
@@ -401,7 +407,7 @@ public abstract class SmartApplication
     final Thread uiThread = Thread.currentThread();
     // We explicitly intercept the GUI thread exceptions, so as to override the default behavior
     final UncaughtExceptionHandler uiBuiltinUuncaughtExceptionHandler = uiThread.getUncaughtExceptionHandler();
-    uiUncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(uiBuiltinUuncaughtExceptionHandler);
+    uiUncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), uiBuiltinUuncaughtExceptionHandler);
     if (log.isDebugEnabled())
     {
       log.debug("The application with package name '" + getPackageName() + "' " + (uiBuiltinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in GUI uncaught exception handler");
@@ -409,7 +415,7 @@ public abstract class SmartApplication
     Thread.currentThread().setUncaughtExceptionHandler(uiUncaughtExceptionHandler);
     // We make sure that other uncaught exceptions will be intercepted and handled
     final UncaughtExceptionHandler builtinUuncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-    uncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(builtinUuncaughtExceptionHandler);
+    uncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), builtinUuncaughtExceptionHandler);
     if (log.isDebugEnabled())
     {
       log.debug("The application with package name '" + getPackageName() + "' " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
