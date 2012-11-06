@@ -316,7 +316,7 @@ public final class Tests
       {
         try
         {
-          return WebServiceCaller.getString(inputStream);
+          return WebServiceCaller.getString(inputStream, HTTP.UTF_8);
         }
         catch (IOException exception)
         {
@@ -330,7 +330,7 @@ public final class Tests
     streamParser.backed.getMemoryValue(true, null, parameter);
     {
       // We check that the persistence layer has been updated accordingly
-      final String ioValue = WebServiceCaller.getString(Persistence.getInstance(0).extractInputStream(ioStreamerUri).inputStream);
+      final String ioValue = WebServiceCaller.getString(Persistence.getInstance(0).extractInputStream(ioStreamerUri).inputStream, HTTP.UTF_8);
       Assert.assertEquals("The persisted value has not been recorded at the right place", expectedValue, ioValue);
       final InputAtom inputStream = Persistence.getInstance(0).extractInputStream(uriStreamerPath);
       Assert.assertNull("The persisted value has not been recorded at the right place", inputStream);
@@ -378,7 +378,7 @@ public final class Tests
       {
         try
         {
-          return WebServiceCaller.getString(inputStream);
+          return WebServiceCaller.getString(inputStream, HTTP.UTF_8);
         }
         catch (IOException exception)
         {

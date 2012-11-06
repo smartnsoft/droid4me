@@ -7,6 +7,7 @@ import java.util.Date;
 
 import junit.framework.Assert;
 
+import org.apache.http.protocol.HTTP;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,7 +93,7 @@ public final class Tests
       final InputAtom atom = persistence.readInputStream(uri3);
       Assert.assertNotNull("The atom should not be null", atom);
       Assert.assertNotNull("The input stream should not be null", atom.inputStream);
-      final String retrievedPersistedValue = WebServiceCaller.getString(atom.inputStream);
+      final String retrievedPersistedValue = WebServiceCaller.getString(atom.inputStream, HTTP.UTF_8);
       Assert.assertEquals("The input stream is not the expected one", persistedValue, retrievedPersistedValue);
     }
 
@@ -104,7 +105,7 @@ public final class Tests
       final InputAtom atom = persistence.readInputStream(uri4);
       Assert.assertNotNull("The atom should not be null", atom);
       Assert.assertNotNull("The input stream should not be null", atom.inputStream);
-      final String retrievedPersistedValue = WebServiceCaller.getString(atom.inputStream);
+      final String retrievedPersistedValue = WebServiceCaller.getString(atom.inputStream, HTTP.UTF_8);
       Assert.assertEquals("The input stream is not the expected one", persistedValue4, retrievedPersistedValue);
     }
   }

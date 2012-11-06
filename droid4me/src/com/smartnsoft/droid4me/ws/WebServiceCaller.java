@@ -268,7 +268,19 @@ public abstract class WebServiceCaller
     }
   }
 
+  /**
+   * @return the charset to use for encoding the URI parameters
+   */
   protected abstract String getUrlEncoding();
+
+  /**
+   * This method will be invoked when the instance reads a web service result body.
+   * 
+   * @return the charset to use for decoding the web service requests content
+   * @see #getString(InputStream, String)
+   * @see #getJson(InputStream, String)
+   */
+  protected abstract String getContentEncoding();
 
   /**
    * @return the top XML element of the DOM
@@ -324,35 +336,35 @@ public abstract class WebServiceCaller
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null, 0);
-    return getJson(getContent(uri, WebServiceCaller.CallType.Get, response));
+    return getJson(getContent(uri, WebServiceCaller.CallType.Get, response), getContentEncoding());
   }
 
   protected final String performHttpPostJson(String uri, HttpEntity body)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Post, body, 0);
-    return getJson(getContent(uri, WebServiceCaller.CallType.Post, response));
+    return getJson(getContent(uri, WebServiceCaller.CallType.Post, response), getContentEncoding());
   }
 
   protected final String performHttpPutJson(String uri, HttpEntity body)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Put, body, 0);
-    return getJson(getContent(uri, WebServiceCaller.CallType.Put, response));
+    return getJson(getContent(uri, WebServiceCaller.CallType.Put, response), getContentEncoding());
   }
 
   protected final String performHttpDeleteJson(String uri)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
     final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Delete, null, 0);
-    return getJson(getContent(uri, WebServiceCaller.CallType.Delete, response));
+    return getJson(getContent(uri, WebServiceCaller.CallType.Delete, response), getContentEncoding());
   }
 
-  public static final String getString(InputStream inputStream)
+  public static final String getString(InputStream inputStream, String encoding)
       throws IOException
   {
     final StringWriter writer = new StringWriter();
-    final InputStreamReader streamReader = new InputStreamReader(inputStream);
+    final InputStreamReader streamReader = new InputStreamReader(inputStream, encoding);
     // The 8192 parameter is there to please Android at runtime and discard the
     // "INFO/global(16464): INFO: Default buffer size used in BufferedReader constructor. It would be better to be explicit if a 8k-char buffer is required."
     // log
@@ -365,12 +377,12 @@ public abstract class WebServiceCaller
     return writer.toString();
   }
 
-  public static final String getJson(InputStream inputStream)
+  public static final String getJson(InputStream inputStream, String encoding)
       throws JSONException
   {
     try
     {
-      return WebServiceCaller.getString(inputStream);
+      return WebServiceCaller.getString(inputStream, encoding);
     }
     catch (IOException exception)
     {
