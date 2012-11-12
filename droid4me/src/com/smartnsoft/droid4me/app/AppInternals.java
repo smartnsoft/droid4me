@@ -751,6 +751,7 @@ final class AppInternals
       thread.setName("droid4me-pool-thread #" + threadsCount.getAndIncrement());
       return thread;
     }
+
   });
 
   private AppInternals()
