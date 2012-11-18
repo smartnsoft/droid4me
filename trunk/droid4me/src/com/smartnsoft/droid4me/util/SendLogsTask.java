@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -152,7 +153,18 @@ public final class SendLogsTask
       sb.append("----------").append(lineSeparator).append(logcatSb);
       intent.putExtra(Intent.EXTRA_TEXT, sb.toString());
       // We start the activity that will eventually send the log
-      activity.startActivity(intent);
+      try
+      {
+        activity.startActivity(intent);
+      }
+      catch (ActivityNotFoundException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          // TODO: issue a toast!
+          log.warn("Cannot send the report, because no application is able to handle it!", exception);
+        }
+      }
       dismissProgressDialog();
       activity.finish();
     }
