@@ -76,6 +76,9 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
     if (isInitialized == false)
     {
       SmartSplashScreenActivity.initialized.remove(activityClass.getName());
+      SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted = false;
+      SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked = false;
+      SmartSplashScreenActivity.businessObject = null;
     }
     else
     {
