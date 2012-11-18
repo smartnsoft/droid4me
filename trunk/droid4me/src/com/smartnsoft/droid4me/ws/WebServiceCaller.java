@@ -277,10 +277,36 @@ public abstract class WebServiceCaller
    * This method will be invoked when the instance reads a web service result body.
    * 
    * @return the charset to use for decoding the web service requests content
+   * @see #getString(InputStream)
    * @see #getString(InputStream, String)
+   * @see #getJson(InputStream)
    * @see #getJson(InputStream, String)
    */
   protected abstract String getContentEncoding();
+
+  /**
+   * Equivalent to {@code WebServiceCaller.getString(inputStream, getContentEncoding())}.
+   * 
+   * @see #getString(InputStream, String)
+   */
+  public final String getString(InputStream inputStream)
+      throws IOException
+  {
+    return WebServiceCaller.getString(inputStream, getContentEncoding());
+  }
+
+  /**
+   * Equivalent to {@code WebServiceCaller.getJson(inputStream, getContentEncoding())}.
+   * 
+   * @throws JSONException
+   * 
+   * @see #getJson(InputStream, String)
+   */
+  public final String getJson(InputStream inputStream)
+      throws JSONException
+  {
+    return WebServiceCaller.getJson(inputStream, getContentEncoding());
+  }
 
   /**
    * @return the top XML element of the DOM
@@ -360,7 +386,7 @@ public abstract class WebServiceCaller
     return getJson(getContent(uri, WebServiceCaller.CallType.Delete, response), getContentEncoding());
   }
 
-  public static final String getString(InputStream inputStream, String encoding)
+  public static String getString(InputStream inputStream, String encoding)
       throws IOException
   {
     final StringWriter writer = new StringWriter();
@@ -377,7 +403,7 @@ public abstract class WebServiceCaller
     return writer.toString();
   }
 
-  public static final String getJson(InputStream inputStream, String encoding)
+  public static String getJson(InputStream inputStream, String encoding)
       throws JSONException
   {
     try
