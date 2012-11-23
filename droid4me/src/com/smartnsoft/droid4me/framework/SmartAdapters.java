@@ -24,8 +24,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.smartnsoft.droid4me.app.AbstractSmartListActivity;
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 
 /**
@@ -36,6 +42,8 @@ import com.smartnsoft.droid4me.menu.MenuCommand;
  */
 public abstract class SmartAdapters
 {
+
+  protected static final Logger log = LoggerFactory.getInstance("SmartAdapters");
 
   /**
    * Indicates the type of action on the underlying business object.
@@ -371,4 +379,117 @@ public abstract class SmartAdapters
 
   }
 
+  /**
+   * A {@link ListView} adapter, which works closely with the {@link SmartAdapters.BusinessViewWrapper}.
+   * 
+   * @since 2012.11.23
+   * @param <ViewClass>
+   *          the class which represents each graphical row of the list
+   */
+  public static class SmartListAdapter<ViewClass extends View>
+      extends BaseAdapter
+  {
+
+    private final Activity activity;
+
+    private int viewTypeCount;
+
+    private List<SmartAdapters.BusinessViewWrapper<?>> wrappers = new ArrayList<SmartAdapters.BusinessViewWrapper<?>>();
+
+    public SmartListAdapter(Activity activity, int viewTypeCount)
+    {
+      this.activity = activity;
+      this.viewTypeCount = viewTypeCount;
+    }
+
+    public final void setWrappers(List<SmartAdapters.BusinessViewWrapper<?>> wrappers)
+    {
+      this.wrappers = wrappers;
+    }
+
+    public final int getCount()
+    {
+      return wrappers.size();
+    }
+
+    public final Object getItem(int position)
+    {
+      return wrappers.get(position);
+    }
+
+    public final long getItemId(int position)
+    {
+      return wrappers.get(position).hashCode();
+    }
+
+    @Override
+    public final boolean areAllItemsEnabled()
+    {
+      return false;
+    }
+
+    @Override
+    public final boolean isEnabled(int position)
+    {
+      return wrappers.get(position).isEnabled();
+    }
+
+    @Override
+    public final int getItemViewType(int position)
+    {
+      return wrappers.get(position).getType(position);
+    }
+
+    @Override
+    public final boolean hasStableIds()
+    {
+      // i.e. "false"
+      return super.hasStableIds();
+    }
+
+    @Override
+    public int getViewTypeCount()
+    {
+      return viewTypeCount;
+    }
+
+    public final View getView(int position, View convertView, ViewGroup parent)
+    {
+      try
+      {
+        final SmartAdapters.BusinessViewWrapper<?> businessObject;
+        if (position >= wrappers.size())
+        {
+          if (log.isWarnEnabled())
+          {
+            log.warn("Asking for a view for a position " + position + " greater than that the filtered list size which is " + wrappers.size());
+          }
+          return null;
+        }
+        businessObject = wrappers.get(position);
+        final ViewClass innerView;
+        boolean recycle = (convertView != null);
+        if (recycle == false)
+        {
+          innerView = (ViewClass) businessObject.getNewView(activity);
+        }
+        else
+        {
+          innerView = (ViewClass) convertView;
+        }
+        businessObject.updateView(activity, innerView, position);
+        return innerView;
+      }
+      catch (Throwable throwable)
+      {
+        // TODO: find a more elegant way, and report that problem to the main Exception handler
+        if (log.isErrorEnabled())
+        {
+          log.error("Could not get or update the list view at position '" + position + "'", throwable);
+        }
+        return new TextView(parent.getContext());
+      }
+    }
+
+  }
 }
