@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -282,7 +283,7 @@ public abstract class SmartAdapters
     protected View createNewView(Activity activity, BusinessObjectClass businessObjectClass)
     {
       // It is important that the activity itself be used as a basis context, otherwise, the inflated View context is limited!
-      return LayoutInflater.from(activity).inflate(layoutResourceId, null);
+      return activity.getLayoutInflater().inflate(layoutResourceId, null);
     }
 
   }
@@ -388,6 +389,7 @@ public abstract class SmartAdapters
    */
   public static class SmartListAdapter<ViewClass extends View>
       extends BaseAdapter
+      implements AdapterView.OnItemClickListener
   {
 
     private final Activity activity;
@@ -400,6 +402,12 @@ public abstract class SmartAdapters
     {
       this.activity = activity;
       this.viewTypeCount = viewTypeCount;
+    }
+
+    public void setAdapter(ListView listView)
+    {
+      listView.setAdapter(this);
+      listView.setOnItemClickListener(this);
     }
 
     public final void setWrappers(List<SmartAdapters.BusinessViewWrapper<?>> wrappers)
@@ -491,5 +499,82 @@ public abstract class SmartAdapters
       }
     }
 
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id)
+    {
+      if (adapterView.isEnabled() == false)
+      {
+        return;
+      }
+      final int actualPosition = position - ((ListView) adapterView).getHeaderViewsCount();
+      if (actualPosition < 0 || actualPosition >= wrappers.size())
+      {
+        return;
+      }
+      // setSelectedObject(wrappers.get(actualPosition));
+
+      if (adapterView.isEnabled() == false)
+      {
+        return;
+      }
+      if (actualPosition >= wrappers.size())
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("The selected row " + actualPosition + " exceeds the size of the filtered business objetcs list which is " + wrappers.size());
+        }
+        return;
+      }
+      onInternalEvent(adapterView, view, wrappers.get(actualPosition), ObjectEvent.Clicked, actualPosition);
+    }
+
+    private boolean onInternalEvent(AdapterView<?> adapterView, View view, SmartAdapters.BusinessViewWrapper<?> businessObject, ObjectEvent objectEvent,
+        int position)
+    {
+      if (adapterView.isEnabled() == true)
+      {
+        // We set a protection against a bad usage from the end-user
+        final Intent intent;
+        try
+        {
+          intent = businessObject.computeIntent(activity, view, objectEvent, position);
+        }
+        catch (Throwable throwable)
+        {
+          if (log.isErrorEnabled())
+          {
+            log.error(
+                "The computing of the intent related to the business object with id '" + businessObject.getId() + "' and for the UI event '" + objectEvent + "' seems buggy; not taken into account!",
+                throwable);
+          }
+          return false;
+        }
+        if (intent != null)
+        {
+          activity.startActivity(intent);
+          return true;
+        }
+        else
+        {
+          // We set a protection against a bad usage from the end-user
+          try
+          {
+            return businessObject.onObjectEvent(activity, view, objectEvent, position);
+          }
+          catch (Throwable throwable)
+          {
+            if (log.isErrorEnabled())
+            {
+              log.error(
+                  "The computation of the action related to the business object with id '" + businessObject.getId() + "' and for the UI event '" + objectEvent + "' seems faulty; not taken into account!",
+                  throwable);
+            }
+            return false;
+          }
+        }
+      }
+      return false;
+    }
+
   }
+
 }
