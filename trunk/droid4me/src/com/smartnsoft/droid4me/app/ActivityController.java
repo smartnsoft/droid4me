@@ -113,6 +113,31 @@ public final class ActivityController
   }
 
   /**
+   * An interface responsible for providing Android system services, given their name. It enables to override in one place all the {@code Activity}
+   * system services.
+   * 
+   * @since 2012.02.12
+   */
+  public interface SystemServiceProvider
+  {
+
+    /**
+     * Returns the handle to a system-level service by name. The class of the returned object varies by the requested name.
+     * 
+     * @param activity
+     *          the {@link Activity} asking for the service
+     * @param name
+     *          the name of the desired service
+     * @param defaultService
+     *          the provided {@code activity} default system service (retrieved by invoking the {@link Activity#getSystemService(String)} method)
+     * @return the desired service, or {@code null} if no service corresponding to the provided {@code name} is available nor exists
+     * @see {@link Activity#getSystemService(String)}
+     */
+    Object getSystemService(Activity activity, String name, Object defaultService);
+
+  }
+
+  /**
    * An interface which is queried during the various life cycle events of a {@link LifeCycle}.
    * 
    * <p>
@@ -824,6 +849,8 @@ public final class ActivityController
 
   private ActivityController.Redirector redirector;
 
+  private ActivityController.SystemServiceProvider systemServiceProvider;
+
   private ActivityController.Interceptor interceptor;
 
   private ActivityController.ExceptionHandler exceptionHandler;
@@ -852,14 +879,26 @@ public final class ActivityController
   }
 
   /**
+   * Remembers the system service provider that will be used by the framework, for overriding the {@link Activity#getSystemService(String)} method.
+   * 
+   * @param systemServiceProvider
+   *          the system service provider which will be invoked at runtime, when an {@link Activity} asks for a service ; if {@code null}, the
+   *          {@link Activity} default service will be used
+   */
+  public void registerSystemServiceProvider(ActivityController.SystemServiceProvider systemServiceProvider)
+  {
+    this.systemServiceProvider = systemServiceProvider;
+  }
+
+  /**
    * Remembers the activity redirector that will be used by the framework, before {@link Context#startActivity(Intent) starting} a new
    * {@link Activity}.
    * 
    * @param redirector
-   *          the redirector that will be requested at runtime, when a new activity is being started; if {@code null}, then, redirection mechanism
-   *          will be set up
+   *          the redirector that will be requested at runtime, when a new activity is being started; if {@code null}, no redirection mechanism will
+   *          be set up
    */
-  public synchronized void registerRedirector(ActivityController.Redirector redirector)
+  public void registerRedirector(ActivityController.Redirector redirector)
   {
     this.redirector = redirector;
   }
@@ -871,16 +910,37 @@ public final class ActivityController
    * @param interceptor
    *          the interceptor that will be invoked at runtime, on every event; if {@code null}, no interception mechanism will be used
    */
-  public synchronized void registerInterceptor(ActivityController.Interceptor interceptor)
+  public void registerInterceptor(ActivityController.Interceptor interceptor)
   {
     this.interceptor = interceptor;
+  }
+
+  /**
+   * Is responsible for returning a system service, just like the {@link Context#getSystemService(String)} method does.
+   * 
+   * @param activity
+   *          the activity asking for a system service
+   * @param name
+   *          the name of the desired service
+   * @param defaultService
+   *          the {@code activity} default service
+   * @return the service or {@code null} if the name does not exist
+   * @see #registerSystemServiceProvider(ActivityController.SystemServiceProvider)
+   */
+  public Object getSystemService(Activity activity, String name, Object defaultService)
+  {
+    if (systemServiceProvider != null)
+    {
+      return systemServiceProvider.getSystemService(activity, name, defaultService);
+    }
+    return defaultService;
   }
 
   /**
    * Gives access to the currently registered {@link ActivityController.ExceptionHandler}.
    * 
    * @return the currently registered exception handler ; may be {@code null}, which is the default status
-   * @see #registerExceptionHandler(ExceptionHandler)
+   * @see #registerExceptionHandler(ActivityController.ExceptionHandler)
    */
   public ActivityController.ExceptionHandler getExceptionHandler()
   {
