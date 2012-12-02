@@ -290,6 +290,25 @@ public abstract class SmartApplication
   }
 
   /**
+   * This callback will be invoked by the application instance, in order to get a reference on the application
+   * {@link ActivityController.SystemServiceProvider}: this method is responsible for creating an implementation of this component interface. Override
+   * this method, in order to override the system services which are provided by default by an {@link Activity}.
+   * 
+   * <p>
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
+   * {@link Application#onCreate()} method execution.
+   * </p>
+   * 
+   * @return an instance which enables to override or provide additional system services. If {@code null}, the {@link Activity} default system
+   *         services will be returned
+   * @see ActivityController#registerSystemServiceProvider(ActivityController.SystemServiceProvider)
+   */
+  protected ActivityController.SystemServiceProvider getSystemServiceProvider()
+  {
+    return null;
+  }
+
+  /**
    * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Redirector}:
    * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the redirection
    * mechanism.
@@ -432,12 +451,21 @@ public abstract class SmartApplication
     // We initialize the default intent actions
     AppPublics.initialize(this);
 
+    // We register the system service provider
+    final ActivityController.SystemServiceProvider systemServiceProvider = getSystemServiceProvider();
+    if (systemServiceProvider != null)
+    {
+      ActivityController.getInstance().registerSystemServiceProvider(systemServiceProvider);
+    }
+
+    // We register the Activity redirector
     final ActivityController.Redirector redirector = getActivityRedirector();
     if (redirector != null)
     {
       ActivityController.getInstance().registerRedirector(redirector);
     }
 
+    // We register the entities interceptor
     final ActivityController.Interceptor interceptor = getInterceptor();
     if (interceptor != null)
     {

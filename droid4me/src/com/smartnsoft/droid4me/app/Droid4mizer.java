@@ -21,10 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -61,6 +64,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   private final Smartable<AggregateClass> smartable;
 
   private final AppInternals.StateContainer<AggregateClass, ComponentClass> stateContainer;
+
+  private LayoutInflater layoutInflater;
 
   /**
    * The {@link Activity} {@link Intent} which will be used in case the {@link android.app.ActionBar} "Home" button is clicked.
@@ -571,6 +576,22 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   /*
    * The specific methods.
    */
+
+  /**
+   * Has the same responsibility as the {@link Context#getSystemService()} method. It only applies to the {@link Activity} entity, and not to the
+   * {@link Fragment} entity!
+   * 
+   * @param name
+   *          the name of the desired service
+   * @param defaultService
+   *          the default service provided by the underlying {@link #activity Activity}
+   * @return the service or {@code null} if the name does not exist
+   * @see Context#getSystemService(name)
+   */
+  public Object getSystemService(String name, Object defaultService)
+  {
+    return ActivityController.getInstance().getSystemService(activity, name, defaultService);
+  }
 
   /**
    * Indicates the {@link Activity} {@link Intent} that will be launched when hitting the {@link android.app.ActionBar} "Home" button.
