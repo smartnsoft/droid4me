@@ -104,6 +104,8 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
 
   private boolean hasStopped;
 
+  private Runnable onStartRunnable;
+
   /**
    * This method is run internally, once the application has been totally initialized and is ready for use.
    */
@@ -122,6 +124,14 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
       log.debug("Marking the splash screen as un-stopped");
     }
     hasStopped = false;
+    if (onStartRunnable != null)
+    {
+      if (log.isDebugEnabled())
+      {
+        log.debug("Starting the delayed activity which follows the splash screen, because the splash screen is restarted");
+      }
+      onStartRunnable.run();
+    }
   }
 
   @Override
@@ -382,29 +392,47 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
     {
       return;
     }
-    if (isFinishing() == false && hasStopped == false)
+    if (isFinishing() == false)
     {
-      if (log.isDebugEnabled())
+      final Runnable runnable = new Runnable()
       {
-        log.debug("Starting the activity which follows the splash screen");
-      }
-      if (getIntent().hasExtra(ActivityController.CALLING_INTENT) == true)
+        public void run()
+        {
+          if (log.isDebugEnabled())
+          {
+            log.debug("Starting the activity which follows the splash screen");
+          }
+          if (getIntent().hasExtra(ActivityController.CALLING_INTENT) == true)
+          {
+            // We only resume the previous activity if the splash screen has not been dismissed
+            startCallingIntent();
+          }
+          else
+          {
+            // We only resume the previous activity if the splash screen has not been dismissed
+            startActivity(computeNextIntent());
+          }
+          stopActivity = false;
+          pauseActivity = false;
+          if (log.isDebugEnabled())
+          {
+            log.debug("Finishing the splash screen");
+          }
+          finish();
+        }
+      };
+      if (hasStopped == false)
       {
-        // We only resume the previous activity if the splash screen has not been dismissed
-        startCallingIntent();
+        runnable.run();
       }
       else
       {
-        // We only resume the previous activity if the splash screen has not been dismissed
-        startActivity(computeNextIntent());
+        onStartRunnable = runnable;
+        if (log.isDebugEnabled())
+        {
+          log.debug("Delays the starting the activity which follows the splash screen, because the splash screen has been stopped");
+        }
       }
-      stopActivity = false;
-      pauseActivity = false;
-      if (log.isDebugEnabled())
-      {
-        log.debug("Finishing the splash screen");
-      }
-      finish();
     }
     else
     {
