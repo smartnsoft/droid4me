@@ -529,25 +529,26 @@ public abstract class SmartGroupActivity<AggregateClass>
   @Override
   public boolean onCreateOptionsMenu(Menu menu)
   {
-    return droid4mizer.onCreateOptionsMenu(super.onCreateOptionsMenu(menu), menu);
+    // Taken from http://www.londatiga.net/it/android-coding-tips-how-to-create-options-menu-on-child-activity-inside-an-activitygroup/
+    return droid4mizer.onCreateOptionsMenu(getLocalActivityManager().getCurrentActivity().onCreateOptionsMenu(menu), menu);
   }
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu)
   {
-    return droid4mizer.onPrepareOptionsMenu(super.onPrepareOptionsMenu(menu), menu);
+    return droid4mizer.onPrepareOptionsMenu(getLocalActivityManager().getCurrentActivity().onPrepareOptionsMenu(menu), menu);
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item)
   {
-    return droid4mizer.onOptionsItemSelected(super.onOptionsItemSelected(item), item);
+    return droid4mizer.onOptionsItemSelected(getLocalActivityManager().getCurrentActivity().onOptionsItemSelected(item), item);
   }
 
   @Override
   public boolean onContextItemSelected(MenuItem item)
   {
-    return droid4mizer.onContextItemSelected(super.onContextItemSelected(item), item);
+    return droid4mizer.onContextItemSelected(getLocalActivityManager().getCurrentActivity().onContextItemSelected(item), item);
   }
 
   @Override
