@@ -144,25 +144,26 @@ public abstract class SmartTabActivity<AggregateClass>
   @Override
   public boolean onCreateOptionsMenu(Menu menu)
   {
-    return droid4mizer.onCreateOptionsMenu(super.onCreateOptionsMenu(menu), menu);
+    // Taken from http://www.londatiga.net/it/android-coding-tips-how-to-create-options-menu-on-child-activity-inside-an-activitygroup/
+    return droid4mizer.onCreateOptionsMenu(getParent() == null ? super.onCreateOptionsMenu(menu) : true, menu);
   }
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu)
   {
-    return droid4mizer.onPrepareOptionsMenu(super.onPrepareOptionsMenu(menu), menu);
+    return droid4mizer.onPrepareOptionsMenu(getParent() == null ? super.onPrepareOptionsMenu(menu) : true, menu);
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item)
   {
-    return droid4mizer.onOptionsItemSelected(super.onOptionsItemSelected(item), item);
+    return droid4mizer.onOptionsItemSelected(getParent() == null ? super.onOptionsItemSelected(item) : true, item);
   }
 
   @Override
   public boolean onContextItemSelected(MenuItem item)
   {
-    return droid4mizer.onContextItemSelected(super.onContextItemSelected(item), item);
+    return droid4mizer.onContextItemSelected(getParent() == null ? super.onContextItemSelected(item) : true, item);
   }
 
   @Override
