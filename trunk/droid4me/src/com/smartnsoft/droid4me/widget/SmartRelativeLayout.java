@@ -193,27 +193,32 @@ public class SmartRelativeLayout
     }
   }
 
+  // Taken from http://stackoverflow.com/questions/7058507/fixed-aspect-ratio-view
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
   {
-    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    if (ratio > 0f)
+    if (ratio == 0f)
     {
-      final int measuredWidth = getMeasuredWidth();
-      final int newHeight = (int) ((float) getMeasuredWidth() * ratio);
-      setMeasuredDimension(measuredWidth, newHeight);
-    }
-    else if (ratio < 0f)
-    {
-      final int measuredHeight = getMeasuredHeight();
-      final int newWidth = (int) ((float) getMeasuredHeight() * ratio) * -1;
-      setMeasuredDimension(newWidth, measuredHeight);
+      super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
     else
     {
-      final int measuredWidth = Math.min(getMeasuredWidth(), maxWidth);
-      final int measuredHeight = Math.min(getMeasuredHeight(), maxHeight);
-      setMeasuredDimension(measuredWidth, measuredHeight);
+      final float actualRatio = ratio > 0 ? ratio : -1f / ratio;
+      final int originalWidth = MeasureSpec.getSize(widthMeasureSpec);
+      final int originalHeight = MeasureSpec.getSize(heightMeasureSpec);
+      final int calculatedHeight = (int) ((float) originalWidth * actualRatio);
+      final int finalWidth, finalHeight;
+      if (calculatedHeight > originalHeight)
+      {
+        finalWidth = (int) ((float) originalHeight / actualRatio);
+        finalHeight = originalHeight;
+      }
+      else
+      {
+        finalWidth = originalWidth;
+        finalHeight = calculatedHeight;
+      }
+      super.onMeasure(MeasureSpec.makeMeasureSpec(finalWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(finalHeight, MeasureSpec.EXACTLY));
     }
   }
 
