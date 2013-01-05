@@ -217,14 +217,16 @@ public final class BitmapToolbox
    *          the target frame width
    * @param height
    *          the target frame height
+   * @param config
+   *          the newly created bitmap configuration
    * @param recycle
    *          if set to {@code true}, the provided bitmap is {@link Bitmap#recycle() recycled}
    * @return a bitmap with the provided dimensions
    */
-  public static Bitmap scale(Bitmap bitmap, ScaleType scaleType, int width, int height, boolean recycle)
+  public static Bitmap scale(Bitmap bitmap, ScaleType scaleType, int width, int height, Bitmap.Config config, boolean recycle)
   {
     // Create a new bitmap with the final size
-    final Bitmap resizedBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
+    final Bitmap resizedBitmap = Bitmap.createBitmap(width, height, config);
     // Create a new Canvas with the bitmap that's big enough for the image, plus the gap, plus the reflection
     final Canvas canvas = new Canvas(resizedBitmap);
 
