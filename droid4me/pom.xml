@@ -4,7 +4,7 @@
   <artifactId>droid4me</artifactId>
   <packaging>jar</packaging>
   <name>droid4me</name>
-  <version>2.0-SNAPSHOT</version>
+  <version>2.0</version>
   <description>droid4me is a framework library dedicated to the development of Android applications.</description>
   <url>http://code.google.com/p/droid4me</url>
 
@@ -42,6 +42,38 @@
   <contributors>
   </contributors>
 
+  <parent>
+    <groupId>com.smartnsoft</groupId>
+    <artifactId>distribution</artifactId>
+    <version>1.0</version>
+  </parent>
+
+  <dependencies>
+    <dependency>
+      <groupId>android</groupId>
+      <artifactId>android</artifactId>
+      <version>4.0_r3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.android.annotations</groupId>
+      <artifactId>annotations</artifactId>
+      <version>21.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>android.support</groupId>
+      <artifactId>compatibility-v4</artifactId>
+      <version>11</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.android.maps</groupId>
+      <artifactId>maps</artifactId>
+      <version>14_r2</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
   <build>
     <directory>${project.basedir}/target</directory>
     <sourceDirectory>${basedir}/src</sourceDirectory>
@@ -69,104 +101,4 @@
     </plugins>
   </build>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.google.android</groupId>
-        <artifactId>android</artifactId>
-        <version>4</version>
-        <scope>system</scope>
-        <systemPath>${env.ANDROID_HOME}/platforms/android-4/android.jar</systemPath>
-      </dependency>
-      <dependency>
-        <groupId>com.google.android.addons</groupId>
-        <artifactId>maps</artifactId>
-        <version>4</version>
-        <scope>system</scope>
-        <systemPath>${env.ANDROID_HOME}/add-ons/addon_google_apis_google_inc_4/libs/maps.jar</systemPath>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-    <dependency>
-      <groupId>com.google.android</groupId>
-      <artifactId>android</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.android.addons</groupId>
-      <artifactId>maps</artifactId>
-    </dependency>
-  </dependencies>
-
-  <!-- Currently using Nuxeo repositories unless droid4me is publishable into Maven
-    Central -->
-  <repositories>
-    <repository>
-      <id>public</id>
-      <url>http://maven.nuxeo.org/nexus/content/groups/public</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>public-snapshot</id>
-      <url>http://maven.nuxeo.org/nexus/content/groups/public-snapshot</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>public</id>
-      <url>http://maven.nuxeo.org/nexus/content/groups/public</url>
-      <name>Nuxeo virtual release repository</name>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </pluginRepository>
-    <pluginRepository>
-      <id>public-snapshot</id>
-      <url>http://maven.nuxeo.org/nexus/content/groups/public-snapshot</url>
-      <name>Nuxeo virtual snapshot repository</name>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
-
-  <distributionManagement>
-    <!-- Uncomment and fill with true values if Maven site generation is used -->
-    <!-- <site> <id>website</id> <url>scpexe://www.smartnsoft.com/home/mavenweb/site/</url>
-      </site> -->
-    <repository>
-      <id>public-releases</id>
-      <url>
-        https://maven.nuxeo.org/nexus/content/repositories/vendor-releases/
-      </url>
-    </repository>
-    <snapshotRepository>
-      <id>public-snapshots</id>
-      <url>
-        https://maven.nuxeo.org/nexus/content/repositories/vendor-snapshots/
-      </url>
-      <uniqueVersion>true</uniqueVersion>
-    </snapshotRepository>
-  </distributionManagement>
 </project>
