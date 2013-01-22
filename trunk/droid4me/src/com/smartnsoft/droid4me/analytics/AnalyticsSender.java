@@ -19,6 +19,7 @@ package com.smartnsoft.droid4me.analytics;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Bundle;
 
 /**
  * A very basic abstraction of an agent which is able to send analytics.
@@ -44,6 +45,18 @@ public interface AnalyticsSender<DictionaryType>
    *          the dictionary to use when reporting the event ; may be {@code null}
    */
   void logEvent(Context context, String tag, DictionaryType dictionary);
+
+  /**
+   * Logs an error event.
+   * 
+   * @param context
+   *          the Android context this event is associated with
+   * @param name
+   *          the name to use when reporting the error ; it is not authorized to be {@code null}
+   * @param dictionary
+   *          the dictionary to use when reporting the error ; may be {@code null}
+   */
+  void logError(Context context, String name, Bundle dictionary);
 
   /**
    * Logs the start or resume of an {@link Activity}.
