@@ -192,7 +192,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
         if (recycle == false)
         {
           // log.debug("Creating new view for list at position " + position);
-          innerView = forListProvider.getNewView(businessObject);
+          innerView = forListProvider.getNewView(parent, businessObject);
         }
         else
         {

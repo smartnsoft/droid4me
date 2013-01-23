@@ -82,9 +82,9 @@ public abstract class AbstractWrappedSmartListActivity<AggregateClass, ListViewC
     return businessViewWrapper.getType(position);
   }
 
-  public final View getNewView(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
+  public final View getNewView(ViewGroup parent, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
   {
-    return businessViewWrapper.getNewView(this);
+    return businessViewWrapper.getNewView(parent, this);
   }
 
   public final void updateView(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, int position)

@@ -211,7 +211,7 @@ public abstract class SmartAdapters
       return null;
     }
 
-    public final View getNewView(Activity activity)
+    public final View getNewView(ViewGroup parent, Activity activity)
     {
       final View view = createNewView(activity, getBusinessObject());
       return setNewView(activity, view);
@@ -283,7 +283,7 @@ public abstract class SmartAdapters
     protected View createNewView(Activity activity, BusinessObjectClass businessObjectClass)
     {
       // It is important that the activity itself be used as a basis context, otherwise, the inflated View context is limited!
-      return activity.getLayoutInflater().inflate(layoutResourceId, null);
+      return activity.getLayoutInflater().inflate(layoutResourceId, null, false);
     }
 
   }
@@ -335,16 +335,16 @@ public abstract class SmartAdapters
      * This method should be called only once during the object life cycle.
      * 
      * <p>
-     * This will invoke the {@link DetailsProvider.BusinessViewWrapper#getNewView(Activity} method.
+     * This will invoke the {@link DetailsProvider.BusinessViewWrapper#getNewView(ViewGroup, Activity} method.
      * </p>
      * 
      * @param activity
      *          the activity on which the business object is being rendered
      * @return the initialized view that represent the underlying business object
      */
-    public final View getView(Activity activity)
+    public final View getView(ViewGroup parent, Activity activity)
     {
-      view = businessViewWrapper.getNewView(activity);
+      view = businessViewWrapper.getNewView(parent, activity);
       return view;
     }
 
@@ -479,7 +479,7 @@ public abstract class SmartAdapters
         boolean recycle = (convertView != null);
         if (recycle == false)
         {
-          innerView = (ViewClass) businessObject.getNewView(activity);
+          innerView = (ViewClass) businessObject.getNewView(parent, activity);
         }
         else
         {
