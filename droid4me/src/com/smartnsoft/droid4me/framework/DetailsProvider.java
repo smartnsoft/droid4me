@@ -21,6 +21,7 @@ package com.smartnsoft.droid4me.framework;
 import java.util.List;
 
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.smartnsoft.droid4me.LifeCycle;
 
@@ -94,7 +95,14 @@ public abstract class DetailsProvider
      */
     int getViewType(BusinessObjectClass businessObject, int position);
 
-    ViewClass getNewView(BusinessObjectClass businessObject);
+    /**
+     * @param parent
+     *          the parent view which is going to host the newly created view
+     * @param businessObject
+     *          the business object the created view will be initially attached to
+     * @return a new valid view
+     */
+    ViewClass getNewView(ViewGroup parent, BusinessObjectClass businessObject);
 
     void updateView(ViewClass view, BusinessObjectClass businessObject, int position);
 

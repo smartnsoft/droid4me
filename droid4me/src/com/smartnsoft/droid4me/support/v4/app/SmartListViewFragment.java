@@ -381,9 +381,9 @@ public abstract class SmartListViewFragment<AggregateClass, ListViewClass extend
     return businessViewWrapper.getId();
   }
 
-  public final View getNewView(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
+  public final View getNewView(ViewGroup parent, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
   {
-    return businessViewWrapper.getNewView(getActivity());
+    return businessViewWrapper.getNewView(parent, getActivity());
   }
 
   public final void updateView(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, int position)
