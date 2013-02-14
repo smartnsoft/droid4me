@@ -793,44 +793,62 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     {
       try
       {
-        inputStream = onInputStreamDownloaded(inputStream);
-        downloaded = true;
-      }
-      catch (OutOfMemoryError exception)
-      {
-        if (log.isWarnEnabled())
+        try
         {
-          log.warn(logCommandId() + "Process exceeding available memory", exception);
+          inputStream = onInputStreamDownloaded(inputStream);
+          downloaded = true;
         }
-        outOfMemoryOccurences++;
-        cleanUpCache();
-        return;
+        catch (OutOfMemoryError exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.warn(logCommandId() + "Process exceeding available memory", exception);
+          }
+          outOfMemoryOccurences++;
+          cleanUpCache();
+          return;
+        }
+
+        // We first check for the input stream
+        if (inputStream == null)
+        {
+          instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
+          return;
+        }
+
+        // We attempt to convert the input stream into a bitmap
+        final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
+        if (bitmap == null)
+        {
+          instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
+          return;
+        }
+
+        // We put in cache the bitmap
+        usedBitmap = putInCache(url, bitmap);
+
+        instructions.onBitmapReady(true, view, bitmap, bitmapUid, imageSpecs);
+
+        // Indicates whether another command has been set for the view in the meantime
+        if (view != null && asynchronousDownloadCommands.remove(view) == true)
+        {
+          bindBitmap();
+        }
       }
-
-      // We first check for the input stream
-      if (inputStream == null)
+      finally
       {
-        instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
-        return;
-      }
-
-      // We attempt to convert the input stream into a bitmap
-      final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
-      if (bitmap == null)
-      {
-        instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
-        return;
-      }
-
-      // We put in cache the bitmap
-      usedBitmap = putInCache(url, bitmap);
-
-      instructions.onBitmapReady(true, view, bitmap, bitmapUid, imageSpecs);
-
-      // Indicates whether another command has been set for the view in the meantime
-      if (view != null && asynchronousDownloadCommands.remove(view) == true)
-      {
-        bindBitmap();
+        try
+        {
+          inputStream.close();
+        }
+        catch (IOException exception)
+        {
+          // Does not really matter
+          if (log.isErrorEnabled())
+          {
+            log.error("Could not close the input stream corresponding to downloaded bitmap corresponding to the image with uid '" + bitmapUid + "'", exception);
+          }
+        }
       }
     }
 
@@ -891,7 +909,11 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           catch (IOException exception)
           {
-            // Does not matter
+            // Does not really matter
+            if (log.isErrorEnabled())
+            {
+              log.error("Could not close the input stream corresponding to the image with uid '" + bitmapUid + "'", exception);
+            }
           }
         }
       }
