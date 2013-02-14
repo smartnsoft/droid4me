@@ -318,6 +318,14 @@ public class DownloadInstructions
       return inputStream;
     }
 
+    /**
+     * Is responsible for turning the provided input stream into a bitmap representation.
+     * 
+     * @param inputStream
+     *          the implementation should not close the input stream, because the caller will {@link InputStream#close()} it (no problem if it is
+     *          closed, but this will impact the performance)
+     * @return by default, the returned wrapped {@link Bitmap} will have the device density
+     */
     public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
     {
       // final long start = System.currentTimeMillis();

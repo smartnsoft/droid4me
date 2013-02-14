@@ -20,12 +20,14 @@
 <!--
 This Ant buildfile requires that you have included the following Ant library extensions:
 <ul>
+  <li><a href="http://maven.apache.org/ant-tasks/">Maven Ant Tasks</a></li>
   <li><a href="http://ant-contrib.sourceforge.net/">Ant-Contrib</a></li>
   <li><a href="http://www.oopsconsultancy.com/software/xmltask/">xmltask</a></li>
 </ul>
 -->
 
 <project
+  xmlns:artifact="antlib:org.apache.maven.artifact.ant"
   name="droid4me"
   default="init"
   basedir="."
@@ -142,6 +144,36 @@ This Ant buildfile requires that you have included the following Ant library ext
   />
 
   <target
+    name="install"
+    depends="init, tweakCode"
+    description="Installs the library into the Maven repository."
+  >
+    <artifact:mvn
+      mavenHome="${maven.directoryPath}"
+      pom="${tweakedSource.directoryPath}/pom.xml"
+      fork="true"
+    >
+      <arg line="clean install"/>
+      <arg line="-Dandroid.sdk.path=${sdk.dir}"/>
+    </artifact:mvn>
+  </target>
+
+  <target
+    name="deploy"
+    depends="init, tweakCode"
+    description="Deploys the library into the Maven repository."
+  >
+    <artifact:mvn
+      mavenHome="${maven.directoryPath}"
+      pom="${tweakedSource.directoryPath}/pom.xml"
+      fork="true"
+    >
+      <arg line="clean deploy"/>
+      <arg line="-Dandroid.sdk.path=${sdk.dir}"/>
+    </artifact:mvn>
+  </target>
+
+  <target
     name="jar.library"
     depends="init, tweakCode"
     description="Builds a raw jar of the library."
@@ -155,7 +187,7 @@ This Ant buildfile requires that you have included the following Ant library ext
       debug="true"
       optimize="true"
       extdirs=""
-      srcdir="${tweakedSource.directoryPath}"
+      srcdir="${tweakedSource.directoryPath}/src"
       destdir="${classes.directoryPath}"
     >
       <classpath refid="droid4me.classpath"/>
@@ -307,7 +339,7 @@ This Ant buildfile requires that you have included the following Ant library ext
     <delete file="${sourceJar.filePath}"/>
     <mkdir dir="${distribution.directoryPath}"/>
     <jar
-      basedir="${tweakedSource.directoryPath}"
+      basedir="${tweakedSource.directoryPath}/src"
       destfile="${sourceJar.filePath}"
       update="false"
     >
@@ -368,8 +400,9 @@ This Ant buildfile requires that you have included the following Ant library ext
     <delete dir="${tweakedSource.directoryPath}"/>
     <mkdir dir="${tweakedSource.directoryPath}"/>
     <copy toDir="${tweakedSource.directoryPath}">
-      <fileset dir="src">
-        <include name="**/*"/>
+      <fileset dir=".">
+        <include name="*.xml"/>
+        <include name="src/**/*"/>
       </fileset>
       <filterchain>
         <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
@@ -563,7 +596,7 @@ This Ant buildfile requires that you have included the following Ant library ext
   >
     <property
       name="targetCopy.directoryPath"
-      location="../Smarties/libs"
+      location="../Metro/libs"
     />
     <copy
       file="${droid4meJar.filePath}"
