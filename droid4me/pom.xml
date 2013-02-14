@@ -49,9 +49,7 @@
   </contributors>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <key.store.password></key.store.password>
-    <key.alias.password></key.alias.password>
+    <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
   </properties>
 
   <parent>
