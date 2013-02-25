@@ -2,11 +2,13 @@ package com.smartnsoft.droid4me.support.v4.app;
 
 import java.util.List;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -35,6 +37,12 @@ public abstract class SmartFragmentActivity<AggregateClass>
 {
 
   private final Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>>(this, this, this, null);
+
+  @Override
+  public LayoutInflater getLayoutInflater()
+  {
+    return (LayoutInflater) droid4mizer.getSystemService(Context.LAYOUT_INFLATER_SERVICE, super.getLayoutInflater());
+  }
 
   @Override
   public Object getSystemService(String name)
