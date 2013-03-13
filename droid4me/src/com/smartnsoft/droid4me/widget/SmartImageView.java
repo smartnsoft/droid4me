@@ -153,6 +153,11 @@ public class SmartImageView
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
   {
+    onMeasureOld(widthMeasureSpec, heightMeasureSpec);
+  }
+
+  protected void onMeasureNew(int widthMeasureSpec, int heightMeasureSpec)
+  {
     if (ratio == 0f)
     {
       super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -175,6 +180,23 @@ public class SmartImageView
         finalHeight = calculatedHeight;
       }
       super.onMeasure(MeasureSpec.makeMeasureSpec(finalWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(finalHeight, MeasureSpec.EXACTLY));
+    }
+  }
+
+  protected void onMeasureOld(int widthMeasureSpec, int heightMeasureSpec)
+  {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    if (ratio > 0f)
+    {
+      final int measuredWidth = getMeasuredWidth();
+      final int newHeight = (int) ((float) getMeasuredWidth() * ratio);
+      setMeasuredDimension(measuredWidth, newHeight);
+    }
+    else if (ratio < 0f)
+    {
+      final int measuredHeight = getMeasuredHeight();
+      final int newWidth = (int) ((float) getMeasuredHeight() * ratio) * -1;
+      setMeasuredDimension(newWidth, measuredHeight);
     }
   }
 

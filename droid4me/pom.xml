@@ -10,7 +10,7 @@
   <artifactId>droid4me</artifactId>
   <packaging>jar</packaging>
   <name>droid4me</name>
-  <version>2.1.2</version>
+  <version>2.1.3</version>
   <description>droid4me is a framework library dedicated to the development of Android applications.</description>
   <url>http://code.google.com/p/droid4me</url>
 
@@ -23,9 +23,55 @@
   </licenses>
 
   <organization>
-    <name>SmartnSoft</name>
+    <name><![CDATA[Smart&Soft]]></name>
     <url>http://www.smartnsoft.com</url>
   </organization>
+
+  <developers>
+    <developer>
+      <id>edouard.mercier</id>
+      <name>Édouard Mercier</name>
+      <email>edouard@smartnsoft.com</email>
+      <organization><![CDATA[Smart&Soft]]></organization>
+      <organizationUrl>http://www.smartnsoft.com</organizationUrl>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jocelyn.girard</id>
+      <name>Jocelyn Girard</name>
+      <email>jocelyn@smartnsoft.com</email>
+      <organization><![CDATA[Smart&Soft]]></organization>
+      <organizationUrl>http://www.smartnsoft.com</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>willy.noel</id>
+      <name>Willy Noel</name>
+      <email>willy@smartnsoft.com</email>
+      <organization><![CDATA[Smart&Soft]]></organization>
+      <organizationUrl>http://www.smartnsoft.com</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Julien Carsique</name>
+      <email>jcarsique@nuxeo.com</email>
+      <organization><![CDATA[Nuxeo]]></organization>
+      <organizationUrl>http://www.nuxeo.com</organizationUrl>
+      <roles>
+        <role>packager</role>
+      </roles>
+    </contributor>
+  </contributors>
 
   <scm>
     <connection>scm:svn:http://droid4me.googlecode.com/svn/trunk/droid4me</connection>
@@ -43,10 +89,6 @@
   </ciManagement>
   <mailingLists>
   </mailingLists>
-  <developers>
-  </developers>
-  <contributors>
-  </contributors>
 
   <properties>
     <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
@@ -82,21 +124,21 @@
       <version>14_r2</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
+    <!--dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.0</version>
       <type>jar</type>
       <scope>test</scope>
       <optional>true</optional>
-    </dependency>
+    </dependency-->
   </dependencies>
 
   <build>
     <directory>${project.basedir}/target</directory>
     <sourceDirectory>${basedir}/src</sourceDirectory>
     <outputDirectory>${basedir}/target/classes</outputDirectory>
-    <testSourceDirectory>${basedir}/test</testSourceDirectory>
+    <!--testSourceDirectory>${basedir}/test</testSourceDirectory-->
     <finalName>${project.artifactId}-${project.version}</finalName>
 
     <pluginManagement>
