@@ -781,7 +781,7 @@ public abstract class WebServiceCaller
     }
     else
     {
-      return new SensibleHttpClient();
+      return computeHttpClient();
     }
   }
 
