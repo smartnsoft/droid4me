@@ -280,7 +280,7 @@ public abstract class SmartAdapters
     }
 
     @Override
-    protected View createNewView(Activity activity, BusinessObjectClass businessObjectClass)
+    protected View createNewView(Activity activity, BusinessObjectClass businessObject)
     {
       // It is important that the activity itself be used as a basis context, otherwise, the inflated View context is limited!
       return activity.getLayoutInflater().inflate(layoutResourceId, null, false);
@@ -392,15 +392,20 @@ public abstract class SmartAdapters
       implements AdapterView.OnItemClickListener
   {
 
-    private final Activity activity;
+    protected final Activity activity;
 
-    private int viewTypeCount;
+    protected int viewTypeCount = 1;
 
-    private List<SmartAdapters.BusinessViewWrapper<?>> wrappers = new ArrayList<SmartAdapters.BusinessViewWrapper<?>>();
+    protected List<? extends SmartAdapters.BusinessViewWrapper<?>> wrappers = new ArrayList<SmartAdapters.BusinessViewWrapper<?>>();
 
-    public SmartListAdapter(Activity activity, int viewTypeCount)
+    public SmartListAdapter(Activity activity)
     {
       this.activity = activity;
+    }
+
+    public void setWrappers(List<? extends SmartAdapters.BusinessViewWrapper<?>> wrappers, int viewTypeCount)
+    {
+      this.wrappers = wrappers;
       this.viewTypeCount = viewTypeCount;
     }
 
@@ -408,11 +413,6 @@ public abstract class SmartAdapters
     {
       listView.setAdapter(this);
       listView.setOnItemClickListener(this);
-    }
-
-    public final void setWrappers(List<SmartAdapters.BusinessViewWrapper<?>> wrappers)
-    {
-      this.wrappers = wrappers;
     }
 
     public final int getCount()
@@ -461,6 +461,7 @@ public abstract class SmartAdapters
       return viewTypeCount;
     }
 
+    @SuppressWarnings("unchecked")
     public final View getView(int position, View convertView, ViewGroup parent)
     {
       try
