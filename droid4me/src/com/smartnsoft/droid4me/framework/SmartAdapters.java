@@ -477,8 +477,8 @@ public abstract class SmartAdapters
         }
         businessObject = wrappers.get(position);
         final ViewClass innerView;
-        boolean recycle = (convertView != null);
-        if (recycle == false)
+        final boolean isRecycled = (convertView != null);
+        if (isRecycled == false)
         {
           innerView = (ViewClass) businessObject.getNewView(parent, activity);
         }
@@ -487,6 +487,10 @@ public abstract class SmartAdapters
           innerView = (ViewClass) convertView;
         }
         businessObject.updateView(activity, innerView, position);
+
+        // We let the opportunity to catch this update event
+        onInterceptGetView(innerView, position, isRecycled);
+
         return innerView;
       }
       catch (Throwable throwable)
@@ -498,6 +502,20 @@ public abstract class SmartAdapters
         }
         return new TextView(parent.getContext());
       }
+    }
+
+    /**
+     * Is invoked every time a {@link View} of the adapter is being updated. This is the right place for customizing the adapter.
+     * 
+     * @param view
+     *          the view which holds the graphical representation of the business object
+     * @param position
+     *          the position in the adapter
+     * @param isRecycled
+     *          {@code true} if and only if the provided view has just been created and is hence not recycled
+     */
+    protected void onInterceptGetView(ViewClass view, int position, boolean isRecycled)
+    {
     }
 
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id)
