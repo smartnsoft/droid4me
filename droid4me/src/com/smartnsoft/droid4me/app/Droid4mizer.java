@@ -27,7 +27,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -64,8 +63,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   private final Smartable<AggregateClass> smartable;
 
   private final AppInternals.StateContainer<AggregateClass, ComponentClass> stateContainer;
-
-  private LayoutInflater layoutInflater;
 
   /**
    * The {@link Activity} {@link Intent} which will be used in case the {@link android.app.ActionBar} "Home" button is clicked.
@@ -283,7 +280,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     catch (Throwable throwable)
     {
       stateContainer.stopHandling();
-      onException(throwable, true);
+      smartable.onException(throwable, true);
       return;
     }
     // We add the static menu commands
@@ -664,7 +661,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       catch (Throwable throwable)
       {
         stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
-        onException(throwable, true);
+        smartable.onException(throwable, true);
         stateContainer.onStopLoading();
         return;
       }
@@ -679,7 +676,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     catch (Throwable throwable)
     {
       stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
-      onException(throwable, true);
+      smartable.onException(throwable, true);
       return;
     }
     finally
@@ -727,8 +724,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       return;
     }
-    // We need to invoke that method on the GUI thread, because that method may have been triggered from another thread
-    onException(throwable, false);
+    // We need to indicate to the method that it may have been triggered from another thread than the GUI's
+    smartable.onException(throwable, false);
   }
 
   private void onRegisterResultHandlers(CompositeHandler compositeActivityResultHandler)
