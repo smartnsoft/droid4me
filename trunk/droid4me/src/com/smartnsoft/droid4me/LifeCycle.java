@@ -18,6 +18,12 @@
 
 package com.smartnsoft.droid4me;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
@@ -122,10 +128,23 @@ public interface LifeCycle
    * business objects should be retrieved}.
    * 
    * @since 2009.02.19
+   * @see LifeCycle.BusinessObjectsRetrievalAsynchronousPolicyAnnotation
    */
   public interface BusinessObjectsRetrievalAsynchronousPolicy
   {
+  }
 
+  /**
+   * Same concept as {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy}, but through an annotation.
+   * 
+   * @since 2013.04.12
+   * @see LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy
+   */
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.TYPE)
+  @Inherited
+  public static @interface BusinessObjectsRetrievalAsynchronousPolicyAnnotation
+  {
   }
 
   /**

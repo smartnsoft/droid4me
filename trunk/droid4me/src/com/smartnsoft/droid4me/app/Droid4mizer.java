@@ -157,7 +157,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
-    if (!(component instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy))
+    if (component instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy == false && component.getClass().getAnnotation(
+        BusinessObjectsRetrievalAsynchronousPolicyAnnotation.class) == null)
     {
       if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
       {
