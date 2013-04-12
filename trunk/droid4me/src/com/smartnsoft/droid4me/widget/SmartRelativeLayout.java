@@ -208,7 +208,7 @@ public class SmartRelativeLayout
       final int originalHeight = MeasureSpec.getSize(heightMeasureSpec);
       final int calculatedHeight = (int) ((float) originalWidth * actualRatio);
       final int finalWidth, finalHeight;
-      if (calculatedHeight > originalHeight)
+      if (originalHeight > 0 && calculatedHeight > originalHeight)
       {
         finalWidth = (int) ((float) originalHeight / actualRatio);
         finalHeight = originalHeight;
