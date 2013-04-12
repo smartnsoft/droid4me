@@ -415,10 +415,10 @@ final class AppInternals
      */
     void onStartLoading()
     {
-      if (component instanceof AppPublics.SendLoadingIntent)
+      if (component instanceof AppPublics.SendLoadingIntent || component.getClass().getAnnotation(AppPublics.SendLoadingIntentAnnotation.class) != null)
       {
         // We indicate the activity which is loading, in order to filter the loading events
-        AppPublics.LoadingBroadcastListener.broadcastLoading(activity, activity.getClass(), true, false);
+        AppPublics.LoadingBroadcastListener.broadcastLoading(activity, activity.getClass(), component.getClass(), true, false);
       }
     }
 
@@ -428,10 +428,10 @@ final class AppInternals
      */
     void onStopLoading()
     {
-      if (component instanceof AppPublics.SendLoadingIntent)
+      if (component instanceof AppPublics.SendLoadingIntent || component.getClass().getAnnotation(AppPublics.SendLoadingIntentAnnotation.class) != null)
       {
         // We indicate the activity which is loading, in order to filter the loading events
-        AppPublics.LoadingBroadcastListener.broadcastLoading(activity, activity.getClass(), false, false);
+        AppPublics.LoadingBroadcastListener.broadcastLoading(activity, activity.getClass(), component.getClass(), false, false);
       }
     }
 

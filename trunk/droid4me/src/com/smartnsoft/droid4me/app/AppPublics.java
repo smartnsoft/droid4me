@@ -19,6 +19,10 @@
 package com.smartnsoft.droid4me.app;
 
 import java.io.Serializable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -271,10 +275,23 @@ public final class AppPublics
    * When an {@link Activity} implements that interface, it will send broadcast intents while loading and once the loading is over.
    * 
    * @since 2010.02.04
+   * @see AppPublics.SendLoadingIntentAnnotation
    * @see AppPublics.BroadcastListener
    * @see AppPublics.BroadcastListenerProvider
    */
   public interface SendLoadingIntent
+  {
+  }
+
+  /**
+   * Same concept as {@link AppPublics.SendLoadingIntent}, but through an annotation.
+   * 
+   * @since 2013.04.12
+   * @see AppPublics.SendLoadingIntent
+   */
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.TYPE)
+  public static @interface SendLoadingIntentAnnotation
   {
   }
 
@@ -381,6 +398,10 @@ public final class AppPublics
   /**
    * A broadcast listener which listens only to {@link AppPublics#UI_LOAD_ACTION} intents.
    * 
+   * <p>
+   * It is commonly used for {@link Activity} and {@link android.app. Fragment}, to get events when the entity is being loaded.
+   * </p>
+   * 
    * @since 2010.02.04
    */
   public static abstract class LoadingBroadcastListener
@@ -388,6 +409,8 @@ public final class AppPublics
   {
 
     private final Activity activity;
+
+    private final Object component;
 
     private int counter = 0;
 
@@ -399,35 +422,49 @@ public final class AppPublics
      * @param context
      *          the context which will be used to trigger the event
      * @param targetActivityClass
-     *          the class which should receive the loading event
+     *          the class of the {@link Activity} which should receive the loading event
+     * @param targetComponentClass
+     *          the class of the component which should receive the loading event
      * @param isLoading
      *          whether this deals with a loading which starts or stop
      * @param addCategory
      *          whether the broadcast intent should contain the target category
      */
-    public static void broadcastLoading(Context context, Class<? extends Activity> targetActivityClass, boolean isLoading, boolean addCategory)
+    public static void broadcastLoading(Context context, Class<? extends Activity> targetActivityClass, Class<?> targetComponentClass, boolean isLoading,
+        boolean addCategory)
     {
       final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.EXTRA_UI_LOAD_ACTION_LOADING, isLoading).putExtra(
-          AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName());
+          AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName()).putExtra(AppPublics.EXTRA_ACTION_COMPONENT,
+          targetComponentClass == null ? null : targetComponentClass.getName());
       if (addCategory == true)
       {
         intent.addCategory(targetActivityClass.getName());
+        if (targetComponentClass != null)
+        {
+          intent.addCategory(targetComponentClass.getName());
+        }
       }
       context.sendBroadcast(intent);
     }
 
     public LoadingBroadcastListener(Activity activity)
     {
-      this(activity, true);
+      this(activity, activity, true);
+    }
+
+    public LoadingBroadcastListener(Activity activity, Object component)
+    {
+      this(activity, component, true);
     }
 
     /**
      * @param restrictToActivity
      *          indicates whether the listener should restrict to the {@link Intent} sent by the provided {@link Activity}
      */
-    public LoadingBroadcastListener(Activity activity, boolean restrictToActivity)
+    public LoadingBroadcastListener(Activity activity, Object component, boolean restrictToActivity)
     {
       this.activity = activity;
+      this.component = component;
       this.restrictToActivity = restrictToActivity;
     }
 
@@ -443,6 +480,7 @@ public final class AppPublics
       if (restrictToActivity == true)
       {
         intentFilter.addCategory(activity.getClass().getName());
+        intentFilter.addCategory(component.getClass().getName());
       }
       return intentFilter;
     }
@@ -450,7 +488,8 @@ public final class AppPublics
     public void onReceive(Intent intent)
     {
       if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.EXTRA_ACTION_ACTIVITY) == true && intent.getStringExtra(
-          AppPublics.EXTRA_ACTION_ACTIVITY).equals(activity.getClass().getName()) == true)
+          AppPublics.EXTRA_ACTION_ACTIVITY).equals(activity.getClass().getName()) == true && intent.getStringExtra(AppPublics.EXTRA_ACTION_COMPONENT).equals(
+          component.getClass().getName()) == true)
       {
         final int previousCounter = counter;
         // We only take into account the loading event coming from the activity itself
@@ -480,7 +519,7 @@ public final class AppPublics
   }
 
   /**
-   * A helper which receives mutli-selection {@link Intent intents} with an action set to {@link MultiSelectionHandler#SELECTION_ACTION}, and which
+   * A helper which receives multi-selection {@link Intent intents} with an action set to {@link MultiSelectionHandler#SELECTION_ACTION}, and which
    * remembers and triggers event according to the current selection.
    * 
    * <p>
