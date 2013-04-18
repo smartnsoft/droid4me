@@ -12,114 +12,132 @@
  * Lesser General Public License for more details.
  *
  * Contributors:
- *     E2M - initial API and implementation
  *     Smart&Soft - initial API and implementation
  */
 
 package com.smartnsoft.droid4me.log;
 
-import android.util.Log;
+import org.apache.log4j.Level;
 
 /**
- * The logger implementation for Android.
+ * The logger implementation for Log4J, which works with the "android-logging-log4j" library.
  * 
  * <p>
- * This implementation can only be used when the code integrating the library runs environment with the Android runtime.
+ * When using this implementation (see {@link LoggerFactory.LoggerConfigurator}), the classpath should have {@code log4j.jar} and {@link android
+ * -logging-log4j.jar} libraries.
  * </p>
  * 
  * @author Édouard Mercier
- * @since 2007.12.23
+ * @since 2013.04.18
  * @see LoggerFactory
  */
-public class AndroidLogger
+public class Log4JLogger
     implements Logger
 {
 
-  private final String category;
+  private final org.apache.log4j.Logger log;
 
-  public AndroidLogger(String category)
+  public static Level getLogLevel(int logLevel)
   {
-    this.category = category;
+    switch (logLevel)
+    {
+    case android.util.Log.ASSERT:
+    default:
+      return Level.TRACE;
+    case android.util.Log.DEBUG:
+      return Level.DEBUG;
+    case android.util.Log.INFO:
+      return Level.INFO;
+    case android.util.Log.WARN:
+      return Level.WARN;
+    case android.util.Log.ERROR:
+      return Level.ERROR;
+    }
   }
 
-  public AndroidLogger(Class<?> theClass)
+  public Log4JLogger(String category)
+  {
+    log = org.apache.log4j.Logger.getLogger(category);
+  }
+
+  public Log4JLogger(Class<?> theClass)
   {
     this(theClass.getSimpleName());
   }
 
   public void debug(String message)
   {
-    Log.d(category, message);
+    log.debug(message);
   }
 
   public void info(String message)
   {
-    Log.i(category, message);
+    log.info(message);
   }
 
   public void warn(String message)
   {
-    Log.w(category, message);
+    log.warn(message);
   }
 
   public void warn(String message, Throwable throwable)
   {
-    Log.w(category, message, throwable);
+    log.warn(message, throwable);
   }
 
   public void warn(StringBuffer message, Throwable throwable)
   {
-    warn(message.toString(), throwable);
+    log.warn(message.toString(), throwable);
   }
 
   public void error(String message)
   {
-    Log.e(category, message);
+    log.error(message);
   }
 
   public void error(String message, Throwable throwable)
   {
-    Log.e(category, message, throwable);
+    log.error(message, throwable);
   }
 
   public void error(StringBuffer message, Throwable throwable)
   {
-    error(message.toString(), throwable);
+    log.error(message.toString(), throwable);
   }
 
   public void fatal(String message)
   {
-    error(message);
+    log.fatal(message);
   }
 
   public void fatal(String message, Throwable throwable)
   {
-    error(message, throwable);
+    log.fatal(message, throwable);
   }
 
   public boolean isDebugEnabled()
   {
-    return LoggerFactory.logLevel <= Log.DEBUG;
+    return LoggerFactory.logLevel <= android.util.Log.DEBUG;
   }
 
   public boolean isInfoEnabled()
   {
-    return LoggerFactory.logLevel <= Log.INFO;
+    return LoggerFactory.logLevel <= android.util.Log.INFO;
   }
 
   public boolean isWarnEnabled()
   {
-    return LoggerFactory.logLevel <= Log.WARN;
+    return LoggerFactory.logLevel <= android.util.Log.WARN;
   }
 
   public boolean isErrorEnabled()
   {
-    return LoggerFactory.logLevel <= Log.ERROR;
+    return LoggerFactory.logLevel <= android.util.Log.ERROR;
   }
 
   public boolean isFatalEnabled()
   {
-    return LoggerFactory.logLevel <= Log.ERROR;
+    return LoggerFactory.logLevel <= android.util.Log.ERROR;
   }
 
 }

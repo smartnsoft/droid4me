@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+ * (C) Copyright 2009-2013 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -25,8 +25,17 @@ import android.util.Log;
  * a desktop machine.
  * 
  * <p>
- * When the the Java system property <code>droid4me.logging</code> is defined with the value "false", the logging uses the standard error and output
- * streams. This is useful when unit-testing the framework.
+ * By default, the {@link AndroidLogger} implementation is used.
+ * </p>
+ * 
+ * <p>
+ * In order to tune the {@link Logger} implementation that should be used at runtime, you may define the {@code SmartConfigurator} class, as explained
+ * in {@link LoggerFactory.LoggerConfigurator}.
+ * </p>
+ * 
+ * <p>
+ * If no {@code SmartConfigurator} class is present in the classpath, when the the Java system property <code>droid4me.logging</code> is defined with
+ * the value "false", the logging uses the standard error and output streams. This is useful when unit-testing the framework.
  * </p>
  * 
  * @author Édouard Mercier
@@ -36,29 +45,59 @@ public class LoggerFactory
 {
 
   /**
+   * The interface that should be implemented through the {@code SmartConfigurator} class (with no package name, because of Android restriction), in
+   * order to indicate to the framework which {@link Logger} implementation should be used.
+   * 
+   */
+  public static interface LoggerConfigurator
+  {
+
+    /**
+     * @return the class of {@link Logger} that should be used when logging.
+     */
+    Class<? extends Logger> getLoggerClass();
+
+  }
+
+  /**
+   * The logger implementation used.
+   */
+  private static enum LoggerImplementation
+  {
+    AndroidLogger, Log4JLogger, NativeLogger
+  }
+
+  /**
    * Tunes the logging system verbosity. The {@code Logger#isXXXEnabled()} method return values will depend on this trigger level. Defaults to
    * {@code Log.WARN}.
    * 
    * <p>
-   * It uses the Android built-in {@link Log} {@code public static int} attributes for defining those log levels.
+   * It uses the Android built-in {@link android.util.Log} attributes for defining those log levels.
    * </p>
    */
-  public static int logLevel = Log.WARN;
+  public static int logLevel = android.util.Log.WARN;
 
   /**
-   * Remembers internally whether the logging system has been initialized.
+   * Remembers internally which {@link Logger} implementation to use.
    */
-  private static Boolean enabled;
+  private static LoggerImplementation loggerImplementation;
 
   /**
    * @param category
+   *          the category used for logging
    * @return a new instance of {@link Logger} implementation, holding the provided {@code category}
+   * @see #getInstance(Class)
    */
   public static Logger getInstance(String category)
   {
     return LoggerFactory.getInstance(category, null);
   }
 
+  /**
+   * @param theClass
+   *          the class used for computing the logging category
+   * @return a new instance of {@link Logger} implementation, holding the provided {@code category}
+   */
   public static Logger getInstance(Class<?> theClass)
   {
     return LoggerFactory.getInstance(null, theClass);
@@ -66,12 +105,58 @@ public class LoggerFactory
 
   private static Logger getInstance(String category, Class<?> theClass)
   {
-    if (LoggerFactory.enabled == null)
+    if (LoggerFactory.loggerImplementation == null)
     {
-      LoggerFactory.enabled = System.getProperty("droid4me.logging", "true").equals("false") == false;
+      // The logger implementation has not been decided yet
+      final String loggerConfiguratorClassFqn = "SmartConfigurator";
+      try
+      {
+        final Class<?> loggerConfiguratorClass = Class.forName(loggerConfiguratorClassFqn);
+        final LoggerConfigurator loggerConfigurator = (LoggerConfigurator) loggerConfiguratorClass.newInstance();
+        final Class<? extends Logger> loggerClass = loggerConfigurator.getLoggerClass();
+        if (loggerClass == Log4JLogger.class)
+        {
+          LoggerFactory.loggerImplementation = LoggerImplementation.Log4JLogger;
+        }
+        else if (loggerClass == NativeLogger.class)
+        {
+          LoggerFactory.loggerImplementation = LoggerImplementation.NativeLogger;
+        }
+        else
+        {
+          LoggerFactory.loggerImplementation = LoggerImplementation.AndroidLogger;
+        }
+      }
+      catch (Exception exception)
+      {
+        // This means that the project does not expose the class which enables to configure the logging system
+        if (System.getProperty("droid4me.logging", "true").equals("false") == false)
+        {
+          LoggerFactory.loggerImplementation = LoggerImplementation.NativeLogger;
+        }
+        else
+        {
+          LoggerFactory.loggerImplementation = LoggerImplementation.AndroidLogger;
+        }
+      }
+      if (LoggerFactory.logLevel >= android.util.Log.INFO)
+      {
+        Log.d("LoggerFactory", "Using the logger '" + LoggerFactory.loggerImplementation + "'");
+      }
     }
-    if (LoggerFactory.enabled == true)
+    switch (LoggerFactory.loggerImplementation)
     {
+    case Log4JLogger:
+      if (theClass != null)
+      {
+        return new Log4JLogger(theClass);
+      }
+      else
+      {
+        return new Log4JLogger(category);
+      }
+    case AndroidLogger:
+    default:
       if (theClass != null)
       {
         return new AndroidLogger(theClass);
@@ -80,16 +165,14 @@ public class LoggerFactory
       {
         return new AndroidLogger(category);
       }
-    }
-    else
-    {
+    case NativeLogger:
       if (theClass != null)
       {
-        return new NativeLogger(theClass);
+        return new Log4JLogger(theClass);
       }
       else
       {
-        return new NativeLogger(category);
+        return new Log4JLogger(category);
       }
     }
   }
