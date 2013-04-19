@@ -37,14 +37,14 @@ public class AndroidLogger
 
   private final String category;
 
-  public AndroidLogger(String category)
-  {
-    this.category = category;
-  }
-
   public AndroidLogger(Class<?> theClass)
   {
     this(theClass.getSimpleName());
+  }
+
+  public AndroidLogger(String category)
+  {
+    this.category = category;
   }
 
   public void debug(String message)
