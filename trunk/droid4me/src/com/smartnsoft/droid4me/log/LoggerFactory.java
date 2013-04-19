@@ -47,24 +47,40 @@ public class LoggerFactory
   /**
    * The interface that should be implemented through the {@code SmartConfigurator} class (with no package name, because of Android restriction), in
    * order to indicate to the framework which {@link Logger} implementation should be used.
-   * 
    */
   public static interface LoggerConfigurator
   {
 
     /**
-     * @return the class of {@link Logger} that should be used when logging.
+     * The method will be invoked by the {@link LoggerFactory#getInstance(String)} every time a logger needs to be created.
+     * 
+     * @param category
+     *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
+     *          libraries
+     * @return the {@link Logger} that should be used for logging on that category
+     * @see #getLogger(Class)
      */
-    Class<? extends Logger> getLoggerClass();
+    Logger getLogger(String category);
+
+    /**
+     * The method will be invoked by the {@link LoggerFactory#getInstance(Class)} every time a logger needs to be created.
+     * 
+     * @param category
+     *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
+     *          libraries
+     * @return the {@link Logger} that should be used for logging on that category
+     * @see #getLogger(String)
+     */
+    Logger getLogger(Class<?> theClass);
 
   }
 
   /**
-   * The logger implementation used.
+   * Enumerates various logger implementations.
    */
   private static enum LoggerImplementation
   {
-    AndroidLogger, Log4JLogger, NativeLogger
+    AndroidLogger, NativeLogger, Other;
   }
 
   /**
@@ -81,6 +97,11 @@ public class LoggerFactory
    * Remembers internally which {@link Logger} implementation to use.
    */
   private static LoggerImplementation loggerImplementation;
+
+  /**
+   * Remembers the {@link LoggerFactory.LoggerConfigurator} that will be used to instantiate {@link Logger} instances.
+   */
+  private static LoggerConfigurator loggerConfigurator;
 
   /**
    * @param category
@@ -112,20 +133,8 @@ public class LoggerFactory
       try
       {
         final Class<?> loggerConfiguratorClass = Class.forName(loggerConfiguratorClassFqn);
-        final LoggerConfigurator loggerConfigurator = (LoggerConfigurator) loggerConfiguratorClass.newInstance();
-        final Class<? extends Logger> loggerClass = loggerConfigurator.getLoggerClass();
-        if (loggerClass == Log4JLogger.class)
-        {
-          LoggerFactory.loggerImplementation = LoggerImplementation.Log4JLogger;
-        }
-        else if (loggerClass == NativeLogger.class)
-        {
-          LoggerFactory.loggerImplementation = LoggerImplementation.NativeLogger;
-        }
-        else
-        {
-          LoggerFactory.loggerImplementation = LoggerImplementation.AndroidLogger;
-        }
+        LoggerFactory.loggerConfigurator = (LoggerConfigurator) loggerConfiguratorClass.newInstance();
+        LoggerFactory.loggerImplementation = LoggerImplementation.Other;
       }
       catch (Exception exception)
       {
@@ -146,14 +155,14 @@ public class LoggerFactory
     }
     switch (LoggerFactory.loggerImplementation)
     {
-    case Log4JLogger:
+    case Other:
       if (theClass != null)
       {
-        return new Log4JLogger(theClass);
+        return LoggerFactory.loggerConfigurator.getLogger(theClass);
       }
       else
       {
-        return new Log4JLogger(category);
+        return LoggerFactory.loggerConfigurator.getLogger(category);
       }
     case AndroidLogger:
     default:

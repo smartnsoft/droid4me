@@ -37,14 +37,14 @@ public class NativeLogger
 
   private final String prefix;
 
-  public NativeLogger(String category)
-  {
-    this.prefix = "[" + category + "] ";
-  }
-
   public NativeLogger(Class<?> theClass)
   {
     this(theClass.getSimpleName());
+  }
+
+  public NativeLogger(String category)
+  {
+    this.prefix = "[" + category + "] ";
   }
 
   protected final String getPrefix()

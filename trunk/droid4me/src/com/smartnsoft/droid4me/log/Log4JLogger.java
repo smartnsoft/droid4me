@@ -55,14 +55,14 @@ public class Log4JLogger
     }
   }
 
-  public Log4JLogger(String category)
-  {
-    log = org.apache.log4j.Logger.getLogger(category);
-  }
-
   public Log4JLogger(Class<?> theClass)
   {
     this(theClass.getSimpleName());
+  }
+
+  public Log4JLogger(String category)
+  {
+    log = org.apache.log4j.Logger.getLogger(category);
   }
 
   public void debug(String message)
