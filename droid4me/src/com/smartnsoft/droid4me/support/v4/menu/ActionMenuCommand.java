@@ -48,6 +48,7 @@ public class ActionMenuCommand
     this.actionEnum = actionEnum;
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public MenuItem computeMenuItem(Context context, Menu menu, int identifierOffset)
   {

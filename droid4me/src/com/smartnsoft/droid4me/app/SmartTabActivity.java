@@ -42,6 +42,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  * @author Édouard Mercier
  * @since 2009.04.14
  */
+@Deprecated
 public abstract class SmartTabActivity<AggregateClass>
     extends TabActivity
     implements SmartableActivity<AggregateClass>
@@ -239,6 +240,11 @@ public abstract class SmartTabActivity<AggregateClass>
   public final boolean isInteracting()
   {
     return droid4mizer.isInteracting();
+  }
+
+  public final boolean isAlive()
+  {
+    return droid4mizer.isAlive();
   }
 
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)

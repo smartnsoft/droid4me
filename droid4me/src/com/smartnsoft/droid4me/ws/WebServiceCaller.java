@@ -828,7 +828,6 @@ public abstract class WebServiceCaller
       // This turns off stale checking. Our connections breaks all the time anyway, and it's not worth it to pay the penalty of checking every time
       HttpConnectionParams.setStaleCheckingEnabled(params, false);
 
-      @SuppressWarnings("deprecation")
       final ThreadSafeClientConnManager threadSafeClientConnectionManager = new ThreadSafeClientConnManager(params, clientConnectionManager.getSchemeRegistry());
       return new SensibleHttpClient(threadSafeClientConnectionManager, params);
     }

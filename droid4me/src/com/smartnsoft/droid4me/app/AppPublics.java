@@ -122,6 +122,18 @@ public final class AppPublics
     boolean isInteracting();
 
     /**
+     * Indicates whether the current entity is still alive.
+     * 
+     * <p>
+     * It enables to know whether the underlying {@link Activity}/{@link android.app.Fragment} entity UI is still available for being handled.
+     * </p>
+     * 
+     * @return {@code true} if and only if the underlying {@link Activity}/{@link android.app.Fragment} entity {@link Activity#onDestroy()}/
+     *         {@link android.app.Fragment#onDestroy()} method has already been invoked
+     */
+    boolean isAlive();
+
+    /**
      * Enables to know how many times the {@link LifeCycle#onSynchronizeDisplayObjects()} method has been invoked, which may be useful when you do not
      * want this method to do something that the {@link LifeCycle#onFulfillDisplayObjects()} method may have already done.
      * 
@@ -487,7 +499,7 @@ public final class AppPublics
       return intentFilter;
     }
 
-    public void onReceive(Intent intent)
+    public synchronized void onReceive(Intent intent)
     {
       if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.EXTRA_ACTION_ACTIVITY) == true && intent.getStringExtra(
           AppPublics.EXTRA_ACTION_ACTIVITY).equals(activity.getClass().getName()) == true && intent.getStringExtra(AppPublics.EXTRA_ACTION_COMPONENT).equals(
@@ -499,7 +511,7 @@ public final class AppPublics
         counter += (isLoading == true ? 1 : -1);
 
         // We only trigger an event provided the cumulative loading status has changed
-        if (previousCounter == 0 && counter >= 1)
+        if (previousCounter <= 0 && counter >= 1)
         {
           onLoading(true);
         }

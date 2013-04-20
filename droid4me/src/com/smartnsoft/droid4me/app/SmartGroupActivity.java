@@ -57,6 +57,7 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
  * @author Édouard Mercier
  * @since 2010.02.24
  */
+@SuppressWarnings("deprecation")
 public abstract class SmartGroupActivity<AggregateClass>
     extends ActivityGroup
     implements SmartableActivity<AggregateClass>/*
@@ -532,32 +533,28 @@ public abstract class SmartGroupActivity<AggregateClass>
   {
     // Taken from http://www.londatiga.net/it/android-coding-tips-how-to-create-options-menu-on-child-activity-inside-an-activitygroup/
     final Activity currentActivity = getLocalActivityManager().getCurrentActivity();
-    return droid4mizer.onCreateOptionsMenu(currentActivity == null ? super.onCreateOptionsMenu(menu)
-        : currentActivity.onCreateOptionsMenu(menu), menu);
+    return droid4mizer.onCreateOptionsMenu(currentActivity == null ? super.onCreateOptionsMenu(menu) : currentActivity.onCreateOptionsMenu(menu), menu);
   }
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu)
   {
     final Activity currentActivity = getLocalActivityManager().getCurrentActivity();
-    return droid4mizer.onPrepareOptionsMenu(currentActivity == null ? super.onPrepareOptionsMenu(menu)
-        : currentActivity.onPrepareOptionsMenu(menu), menu);
+    return droid4mizer.onPrepareOptionsMenu(currentActivity == null ? super.onPrepareOptionsMenu(menu) : currentActivity.onPrepareOptionsMenu(menu), menu);
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item)
   {
     final Activity currentActivity = getLocalActivityManager().getCurrentActivity();
-    return droid4mizer.onOptionsItemSelected(currentActivity == null ? super.onOptionsItemSelected(item)
-        : currentActivity.onOptionsItemSelected(item), item);
+    return droid4mizer.onOptionsItemSelected(currentActivity == null ? super.onOptionsItemSelected(item) : currentActivity.onOptionsItemSelected(item), item);
   }
 
   @Override
   public boolean onContextItemSelected(MenuItem item)
   {
     final Activity currentActivity = getLocalActivityManager().getCurrentActivity();
-    return droid4mizer.onContextItemSelected(currentActivity == null ? super.onContextItemSelected(item)
-        : currentActivity.onContextItemSelected(item), item);
+    return droid4mizer.onContextItemSelected(currentActivity == null ? super.onContextItemSelected(item) : currentActivity.onContextItemSelected(item), item);
   }
 
   @Override
@@ -633,6 +630,11 @@ public abstract class SmartGroupActivity<AggregateClass>
   public final boolean isInteracting()
   {
     return droid4mizer.isInteracting();
+  }
+
+  public final boolean isAlive()
+  {
+    return droid4mizer.isAlive();
   }
 
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)

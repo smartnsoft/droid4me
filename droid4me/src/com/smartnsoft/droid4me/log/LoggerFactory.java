@@ -57,7 +57,7 @@ public class LoggerFactory
      * @param category
      *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
      *          libraries
-     * @return the {@link Logger} that should be used for logging on that category
+     * @return the {@link Logger} that should be used for logging on that category; is not allowed to be {@code null}
      * @see #getLogger(Class)
      */
     Logger getLogger(String category);
@@ -68,7 +68,7 @@ public class LoggerFactory
      * @param category
      *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
      *          libraries
-     * @return the {@link Logger} that should be used for logging on that category
+     * @return the {@link Logger} that should be used for logging on that category; is not allowed to be {@code null}
      * @see #getLogger(String)
      */
     Logger getLogger(Class<?> theClass);

@@ -10,7 +10,7 @@
   <artifactId>droid4me</artifactId>
   <packaging>jar</packaging>
   <name>droid4me</name>
-  <version>2.1.4.1</version>
+  <version>2.1.4.2</version>
   <description>droid4me is a framework library dedicated to the development of Android applications.</description>
   <url>http://code.google.com/p/droid4me</url>
 
