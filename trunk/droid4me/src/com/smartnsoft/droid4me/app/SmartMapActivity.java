@@ -450,6 +450,11 @@ public abstract class SmartMapActivity<AggregateClass>
     return droid4mizer.isInteracting();
   }
 
+  public final boolean isAlive()
+  {
+    return droid4mizer.isAlive();
+  }
+
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);

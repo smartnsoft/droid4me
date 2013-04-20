@@ -116,7 +116,8 @@ final class AppInternals
     private static final Logger log = LoggerFactory.getInstance(StateContainer.class);
 
     /**
-     * The activity this container has been created for.
+     * The activity this container has been created for in case of an {@link Activity}, or the hosting {@link Activity} in case of a
+     * {@link android.app.Fragment}.
      */
     private final Activity activity;
 
@@ -160,10 +161,16 @@ final class AppInternals
     private boolean stopHandling;
 
     /**
-     * A flag which states whether the underlying {@link Activity} life-cycle is between the {@link Activity#onResume()} and
-     * {@link Activity#onPause()}.
+     * A flag which states whether the underlying {@link Activity}/{@link android.app.Fragment} life-cycle is between the {@link Activity#onResume()}/
+     * {@link android.app.Fragment#onResume()} and {@link Activity#onPause()}/{@link android.app.Fragment#onPause()}.
      */
     private boolean isInteracting;
+
+    /**
+     * A flag which states whether the underlying {@link Activity}/{@link android.app.Fragment} has not already invoked the
+     * {@link Activity#onDestroy()}/{@link android.app.Fragment#onDestroy()} method.
+     */
+    private boolean isAlive = true;
 
     private AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay refreshBusinessObjectsAndDisplayNextTime;
 
@@ -224,12 +231,19 @@ final class AppInternals
     }
 
     /**
-     * @return {@code true} if and only if the underlying {@link Activity} life-cycle is between the {@link Activity#onResume()} and
-     *         {@link Activity#onPause()} methods
+     * @see #isInteracting
      */
     final boolean isInteracting()
     {
       return isInteracting;
+    }
+
+    /**
+     * @see #isAlive
+     */
+    final boolean isAlive()
+    {
+      return isAlive;
     }
 
     boolean isDoNotCallOnActivityDestroyed()
@@ -551,11 +565,13 @@ final class AppInternals
      * Invoked when the underlying activity/fragment enters the {@link Activity#onDestro()} method.
      * 
      * <p>
-     * The method unregisters the previously registered {@link AppPublics.BroadcastListener broadcast listeners}.
+     * The method marks the entity as {@link #isAlive no more alive}, unregisters the previously registered {@link AppPublics.BroadcastListener
+     * broadcast listeners}, and eventually interrupts all pending {@link #futures}.
      * </p>
      */
     void onDestroy()
     {
+      isAlive = false;
       unregisterBroadcastListeners();
 
       // We cancel all the commands which are still running, or which have not yet been started

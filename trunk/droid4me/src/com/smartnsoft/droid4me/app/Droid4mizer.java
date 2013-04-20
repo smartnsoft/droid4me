@@ -177,8 +177,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
           {
             return;
           }
-          // If the activity has been finished in the meantime, no need to update the UI
-          if (activity.isFinishing() == true)
+          // If the hosting activity has been finished in the meantime, or the entity is not alive anymore, we should not update the UI
+          if (activity.isFinishing() == true || smartable.isAlive() == false)
           {
             return;
           }
@@ -217,6 +217,11 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   public final boolean isInteracting()
   {
     return stateContainer.isInteracting();
+  }
+
+  public final boolean isAlive()
+  {
+    return stateContainer.isAlive();
   }
 
   /*

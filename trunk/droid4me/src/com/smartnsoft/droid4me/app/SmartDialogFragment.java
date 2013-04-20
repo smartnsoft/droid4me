@@ -211,6 +211,11 @@ public abstract class SmartDialogFragment<AggregateClass>
     return droid4mizer.isInteracting();
   }
 
+  public final boolean isAlive()
+  {
+    return droid4mizer.isAlive();
+  }
+
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
    * 
