@@ -55,6 +55,11 @@ public final class AppPublics
   public final static String EXTRA_ACTION_COMPONENT = "component";
 
   /**
+   * An extra which designates a business object.
+   */
+  public final static String EXTRA_BUSINESS_OBJECT = "businessObject";
+
+  /**
    * Use this intent action when you need to indicate that something is being loaded. For indicating that the loading is over, attach the
    * {@link AppPublics#EXTRA_UI_LOAD_ACTION_LOADING} key to the {@link Intent}.
    */
@@ -291,6 +296,7 @@ public final class AppPublics
    * @see AppPublics.SendLoadingIntentAnnotation
    * @see AppPublics.BroadcastListener
    * @see AppPublics.BroadcastListenerProvider
+   * @deprecated use {@link AppPublics.SendLoadingIntentAnnotation} instead
    */
   public interface SendLoadingIntent
   {
@@ -310,176 +316,44 @@ public final class AppPublics
   }
 
   /**
-   * A broadcast listener which listens only to {@link AppPublics#LOAD_ACTION loading intent actions}.
-   * 
-   * @since 2011.08.02
-   */
-  public static abstract class ReloadBroadcastListener
-      implements AppPublics.BroadcastListener
-  {
-
-    private final Class<? extends Activity> activityClass;
-
-    private final Class<?> componentClass;
-
-    /**
-     * Triggers a reload event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
-     * 
-     * @param context
-     *          the context which will be used to trigger the event
-     * @param targetActivityClass
-     *          the class which should receive the loading event
-     * @param componentClass
-     *          an optional (may be {@code null}) class which refines the component that should receive the event
-     */
-    public static void broadcastReload(Context context, Class<? extends Activity> targetActivityClass, Class<?> componentClass)
-    {
-      context.sendBroadcast(new Intent(AppPublics.RELOAD_ACTION).putExtra(AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName()).addCategory(
-          targetActivityClass.getName()).putExtra(AppPublics.EXTRA_ACTION_COMPONENT, componentClass == null ? null : componentClass.getName()));
-    }
-
-    /**
-     * Creates an {@link IntentFilter} which is able to listen for a broadcast reload event.
-     * 
-     * @param intentFilter
-     *          an already existing intent filter, which will be enriched
-     * @param targetActivityClass
-     *          the class which is supposed to receive the broadcast event
-     * @param componentClass
-     *          an optional (may be {@code null}) class which refines the component that is supposed to receive the event
-     * @return the provided intent filter, which has been enriched
-     */
-    public static IntentFilter addReload(IntentFilter intentFilter, Class<? extends Activity> targetActivityClass, Class<?> componentClass)
-    {
-      intentFilter.addAction(AppPublics.RELOAD_ACTION);
-      intentFilter.addCategory(targetActivityClass.getName());
-      return intentFilter;
-    }
-
-    /**
-     * Indicates whether an intent matches a reload broadcast event.
-     * 
-     * @param intent
-     *          the intent that has been received and which is to be analyzed
-     * @param targetActivityClass
-     *          the class which is supposed to receive the broadcast event
-     * @param componentClass
-     *          an optional (may be {@code null}) class which refines the component that is supposed to receive the event
-     * @return {@code true} if and only if the intent matches the expected event
-     */
-    public static boolean matchesReload(Intent intent, Class<? extends Activity> targetActivityClass, Class<?> componentClass)
-    {
-      return intent.getAction() != null && intent.getAction().equals(AppPublics.RELOAD_ACTION) && intent.hasExtra(AppPublics.EXTRA_ACTION_ACTIVITY) == true && intent.getStringExtra(
-          AppPublics.EXTRA_ACTION_ACTIVITY).equals(targetActivityClass.getName()) == true;
-    }
-
-    /**
-     * Equivalent to {@link ReloadBroadcastListener#ReloadBroadcastListener(Class, Class) ReloadBroadcastListener(Class, null)}
-     */
-    public ReloadBroadcastListener(Class<? extends Activity> activityClass)
-    {
-      this(activityClass, null);
-    }
-
-    public ReloadBroadcastListener(Class<? extends Activity> activityClass, Class<?> componentClass)
-    {
-      this.activityClass = activityClass;
-      this.componentClass = componentClass;
-    }
-
-    public IntentFilter getIntentFilter()
-    {
-      final IntentFilter intentFilter = new IntentFilter();
-      ReloadBroadcastListener.addReload(intentFilter, activityClass, componentClass);
-      return intentFilter;
-    }
-
-    public void onReceive(Intent intent)
-    {
-      if (ReloadBroadcastListener.matchesReload(intent, activityClass, componentClass) == true)
-      {
-        onReload();
-      }
-    }
-
-    /**
-     * The callback that will be triggered if the {@link AppPublics#RELOAD_ACTION} action is caught for the provided {@link Activity} class.
-     */
-    protected abstract void onReload();
-
-  }
-
-  /**
    * A broadcast listener which listens only to {@link AppPublics#UI_LOAD_ACTION} intents.
    * 
    * <p>
-   * It is commonly used for {@link Activity} and {@link android.app. Fragment}, to get events when the entity is being loaded.
+   * It is commonly used for {@link Activity} and {@link android.app.Fragment}, to get events when the entity is being loaded.
    * </p>
    * 
    * @since 2010.02.04
    */
-  public static abstract class LoadingBroadcastListener
+  public static abstract class ComponentBroadcastListener
       implements AppPublics.BroadcastListener
   {
+
+    private static final String EXTRA_VIA_CATEGORIES = "viaCategories";
+
+    private static final String EXTRA_ACTIVITY_ID = "activityId";
+
+    private static final String EXTRA_COMPONENT_ID = "componentId";
+
+    private static final boolean useCategoriesForFiltering = "".equals("");
 
     private final Activity activity;
 
     private final Object component;
 
-    private int counter = 0;
-
-    private boolean restrictToActivity;
+    protected abstract String getAction();
 
     /**
-     * Triggers a loading event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
-     * 
-     * @param context
-     *          the context which will be used to trigger the event
-     * @param targetActivityClass
-     *          the class of the {@link Activity} which should receive the loading event
-     * @param targetComponentClass
-     *          the class of the component which should receive the loading event
-     * @param isLoading
-     *          whether this deals with a loading which starts or stop
-     * @param addCategory
-     *          whether the broadcast intent should contain the target category
+     * Same as {@link ComponentBroadcastListener#ComponentBroadcastListener(Activity, Object)} with second argument set to {@code activity}.
      */
-    public static void broadcastLoading(Context context, Class<? extends Activity> targetActivityClass, Class<?> targetComponentClass, boolean isLoading,
-        boolean addCategory)
+    public ComponentBroadcastListener(Activity activity)
     {
-      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.EXTRA_UI_LOAD_ACTION_LOADING, isLoading).putExtra(
-          AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName()).putExtra(AppPublics.EXTRA_ACTION_COMPONENT,
-          targetComponentClass == null ? null : targetComponentClass.getName());
-      if (addCategory == true)
-      {
-        intent.addCategory(targetActivityClass.getName());
-        if (targetComponentClass != null)
-        {
-          intent.addCategory(targetComponentClass.getName());
-        }
-      }
-      context.sendBroadcast(intent);
+      this(activity, activity);
     }
 
-    public LoadingBroadcastListener(Activity activity)
-    {
-      this(activity, activity, true);
-    }
-
-    public LoadingBroadcastListener(Activity activity, Object component)
-    {
-      this(activity, component, true);
-    }
-
-    /**
-     * @param restrictToActivity
-     *          indicates whether the listener should restrict to the {@link Intent} sent by the provided {@link Activity}
-     */
-    public LoadingBroadcastListener(Activity activity, Object component, boolean restrictToActivity)
+    public ComponentBroadcastListener(Activity activity, Object component)
     {
       this.activity = activity;
       this.component = component;
-      this.restrictToActivity = restrictToActivity;
     }
 
     protected final Activity getActivity()
@@ -487,24 +361,149 @@ public final class AppPublics
       return activity;
     }
 
-    public IntentFilter getIntentFilter()
+    public IntentFilter getIntentFilter(boolean viaClass)
     {
       final IntentFilter intentFilter = new IntentFilter();
-      intentFilter.addAction(AppPublics.UI_LOAD_ACTION);
-      if (restrictToActivity == true)
+      intentFilter.addAction(getAction());
+      if (viaClass == true)
       {
-        intentFilter.addCategory(activity.getClass().getName());
-        intentFilter.addCategory(component.getClass().getName());
+        if (AppPublics.ComponentBroadcastListener.useCategoriesForFiltering == true)
+        {
+          intentFilter.addCategory(activity.getClass().getName());
+          intentFilter.addCategory(component.getClass().getName());
+        }
+      }
+      else
+      {
+        if (AppPublics.ComponentBroadcastListener.useCategoriesForFiltering == true)
+        {
+          intentFilter.addCategory(Integer.toString(System.identityHashCode(activity)));
+          intentFilter.addCategory(Integer.toString(System.identityHashCode(component)));
+        }
       }
       return intentFilter;
     }
 
+    protected final boolean matchesIntent(Intent intent)
+    {
+      if (getAction().equals(intent.getAction()) == true)
+      {
+        if ((intent.getBooleanExtra(AppPublics.ComponentBroadcastListener.EXTRA_VIA_CATEGORIES, false) == true) || (intent.hasExtra(AppPublics.ComponentBroadcastListener.EXTRA_ACTIVITY_ID) == true && System.identityHashCode(activity) == intent.getIntExtra(
+            AppPublics.ComponentBroadcastListener.EXTRA_ACTIVITY_ID, 0) && System.identityHashCode(component) == intent.getIntExtra(
+            AppPublics.ComponentBroadcastListener.EXTRA_COMPONENT_ID, 0)) || (intent.hasExtra(AppPublics.EXTRA_ACTION_ACTIVITY) == true && intent.getStringExtra(
+            AppPublics.EXTRA_ACTION_ACTIVITY).equals(activity.getClass().getName()) == true && intent.getStringExtra(AppPublics.EXTRA_ACTION_COMPONENT).equals(
+            component.getClass().getName()) == true))
+        {
+          // We know that the event deals with the current (activity, component) entities pair
+          return true;
+        }
+      }
+      return false;
+    }
+
+  }
+
+  /**
+   * A broadcast listener which only watch after {@link AppPublics#UI_LOAD_ACTION} UI loading intents action.
+   * 
+   * <p>
+   * It is commonly used for {@link Activity} and {@link android.app.Fragment}, to get events when the entity is being loaded.
+   * </p>
+   * 
+   * @since 2010.02.04
+   */
+  public static abstract class LoadingBroadcastListener
+      extends AppPublics.ComponentBroadcastListener
+  {
+
+    private int counter = 0;
+
+    /**
+     * Triggers a loading event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
+     * 
+     * @param context
+     *          the context which will be used to trigger the event
+     * @param targetActivityClass
+     *          the class of the {@link Activity} which should receive the loading event; it is not allowed to be {@code null}
+     * @param targetComponentClass
+     *          the class of the component which should receive the loading event; it is not allowed to be {@code null}
+     * @param isLoading
+     *          whether this deals with a loading which starts or stop
+     * @param addCategory
+     *          whether the broadcast intent should contain the target category
+     * @deprecated use the {@link #broadcastLoading(Context, int, int, boolean)} form, instead
+     */
+    public static void broadcastLoading(Context context, Class<? extends Activity> targetActivityClass, Class<?> targetComponentClass, boolean isLoading,
+        boolean addCategory)
+    {
+      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.EXTRA_UI_LOAD_ACTION_LOADING, isLoading).putExtra(
+          AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName()).putExtra(AppPublics.EXTRA_ACTION_COMPONENT, targetComponentClass.getName());
+      if (addCategory == true)
+      {
+        intent.addCategory(targetActivityClass.getName());
+        intent.addCategory(targetComponentClass.getName());
+      }
+      context.sendBroadcast(intent);
+    }
+
+    /**
+     * Triggers a loading event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
+     * 
+     * @param context
+     *          the context which will be used to trigger the event
+     * @param targetActivityId
+     *          the identifier of the {@link Activity} which should receive the loading event
+     * @param targetComponentId
+     *          the identifier of the component which should receive the loading event
+     * @param isLoading
+     *          whether this deals with a loading which starts or stop
+     */
+    public static void broadcastLoading(Context context, int targetActivityId, int targetComponentId, boolean isLoading)
+    {
+      // The entities hashCode are taken, because this is safe: read the discussion at
+      // http://eclipsesource.com/blogs/2012/09/04/the-3-things-you-should-know-about-hashcode/
+      final Intent intent = new Intent(AppPublics.UI_LOAD_ACTION).putExtra(AppPublics.EXTRA_UI_LOAD_ACTION_LOADING, isLoading);
+      if (AppPublics.ComponentBroadcastListener.useCategoriesForFiltering == false)
+      {
+        intent.putExtra(AppPublics.ComponentBroadcastListener.EXTRA_ACTIVITY_ID, targetActivityId).putExtra(
+            AppPublics.ComponentBroadcastListener.EXTRA_COMPONENT_ID, targetComponentId);
+      }
+      else
+      {
+        intent.putExtra(AppPublics.ComponentBroadcastListener.EXTRA_VIA_CATEGORIES, true);
+        intent.addCategory(Integer.toString(targetActivityId));
+        intent.addCategory(Integer.toString(targetComponentId));
+      }
+      context.sendBroadcast(intent);
+    }
+
+    public LoadingBroadcastListener(Activity activity)
+    {
+      this(activity, activity);
+    }
+
+    public LoadingBroadcastListener(Activity activity, Object component)
+    {
+      super(activity, component);
+    }
+
+    @Override
+    protected String getAction()
+    {
+      return AppPublics.UI_LOAD_ACTION;
+    }
+
+    public IntentFilter getIntentFilter()
+    {
+      return getIntentFilter(false);
+    }
+
     public synchronized void onReceive(Intent intent)
     {
-      if (intent.getAction().equals(AppPublics.UI_LOAD_ACTION) == true && intent.hasExtra(AppPublics.EXTRA_ACTION_ACTIVITY) == true && intent.getStringExtra(
-          AppPublics.EXTRA_ACTION_ACTIVITY).equals(activity.getClass().getName()) == true && intent.getStringExtra(AppPublics.EXTRA_ACTION_COMPONENT).equals(
-          component.getClass().getName()) == true)
+      if (matchesIntent(intent) == true)
       {
+        // We know that the event deals with the current (activity, component) pair
+
         final int previousCounter = counter;
         // We only take into account the loading event coming from the activity itself
         final boolean isLoading = intent.getBooleanExtra(AppPublics.EXTRA_UI_LOAD_ACTION_LOADING, true);
@@ -529,6 +528,133 @@ public final class AppPublics
      *          is equal to {@code true} if and only if the underlying activity is not loading anymore
      */
     protected abstract void onLoading(boolean isLoading);
+
+  }
+
+  /**
+   * A broadcast listener which only watch after {@link AppPublics#LOAD_ACTION} loading intent actions.
+   * 
+   * <p>
+   * It is especially useful for indicating to an entity that it should reload its content.
+   * </p>
+   * 
+   * @since 2011.08.02
+   */
+  public static abstract class ReloadBroadcastListener
+      extends AppPublics.ComponentBroadcastListener
+  {
+
+    /**
+     * Triggers a reload event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
+     * 
+     * @param context
+     *          the context which will be used to trigger the event
+     * @param targetActivityClass
+     *          the class which should receive the loading event; it is not allowed to be {@code null}
+     * @param targetComponentClass
+     *          an optional (may be {@code null}) class which refines the component that should receive the event
+     */
+    public static void broadcastReload(Context context, Class<? extends Activity> targetActivityClass, Class<?> targetComponentClass)
+    {
+      final Intent intent = new Intent(AppPublics.RELOAD_ACTION);
+      if (AppPublics.ComponentBroadcastListener.useCategoriesForFiltering == true)
+      {
+        intent.putExtra(AppPublics.ComponentBroadcastListener.EXTRA_VIA_CATEGORIES, true);
+        intent.addCategory(targetActivityClass.getName());
+        if (targetComponentClass != null)
+        {
+          intent.addCategory(targetComponentClass.getName());
+        }
+      }
+      else
+      {
+        intent.putExtra(AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName()).addCategory(targetActivityClass.getName()).putExtra(
+            AppPublics.EXTRA_ACTION_COMPONENT, targetComponentClass == null ? null : targetComponentClass.getName());
+      }
+      context.sendBroadcast(intent);
+    }
+
+    /**
+     * Creates an {@link IntentFilter} which is able to listen for a broadcast reload events.
+     * 
+     * @param intentFilter
+     *          an already existing intent filter, which will be enriched
+     * @param targetActivityClass
+     *          the class which is supposed to receive the broadcast event
+     * @param targetComponentClass
+     *          an optional (may be {@code null}) class which refines the component that is supposed to receive the event
+     * @return the provided intent filter, which has been enriched
+     */
+    public static IntentFilter addReload(IntentFilter intentFilter, Class<? extends Activity> targetActivityClass, Class<?> targetComponentClass)
+    {
+      intentFilter.addAction(AppPublics.RELOAD_ACTION);
+      intentFilter.addCategory(targetActivityClass.getName());
+      if (targetComponentClass != null)
+      {
+        intentFilter.addCategory(targetComponentClass.getName());
+      }
+      return intentFilter;
+    }
+
+    /**
+     * Indicates whether an intent matches a reload broadcast event.
+     * 
+     * @param intent
+     *          the intent that has been received and which is to be analyzed
+     * @param targetActivityClass
+     *          the class which is supposed to receive the broadcast event
+     * @param targetComponentClass
+     *          an optional (may be {@code null}) class which refines the component that is supposed to receive the event
+     * @return {@code true} if and only if the intent matches the expected event
+     */
+    public static boolean matchesReload(Intent intent, Class<? extends Activity> targetActivityClass, Class<?> targetComponentClass)
+    {
+      if (AppPublics.RELOAD_ACTION.equals(intent.getAction()) == true)
+      {
+        if ((intent.getBooleanExtra(AppPublics.ComponentBroadcastListener.EXTRA_VIA_CATEGORIES, false) == true) || (intent.hasExtra(AppPublics.EXTRA_ACTION_ACTIVITY) == true && intent.getStringExtra(
+            AppPublics.EXTRA_ACTION_ACTIVITY).equals(targetActivityClass.getName()) == true && (targetComponentClass == null || intent.getStringExtra(
+            AppPublics.EXTRA_ACTION_COMPONENT).equals(targetComponentClass) == true)))
+        {
+          // We know that the event deals with the current (activity, component) entities pair
+          return true;
+        }
+      }
+      return false;
+    }
+
+    public ReloadBroadcastListener(Activity activity)
+    {
+      this(activity, activity);
+    }
+
+    public ReloadBroadcastListener(Activity activity, Object component)
+    {
+      super(activity, component);
+    }
+
+    @Override
+    protected String getAction()
+    {
+      return AppPublics.RELOAD_ACTION;
+    }
+
+    public IntentFilter getIntentFilter()
+    {
+      return getIntentFilter(true);
+    }
+
+    public void onReceive(Intent intent)
+    {
+      if (matchesIntent(intent) == true)
+      {
+        onReload();
+      }
+    }
+
+    /**
+     * The callback that will be triggered if the {@link AppPublics#RELOAD_ACTION} action is caught for the provided {@link Activity} class.
+     */
+    protected abstract void onReload();
 
   }
 
@@ -577,11 +703,6 @@ public final class AppPublics
      * Used as a key in the {@link Intent#getExtras() intent bundle}, so as to indicate whether the event deals with a selection or deselection.
      */
     public final static String EXTRA_SELECTED = "selected";
-
-    /**
-     * Used as a key in the {@link Intent#getExtras() intent bundle}, so as to indicate in the event the selected or deselected business.
-     */
-    public final static String EXTRA_BUSINESS_OBJECT = "businessObject";
 
     private int selectedCount = 0;
 
@@ -639,7 +760,7 @@ public final class AppPublics
       }
       final boolean selected = intent.getBooleanExtra(MultiSelectionHandler.EXTRA_SELECTED, false) == true;
       final int previousSelectedCount = selectedCount;
-      final BusinessObjectClass businessObject = (BusinessObjectClass) intent.getSerializableExtra(MultiSelectionHandler.EXTRA_BUSINESS_OBJECT);
+      final BusinessObjectClass businessObject = (BusinessObjectClass) intent.getSerializableExtra(AppPublics.EXTRA_BUSINESS_OBJECT);
       setSelection(businessObject, selected);
       if (onMultiSelectionChanged != null)
       {
