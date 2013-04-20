@@ -149,6 +149,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null, false);
   }
 
+  @SuppressWarnings("deprecation")
   public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
     if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
@@ -157,16 +158,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
-    if (component instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy == false && component.getClass().getAnnotation(
-        BusinessObjectsRetrievalAsynchronousPolicyAnnotation.class) == null)
-    {
-      if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
-      {
-        return;
-      }
-      onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
-    }
-    else
+    if (component.getClass().getAnnotation(BusinessObjectsRetrievalAsynchronousPolicyAnnotation.class) != null || component instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy == true)
     {
       // We call that routine asynchronously in a background thread
       stateContainer.execute(activity, component, new Runnable()
@@ -192,6 +184,15 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
           });
         }
       });
+    }
+    else
+    {
+      // We directly run in the UI thread
+      if (onRetrieveBusinessObjectsInternal(retrieveBusinessObjects) == false)
+      {
+        return;
+      }
+      onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
     }
   }
 

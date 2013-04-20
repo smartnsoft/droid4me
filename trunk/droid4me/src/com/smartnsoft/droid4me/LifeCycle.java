@@ -129,6 +129,7 @@ public interface LifeCycle
    * 
    * @since 2009.02.19
    * @see LifeCycle.BusinessObjectsRetrievalAsynchronousPolicyAnnotation
+   * @deprecated use {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicyAnnotation} instead
    */
   public interface BusinessObjectsRetrievalAsynchronousPolicy
   {
