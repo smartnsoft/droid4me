@@ -34,6 +34,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import com.smartnsoft.droid4me.LifeCycle;
+import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
 
 /**
  * Gathers some interfaces and helpers for the types belonging to its Java package.
@@ -102,7 +103,7 @@ public final class AppPublics
    * @author Édouard Mercier
    * @since 2010.01.05
    */
-  public interface LifeCyclePublic
+  public static interface LifeCyclePublic
   {
 
     /**
@@ -160,6 +161,13 @@ public final class AppPublics
 
   }
 
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.METHOD)
+  @Inherited
+  public static @interface UseNativeBroadcast
+  {
+  }
+
   /**
    * This interface is a wrapper around a regular Android native {@link android.content.BroadcastReceiver}, by capturing the
    * {@link Context#registerReceiver(android.content.BroadcastReceiver, IntentFilter)} invocation and implementation is one place. When a
@@ -185,7 +193,7 @@ public final class AppPublics
    * @see AppPublics.BroadcastListenersProviders
    * @since 2010.02.04
    */
-  public interface BroadcastListener
+  public static interface BroadcastListener
   {
 
     /**
@@ -229,7 +237,7 @@ public final class AppPublics
    * @see AppPublics.BroadcastListenersProviders
    * @since 2010.02.04
    */
-  public interface BroadcastListenerProvider
+  public static interface BroadcastListenerProvider
   {
 
     /**
@@ -264,7 +272,7 @@ public final class AppPublics
    * @see AppPublics.BroadcastListenersProvider
    * @since 2010.11.07
    */
-  public interface BroadcastListenersProvider
+  public static interface BroadcastListenersProvider
   {
 
     /**
@@ -298,7 +306,7 @@ public final class AppPublics
    * @see AppPublics.BroadcastListenerProvider
    * @deprecated use {@link AppPublics.SendLoadingIntentAnnotation} instead
    */
-  public interface SendLoadingIntent
+  public static interface SendLoadingIntent
   {
   }
 
@@ -419,7 +427,7 @@ public final class AppPublics
     private int counter = 0;
 
     /**
-     * Triggers a loading event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
+     * Triggers a loading event through a {@linkplain LocalBroadcastManager#sendBroadcast() broadcast intent action}.
      * 
      * @param context
      *          the context which will be used to trigger the event
@@ -443,11 +451,11 @@ public final class AppPublics
         intent.addCategory(targetActivityClass.getName());
         intent.addCategory(targetComponentClass.getName());
       }
-      context.sendBroadcast(intent);
+      LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
     /**
-     * Triggers a loading event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
+     * Triggers a loading event through a {@linkplain LocalBroadcastManager#sendBroadcast() broadcast intent action}.
      * 
      * @param context
      *          the context which will be used to trigger the event
@@ -474,7 +482,7 @@ public final class AppPublics
         intent.addCategory(Integer.toString(targetActivityId));
         intent.addCategory(Integer.toString(targetComponentId));
       }
-      context.sendBroadcast(intent);
+      LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
     public LoadingBroadcastListener(Activity activity)
@@ -545,7 +553,7 @@ public final class AppPublics
   {
 
     /**
-     * Triggers a reload event through a {@linkplain Context#sendBroadcast() broadcast intent action}.
+     * Triggers a reload event through a {@linkplain LocalBroadcastManager#sendBroadcast() broadcast intent action}.
      * 
      * @param context
      *          the context which will be used to trigger the event
@@ -571,7 +579,7 @@ public final class AppPublics
         intent.putExtra(AppPublics.EXTRA_ACTION_ACTIVITY, targetActivityClass.getName()).addCategory(targetActivityClass.getName()).putExtra(
             AppPublics.EXTRA_ACTION_COMPONENT, targetComponentClass == null ? null : targetComponentClass.getName());
       }
-      context.sendBroadcast(intent);
+      LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
     /**

@@ -25,6 +25,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -112,8 +113,8 @@ public class TokenKeeper<Token extends Serializable>
    * Builds a notifier. It is very likely that a single instance of the {@link TokenKeeper} should be created.
    * 
    * @param context
-   *          it will be used to create an internal {@link SharedPreferences} instance, but also to invoke the {@link Context#sendBroadcast(Intent)}
-   *          method when broadcasting
+   *          it will be used to create an internal {@link SharedPreferences} instance, but also to invoke the
+   *          {@link LocalBroadcastManager#sendBroadcast(Intent)} method when broadcasting
    * @param prefix
    *          a string, which will be used when storing the token in the {@link SharedPreferences preferences}, and when {@link #broadcast(Token)
    *          broadcasting} it; can be {@code null}
@@ -318,10 +319,10 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Triggers an Android broacast {@link Intent} with the provided token as the single {@link Intent#setAction(String) action}.
+   * Triggers an Android broadcast {@link Intent} with the provided token as the single {@link Intent#setAction(String) action}.
    * 
    * <p>
-   * This method will invoke the {@link Context#sendBroadcast(Intent)} method.
+   * This method will invoke the {@link LocalBroadcastManager#sendBroadcast(Intent)} method.
    * </p>
    * 
    * @param token
@@ -338,7 +339,7 @@ public class TokenKeeper<Token extends Serializable>
     }
     final Intent intent = new Intent(computeTokenKey(token, false));
     enrichBroadcast(token, intent);
-    context.sendBroadcast(intent);
+    LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
   }
 
   /**
