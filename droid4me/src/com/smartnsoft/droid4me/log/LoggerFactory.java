@@ -139,7 +139,7 @@ public class LoggerFactory
       catch (Exception exception)
       {
         // This means that the project does not expose the class which enables to configure the logging system
-        if (System.getProperty("droid4me.logging", "true").equals("false") == false)
+        if (System.getProperty("droid4me.logging", "true").equals("false") == true)
         {
           LoggerFactory.loggerImplementation = LoggerImplementation.NativeLogger;
         }
@@ -177,11 +177,11 @@ public class LoggerFactory
     case NativeLogger:
       if (theClass != null)
       {
-        return new Log4JLogger(theClass);
+        return new NativeLogger(theClass);
       }
       else
       {
-        return new Log4JLogger(category);
+        return new NativeLogger(category);
       }
     }
   }
