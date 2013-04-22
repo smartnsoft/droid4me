@@ -161,6 +161,18 @@ public final class AppPublics
 
   }
 
+  /**
+   * When applied to the {@link AppPublics.BroadcastListener#getIntentFilter()} method, the implementation used will be the native
+   * {@link Context#sendBroadcast(Intent)} method will be used, instead of the {@link LocalBroadcastManager#sendBroadcast(Intent)}.
+   * 
+   * <p>
+   * The {@link LocalBroadcastManager} is better regarding the performance, and safer in terms of security, because it restricts the broadcast
+   * consumption to the application.
+   * </p>
+   * 
+   * @see AppPublics.BroadcastListener
+   * @since 2013.04.22
+   */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   @Inherited
@@ -201,7 +213,8 @@ public final class AppPublics
      * 
      * <p>
      * The returned value of the method will be used to invoke the {@link Context#registerReceiver(android.content.BroadcastReceiver, IntentFilter)}
-     * method.
+     * method. If this method is annotated with {@link AppPublics.UseNativeBroadcast}, the implementation will use the {@link LocalBroadcastManager}
+     * implementation.
      * </p>
      * 
      * @return if not {@code null}, only the {@link Intent intents} that match with this returned value, will be received by the activity
