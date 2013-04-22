@@ -28,6 +28,7 @@ import android.content.IntentFilter;
 import android.os.Environment;
 
 import com.smartnsoft.droid4me.LifeCycle;
+import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
 
 /**
  * A basis activity class which is displayed while the application is loading.
@@ -351,12 +352,14 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
         }
       }
       SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver = true;
-      sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
+      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+          new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
     }
     else if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver == true)
     {
       // A previous activity instance has already completed the business objects retrieval, but the current instance was not active at this time
-      sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
+      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+          new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
     }
   }
 

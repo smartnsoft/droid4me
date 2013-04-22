@@ -18,6 +18,7 @@
 
 package com.smartnsoft.droid4me.app;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -38,12 +39,14 @@ import android.preference.PreferenceManager;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.ServiceLifeCycle;
+import com.smartnsoft.droid4me.app.AppPublics.UseNativeBroadcast;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.menu.MenuHandler;
+import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
 
 /**
  * Gathers some internal interfaces and helpers for the types belonging to its Java package.
@@ -111,6 +114,17 @@ final class AppInternals
         lifeCycleActivity.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, true);
       }
 
+    }
+
+    /**
+     * Just here to mark the generated {@link BroadcastReceiver} which are supposed to use the native Android broadcast mechanism, and not the
+     * {@link LocalBroadcastManager}.
+     * 
+     * @since 2013.04.22
+     */
+    private static abstract class NativeBroadcastReceiver
+        extends BroadcastReceiver
+    {
     }
 
     private static final Logger log = LoggerFactory.getInstance(StateContainer.class);
@@ -347,24 +361,63 @@ final class AppInternals
       {
         log.debug("Registering for listening to intent broadcasts");
       }
-      broadcastReceivers[index] = new BroadcastReceiver()
+      final BroadcastReceiver broadcastReceiver;
+      final Method method;
+      try
       {
-        public void onReceive(Context context, Intent intent)
+        method = broadcastListener.getClass().getMethod("getIntentFilter");
+      }
+      catch (Exception exception)
+      {
+        if (log.isFatalEnabled())
         {
-          try
+          log.fatal("droid4me internal error!", exception);
+        }
+        return;
+      }
+      final boolean useNativeBroadcast = method.isAnnotationPresent(UseNativeBroadcast.class);
+      if (useNativeBroadcast == false)
+      {
+        broadcastReceiver = new BroadcastReceiver()
+        {
+          public void onReceive(Context context, Intent intent)
           {
-            broadcastListener.onReceive(intent);
-          }
-          catch (Throwable throwable)
-          {
-            if (log.isErrorEnabled())
+            try
             {
-              log.error("An exception occurred while handling a broadcast intent!", throwable);
+              broadcastListener.onReceive(intent);
+            }
+            catch (Throwable throwable)
+            {
+              if (log.isErrorEnabled())
+              {
+                log.error("An exception occurred while handling a broadcast intent!", throwable);
+              }
             }
           }
-        }
-      };
-      IntentFilter intentFilter = null;
+        };
+      }
+      else
+      {
+        broadcastReceiver = new NativeBroadcastReceiver()
+        {
+          public void onReceive(Context context, Intent intent)
+          {
+            try
+            {
+              broadcastListener.onReceive(intent);
+            }
+            catch (Throwable throwable)
+            {
+              if (log.isErrorEnabled())
+              {
+                log.error("An exception occurred while handling a broadcast intent!", throwable);
+              }
+            }
+          }
+        };
+      }
+      broadcastReceivers[index] = broadcastReceiver;
+      final IntentFilter intentFilter;
       try
       {
         intentFilter = broadcastListener.getIntentFilter();
@@ -373,10 +426,26 @@ final class AppInternals
       {
         if (log.isErrorEnabled())
         {
-          log.error("An exception occurred while computing the intent filter!", throwable);
+          log.error("An exception occurred while computing the intent filter; it will not be registered!", throwable);
         }
+        return;
       }
-      activity.registerReceiver(broadcastReceivers[index], intentFilter == null ? new IntentFilter() : intentFilter);
+      if (intentFilter == null)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("The 'AppPublics.BroadcastListener.getIntentFilter()' method is not allowed to return 'null'; it will not be registered!");
+        }
+        return;
+      }
+      if (useNativeBroadcast == false)
+      {
+        LocalBroadcastManager.getInstance(activity.getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
+      }
+      else
+      {
+        activity.registerReceiver(broadcastReceiver, intentFilter);
+      }
     }
 
     private int enrichBroadcastListeners(int count)
@@ -411,9 +480,17 @@ final class AppInternals
       {
         for (int index = broadcastReceivers.length - 1; index >= 0; index--)
         {
-          if (broadcastReceivers[index] != null)
+          final BroadcastReceiver broadcastReceiver = broadcastReceivers[index];
+          if (broadcastReceiver != null)
           {
-            activity.unregisterReceiver(broadcastReceivers[index]);
+            if (broadcastReceiver instanceof NativeBroadcastReceiver == false)
+            {
+              LocalBroadcastManager.getInstance(activity.getApplicationContext()).unregisterReceiver(broadcastReceiver);
+            }
+            else
+            {
+              activity.unregisterReceiver(broadcastReceivers[index]);
+            }
           }
         }
         if (log.isDebugEnabled())
