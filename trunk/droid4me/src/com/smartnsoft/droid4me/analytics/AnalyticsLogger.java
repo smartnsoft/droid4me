@@ -60,7 +60,7 @@ public interface AnalyticsLogger
     /**
      * @return the tag that will be used when reporting some usage information about the underlying entity ; it may return {@code null}
      */
-    String getTag();
+    String getAnalyticsTag();
 
   }
 
