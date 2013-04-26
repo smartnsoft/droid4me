@@ -25,10 +25,10 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
-import android.support.v4.content.LocalBroadcastManager;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
+import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
 
 /**
  * A utility class which enables to remember persistently of token associated to a string: those tokens can
