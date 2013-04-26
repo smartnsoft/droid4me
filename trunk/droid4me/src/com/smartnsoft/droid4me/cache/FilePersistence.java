@@ -334,7 +334,7 @@ public final class FilePersistence
   protected InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom, boolean returnStream)
       throws Persistence.PersistenceException
   {
-    final InputAtom newInputAtom = cacheInputStream(uri, inputAtom, false);
+    final InputAtom newInputAtom = cacheInputStream(uri, inputAtom, returnStream == false);
     return (returnStream == false || newInputAtom == null || newInputAtom.inputStream == null) ? null : newInputAtom.inputStream;
   }
 
