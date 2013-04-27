@@ -11,7 +11,7 @@
   <artifactId>droid4me</artifactId>
   <packaging>jar</packaging>
   <name>droid4me</name>
-  <version>2.1.4.6</version>
+  <version>2.1.4.7</version>
   <description>droid4me is a framework library dedicated to the development of Android applications.</description>
   <url>http://code.google.com/p/droid4me</url>
 
@@ -156,14 +156,13 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!--dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.0</version>
       <type>jar</type>
       <scope>test</scope>
-      <optional>true</optional>
-    </dependency-->
+    </dependency>
   </dependencies>
 
   <build>
