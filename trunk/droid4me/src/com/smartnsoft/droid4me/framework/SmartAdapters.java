@@ -28,7 +28,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.smartnsoft.droid4me.app.AbstractSmartListActivity;
 import com.smartnsoft.droid4me.log.Logger;
@@ -394,19 +393,29 @@ public abstract class SmartAdapters
 
     protected final Activity activity;
 
-    protected int viewTypeCount = 1;
+    private int viewTypeCount = 1;
 
     protected List<? extends SmartAdapters.BusinessViewWrapper<?>> wrappers = new ArrayList<SmartAdapters.BusinessViewWrapper<?>>();
 
-    public SmartListAdapter(Activity activity)
+    private List<? extends SmartAdapters.BusinessViewWrapper<?>> forthcomingWrappers = null;
+
+    /**
+     * 
+     * @param activity
+     * @param viewTypeCount
+     *          since the {@link #getViewTypeCount()} method is invoked only once, we need to state the number of different rows from the start
+     */
+    // Regarding the 'getViewTypeCount()' method invocation, read
+    // http://stackoverflow.com/questions/15099041/listview-baseadapter-getviewtypecount-how-to-force-adapter-to-check-again
+    public SmartListAdapter(Activity activity, int viewTypeCount)
     {
       this.activity = activity;
+      this.viewTypeCount = viewTypeCount;
     }
 
-    public void setWrappers(List<? extends SmartAdapters.BusinessViewWrapper<?>> wrappers, int viewTypeCount)
+    public void setWrappers(List<? extends SmartAdapters.BusinessViewWrapper<?>> wrappers)
     {
-      this.wrappers = wrappers;
-      this.viewTypeCount = viewTypeCount;
+      this.forthcomingWrappers = wrappers;
     }
 
     public void setAdapter(ListView listView)
@@ -466,16 +475,7 @@ public abstract class SmartAdapters
     {
       try
       {
-        final SmartAdapters.BusinessViewWrapper<?> businessObject;
-        if (position >= wrappers.size())
-        {
-          if (log.isWarnEnabled())
-          {
-            log.warn("Asking for a view for a position " + position + " greater than that the filtered list size which is " + wrappers.size());
-          }
-          return null;
-        }
-        businessObject = wrappers.get(position);
+        final SmartAdapters.BusinessViewWrapper<?> businessObject = wrappers.get(position);
         final ViewClass innerView;
         final boolean isRecycled = (convertView != null);
         if (isRecycled == false)
@@ -500,22 +500,30 @@ public abstract class SmartAdapters
         {
           log.error("Could not get or update the list view at position '" + position + "'", throwable);
         }
-        return new TextView(parent.getContext());
+        return new View(parent.getContext());
       }
     }
 
-    /**
-     * Is invoked every time a {@link View} of the adapter is being updated. This is the right place for customizing the adapter.
-     * 
-     * @param view
-     *          the view which holds the graphical representation of the business object
-     * @param position
-     *          the position in the adapter
-     * @param isRecycled
-     *          {@code true} if and only if the provided view has just been created and is hence not recycled
-     */
-    protected void onInterceptGetView(ViewClass view, int position, boolean isRecycled)
+    @Override
+    public void notifyDataSetChanged()
     {
+      if (forthcomingWrappers != null)
+      {
+        wrappers = forthcomingWrappers;
+        forthcomingWrappers = null;
+      }
+      super.notifyDataSetChanged();
+    }
+
+    @Override
+    public void notifyDataSetInvalidated()
+    {
+      if (forthcomingWrappers != null)
+      {
+        wrappers = forthcomingWrappers;
+        forthcomingWrappers = null;
+      }
+      super.notifyDataSetInvalidated();
     }
 
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id)
@@ -529,7 +537,6 @@ public abstract class SmartAdapters
       {
         return;
       }
-      // setSelectedObject(wrappers.get(actualPosition));
 
       if (adapterView.isEnabled() == false)
       {
@@ -544,6 +551,20 @@ public abstract class SmartAdapters
         return;
       }
       onInternalEvent(adapterView, view, wrappers.get(actualPosition), ObjectEvent.Clicked, actualPosition);
+    }
+
+    /**
+     * Is invoked every time a {@link View} of the adapter is being updated. This is the right place for customizing the adapter.
+     * 
+     * @param view
+     *          the view which holds the graphical representation of the business object
+     * @param position
+     *          the position in the adapter
+     * @param isRecycled
+     *          {@code true} if and only if the provided view has just been created and is hence not recycled
+     */
+    protected void onInterceptGetView(ViewClass view, int position, boolean isRecycled)
+    {
     }
 
     private boolean onInternalEvent(AdapterView<?> adapterView, View view, SmartAdapters.BusinessViewWrapper<?> businessObject, ObjectEvent objectEvent,
