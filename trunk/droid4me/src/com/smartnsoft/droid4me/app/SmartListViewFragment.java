@@ -33,6 +33,7 @@ import com.smartnsoft.droid4me.ui.WrappedListView;
  * @author Jocelyn Girard
  * @since 2013.03.05
  */
+@Deprecated
 public abstract class SmartListViewFragment<AggregateClass, ListViewClass extends ViewGroup>
     extends SmartFragment<AggregateClass>
     implements DetailsProvider.ForList<SmartAdapters.BusinessViewWrapper<?>, View>, WrappedListView.OnEventObjectListener<SmartAdapters.BusinessViewWrapper<?>>

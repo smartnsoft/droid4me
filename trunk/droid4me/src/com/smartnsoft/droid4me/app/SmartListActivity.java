@@ -34,6 +34,7 @@ import android.widget.ListView;
  * @author Édouard Mercier
  * @since 2011.06.15
  */
+@Deprecated
 public abstract class SmartListActivity<AggregateClass, BusinessObjectClass, ViewClass extends View>
     extends AbstractSmartListActivity<AggregateClass, BusinessObjectClass, ListView, ViewClass>
 {
