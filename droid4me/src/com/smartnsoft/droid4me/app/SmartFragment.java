@@ -244,6 +244,16 @@ public abstract class SmartFragment<AggregrateClass>
    * Own implementation.
    */
 
+  /**
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
+   * 
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
+   */
+  public final void refreshBusinessObjectsAndDisplay()
+  {
+    refreshBusinessObjectsAndDisplay(true, null, false);
+  }
+
   public List<StaticMenuCommand> getMenuCommands()
   {
     return null;

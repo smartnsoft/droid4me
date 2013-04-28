@@ -38,6 +38,7 @@ import com.smartnsoft.droid4me.menu.MenuCommand;
  * @author Édouard Mercier
  * @since 2009.04.29
  */
+@Deprecated
 public abstract class AbstractWrappedSmartListActivity<AggregateClass, ListViewClass extends ViewGroup>
     extends AbstractSmartListActivity<AggregateClass, SmartAdapters.BusinessViewWrapper<?>, ListViewClass, View>
 {
