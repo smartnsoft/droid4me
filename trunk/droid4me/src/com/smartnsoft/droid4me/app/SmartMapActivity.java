@@ -425,11 +425,6 @@ public abstract class SmartMapActivity<AggregateClass>
     droid4mizer.registerBroadcastListeners(broadcastListeners);
   }
 
-  public void onBusinessObjectsRetrieved()
-  {
-    droid4mizer.onBusinessObjectsRetrieved();
-  }
-
   public int getOnSynchronizeDisplayObjectsCount()
   {
     return droid4mizer.getOnSynchronizeDisplayObjectsCount();
@@ -483,6 +478,19 @@ public abstract class SmartMapActivity<AggregateClass>
    * Own implementation.
    */
 
+  public void onSynchronizeDisplayObjects()
+  {
+  }
+
+  public void onBusinessObjectsRetrieved()
+  {
+  }
+
+  public List<StaticMenuCommand> getMenuCommands()
+  {
+    return null;
+  };
+
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
    * 
@@ -492,14 +500,5 @@ public abstract class SmartMapActivity<AggregateClass>
   {
     refreshBusinessObjectsAndDisplay(true, null, false);
   }
-
-  public void onSynchronizeDisplayObjects()
-  {
-  }
-
-  public List<StaticMenuCommand> getMenuCommands()
-  {
-    return null;
-  };
 
 }

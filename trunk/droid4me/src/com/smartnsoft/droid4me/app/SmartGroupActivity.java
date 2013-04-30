@@ -607,11 +607,6 @@ public abstract class SmartGroupActivity<AggregateClass>
     droid4mizer.registerBroadcastListeners(broadcastListeners);
   }
 
-  public void onBusinessObjectsRetrieved()
-  {
-    droid4mizer.onBusinessObjectsRetrieved();
-  }
-
   public int getOnSynchronizeDisplayObjectsCount()
   {
     return droid4mizer.getOnSynchronizeDisplayObjectsCount();
@@ -665,14 +660,8 @@ public abstract class SmartGroupActivity<AggregateClass>
    * Own implementation.
    */
 
-  /**
-   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
-   * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
-   */
-  public final void refreshBusinessObjectsAndDisplay()
+  public void onBusinessObjectsRetrieved()
   {
-    refreshBusinessObjectsAndDisplay(true, null, false);
   }
 
   public void onSynchronizeDisplayObjects()
@@ -683,5 +672,15 @@ public abstract class SmartGroupActivity<AggregateClass>
   {
     return null;
   };
+
+  /**
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
+   * 
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
+   */
+  public final void refreshBusinessObjectsAndDisplay()
+  {
+    refreshBusinessObjectsAndDisplay(true, null, false);
+  }
 
 }
