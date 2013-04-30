@@ -186,11 +186,6 @@ public abstract class SmartDialogFragment<AggregateClass>
     droid4mizer.registerBroadcastListeners(broadcastListeners);
   }
 
-  public void onBusinessObjectsRetrieved()
-  {
-    droid4mizer.onBusinessObjectsRetrieved();
-  }
-
   public int getOnSynchronizeDisplayObjectsCount()
   {
     return droid4mizer.getOnSynchronizeDisplayObjectsCount();
@@ -244,22 +239,7 @@ public abstract class SmartDialogFragment<AggregateClass>
    * Own implementation.
    */
 
-  /**
-   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
-   * 
-   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
-   */
-  public final void refreshBusinessObjectsAndDisplay()
-  {
-    refreshBusinessObjectsAndDisplay(true, null, false);
-  }
-
-  public List<StaticMenuCommand> getMenuCommands()
-  {
-    return null;
-  }
-
-  public void onFulfillDisplayObjects()
+  public void onRetrieveDisplayObjects()
   {
   }
 
@@ -268,12 +248,31 @@ public abstract class SmartDialogFragment<AggregateClass>
   {
   }
 
-  public void onRetrieveDisplayObjects()
+  public void onBusinessObjectsRetrieved()
+  {
+  }
+
+  public void onFulfillDisplayObjects()
   {
   }
 
   public void onSynchronizeDisplayObjects()
   {
+  }
+
+  public List<StaticMenuCommand> getMenuCommands()
+  {
+    return null;
+  }
+
+  /**
+   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
+   * 
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
+   */
+  public final void refreshBusinessObjectsAndDisplay()
+  {
+    refreshBusinessObjectsAndDisplay(true, null, false);
   }
 
   /**

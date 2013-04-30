@@ -127,6 +127,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onBusinessObjectsRetrieved()
   {
+    smartable.onBusinessObjectsRetrieved();
   }
 
   /**
@@ -640,6 +641,13 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       try
       {
         onRetrieveBusinessObjects();
+        // We notify the entity that the business objects have actually been loaded
+        if (isAlive() == false)
+        {
+          // If the entity is no more alive, we give up the process
+          return false;
+        }
+        onBusinessObjectsRetrieved();
       }
       catch (Throwable throwable)
       {

@@ -1,31 +1,15 @@
-/*
- * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * Contributors:
- *     E2M - initial API and implementation
- *     Smart&Soft - initial API and implementation
- */
-
 package com.smartnsoft.droid4me.app;
 
 import java.util.List;
 
-import android.app.TabActivity;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceFragment;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
@@ -34,77 +18,70 @@ import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
 import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
- * A basis class for an activity that holds some tabs.
+ * A basis classes for designing a {@link PreferenceFragment} compatible with the framework, i.e. droid4me-ready.
+ * 
+ * <p>
+ * Warning: this class is only available for applications running under Android v3+, i.e. release 11+!
+ * </p>
  * 
  * @param <AggregateClass>
  *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
- * 
  * @author Édouard Mercier
- * @since 2009.04.14
+ * @since 2012.03.04
  */
-@Deprecated
-public abstract class SmartTabActivity<AggregateClass>
-    extends TabActivity
-    implements SmartableActivity<AggregateClass>
+public abstract class SmartPreferenceFragment<AggregateClass>
+    extends PreferenceFragment
+    implements Smartable<AggregateClass>
 {
 
-  private final Droid4mizer<AggregateClass, SmartTabActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartTabActivity<AggregateClass>>(this, this, this, null);
+  private Droid4mizer<AggregateClass, SmartPreferenceFragment<AggregateClass>> droid4mizer;
 
   @Override
-  public Object getSystemService(String name)
+  public void onAttach(Activity activity)
   {
-    return droid4mizer.getSystemService(name, super.getSystemService(name));
+    if (log.isDebugEnabled())
+    {
+      log.debug("SmartDialogFragment::onAttach");
+    }
+    super.onAttach(activity);
+    droid4mizer = new Droid4mizer<AggregateClass, SmartPreferenceFragment<AggregateClass>>(getActivity(), this, this, this);
   }
 
   @Override
-  protected void onCreate(final Bundle savedInstanceState)
+  public void onCreate(final Bundle savedInstanceState)
   {
     droid4mizer.onCreate(new Runnable()
     {
       public void run()
       {
-        SmartTabActivity.super.onCreate(savedInstanceState);
+        SmartPreferenceFragment.super.onCreate(savedInstanceState);
       }
     }, savedInstanceState);
   }
 
   @Override
-  public void onNewIntent(Intent intent)
-  {
-    super.onNewIntent(intent);
-    droid4mizer.onNewIntent(intent);
-  }
-
-  @Override
-  public void onContentChanged()
-  {
-    super.onContentChanged();
-    droid4mizer.onContentChanged();
-  }
-
-  @Override
-  protected void onResume()
+  public void onResume()
   {
     super.onResume();
     droid4mizer.onResume();
   }
 
   @Override
-  protected void onSaveInstanceState(Bundle outState)
+  public void onSaveInstanceState(Bundle outState)
   {
     super.onSaveInstanceState(outState);
     droid4mizer.onSaveInstanceState(outState);
   }
 
   @Override
-  protected void onStart()
+  public void onStart()
   {
     super.onStart();
     droid4mizer.onStart();
   }
 
   @Override
-  protected void onPause()
+  public void onPause()
   {
     try
     {
@@ -117,7 +94,7 @@ public abstract class SmartTabActivity<AggregateClass>
   }
 
   @Override
-  protected void onStop()
+  public void onStop()
   {
     try
     {
@@ -130,7 +107,7 @@ public abstract class SmartTabActivity<AggregateClass>
   }
 
   @Override
-  protected void onDestroy()
+  public void onDestroy()
   {
     try
     {
@@ -143,44 +120,36 @@ public abstract class SmartTabActivity<AggregateClass>
   }
 
   @Override
-  public boolean onCreateOptionsMenu(Menu menu)
+  public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater)
   {
-    // Taken from http://www.londatiga.net/it/android-coding-tips-how-to-create-options-menu-on-child-activity-inside-an-activitygroup/
-    return droid4mizer.onCreateOptionsMenu(getParent() == null ? super.onCreateOptionsMenu(menu) : true, menu);
+    super.onCreateOptionsMenu(menu, menuInflater);
+    droid4mizer.onCreateOptionsMenu(true, menu);
   }
 
   @Override
-  public boolean onPrepareOptionsMenu(Menu menu)
+  public void onPrepareOptionsMenu(Menu menu)
   {
-    return droid4mizer.onPrepareOptionsMenu(getParent() == null ? super.onPrepareOptionsMenu(menu) : true, menu);
+    super.onPrepareOptionsMenu(menu);
+    droid4mizer.onPrepareOptionsMenu(true, menu);
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item)
   {
-    return droid4mizer.onOptionsItemSelected(getParent() == null ? super.onOptionsItemSelected(item) : true, item);
+    return droid4mizer.onOptionsItemSelected(super.onOptionsItemSelected(item), item);
   }
 
   @Override
   public boolean onContextItemSelected(MenuItem item)
   {
-    return droid4mizer.onContextItemSelected(getParent() == null ? super.onContextItemSelected(item) : true, item);
+    return droid4mizer.onContextItemSelected(super.onContextItemSelected(item), item);
   }
 
   @Override
-  protected void onActivityResult(int requestCode, int resultCode, Intent data)
+  public void onActivityResult(int requestCode, int resultCode, Intent data)
   {
     super.onActivityResult(requestCode, resultCode, data);
     droid4mizer.onActivityResult(requestCode, resultCode, data);
-  }
-
-  /**
-   * SmartableActivity implementation.
-   */
-
-  public final void setHomeIntent(Intent intent)
-  {
-    droid4mizer.setHomeIntent(intent);
   }
 
   /**
@@ -242,7 +211,7 @@ public abstract class SmartTabActivity<AggregateClass>
     return droid4mizer.isAlive();
   }
 
-  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
+  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);
   }
@@ -270,7 +239,20 @@ public abstract class SmartTabActivity<AggregateClass>
    * Own implementation.
    */
 
+  public void onRetrieveDisplayObjects()
+  {
+  }
+
+  public void onRetrieveBusinessObjects()
+      throws BusinessObjectUnavailableException
+  {
+  }
+
   public void onBusinessObjectsRetrieved()
+  {
+  }
+
+  public void onFulfillDisplayObjects()
   {
   }
 
@@ -281,7 +263,7 @@ public abstract class SmartTabActivity<AggregateClass>
   public List<StaticMenuCommand> getMenuCommands()
   {
     return null;
-  };
+  }
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
@@ -291,6 +273,29 @@ public abstract class SmartTabActivity<AggregateClass>
   public final void refreshBusinessObjectsAndDisplay()
   {
     refreshBusinessObjectsAndDisplay(true, null, false);
+  }
+
+  /**
+   * Specific implementation.
+   */
+
+  /**
+   * Does the same thing as the {@link #getActivity()}, except that it throws an exception if the fragment has been detached, instead of returning
+   * {@code null}
+   * 
+   * @return a never-null activity, which is the hosting activity
+   * @throws IllegalStateException
+   *           if the fragment activity is currently null
+   */
+  public final Activity getCheckedActivity()
+      throws IllegalStateException
+  {
+    if (getActivity() == null)
+    {
+      // This will generate an IllegalStateException
+      getResources();
+    }
+    return getActivity();
   }
 
 }

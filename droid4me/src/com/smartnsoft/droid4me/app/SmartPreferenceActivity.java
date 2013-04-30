@@ -215,11 +215,6 @@ public abstract class SmartPreferenceActivity<AggregateClass>
     droid4mizer.registerBroadcastListeners(broadcastListeners);
   }
 
-  public void onBusinessObjectsRetrieved()
-  {
-    droid4mizer.onBusinessObjectsRetrieved();
-  }
-
   public int getOnSynchronizeDisplayObjectsCount()
   {
     return droid4mizer.getOnSynchronizeDisplayObjectsCount();
@@ -273,24 +268,19 @@ public abstract class SmartPreferenceActivity<AggregateClass>
    * Own implementation.
    */
 
-  /**
-   * Does nothing, but we can overload it in derived classes.
-   */
   public void onRetrieveBusinessObjects()
       throws BusinessObjectUnavailableException
   {
   }
 
-  /**
-   * Does nothing, but we can overload it in derived classes.
-   */
+  public void onBusinessObjectsRetrieved()
+  {
+  }
+
   public void onFulfillDisplayObjects()
   {
   }
 
-  /**
-   * Does nothing, but we can overload it in derived classes.
-   */
   public void onSynchronizeDisplayObjects()
   {
   }
