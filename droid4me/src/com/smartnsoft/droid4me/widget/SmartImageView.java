@@ -43,20 +43,7 @@ public class SmartImageView
     extends ImageView
 {
 
-  public SmartImageView(Context context, AttributeSet attrs, int defStyle)
-  {
-    super(context, attrs, defStyle);
-  }
-
-  public SmartImageView(Context context, AttributeSet attrs)
-  {
-    super(context, attrs);
-  }
-
-  public SmartImageView(Context context)
-  {
-    super(context);
-  }
+  public boolean newGeneration;
 
   private OnSizeChangedListener<SmartImageView> onSizeChangedListener;
 
@@ -69,6 +56,21 @@ public class SmartImageView
    * A flag which states whether the {@link #requestLayout()} calls should be disabled.
    */
   private boolean requestLayoutDisabled;
+
+  public SmartImageView(Context context)
+  {
+    super(context);
+  }
+
+  public SmartImageView(Context context, AttributeSet attrs)
+  {
+    super(context, attrs);
+  }
+
+  public SmartImageView(Context context, AttributeSet attrs, int defStyle)
+  {
+    super(context, attrs, defStyle);
+  }
 
   public float getRatio()
   {
@@ -149,54 +151,77 @@ public class SmartImageView
     }
   }
 
-  // Taken from http://stackoverflow.com/questions/7058507/fixed-aspect-ratio-view
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
   {
-    onMeasureOld(widthMeasureSpec, heightMeasureSpec);
-  }
-
-  protected void onMeasureNew(int widthMeasureSpec, int heightMeasureSpec)
-  {
-    if (ratio == 0f)
+    if (newGeneration == true)
     {
-      super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-    else
-    {
-      final float actualRatio = ratio > 0 ? ratio : -1f / ratio;
-      final int originalWidth = MeasureSpec.getSize(widthMeasureSpec);
-      final int originalHeight = MeasureSpec.getSize(heightMeasureSpec);
-      final int calculatedHeight = (int) ((float) originalWidth * actualRatio);
-      final int finalWidth, finalHeight;
-      if (originalHeight > 0 && calculatedHeight > originalHeight)
+      if (ratio == 0f)
       {
-        finalWidth = (int) ((float) originalHeight / actualRatio);
-        finalHeight = originalHeight;
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
       }
       else
       {
-        finalWidth = originalWidth;
-        finalHeight = calculatedHeight;
+        final float actualRatio = ratio > 0 ? ratio : -1f / ratio;
+        final int originalWidth = MeasureSpec.getSize(widthMeasureSpec);
+        final int originalHeight = MeasureSpec.getSize(heightMeasureSpec);
+        final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        final int finalWidth, finalHeight;
+        if (widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY)
+        {
+          finalWidth = originalWidth;
+          finalHeight = originalHeight;
+        }
+        else if (widthMode == MeasureSpec.EXACTLY)
+        {
+          finalWidth = originalWidth;
+          final float idealHeight = finalWidth * actualRatio;
+          if (heightMode == MeasureSpec.UNSPECIFIED)
+          {
+            finalHeight = (int) idealHeight;
+          }
+          else
+          {
+            finalHeight = idealHeight > originalHeight ? originalHeight : (int) idealHeight;
+          }
+        }
+        else if (heightMode == MeasureSpec.EXACTLY)
+        {
+          finalHeight = originalHeight;
+          final float idealWidth = finalHeight / actualRatio;
+          if (widthMode == MeasureSpec.UNSPECIFIED)
+          {
+            finalWidth = (int) idealWidth;
+          }
+          else
+          {
+            finalWidth = idealWidth > originalWidth ? originalWidth : (int) idealWidth;
+          }
+        }
+        else
+        {
+          super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+          return;
+        }
+        this.setMeasuredDimension(finalWidth, finalHeight);
       }
-      super.onMeasure(MeasureSpec.makeMeasureSpec(finalWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(finalHeight, MeasureSpec.EXACTLY));
     }
-  }
-
-  protected void onMeasureOld(int widthMeasureSpec, int heightMeasureSpec)
-  {
-    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    if (ratio > 0f)
+    else
     {
-      final int measuredWidth = getMeasuredWidth();
-      final int newHeight = (int) ((float) getMeasuredWidth() * ratio);
-      setMeasuredDimension(measuredWidth, newHeight);
-    }
-    else if (ratio < 0f)
-    {
-      final int measuredHeight = getMeasuredHeight();
-      final int newWidth = (int) ((float) getMeasuredHeight() * ratio) * -1;
-      setMeasuredDimension(newWidth, measuredHeight);
+      super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+      if (ratio > 0f)
+      {
+        final int measuredWidth = getMeasuredWidth();
+        final int newHeight = (int) ((float) getMeasuredWidth() * ratio);
+        setMeasuredDimension(measuredWidth, newHeight);
+      }
+      else if (ratio < 0f)
+      {
+        final int measuredHeight = getMeasuredHeight();
+        final int newWidth = (int) ((float) getMeasuredHeight() * ratio) * -1;
+        setMeasuredDimension(newWidth, measuredHeight);
+      }
     }
   }
 

@@ -75,9 +75,9 @@ public class SmartRelativeLayout
    */
   protected int maxHeight = Integer.MAX_VALUE;
 
-  public SmartRelativeLayout(Context context, AttributeSet attrs, int defStyle)
+  public SmartRelativeLayout(Context context)
   {
-    super(context, attrs, defStyle);
+    super(context);
   }
 
   public SmartRelativeLayout(Context context, AttributeSet attrs)
@@ -85,9 +85,9 @@ public class SmartRelativeLayout
     super(context, attrs);
   }
 
-  public SmartRelativeLayout(Context context)
+  public SmartRelativeLayout(Context context, AttributeSet attrs, int defStyle)
   {
-    super(context);
+    super(context, attrs, defStyle);
   }
 
   /**
