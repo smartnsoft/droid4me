@@ -80,7 +80,9 @@ public final class ActivityController
 
     /**
      * Will be invoked by the {@link ActivityController#needsRedirection(Activity) framework}, in order to know whether an {@link Activity} should be
-     * started instead of the provided one, which is supposed to have just {@link Activity#onCreate(Bundle) started}.
+     * started instead of the provided one, which is supposed to have just {@link Activity#onCreate(Bundle) started}, or when the
+     * {@link Activity#onNewIntent()} method is invoked. However, the method will be not been invoked when those methods are invoked due to a
+     * {@link Activity#onConfigurationChanged(android.content.res.Configuration) configuration change}.
      * 
      * <p>
      * Caution: if an exception is thrown during the method execution, the application will crash!
