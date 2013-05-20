@@ -269,7 +269,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onCreate);
     }
-    if (isFirstCycle == true)
+    if (isFirstCycle == false)
     {
       stateContainer.setFirstLifeCycle(false);
     }
