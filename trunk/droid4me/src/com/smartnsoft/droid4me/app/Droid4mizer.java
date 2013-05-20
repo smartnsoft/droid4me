@@ -258,7 +258,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
     ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     superMethod.run();
-    if (ActivityController.getInstance().needsRedirection(activity) == true)
+    final boolean isFirstCycle = !(savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true);
+    if (isFragment() == false && isFirstCycle == true && ActivityController.getInstance().needsRedirection(activity) == true)
     {
       // We stop here if a redirection is needed
       stateContainer.beingRedirected();
@@ -268,8 +269,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onCreate);
     }
-
-    if (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true)
+    if (isFirstCycle == true)
     {
       stateContainer.setFirstLifeCycle(false);
     }
@@ -319,7 +319,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       log.debug("Droid4mizer::onNewIntent");
     }
 
-    if (ActivityController.getInstance().needsRedirection(activity) == true)
+    if (isFragment() == false && isFirstLifeCycle() == true && ActivityController.getInstance().needsRedirection(activity) == true)
     {
       // We stop here if a redirection is needed
       stateContainer.beingRedirected();
@@ -746,6 +746,11 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   private void onRegisterResultHandlers(CompositeHandler compositeActivityResultHandler)
   {
     // THINK: should we plug the feature?
+  }
+
+  private boolean isFragment()
+  {
+    return activity != smartable;
   }
 
 }
