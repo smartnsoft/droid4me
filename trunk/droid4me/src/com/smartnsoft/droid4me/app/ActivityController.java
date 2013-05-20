@@ -219,6 +219,11 @@ public final class ActivityController
     }
 
     /**
+     * A logger which may be used by the classes implementing this interface.
+     */
+    public static final Logger log = LoggerFactory.getInstance(Interceptor.class);
+
+    /**
      * Invoked every time a new event occurs on the provided {@code activity}/{@code component}. For instance, this is an ideal for logging
      * application usage analytics.
      * 
