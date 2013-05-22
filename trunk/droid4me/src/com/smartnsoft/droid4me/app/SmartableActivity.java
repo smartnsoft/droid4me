@@ -17,9 +17,7 @@
 
 package com.smartnsoft.droid4me.app;
 
-import android.app.ActionBar;
 import android.app.Activity;
-import android.content.Intent;
 
 /**
  * All {@link Activity activities} of the framework must at least implement this interface.
@@ -34,13 +32,5 @@ import android.content.Intent;
 public interface SmartableActivity<AggregateClass>
     extends Smartable<AggregateClass>
 {
-
-  /**
-   * Indicates the {@link Activity} {@link Intent} to be launched when the {@link ActionBar} "Home" button is hit.
-   * 
-   * @param intent
-   *          a valid {@code Intent} ; if {@code null}, the current {@link Activity} will be simply {@link Activity#finish() finished}
-   */
-  void setHomeIntent(Intent intent);
 
 }

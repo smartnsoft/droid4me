@@ -65,11 +65,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   private final AppInternals.StateContainer<AggregateClass, ComponentClass> stateContainer;
 
   /**
-   * The {@link Activity} {@link Intent} which will be used in case the {@link android.app.ActionBar} "Home" button is clicked.
-   */
-  private Intent homeIntent;
-
-  /**
    * The only way to create an instance.
    * 
    * @param activity
@@ -474,29 +469,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onOptionsItemSelected");
     }
-    // This is the special case of the ActionBar "Home" button
-    final int homeMenuResourceId = 0x0102002c;// android.R.id.home;
-    if (item.getItemId() == homeMenuResourceId)
-    {
-      final Intent homeIntent = getHomeIntent();
-      if (homeIntent != null)
-      {
-        try
-        {
-          activity.startActivity(homeIntent);
-        }
-        catch (Throwable throwable)
-        {
-          if (log.isErrorEnabled())
-          {
-            log.error("Could not start the home Intent " + homeIntent, throwable);
-          }
-        }
-      }
-      // In case the home intent does not set the Intent.FLAG_ACTIVITY_CLEAR_TOP flag, and just returns to the previous screen
-      activity.finish();
-      return true;
-    }
     if (stateContainer.compositeActionHandler != null)
     {
       if (stateContainer.compositeActionHandler.onOptionsItemSelected(item) == true)
@@ -596,38 +568,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   public Object getSystemService(String name, Object defaultService)
   {
     return ActivityController.getInstance().getSystemService(activity, name, defaultService);
-  }
-
-  /**
-   * Indicates the {@link Activity} {@link Intent} that will be launched when hitting the {@link android.app.ActionBar} "Home" button.
-   * 
-   * <p>
-   * If the {@link #setHomeIntent(Intent)} method has not been invoked, the returned value will be {@code null}, which is the default.
-   * </p>
-   * 
-   * @return an {@link Activity} {@code Intent} ; may be {@code null}
-   * @see #setHomeIntent(Intent)
-   */
-  private Intent getHomeIntent()
-  {
-    return homeIntent;
-  }
-
-  /**
-   * Indicates the {@link Activity} {@link Intent} to be launched when the {@link android.app.ActionBar} "Home" button is hit.
-   * 
-   * <p>
-   * Caution: this method is only effective from Android v3+!
-   * </p>
-   * 
-   * @param intent
-   *          a valid {@code Intent}
-   * @see #getHomeIntent()
-   * @see #onOptionsItemSelected(MenuItem)
-   */
-  public void setHomeIntent(Intent intent)
-  {
-    this.homeIntent = intent;
   }
 
   /**
