@@ -1141,14 +1141,21 @@ public final class ActivityController
     {
       log.debug("A redirection is needed");
     }
+
+    // We redirect to the right Activity
+    {
+      // We consider the parent activity in case it is embedded (like in an ActivityGroup)
+      final Intent formerIntent = activity.getParent() != null ? activity.getParent().getIntent() : activity.getIntent();
+      intent.putExtra(ActivityController.CALLING_INTENT, formerIntent);
+      // Disables the fact that the new started activity should belong to the tasks history and from the recent tasks
+      // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+      // intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+      activity.startActivity(intent);
+    }
+
+    // We now finish the redirected Activity
     activity.finish();
-    // We consider the parent activity in case it is embedded (like in an ActivityGroup)
-    final Intent formerIntent = activity.getParent() != null ? activity.getParent().getIntent() : activity.getIntent();
-    intent.putExtra(ActivityController.CALLING_INTENT, formerIntent);
-    // Disables the fact that the new started activity should belong to the tasks history and from the recent tasks
-    // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-    // intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-    activity.startActivity(intent);
+
     return true;
   }
 

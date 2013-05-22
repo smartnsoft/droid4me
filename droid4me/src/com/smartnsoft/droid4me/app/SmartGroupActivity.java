@@ -568,11 +568,6 @@ public abstract class SmartGroupActivity<AggregateClass>
    * SmartableActivity implementation.
    */
 
-  public final void setHomeIntent(Intent intent)
-  {
-    droid4mizer.setHomeIntent(intent);
-  }
-
   /**
    * Smartable implementation.
    */

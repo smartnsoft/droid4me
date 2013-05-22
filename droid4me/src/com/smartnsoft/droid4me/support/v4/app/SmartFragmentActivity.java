@@ -172,11 +172,6 @@ public abstract class SmartFragmentActivity<AggregateClass>
    * SmartableActivity implementation.
    */
 
-  public final void setHomeIntent(Intent homeIntent)
-  {
-    droid4mizer.setHomeIntent(homeIntent);
-  }
-
   /**
    * Smartable implementation.
    */
