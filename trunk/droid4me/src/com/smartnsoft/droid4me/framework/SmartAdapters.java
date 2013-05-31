@@ -25,8 +25,10 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.smartnsoft.droid4me.app.AbstractSmartListActivity;
@@ -99,7 +101,18 @@ public abstract class SmartAdapters
       return 0;
     }
 
-    protected abstract View createNewView(Activity activity, BusinessObjectClass businessObjectClass);
+    /**
+     * Is responsible for creating a new {@link View}, which is able to represent the provided business object.
+     * 
+     * @param activity
+     *          the Activity which hosts the view
+     * @param parent
+     *          the parent view, as provided by the {@link Adapter#getView(int, View, ViewGroup)} method
+     * @param businessObjectClass
+     *          the business object the returned view will represent graphically
+     * @return a new view, which will be used by the underlying {@link Adapter}
+     */
+    protected abstract View createNewView(Activity activity, ViewGroup parent, BusinessObjectClass businessObjectClass);
 
     protected abstract Object extractNewViewAttributes(Activity activity, View view, BusinessObjectClass businessObjectClass);
 
@@ -212,7 +225,7 @@ public abstract class SmartAdapters
 
     public final View getNewView(ViewGroup parent, Activity activity)
     {
-      final View view = createNewView(activity, getBusinessObject());
+      final View view = createNewView(activity, parent, getBusinessObject());
       return setNewView(activity, view);
     }
 
@@ -279,10 +292,10 @@ public abstract class SmartAdapters
     }
 
     @Override
-    protected View createNewView(Activity activity, BusinessObjectClass businessObject)
+    protected View createNewView(Activity activity, ViewGroup parent, BusinessObjectClass businessObject)
     {
       // It is important that the activity itself be used as a basis context, otherwise, the inflated View context is limited!
-      return activity.getLayoutInflater().inflate(layoutResourceId, null, false);
+      return activity.getLayoutInflater().inflate(layoutResourceId, parent, false);
     }
 
   }
