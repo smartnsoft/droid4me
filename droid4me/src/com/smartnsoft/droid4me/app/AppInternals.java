@@ -161,10 +161,10 @@ final class AppInternals
     private boolean firstLifeCycle = true;
 
     /**
-     * A flag which indicates whether the underlying {@link LifeCycle} is executing a
+     * A counter which indicates whether the underlying {@link LifeCycle} is executing a
      * {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} call.
      */
-    private boolean refreshingBusinessObjectsAndDisplay;
+    private int refreshingBusinessObjectsAndDisplayCount;
 
     private boolean beingRedirected;
 
@@ -580,12 +580,12 @@ final class AppInternals
 
     void onRefreshingBusinessObjectsAndDisplayStart()
     {
-      refreshingBusinessObjectsAndDisplay = true;
+      refreshingBusinessObjectsAndDisplayCount++;
     }
 
     synchronized void onRefreshingBusinessObjectsAndDisplayStop(LifeCycle lifeCycleActivity)
     {
-      refreshingBusinessObjectsAndDisplay = false;
+      refreshingBusinessObjectsAndDisplayCount--;
       if (activity.isFinishing() == true)
       {
         return;
@@ -603,7 +603,7 @@ final class AppInternals
 
     boolean isRefreshingBusinessObjectsAndDisplay()
     {
-      return refreshingBusinessObjectsAndDisplay;
+      return refreshingBusinessObjectsAndDisplayCount > 0;
     }
 
     /**
@@ -651,6 +651,14 @@ final class AppInternals
     void onDestroy()
     {
       isAlive = false;
+
+      // If the business objects retrieval and synchronization is not yet completed, we do not forget to notify
+      if (isRefreshingBusinessObjectsAndDisplay() == true)
+      {
+        onStopLoading();
+      }
+
+      // We unregister all the "BroadcastListener" entities
       unregisterBroadcastListeners();
 
       // We cancel all the commands which are still running, or which have not yet been started
@@ -719,7 +727,7 @@ final class AppInternals
         return true;
       }
       // We test whether the Activity is already being refreshed
-      if (refreshingBusinessObjectsAndDisplay == true)
+      if (isRefreshingBusinessObjectsAndDisplay() == true)
       {
         // In that case, we need to wait for the refresh action to be over
         if (log.isDebugEnabled())

@@ -524,20 +524,16 @@ public final class AppPublics
       if (matchesIntent(intent) == true)
       {
         // We know that the event deals with the current (activity, component) pair
-
-        final int previousCounter = counter;
+        final boolean wasLoading = counter >= 1;
         // We only take into account the loading event coming from the activity itself
         final boolean isLoading = intent.getBooleanExtra(AppPublics.EXTRA_UI_LOAD_ACTION_LOADING, true);
         counter += (isLoading == true ? 1 : -1);
+        final boolean isNowLoading = counter >= 1;
 
         // We only trigger an event provided the cumulative loading status has changed
-        if (previousCounter <= 0 && counter >= 1)
+        if (wasLoading != isNowLoading)
         {
-          onLoading(true);
-        }
-        else if (previousCounter >= 1 && counter <= 0)
-        {
-          onLoading(false);
+          onLoading(isNowLoading);
         }
       }
     }
