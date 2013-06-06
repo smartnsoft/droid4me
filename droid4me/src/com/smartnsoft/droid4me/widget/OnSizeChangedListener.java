@@ -1,3 +1,20 @@
+/*
+ * (C) Copyright 2009-2013 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * Contributors:
+ *     Smart&Soft - initial API and implementation
+ */
+
 package com.smartnsoft.droid4me.widget;
 
 import android.view.View;
@@ -9,13 +26,13 @@ import android.view.View;
  * It Enables to capture the event when the widget size changes.
  * </p>
  * 
- * @param WidgetClass
- *          the widget the size change listener applies to
+ * @param ViewClass
+ *          the {@link View} the size change listener applies to
  * 
  * @author Édouard Mercier
  * @since 2011.04.01
  */
-public interface OnSizeChangedListener<WidgetClass>
+public interface OnSizeChangedListener<ViewClass extends View>
 {
 
   /**
@@ -32,6 +49,6 @@ public interface OnSizeChangedListener<WidgetClass>
    * @param oldHeight
    *          the old height
    */
-  void onSizeChanged(WidgetClass widget, int newWidth, int newHeight, int oldWidth, int oldHeight);
+  void onSizeChanged(ViewClass widget, int newWidth, int newHeight, int oldWidth, int oldHeight);
 
 }

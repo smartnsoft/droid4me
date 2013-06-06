@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+ * (C) Copyright 2009-2013 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -20,8 +20,6 @@ package com.smartnsoft.droid4me.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.ViewGroup;
-import android.widget.Gallery;
 import android.widget.ImageView;
 
 /**
@@ -41,119 +39,91 @@ import android.widget.ImageView;
  */
 public class SmartImageView
     extends ImageView
+    implements SmartViewExtension<SmartImageView>
 {
 
-  public boolean newGeneration;
-
-  private OnSizeChangedListener<SmartImageView> onSizeChangedListener;
-
-  /**
-   * Holds the widget current ratio;
-   */
-  private float ratio = 9f / 16f;
-
-  /**
-   * A flag which states whether the {@link #requestLayout()} calls should be disabled.
-   */
-  private boolean requestLayoutDisabled;
+  private SmartViewExtension.ViewExtensionDelegate<SmartImageView> viewExtensionDelegate;
 
   public SmartImageView(Context context)
   {
-    super(context);
+    this(context, null);
   }
 
   public SmartImageView(Context context, AttributeSet attrs)
   {
-    super(context, attrs);
+    this(context, attrs, 0);
   }
 
   public SmartImageView(Context context, AttributeSet attrs, int defStyle)
   {
     super(context, attrs, defStyle);
+    initializeViewExtensionDelegateIfNecessary();
+    viewExtensionDelegate.setRatio(9f / 16f);
   }
 
-  public float getRatio()
+  @Override
+  public final float getRatio()
   {
-    return ratio;
+    return viewExtensionDelegate.getRatio();
   }
 
-  /**
-   * Sets the ratio between the height and the width of the image. The default value is {@code 9 / 16}.
-   * 
-   * <p>
-   * <ul>
-   * <li>When set to a positive value, the image width is taken as a reference to force the height.</li>
-   * <li>When set to a negative value, the image height is taken as a reference to force the width, and the {@code ratio} argument absolute value is
-   * taken.</li>
-   * </ul>
-   * </p>
-   * 
-   * @param ratio
-   *          when set to {@code 0}, no ratio is applied
-   */
-  public void setRatio(float ratio)
+  @Override
+  public final void setRatio(float ratio)
   {
-    this.ratio = ratio;
+    viewExtensionDelegate.setRatio(ratio);
   }
 
-  /**
-   * @return the currently registered interface which listens for the widget size changes events ; is {@code null} by default
-   */
+  @Override
   public final OnSizeChangedListener<SmartImageView> getOnSizeChangedListener()
   {
-    return onSizeChangedListener;
+    return viewExtensionDelegate.getOnSizeChangedListener();
   }
 
-  /**
-   * Sets the interface that will be invoked when the widget size changes.
-   * 
-   * @param onSizeChangedListener
-   *          may be {@code null}, and in that case, no interface will be notified
-   */
+  @Override
   public final void setOnSizeChangedListener(OnSizeChangedListener<SmartImageView> onSizeChangedListener)
   {
-    this.onSizeChangedListener = onSizeChangedListener;
+    viewExtensionDelegate.setOnSizeChangedListener(onSizeChangedListener);
   }
 
-  /**
-   * The default value of the underlying flag is {@code false}.
-   * 
-   * @return {@code true} if and only if the {@link #requestLayout()} method execution should do nothing
-   * @see #setRequestLayoutEnabled(boolean)
-   */
-  public boolean isRequestLayoutDisabled()
+  @Override
+  public final boolean isRequestLayoutDisabled()
   {
-    return requestLayoutDisabled;
+    return viewExtensionDelegate.isRequestLayoutDisabled();
   }
 
-  /**
-   * Indicates that the view {@link #requestLayout()} method execution should do nothing (not invoking the parent method).
-   * 
-   * <p>
-   * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
-   * inside a {@link ViewGroup}.
-   * </p>
-   * 
-   * @param requestLayoutDisabled
-   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
-   */
-  public void setRequestLayoutDisabled(boolean requestLayoutDisabled)
+  @Override
+  public final void setRequestLayoutDisabled(boolean requestLayoutDisabled)
   {
-    this.requestLayoutDisabled = requestLayoutDisabled;
+    viewExtensionDelegate.setRequestLayoutDisabled(requestLayoutDisabled);
   }
 
   @Override
   public void requestLayout()
   {
-    if (requestLayoutDisabled == false)
+    initializeViewExtensionDelegateIfNecessary();
+    if (viewExtensionDelegate.isRequestLayoutDisabled() == false)
     {
       super.requestLayout();
     }
   }
 
   @Override
+  public void onSuperMeasure(int widthMeasureSpec, int heightMeasureSpec)
+  {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+  }
+
+  @Override
+  public final void setSelfMeasuredDimension(int measuredWidth, int measuredHeight)
+  {
+    setMeasuredDimension(measuredWidth, measuredHeight);
+  }
+
+  @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
   {
+    final boolean newGeneration = viewExtensionDelegate.newGeneration;
+    final float ratio = viewExtensionDelegate.getRatio();
     if (newGeneration == true)
     {
       if (ratio == 0f)
@@ -225,13 +195,17 @@ public class SmartImageView
     }
   }
 
-  @Override
   protected void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight)
   {
-    super.onSizeChanged(newWidth, newHeight, oldWidth, oldHeight);
-    if (onSizeChangedListener != null)
+    super.onSizeChanged(newWidth, newHeight, newHeight, oldHeight);
+    viewExtensionDelegate.onSizeChanged(this, newWidth, newHeight, oldWidth, oldHeight);
+  }
+
+  private void initializeViewExtensionDelegateIfNecessary()
+  {
+    if (viewExtensionDelegate == null)
     {
-      onSizeChangedListener.onSizeChanged(this, newWidth, newHeight, oldWidth, oldHeight);
+      viewExtensionDelegate = new SmartViewExtension.ViewExtensionDelegate<SmartImageView>(this);
     }
   }
 
