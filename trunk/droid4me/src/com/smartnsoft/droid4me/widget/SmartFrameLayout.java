@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+ * (C) Copyright 2009-2013 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -20,22 +20,10 @@ package com.smartnsoft.droid4me.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.Gallery;
 
 /**
- * Introduced in order to get notified when a container size changes, because there is no {@code OnSizeChangedListener} in Android {@link View},
- * whereas there is a {@link View#onSizeChanged()} method.
- * 
- * <p>
- * In addition, this class enables to disable the {@link View#requestLayout()} method dynamically.
- * </p>
- * 
- * <p>
- * Use this wrapper container every time you need to be notified when a {@link View widget} sizes changes, or when you want to limit the widget
- * maximum size.
- * </p>
+ * An extension of its parent {@link View} class, which offers the {@link SmartViewExtension} features.
  * 
  * @see SmartRelativeLayout
  * @see SmartLinearLayout
@@ -46,24 +34,10 @@ import android.widget.Gallery;
  */
 public class SmartFrameLayout
     extends FrameLayout
+    implements SmartViewExtension<SmartFrameLayout>
 {
 
-  public boolean newGeneration;
-
-  /**
-   * The interface which will be invoked if the widget size changes.
-   */
-  private OnSizeChangedListener<SmartFrameLayout> onSizeChangedListener;
-
-  /**
-   * Holds the widget current vertical/horizontal dimensions ratio;
-   */
-  private float ratio = 0f;
-
-  /**
-   * A flag which states whether the {@link #requestLayout()} calls should be disabled.
-   */
-  private boolean requestLayoutDisabled;
+  private SmartViewExtension.ViewExtensionDelegate<SmartFrameLayout> viewExtensionDelegate;
 
   /**
    * Holds the widget maximum width.
@@ -77,45 +51,67 @@ public class SmartFrameLayout
 
   public SmartFrameLayout(Context context)
   {
-    super(context);
+    this(context, null);
   }
 
   public SmartFrameLayout(Context context, AttributeSet attrs)
   {
-    super(context, attrs);
+    this(context, attrs, 0);
   }
 
   public SmartFrameLayout(Context context, AttributeSet attrs, int defStyle)
   {
     super(context, attrs, defStyle);
+    initializeViewExtensionDelegateIfNecessary();
+
   }
 
-  /**
-   * @return the vertical/horizontal ratio ; when set to {@code 0}, no ratio is applied {@link #setRatio(float)}
-   */
-  public float getRatio()
+  @Override
+  public final float getRatio()
   {
-    return ratio;
+    return viewExtensionDelegate.getRatio();
   }
 
-  /**
-   * Sets the ratio between the width and the height of the image. The default value is {@code 9 / 16}.
-   * 
-   * <p>
-   * <ul>
-   * <li>When set to a positive value, the image width is taken as a reference to force the height.</li>
-   * <li>When set to a negative value, the image height is taken as a reference to force the width, and the {@code ratio} argument absolute value is
-   * taken.</li>
-   * </ul>
-   * </p>
-   * 
-   * @param ratio
-   *          when set to {@code 0}, no ratio is applied
-   * @see #getRatio()
-   */
-  public void setRatio(float ratio)
+  @Override
+  public final void setRatio(float ratio)
   {
-    this.ratio = ratio;
+    viewExtensionDelegate.setRatio(ratio);
+  }
+
+  @Override
+  public final OnSizeChangedListener<SmartFrameLayout> getOnSizeChangedListener()
+  {
+    return viewExtensionDelegate.getOnSizeChangedListener();
+  }
+
+  @Override
+  public final void setOnSizeChangedListener(OnSizeChangedListener<SmartFrameLayout> onSizeChangedListener)
+  {
+    viewExtensionDelegate.setOnSizeChangedListener(onSizeChangedListener);
+  }
+
+  @Override
+  public final boolean isRequestLayoutDisabled()
+  {
+    return viewExtensionDelegate.isRequestLayoutDisabled();
+  }
+
+  @Override
+  public final void setRequestLayoutDisabled(boolean requestLayoutDisabled)
+  {
+    viewExtensionDelegate.setRequestLayoutDisabled(requestLayoutDisabled);
+  }
+
+  @Override
+  public void onSuperMeasure(int widthMeasureSpec, int heightMeasureSpec)
+  {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+  }
+
+  @Override
+  public final void setSelfMeasuredDimension(int measuredWidth, int measuredHeight)
+  {
+    setMeasuredDimension(measuredWidth, measuredHeight);
   }
 
   /**
@@ -124,7 +120,7 @@ public class SmartFrameLayout
    * @param maxWidth
    *          the new widget maximum width
    */
-  public void setMaxWidth(int maxWidth)
+  public final void setMaxWidth(int maxWidth)
   {
     this.maxWidth = maxWidth;
   }
@@ -135,150 +131,18 @@ public class SmartFrameLayout
    * @param maxHeight
    *          the new widget maximum height
    */
-  public void setMaxHeight(int maxHeight)
+  public final void setMaxHeight(int maxHeight)
   {
     this.maxHeight = maxHeight;
-  }
-
-  /**
-   * @return the currently registered interface which listens for the widget size changes events ; is {@code null} by default
-   */
-  public final OnSizeChangedListener<SmartFrameLayout> getOnSizeChangedListener()
-  {
-    return onSizeChangedListener;
-  }
-
-  /**
-   * Sets the interface that will be invoked when the widget size changes.
-   * 
-   * @param onSizeChangedListener
-   *          may be {@code null}, and in that case, no interface will be notified
-   */
-  public final void setOnSizeChangedListener(OnSizeChangedListener<SmartFrameLayout> onSizeChangedListener)
-  {
-    this.onSizeChangedListener = onSizeChangedListener;
-  }
-
-  /**
-   * The default value of the underlying flag is {@code false}.
-   * 
-   * @return {@code true} if and only if the {@link #requestLayout()} method execution should do nothing
-   * @see #setRequestLayoutEnabled(boolean)
-   */
-  public boolean isRequestLayoutDisabled()
-  {
-    return requestLayoutDisabled;
-  }
-
-  /**
-   * Indicates that the view {@link #requestLayout()} method execution should do nothing (not invoking the parent method).
-   * 
-   * <p>
-   * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
-   * inside a {@link ViewGroup}.
-   * </p>
-   * 
-   * @param requestLayoutDisabled
-   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
-   */
-  public void setRequestLayoutDisabled(boolean requestLayoutDisabled)
-  {
-    this.requestLayoutDisabled = requestLayoutDisabled;
   }
 
   @Override
   public void requestLayout()
   {
-    if (requestLayoutDisabled == false)
+    initializeViewExtensionDelegateIfNecessary();
+    if (viewExtensionDelegate.isRequestLayoutDisabled() == false)
     {
       super.requestLayout();
-    }
-  }
-
-  @Override
-  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-  {
-    if (newGeneration == true)
-    {
-      if (ratio == 0f)
-      {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-      }
-      else
-      {
-        final float actualRatio = ratio > 0 ? ratio : -1f / ratio;
-        final int originalWidth = MeasureSpec.getSize(widthMeasureSpec);
-        final int originalHeight = MeasureSpec.getSize(heightMeasureSpec);
-        final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        final int finalWidth, finalHeight;
-        if (widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY)
-        {
-          finalWidth = originalWidth;
-          finalHeight = originalHeight;
-        }
-        else if (widthMode == MeasureSpec.EXACTLY)
-        {
-          finalWidth = originalWidth;
-          final float idealHeight = finalWidth * actualRatio;
-          if (heightMode == MeasureSpec.UNSPECIFIED)
-          {
-            finalHeight = (int) idealHeight;
-          }
-          else
-          {
-            finalHeight = idealHeight > originalHeight ? originalHeight : (int) idealHeight;
-          }
-        }
-        else if (heightMode == MeasureSpec.EXACTLY)
-        {
-          finalHeight = originalHeight;
-          final float idealWidth = finalHeight / actualRatio;
-          if (widthMode == MeasureSpec.UNSPECIFIED)
-          {
-            finalWidth = (int) idealWidth;
-          }
-          else
-          {
-            finalWidth = idealWidth > originalWidth ? originalWidth : (int) idealWidth;
-          }
-        }
-        else
-        {
-          super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-          return;
-        }
-        // This is a way to notify the children about the dimensions
-        super.onMeasure(MeasureSpec.makeMeasureSpec(finalWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(finalHeight, MeasureSpec.EXACTLY));
-        this.setMeasuredDimension(finalWidth, finalHeight);
-      }
-    }
-    else
-    {
-      // Taken from http://stackoverflow.com/questions/7058507/fixed-aspect-ratio-view
-      if (ratio == 0f)
-      {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-      }
-      else
-      {
-        final float actualRatio = ratio > 0 ? ratio : -1f / ratio;
-        final int originalWidth = MeasureSpec.getSize(widthMeasureSpec);
-        final int originalHeight = MeasureSpec.getSize(heightMeasureSpec);
-        final int calculatedHeight = (int) ((float) originalWidth * actualRatio);
-        final int finalWidth, finalHeight;
-        if (originalHeight > 0 && calculatedHeight > originalHeight)
-        {
-          finalWidth = (int) ((float) originalHeight / actualRatio);
-          finalHeight = originalHeight;
-        }
-        else
-        {
-          finalWidth = originalWidth;
-          finalHeight = calculatedHeight;
-        }
-        super.onMeasure(MeasureSpec.makeMeasureSpec(finalWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(finalHeight, MeasureSpec.EXACTLY));
-      }
     }
   }
 
@@ -286,9 +150,20 @@ public class SmartFrameLayout
   protected void onSizeChanged(int newWidth, int newHeight, int oldWidth, int oldHeight)
   {
     super.onSizeChanged(newWidth, newHeight, newHeight, oldHeight);
-    if (onSizeChangedListener != null)
+    viewExtensionDelegate.onSizeChanged(this, newWidth, newHeight, oldWidth, oldHeight);
+  }
+
+  @Override
+  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+  {
+    viewExtensionDelegate.onMeasure(widthMeasureSpec, heightMeasureSpec);
+  }
+
+  private void initializeViewExtensionDelegateIfNecessary()
+  {
+    if (viewExtensionDelegate == null)
     {
-      onSizeChangedListener.onSizeChanged(this, newWidth, newHeight, oldWidth, oldHeight);
+      viewExtensionDelegate = new SmartViewExtension.ViewExtensionDelegate<SmartFrameLayout>(this);
     }
   }
 
