@@ -271,7 +271,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     else
     {
       stateContainer.setFirstLifeCycle(true);
-      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onActuallyCreatedDone);
     }
     stateContainer.registerBroadcastListeners();
 
@@ -413,14 +412,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       // We stop here if a redirection is needed or is something went wrong
       return;
     }
-    if (stateContainer.isDoNotCallOnActivityDestroyed() == false)
-    {
-      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onActuallyDestroyedDone);
-    }
-    else
-    {
-      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onDestroy);
-    }
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onDestroy);
   }
 
   public boolean onCreateOptionsMenu(boolean superResult, Menu menu)

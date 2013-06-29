@@ -156,8 +156,6 @@ final class AppInternals
 
     private boolean businessObjectsRetrieved;
 
-    private boolean doNotCallOnActivityDestroyed;
-
     private boolean firstLifeCycle = true;
 
     /**
@@ -258,11 +256,6 @@ final class AppInternals
     final boolean isAlive()
     {
       return isAlive;
-    }
-
-    boolean isDoNotCallOnActivityDestroyed()
-    {
-      return doNotCallOnActivityDestroyed;
     }
 
     synchronized SharedPreferences getPreferences(Context applicationContext)
@@ -560,7 +553,6 @@ final class AppInternals
     void onResume()
     {
       isInteracting = true;
-      doNotCallOnActivityDestroyed = false;
     }
 
     void setBusinessObjectsRetrieved()
@@ -677,7 +669,6 @@ final class AppInternals
 
     void onSaveInstanceState(Bundle outState)
     {
-      doNotCallOnActivityDestroyed = true;
       outState.putBoolean(AppInternals.ALREADY_STARTED, true);
     }
 
