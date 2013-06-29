@@ -180,10 +180,6 @@ public final class ActivityController
        * {@link ActivityController.Redirector activity redirection} is requested and that the instance has not been recreated due a configuration
        * change.
        */
-      onActuallyCreatedDone,
-      /**
-       * Called during the {@link Activity#onStart} method, at the beginning of the method, but after the parent's call.
-       */
       onStart,
       /**
        * Called during the {@link Activity#onResume} method, at the beginning of the method, but after the parent's call, provided no
@@ -208,14 +204,9 @@ public final class ActivityController
        */
       onSynchronizeDisplayObjectsDone,
       /**
-       * Called during the {@link Activity#onDestroy} method, at the very end of the method, provided no {@link ActivityController.Redirector activity
-       * redirection} is requested.
+       * Called during the {@link Activity#onDestroy()} method, at the very end of the method.
        */
-      onDestroy,
-      /**
-       * Called just after the {@link AppInternals.LifeCycleInternals#onActuallyDestroyed} method.
-       */
-      onActuallyDestroyedDone
+      onDestroy
     }
 
     /**
