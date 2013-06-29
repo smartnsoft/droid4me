@@ -56,7 +56,9 @@ public class SmartLinearLayout
 
   public SmartLinearLayout(Context context, AttributeSet attrs)
   {
-    this(context, attrs, 0);
+    // Because the 3-argument constructor is only available from Android release 11!
+    super(context, attrs);
+    initializeViewExtensionDelegateIfNecessary();
   }
 
   public SmartLinearLayout(Context context, AttributeSet attrs, int defStyle)
