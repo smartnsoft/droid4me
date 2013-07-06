@@ -439,6 +439,10 @@ final class AppInternals
       {
         activity.registerReceiver(broadcastReceiver, intentFilter);
       }
+      // if (log.isDebugEnabled())
+      // {
+      // log.debug("Registered a " + (useNativeBroadcast == true ? "native" : "local") + " broadcast receiver");
+      // }
     }
 
     private int enrichBroadcastListeners(int count)
@@ -461,6 +465,11 @@ final class AppInternals
         }
         broadcastReceivers = newBroadcastReceivers;
       }
+
+      if (log.isDebugEnabled())
+      {
+        log.debug("The entity is now able to welcome " + broadcastReceivers.length + " broadcast receiver(s)");
+      }
       return newIndex;
     }
 
@@ -476,19 +485,31 @@ final class AppInternals
           final BroadcastReceiver broadcastReceiver = broadcastReceivers[index];
           if (broadcastReceiver != null)
           {
-            if (broadcastReceiver instanceof NativeBroadcastReceiver == false)
+            final boolean useNativeBroadcast = broadcastReceiver instanceof NativeBroadcastReceiver;
+            if (useNativeBroadcast == false)
             {
               LocalBroadcastManager.getInstance(activity.getApplicationContext()).unregisterReceiver(broadcastReceiver);
             }
             else
             {
-              activity.unregisterReceiver(broadcastReceivers[index]);
+              activity.unregisterReceiver(broadcastReceiver);
+            }
+            // if (log.isDebugEnabled())
+            // {
+            // log.debug("Unregistered a " + (useNativeBroadcast == true ? "native" : "local") + " broadcast receiver");
+            // }
+          }
+          else
+          {
+            if (log.isErrorEnabled())
+            {
+              log.error("droid4me internal error in the 'AppInternals.unregisterBroadcastListeners()' method: a BroadcastReceiver is null!");
             }
           }
         }
         if (log.isDebugEnabled())
         {
-          log.debug("Stopped listening to intent broadcasts");
+          log.debug("Stopped listening to " + broadcastReceivers.length + " intent broadcasts");
         }
       }
     }
