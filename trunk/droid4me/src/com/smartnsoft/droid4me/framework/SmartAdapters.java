@@ -28,16 +28,15 @@ import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import com.smartnsoft.droid4me.app.AbstractSmartListActivity;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.menu.MenuCommand;
 
 /**
- * Gathers in one place some classes used by the {@link AbstractSmartListActivity} class, which handles {@link android.widget.ListView list views}.
+ * Gathers in one place some classes used by the {@link com.smartnsoft.droid4me.app.AbstractSmartListActivity} class, which handles
+ * {@link android.widget.ListView list views}.
  * 
  * @author Édouard Mercier
  * @since 2011.09.27
