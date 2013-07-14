@@ -193,6 +193,11 @@ final class AppInternals
      */
     private List<Future<?>> futures = new ArrayList<Future<?>>();
 
+    static boolean isFirstCycle(Bundle savedInstanceState)
+    {
+      return (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true);
+    }
+
     /**
      * Should only be created by classes in the same package.
      * 
@@ -838,7 +843,7 @@ final class AppInternals
   /**
    * An internal key, which enables to determine whether an activity has already been started.
    */
-  final static String ALREADY_STARTED = "com.smartnsoft.droid4me.alreadyStarted";
+  private final static String ALREADY_STARTED = "com.smartnsoft.droid4me.alreadyStarted";
 
   /**
    * This threads pool is used internally, in order to prevent from new thread creation, for an optimization purpose.

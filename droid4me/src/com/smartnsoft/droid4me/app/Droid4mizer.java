@@ -31,6 +31,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.LifeCycle;
+import com.smartnsoft.droid4me.app.AppInternals.StateContainer;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.menu.MenuCommand;
@@ -253,8 +254,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
     ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onSuperCreateBefore);
     superMethod.run();
-    final boolean isFirstCycle = !(savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true);
-    if (isFragment() == false && isFirstCycle == true && ActivityController.getInstance().needsRedirection(activity) == true)
+    if (isFragment() == false && ActivityController.getInstance().needsRedirection(activity) == true)
     {
       // We stop here if a redirection is needed
       stateContainer.beingRedirected();
@@ -264,7 +264,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onCreate);
     }
-    if (isFirstCycle == false)
+    if (StateContainer.isFirstCycle(savedInstanceState) == true)
     {
       stateContainer.setFirstLifeCycle(false);
     }
@@ -313,7 +313,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       log.debug("Droid4mizer::onNewIntent");
     }
 
-    if (isFragment() == false && isFirstLifeCycle() == true && ActivityController.getInstance().needsRedirection(activity) == true)
+    if (isFragment() == false && ActivityController.getInstance().needsRedirection(activity) == true)
     {
       // We stop here if a redirection is needed
       stateContainer.beingRedirected();
