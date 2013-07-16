@@ -22,7 +22,7 @@ import com.smartnsoft.droid4me.ws.WebServiceCaller;
  * @author Édouard Mercier
  * @since 2011.09.06
  */
-public final class Tests
+public final class PersistenceTest
     extends BasisTests
 {
 
