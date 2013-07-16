@@ -25,7 +25,7 @@ import com.smartnsoft.droid4me.test.BasisTests;
  * @author ɉdouard Mercier
  * @since 2011.09.03
  */
-public final class Tests
+public final class BitmapDownloaderTest
     extends BasisTests
 {
 
@@ -898,6 +898,174 @@ public final class Tests
   {
     onBindBitmapExceptionInternal(false, null, new OutOfMemoryError());
     onBindBitmapExceptionInternal(true, null, new OutOfMemoryError());
+  }
+
+  @Test
+  public void onCommandOverwrittenWithLocalBitmap()
+      throws InterruptedException
+  {
+    final Expectations expectations = new Expectations();
+    final Expectations secondExpectations = new Expectations();
+    bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
+        new ExpectedInstructions(expectations, true, false, ExpectedInstructions.SimulationdMethod.Null)
+        {
+          @Override
+          public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
+          {
+            // We take the opportunity to ask a new BitmapDownloader "get" command while the first is asking for a local bitmap
+            bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
+                new ExpectedInstructions(secondExpectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess));
+            return super.hasLocalBitmap(bitmapUid, imageSpecs);
+          }
+        });
+    secondExpectations.waitForOnOver();
+
+    {
+      final boolean onOver = true;
+      final int computeUrl = 0;
+      final int hasLocalBitmap = 1;
+      final int hasTemporaryBitmap = 0;
+      final int onBindLocalBitmap = 0;
+      final int onBindTemporaryBitmap = 0;
+      final int getInputStream = 0;
+      final int onInputStreamDownloaded = 0;
+      final int onBitmapReady = 0;
+      final int onBindBitmap = 0;
+      final int onBitmapBound = 0;
+      final int convert = 0;
+      final Boolean onBitmapBoundResult = null;
+      assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
+          onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    }
+    {
+      final boolean onOver = true;
+      final int computeUrl = 1;
+      final int hasLocalBitmap = 1;
+      final int hasTemporaryBitmap = 1;
+      final int onBindLocalBitmap = 0;
+      final int onBindTemporaryBitmap = 0;
+      final int getInputStream = 1;
+      final int onInputStreamDownloaded = 1;
+      final int onBitmapReady = 1;
+      final int onBindBitmap = 1;
+      final int onBitmapBound = 1;
+      final int convert = 1;
+      final Boolean onBitmapBoundResult = Boolean.TRUE;
+      assertAllExpectations(secondExpectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap,
+          onBitmapReady, onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    }
+  }
+
+  @Test
+  public void onCommandOverwrittenWithDownloadRequired()
+      throws InterruptedException
+  {
+    final Expectations expectations = new Expectations();
+    final Expectations secondExpectations = new Expectations();
+    bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
+        new ExpectedInstructions(expectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess)
+        {
+          @Override
+          public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
+          {
+            // We take the opportunity to ask a new BitmapDownloader "get" command while the first is asking for a local bitmap
+            bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
+                new ExpectedInstructions(secondExpectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess));
+            return super.hasLocalBitmap(bitmapUid, imageSpecs);
+          }
+        });
+    secondExpectations.waitForOnOver();
+
+    {
+      final boolean onOver = true;
+      final int computeUrl = 1;
+      final int hasLocalBitmap = 1;
+      final int hasTemporaryBitmap = 1;
+      final int onBindLocalBitmap = 0;
+      final int onBindTemporaryBitmap = 0;
+      final int getInputStream = 0;
+      final int onInputStreamDownloaded = 0;
+      final int onBitmapReady = 0;
+      final int onBindBitmap = 0;
+      final int onBitmapBound = 0;
+      final int convert = 0;
+      final Boolean onBitmapBoundResult = null;
+      assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
+          onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    }
+    {
+      final boolean onOver = true;
+      final int computeUrl = 1;
+      final int hasLocalBitmap = 1;
+      final int hasTemporaryBitmap = 1;
+      final int onBindLocalBitmap = 0;
+      final int onBindTemporaryBitmap = 0;
+      final int getInputStream = 1;
+      final int onInputStreamDownloaded = 1;
+      final int onBitmapReady = 1;
+      final int onBindBitmap = 1;
+      final int onBitmapBound = 1;
+      final int convert = 1;
+      final Boolean onBitmapBoundResult = Boolean.TRUE;
+      assertAllExpectations(secondExpectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap,
+          onBitmapReady, onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    }
+  }
+
+  @Test
+  public void onCommandOverwrittenDuringDownload()
+      throws InterruptedException
+  {
+    final Expectations expectations = new Expectations();
+    final Expectations secondExpectations = new Expectations();
+    bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
+        new ExpectedInstructions(expectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess)
+        {
+          @Override
+          public InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream)
+          {
+            // We take the opportunity to ask a new BitmapDownloader "get" command while the first is asking for a local bitmap
+            bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
+                new ExpectedInstructions(secondExpectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess));
+            return super.onInputStreamDownloaded(bitmapUid, imageSpecs, url, inputStream);
+          }
+        });
+    secondExpectations.waitForOnOver();
+
+    {
+      final boolean onOver = true;
+      final int computeUrl = 1;
+      final int hasLocalBitmap = 1;
+      final int hasTemporaryBitmap = 1;
+      final int onBindLocalBitmap = 0;
+      final int onBindTemporaryBitmap = 0;
+      final int getInputStream = 1;
+      final int onInputStreamDownloaded = 1;
+      final int onBitmapReady = 1;
+      final int onBindBitmap = 0;
+      final int onBitmapBound = 0;
+      final int convert = 1;
+      final Boolean onBitmapBoundResult = null;
+      assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
+          onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    }
+    {
+      final boolean onOver = true;
+      final int computeUrl = 1;
+      final int hasLocalBitmap = 1;
+      final int hasTemporaryBitmap = 1;
+      final int onBindLocalBitmap = 0;
+      final int onBindTemporaryBitmap = 0;
+      final int getInputStream = 0;
+      final int onInputStreamDownloaded = 0;
+      final int onBitmapReady = 1;
+      final int onBindBitmap = 1;
+      final int onBitmapBound = 1;
+      final int convert = 0;
+      final Boolean onBitmapBoundResult = Boolean.TRUE;
+      assertAllExpectations(secondExpectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap,
+          onBitmapReady, onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    }
   }
 
   private void onBindBitmapExceptionInternal(boolean fromCache, final RuntimeException exception, final Error error)

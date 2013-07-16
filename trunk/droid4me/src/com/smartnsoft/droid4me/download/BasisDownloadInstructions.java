@@ -70,6 +70,15 @@ public class BasisDownloadInstructions
      * Given the bitmap identifier, its extra specifications, returns its URL, which will be used for downloading it.
      * 
      * <p>
+     * This method will be invoked from the GUI thread, if and only if the
+     * {@link CoreBitmapDownloader#get(boolean, boolean, Viewable, String, Object, com.smartnsoft.droid4me.download.DownloadContracts.Handlerable, Instructions)}
+     * method has been invoked with a {@code isPreBlocking} argument set to {@code true}. However, it is ensured that this method will be only be
+     * invoked at most once per
+     * {@link CoreBitmapDownloader#get(boolean, boolean, Viewable, String, Object, com.smartnsoft.droid4me.download.DownloadContracts.Handlerable, Instructions)}
+     * method invocation (i.e. for a command).
+     * </p>
+     * 
+     * <p>
      * For performance reasons, the method does not manage {@link RuntimeException}: this is the reason why the implementation should make sure that
      * no such error occurs ; in particular, pay attention to the {@link NullPointerException}
      * </p>
@@ -221,6 +230,10 @@ public class BasisDownloadInstructions
 
     /**
      * This method is invoked systematically once the command is over, either when it has successfully completed, or when it has been aborted.
+     * 
+     * <p>
+     * Do not make any assumption regarding the thread invoking that method: may be the GUI thread or a background taken from a worker thread!
+     * </p>
      * 
      * <p>
      * This callback is especially useful the unitary tests.

@@ -38,7 +38,7 @@ import com.smartnsoft.droid4me.wscache.BackedWSUriStreamParser;
  * @author ɉdouard Mercier
  * @since 2011.08.16
  */
-public final class Tests
+public final class WebServiceCallerTest
     extends BasisTests
 {
 
@@ -368,7 +368,7 @@ public final class Tests
       {
         final String methodUriSuffix = "method";
         final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new WebServiceClient.HttpCallTypeAndBody(webServiceClient.computeUri(
-            Tests.WEBSERVICES_BASE_URL, methodUriSuffix, parameters.computeUriParameters()), CallType.Get, null));
+            WebServiceCallerTest.WEBSERVICES_BASE_URL, methodUriSuffix, parameters.computeUriParameters()), CallType.Get, null));
         final SimpleIOStreamerSourceKey<StreamParameter> ioStreamerSourceKey = new SimpleIOStreamerSourceKey<StreamParameter>(methodUriSuffix);
         return new KeysAggregator<StreamParameter>(parameters).add(Source.UriStreamer, uriStreamerSourceKey).add(Source.IOStreamer, ioStreamerSourceKey);
       }

@@ -56,6 +56,25 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     extends CoreBitmapDownloader<BitmapClass, ViewClass, HandlerClass>
 {
 
+  /**
+   * Indicates to the command how it should handle the {@link BasisCommand#executeEnd()} method.
+   */
+  private static enum NextResult
+  {
+    /**
+     * The next workflow execution has failed being registered.
+     */
+    Failed,
+    /**
+     * The next workflow execution has properly been registered.
+     */
+    Success,
+    /**
+     * The workflow should stop.
+     */
+    Stop,
+  }
+
   private abstract class BasisCommand
       implements Runnable, Comparable<BasisCommand>
   {
@@ -104,6 +123,11 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     protected abstract void executeEnd();
 
     /**
+     * @return {@code true} if the command should not execute its next workflow through the {@link BasisCommand#executeEnd()} method
+     */
+    protected abstract boolean executeEndStillRequired();
+
+    /**
      * Introduced in order to reduce the allocation of a {@link Runnable}, and for an optimization purpose.
      */
     public final void run()
@@ -127,6 +151,41 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           log.error(logCommandId() + "An unhandled exception has been raised during the processing of a command", throwable);
         }
       }
+    }
+
+    /**
+     * Should always be used when the command needs to go to the next workflow by executing it in the GUI thread.
+     * 
+     * @return {@code true} if the command could be properly posted
+     */
+    protected final NextResult executeNextThroughHandler()
+    {
+      if (executeEndStillRequired() == true)
+      {
+        return handler.post(this) == true ? NextResult.Success : NextResult.Failed;
+      }
+      else
+      {
+        return NextResult.Stop;
+      }
+    }
+
+    /**
+     * Should always be used when the command needs to go to the next workflow by executing it from the thread.
+     */
+    protected final void executeNext()
+    {
+      if (executeEndStillRequired() == true)
+      {
+        run();
+      }
+    }
+
+    protected final boolean wasCommandStackedMeanwhile()
+    {
+      final Integer commandId = prioritiesStack.get(view);
+      final boolean isCommandStillValid = commandId == null || commandId.intValue() != id;
+      return isCommandStillValid;
     }
 
     public final int compareTo(BasisCommand other)
@@ -245,6 +304,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       // We set a temporary bitmap, if available
       setTemporaryBitmapIfPossible(isFromGuiThread);
 
+      // We handle the special case of a null bitmap URL
       if (url == null)
       {
         if (view != null)
@@ -253,7 +313,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           state = state == FinalState.NotInCache ? FinalState.NullUriTemporary : FinalState.NullUriNoTemporary;
           if (isFromGuiThread == false)
           {
-            if (handler.post(this) == false)
+            if (executeNextThroughHandler() == NextResult.Failed)
             {
               if (log.isWarnEnabled())
               {
@@ -263,14 +323,14 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           else
           {
-            run();
+            executeNext();
           }
         }
         // We do not want to go any further, since the URL is null, and the work is complete
         return;
       }
 
-      downloadBitmap(url, resumeWorkflowOnSameThread);
+      skipToDownloadCommand(url, resumeWorkflowOnSameThread);
     }
 
     /**
@@ -282,18 +342,6 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       if (IS_DEBUG_TRACE && log.isDebugEnabled())
       {
         log.debug(logCommandId() + "Running the action in state '" + state + "' for the bitmap with uid '" + bitmapUid + "'");
-      }
-      // We only continue the process (and the temporary or local bitmap view binding) provided there is not already another command bound to be
-      // processed for the same view
-      final Integer commandId = prioritiesStack.get(view);
-      if (state != FinalState.NotInCache && (commandId == null || commandId.intValue() != id))
-      {
-        instructions.onOver(true, view, bitmapUid, imageSpecs);
-        if (log.isDebugEnabled())
-        {
-          log.debug(logCommandId() + "The bitmap corresponding to the uid '" + bitmapUid + "' will not be bound to its view, because this bitmap has asked for another bitmap URL in the meantime");
-        }
-        return;
       }
       try
       {
@@ -391,6 +439,27 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       }
     }
 
+    @Override
+    protected boolean executeEndStillRequired()
+    {
+      if (view == null)
+      {
+        return true;
+      }
+      // We only continue the process (and the temporary or local bitmap view binding) provided there is not already another command bound to be
+      // processed for the same view
+      if (state != FinalState.NotInCache && wasCommandStackedMeanwhile() == true)
+      {
+        instructions.onOver(true, view, bitmapUid, imageSpecs);
+        if (log.isDebugEnabled())
+        {
+          log.debug(logCommandId() + "The bitmap corresponding to the uid '" + bitmapUid + "' will not be bound to its view, because this bitmap has asked for another bitmap URL in the meantime");
+        }
+        return false;
+      }
+      return true;
+    }
+
     /**
      * @return {@code true} if and only if a local bitmap should be used
      */
@@ -404,7 +473,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           state = FinalState.Local;
           if (isFromGuiThread == false)
           {
-            if (handler.post(this) == false)
+            if (executeNextThroughHandler() == NextResult.Failed)
             {
               if (log.isWarnEnabled())
               {
@@ -414,7 +483,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           else
           {
-            run();
+            executeNext();
           }
           return true;
         }
@@ -432,7 +501,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           state = FinalState.NotInCache;
           if (isFromGuiThread == false)
           {
-            if (handler.post(this) == false)
+            if (executeNextThroughHandler() == NextResult.Failed)
             {
               if (log.isWarnEnabled())
               {
@@ -442,7 +511,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           else
           {
-            run();
+            executeNext();
           }
         }
       }
@@ -474,7 +543,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           state = FinalState.InCache;
           if (isFromGuiThread == false)
           {
-            if (handler.post(this) == false)
+            if (executeNextThroughHandler() == NextResult.Failed)
             {
               if (log.isWarnEnabled())
               {
@@ -484,7 +553,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           else
           {
-            run();
+            executeNext();
           }
         }
         else
@@ -499,14 +568,13 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       return false;
     }
 
-    private void downloadBitmap(final String url, boolean resumeWorkflowOnSameThread)
+    private void skipToDownloadCommand(final String url, boolean resumeWorkflowOnSameThread)
     {
       // We want to remove any pending download command for the view
       if (view != null)
       {
         // But we test whether the download is still required
-        final Integer commandId = prioritiesStack.get(view);
-        if (commandId == null || commandId.intValue() != id)
+        if (wasCommandStackedMeanwhile() == true)
         {
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
@@ -711,19 +779,6 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     @Override
     protected void executeEnd()
     {
-      // We only bind the bitmap to the view provided there is not already another command bound to be processed
-      final Integer commandId = prioritiesStack.get(view);
-      if (commandId == null || commandId.intValue() != id)
-      {
-        if (IS_DEBUG_TRACE && log.isDebugEnabled())
-        {
-          log.debug(logCommandId() + "The bitmap corresponding to the URL '" + url + "' will not be bound to its view" + (view != null ? " " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-              : "") + ", because its related view has been requested again in the meantime");
-        }
-        instructions.onOver(true, view, bitmapUid, imageSpecs);
-        return;
-      }
-
       try
       {
         if (usedBitmap != null)
@@ -782,6 +837,27 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         }
       }
 
+    }
+
+    @Override
+    protected boolean executeEndStillRequired()
+    {
+      if (view == null)
+      {
+        return true;
+      }
+      // We only bind the bitmap to the view provided there is not already another command bound to be processed
+      if (wasCommandStackedMeanwhile() == true)
+      {
+        if (IS_DEBUG_TRACE && log.isDebugEnabled())
+        {
+          log.debug(logCommandId() + "The bitmap corresponding to the URL '" + url + "' will not be bound to its view" + (view != null ? " " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
+              : "") + ", because its related view has been requested again in the meantime");
+        }
+        instructions.onOver(true, view, bitmapUid, imageSpecs);
+        return false;
+      }
+      return true;
     }
 
     public final void setAsynchronous()
@@ -1054,7 +1130,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       // We need to bind the bitmap to the view in the GUI thread!
       if (view != null)
       {
-        if (handler.post(this) == false)
+        if (executeNextThroughHandler() == NextResult.Failed)
         {
           if (log.isWarnEnabled())
           {
