@@ -223,6 +223,12 @@ public abstract class WebServiceCaller
     this.isConnected = isConnected;
   }
 
+  /**
+   * Equivalent to calling {@link #getInputStream(String, WebServiceClient.CallType, HttpEntity)} with {@code callType} parameter set to
+   * {@code WebServiceCaller.CallType.Get} and {@code body} parameter set to {@code null}.
+   * 
+   * @see WebServiceCaller#getInputStream(String, WebServiceClient.CallType, HttpEntity)
+   */
   public final InputStream getInputStream(String uri)
       throws WebServiceCaller.CallException
   {
@@ -231,6 +237,12 @@ public abstract class WebServiceCaller
 
   /**
    * Performs an HTTP request corresponding to the provided parameters.
+   * 
+   * <p>
+   * Caution: it is the responsibility of the caller to release (for instance, by invoking eventually the {@link InputStream#close()} method) the
+   * returned {@link InputStream}! Otherwise, the underlying {@link #httpClient} connection (taken from its pool), may hang at next call! Note that if
+   * an exception is raised, the hereby code will release the content by default.
+   * </p>
    * 
    * @param uri
    *          the URI being requested
@@ -622,6 +634,24 @@ public abstract class WebServiceCaller
     {
       log.error(message);
     }
+
+    // We make sure that the response body be consumed: read http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html, chapter
+    // 1.1.5 on that purpose. Without this consumption, the connection belonging to the pool may hang at next call!
+    // An interesting discussion is also available at
+    // http://stackoverflow.com/questions/9505358/android-httpclient-hangs-on-second-request-to-the-server-connection-timed-out
+    try
+    {
+      response.getEntity().consumeContent();
+    }
+    catch (IOException exception)
+    {
+      // We cannot do much ;(
+      if (log.isErrorEnabled())
+      {
+        log.error("Cannot release the not OK request corresponding to the web method '" + uri + "'", exception);
+      }
+    }
+
     throw new WebServiceCaller.CallException(message, statusCode);
   }
 
