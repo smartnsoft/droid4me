@@ -237,7 +237,7 @@ public abstract class SmartActivity<AggregateClass>
     return droid4mizer.isAlive();
   }
 
-  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
+  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
     refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, onOver, immediately, false);
   }
