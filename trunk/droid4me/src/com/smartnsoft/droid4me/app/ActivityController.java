@@ -39,7 +39,6 @@ import android.widget.Toast;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.LifeCycle.BusinessObjectUnavailableException;
-import com.smartnsoft.droid4me.ServiceLifeCycle.ServiceException;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
@@ -158,41 +157,64 @@ public final class ActivityController
     public static enum InterceptorEvent
     {
       /**
-       * Called during the {@link Activity#onCreate} method, before the Android built-in super method {@link Activity#onCreate} method is invoked.
+       * Called during the {@link Activity#onCreate()} / {@link android.app.Fragment#onCreate()} method, before the Android built-in super method
+       * {@link Activity#onCreate} method is invoked.
        * 
        * <p>
-       * This is an ideal place where to {@link Window#requestFeature(int) request for window features}.
+       * This is an ideal place where to {@link Window#requestFeature() request for window features}.
        * </p>
        */
       onSuperCreateBefore,
       /**
-       * Called during the {@link Activity#onCreate} method, at the beginning of the method, but after the parent's call, provided no
-       * {@link ActivityController.Redirector activity redirection} is requested.
+       * Called during the {@link Activity#onCreate()} / {@link android.app.Fragment#onCreate()} method, at the beginning of the method, but after the
+       * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
       onCreate,
       /**
-       * Called at the end of the {@link Activity#onContentChanged} method execution, but after the parent's call, provided no
-       * {@link ActivityController.Redirector activity redirection} is requested.
+       * Called during the {@link Activity#onCreate()} / {@link android.app.Fragment#onCreate()} method, at the very end of the method, after the
+       * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
+       */
+      onCreateDone,
+      /**
+       * <b>Only applies to {@link Activity} entities!</b>.Called during the {@link Activity#onPostCreate()} method, at the beginning of the method,
+       * but after the parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
+       */
+      onPostCreate,
+      /**
+       * <b>Only applies to {@link Activity} entities!</b>.Called at the end of the {@link Activity#onContentChanged()} method execution, but after
+       * the parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
       onContentChanged,
       /**
-       * Called during the {@link Activity#onCreate} method, at the beginning of the method, but after the parent's call, provided no
-       * {@link ActivityController.Redirector activity redirection} is requested and that the instance has not been recreated due a configuration
-       * change.
+       * Called during the {@link Activity#onStart} / {@link android.app.Fragment#onStart()} method, at the beginning of the method, but after the
+       * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested and that the instance has not been
+       * recreated due a configuration change.
        */
       onStart,
       /**
-       * Called during the {@link Activity#onResume} method, at the beginning of the method, but after the parent's call, provided no
-       * {@link ActivityController.Redirector activity redirection} is requested.
+       * <b>Only applies to {@link Activity} entities!</b>.Called during the {@link Activity#onRestart()} method, after the parent's call, provided no
+       * {@link ActivityController.Redirector activity redirection} is requested and that the instance has not been recreated due a configuration
+       * change.
+       */
+      onRestart,
+      /**
+       * Called during the {@link Activity#onResume()} / {@link android.app.Fragment#onResume()} method, at the beginning of the method, but after the
+       * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
       onResume,
       /**
-       * Called during the {@link Activity#onPause} method, at the beginning of the method, but after the parent's call, provided no
-       * {@link ActivityController.Redirector activity redirection} is requested.
+       * <b>Only applies to {@link Activity} entities!</b>.Called during the {@link Activity#onPostResume()} method, at the beginning of the method,
+       * but after the parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
+       */
+      onPostResume,
+      /**
+       * Called during the {@link Activity#onPause()} / {@link android.app.Fragment#onPause()} method, at the beginning of the method, but after the
+       * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
       onPause,
       /**
-       * Called during the {@link Activity#onStop} method, at the beginning of the method, before the parent's call.
+       * Called during the {@link Activity#onStop()} / {@link android.app.Fragment#onPause()} method, at the beginning of the method, before the
+       * parent's call.
        */
       onStop,
       /**
@@ -204,7 +226,7 @@ public final class ActivityController
        */
       onSynchronizeDisplayObjectsDone,
       /**
-       * Called during the {@link Activity#onDestroy()} method, at the very end of the method.
+       * Called during the {@link Activity#onDestroy()} / {@link android.app.Fragment#onDestroy()} method, at the very end of the method.
        */
       onDestroy
     }
@@ -270,24 +292,6 @@ public final class ActivityController
      *         for a further exception handler anymore
      */
     boolean onBusinessObjectAvailableException(Activity activity, Object component, BusinessObjectUnavailableException exception);
-
-    /**
-     * Is invoked whenever the {@link LifeCycle#onRetrieveBusinessObjects()} throws an exception.
-     * 
-     * <p>
-     * Warning, it is not ensured that this method will be invoked from the UI thread!
-     * </p>
-     * 
-     * @param activity
-     *          the activity that issued the exception ; cannot be {@code null}
-     * @param component
-     *          the component that issued the exception ; may be {@code null}
-     * @param exception
-     *          the exception that has been triggered
-     * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
-     *         for a further exception handler anymore
-     */
-    boolean onServiceException(Activity activity, Object component, ServiceException exception);
 
     /**
      * Is invoked whenever an activity implementing {@link LifeCycle} throws an unexpected exception, or when an exception is thrown during a
@@ -483,36 +487,6 @@ public final class ActivityController
         public void run()
         {
           showDialog(activity, i18n.dialogBoxErrorTitle, i18n.businessObjectAvailabilityProblemHint, activity.getString(android.R.string.ok),
-              new DialogInterface.OnClickListener()
-              {
-                public void onClick(DialogInterface dialog, int which)
-                {
-                  // We leave the activity, because we cannot go any further
-                  dialog.dismiss();
-                  activity.finish();
-                }
-              }, null, null, null);
-        }
-      });
-      return true;
-    }
-
-    public boolean onServiceException(final Activity activity, Object component, ServiceException exception)
-    {
-      if (handleCommonCauses(activity, component, exception, ConnectivityUIExperience.Dialog) == true)
-      {
-        return true;
-      }
-      else if (handleOtherCauses(activity, component, exception) == true)
-      {
-        return true;
-      }
-      // We make sure that the dialog is popped from the UI thread
-      activity.runOnUiThread(new Runnable()
-      {
-        public void run()
-        {
-          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.serviceProblemHint, activity.getString(android.R.string.ok),
               new DialogInterface.OnClickListener()
               {
                 public void onClick(DialogInterface dialog, int which)
@@ -1026,23 +1000,7 @@ public final class ActivityController
     }
     try
     {
-      if (throwable instanceof ServiceException)
-      {
-        // Should only occur with a non-null activity
-        final ServiceException exception = (ServiceException) throwable;
-        if (log.isWarnEnabled())
-        {
-          log.warn("Caught an exception during the processing of the services from the activity with name '" + (context == null ? "null"
-              : activity.getClass().getName()) + "'", exception);
-        }
-        // We do nothing if the activity is dying
-        if (activity != null && activity.isFinishing() == true)
-        {
-          return true;
-        }
-        return exceptionHandler.onServiceException(activity, component, exception);
-      }
-      else if (throwable instanceof BusinessObjectUnavailableException)
+      if (throwable instanceof BusinessObjectUnavailableException)
       {
         // Should only occur with a non-null activity
         final BusinessObjectUnavailableException exception = (BusinessObjectUnavailableException) throwable;

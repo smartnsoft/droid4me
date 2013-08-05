@@ -18,14 +18,11 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.List;
-
 import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.smartnsoft.droid4me.framework.SmartAdapters;
-import com.smartnsoft.droid4me.menu.MenuCommand;
 
 /**
  * Uses wrapped business objects for simplifying the handling of heterogeneous business objects.
@@ -61,11 +58,6 @@ public abstract class AbstractWrappedSmartListActivity<AggregateClass, ListViewC
     return businessViewWrapper.containsText(lowerText);
   }
 
-  public final String getBusinessObjectName(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
-  {
-    return businessViewWrapper.getName();
-  }
-
   public final long getObjectId(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
   {
     return businessViewWrapper.getId();
@@ -91,12 +83,6 @@ public abstract class AbstractWrappedSmartListActivity<AggregateClass, ListViewC
   public final void updateView(View view, SmartAdapters.BusinessViewWrapper<?> businessViewWrapper, int position)
   {
     businessViewWrapper.updateView(this, view, position);
-  }
-
-  @Override
-  protected final List<MenuCommand<SmartAdapters.BusinessViewWrapper<?>>> getContextualMenuCommands(SmartAdapters.BusinessViewWrapper<?> businessViewWrapper)
-  {
-    return businessViewWrapper.getMenuCommands(this);
   }
 
 }

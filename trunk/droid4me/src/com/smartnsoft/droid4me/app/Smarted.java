@@ -18,16 +18,12 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.List;
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
-
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * Defines some common methods for all {@link Activity} and {@link Fragment} entities defined in the framework.
@@ -110,13 +106,5 @@ public interface Smarted<AggregateClass>
    * @return a valid default application preferences object
    */
   SharedPreferences getPreferences();
-
-  /**
-   * This callback will be invoked by the framework, so as to discover how the entity contributes to the Android menu system.
-   * 
-   * @return all the static menu commands that the entity wants to make available ; may return {@code null}, and in that case, this entity will not
-   *         expose any menu entry
-   */
-  List<StaticMenuCommand> getMenuCommands();
 
 }

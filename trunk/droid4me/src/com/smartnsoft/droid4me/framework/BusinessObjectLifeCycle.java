@@ -18,11 +18,7 @@
 
 package com.smartnsoft.droid4me.framework;
 
-import java.util.List;
-
 import com.smartnsoft.droid4me.LifeCycle;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-import com.smartnsoft.droid4me.menu.MenuHandler;
 
 /**
  * An interface which is bound to a business object.
@@ -32,10 +28,6 @@ import com.smartnsoft.droid4me.menu.MenuHandler;
  */
 public interface BusinessObjectLifeCycle<BusinessObjectClass>
 {
-
-  List<MenuCommand<BusinessObjectClass>> getCustomActions();
-
-  MenuHandler.Custom<BusinessObjectClass> getActionHandler();
 
   BusinessObjectClass retrieveBusinessObject()
       throws LifeCycle.BusinessObjectUnavailableException;

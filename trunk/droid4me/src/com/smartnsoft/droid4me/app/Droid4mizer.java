@@ -17,14 +17,12 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -33,11 +31,6 @@ import android.view.MenuItem;
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.app.AppInternals.StateContainer;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
-import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-import com.smartnsoft.droid4me.menu.MenuHandler;
-import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * The class that should be used when extending a legacy class to support the whole droid4me framework features.
@@ -54,6 +47,12 @@ import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 public final class Droid4mizer<AggregateClass, ComponentClass>
     implements Smartable<AggregateClass>
 {
+
+  /**
+   * A flag which indicates whether the hereby {@code Droid4mizer} internal logs should be enabled. Logs will report all life-cycle events, for
+   * instance. The default value is {@code false}.
+   */
+  public static boolean ARE_DEBUG_LOG_ENABLED = false;
 
   private final Activity activity;
 
@@ -104,11 +103,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   public Handler getHandler()
   {
     return stateContainer.getHandler();
-  }
-
-  public List<StaticMenuCommand> getMenuCommands()
-  {
-    return smartable.getMenuCommands();
   }
 
   public void onException(Throwable throwable, boolean fromGuiThread)
@@ -231,23 +225,21 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     return stateContainer.shouldKeepOn();
   }
 
-  public Composite getCompositeActionHandler()
-  {
-    return stateContainer.compositeActionHandler;
-  }
-
-  public CompositeHandler getCompositeActivityResultHandler()
-  {
-    return stateContainer.compositeActivityResultHandler;
-  }
-
   /*
-   * The {@link Activity}/{@link Fragment} methods.
+   * The {@link Activity}/{@link android.app.Fragment} methods.
    */
+
+  public void onAttached(Activity activity)
+  {
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
+    {
+      log.debug("Droid4mizer::onAttached");
+    }
+  }
 
   public void onCreate(Runnable superMethod, Bundle savedInstanceState)
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onCreate");
     }
@@ -285,30 +277,21 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
       smartable.onException(throwable, true);
       return;
     }
-    // We add the static menu commands
-    smartable.getCompositeActionHandler().add(new MenuHandler.Static()
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onCreateDone);
+  }
+
+  public void onPostCreate(Bundle savedInstanceState)
+  {
+    if (shouldKeepOn() == false)
     {
-      @Override
-      protected List<MenuCommand<Void>> retrieveCommands()
-      {
-        final List<StaticMenuCommand> staticMenuCommands = getMenuCommands();
-        if (staticMenuCommands == null)
-        {
-          return null;
-        }
-        final List<MenuCommand<Void>> menuCommands = new ArrayList<MenuCommand<Void>>(staticMenuCommands.size());
-        for (StaticMenuCommand staticMenuCommand : staticMenuCommands)
-        {
-          menuCommands.add(staticMenuCommand);
-        }
-        return menuCommands;
-      }
-    });
+      return;
+    }
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onPostCreate);
   }
 
   public void onNewIntent(Intent intent)
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onNewIntent");
     }
@@ -331,7 +314,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onResume()
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onResume");
     }
@@ -341,12 +324,34 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onResume);
     stateContainer.onResume();
-    businessObjectRetrievalAndResultHandlers();
+    refreshBusinessObjectsAndDisplayInternal();
+  }
+
+  public void onPostResume()
+  {
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
+    {
+      log.debug("Droid4mizer::onPostResume");
+    }
+    if (shouldKeepOn() == false)
+    {
+      return;
+    }
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onPostResume);
+    stateContainer.onPostResume();
+  }
+
+  public void onConfigurationChanged(Configuration newConfig)
+  {
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
+    {
+      log.debug("Droid4mizer::onConfigurationChanged");
+    }
   }
 
   public void onSaveInstanceState(Bundle outState)
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onSaveInstanceState");
     }
@@ -355,16 +360,16 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onRestoreInstanceState(Bundle savedInstanceState)
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onRestoreInstanceState");
     }
-    businessObjectRetrievalAndResultHandlers();
+    refreshBusinessObjectsAndDisplayInternal();
   }
 
   public void onStart()
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onStart");
     }
@@ -372,9 +377,19 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     stateContainer.onStart();
   }
 
+  public void onRestart()
+  {
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
+    {
+      log.debug("Droid4mizer::onRestart");
+    }
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onRestart);
+    stateContainer.onRestart();
+  }
+
   public void onPause()
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onPause");
     }
@@ -392,7 +407,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onStop()
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onStop");
     }
@@ -402,7 +417,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onDestroy()
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onDestroy");
     }
@@ -415,101 +430,56 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onDestroy);
   }
 
+  public void onDetached()
+  {
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
+    {
+      log.debug("Droid4mizer::onDetached");
+    }
+  }
+
   public boolean onCreateOptionsMenu(boolean superResult, Menu menu)
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onCreateOptionsMenu");
-    }
-    if (stateContainer.compositeActionHandler != null)
-    {
-      stateContainer.compositeActionHandler.onCreateOptionsMenu(activity, menu);
-    }
-    else
-    {
-      if (log.isErrorEnabled())
-      {
-        log.error("onCreateOptionsMenu() being called whereas the 'stateContainer.compositeActionHandler' has not yet been initialized!");
-      }
     }
     return superResult;
   }
 
   public boolean onPrepareOptionsMenu(boolean superResult, Menu menu)
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onPrepareOptionsMenu");
-    }
-    if (stateContainer.compositeActionHandler != null)
-    {
-      stateContainer.compositeActionHandler.onPrepareOptionsMenu(menu);
-    }
-    else
-    {
-      if (log.isErrorEnabled())
-      {
-        log.error("onPrepareOptionsMenu() being called whereas the 'stateContainer.compositeActionHandler' has not yet been initialized!");
-      }
     }
     return superResult;
   }
 
   public boolean onOptionsItemSelected(boolean superResult, MenuItem item)
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onOptionsItemSelected");
-    }
-    if (stateContainer.compositeActionHandler != null)
-    {
-      if (stateContainer.compositeActionHandler.onOptionsItemSelected(item) == true)
-      {
-        return true;
-      }
-    }
-    else
-    {
-      if (log.isErrorEnabled())
-      {
-        log.error("onOptionsItemSelected() being called whereas the 'stateContainer.compositeActionHandler' has not yet been initialized!");
-      }
     }
     return superResult;
   }
 
   public boolean onContextItemSelected(boolean superResult, MenuItem item)
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onContextItemSelected");
-    }
-    if (stateContainer.compositeActionHandler.onContextItemSelected(item) == true)
-    {
-      return true;
     }
     return superResult;
   }
 
   public void onActivityResult(int requestCode, int resultCode, Intent data)
   {
-    if (log.isDebugEnabled())
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
     {
       log.debug("Droid4mizer::onActivityResult");
     }
-
-    // // BUG: this seems to be a bug in Android, because this method is invoked before the "onResume()"
-    // try
-    // {
-    // businessObjectRetrievalAndResultHandlers();
-    // }
-    // catch (Throwable throwable)
-    // {
-    // handleUnhandledException(throwable);
-    // return;
-    // }
-
-    smartable.getCompositeActivityResultHandler().handle(requestCode, resultCode, data);
   }
 
   /*
@@ -650,14 +620,9 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
   }
 
-  private void businessObjectRetrievalAndResultHandlers()
+  private void refreshBusinessObjectsAndDisplayInternal()
   {
     smartable.refreshBusinessObjectsAndDisplay(stateContainer.isRetrieveBusinessObjects(), stateContainer.getRetrieveBusinessObjectsOver(), true);
-    if (stateContainer.actionResultsRetrieved == false)
-    {
-      onRegisterResultHandlers(stateContainer.compositeActivityResultHandler);
-      stateContainer.actionResultsRetrieved = true;
-    }
   }
 
   private final void onInternalBusinessObjectAvailableException(Throwable throwable)
@@ -673,11 +638,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     // We need to indicate to the method that it may have been triggered from another thread than the GUI's
     smartable.onException(throwable, false);
-  }
-
-  private void onRegisterResultHandlers(CompositeHandler compositeActivityResultHandler)
-  {
-    // THINK: should we plug the feature?
   }
 
   private boolean isFragment()

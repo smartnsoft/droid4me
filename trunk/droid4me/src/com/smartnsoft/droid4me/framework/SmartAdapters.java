@@ -32,7 +32,6 @@ import android.widget.ListView;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.menu.MenuCommand;
 
 /**
  * Gathers in one place some classes used by the {@link com.smartnsoft.droid4me.app.AbstractSmartListActivity} class, which handles
@@ -140,16 +139,6 @@ public abstract class SmartAdapters
       return true;
     }
 
-    public String getName(BusinessObjectClass businessObject)
-    {
-      return "";
-    }
-
-    public final String getName()
-    {
-      return getName(getBusinessObject());
-    }
-
     public final boolean containsText(String lowerText)
     {
       return containsText(getBusinessObject(), lowerText);
@@ -180,46 +169,6 @@ public abstract class SmartAdapters
         SmartAdapters.ObjectEvent objectEvent, int position)
     {
       return false;
-    }
-
-    // TODO: rework on that!
-    public final List<MenuCommand<BusinessViewWrapper<?>>> getMenuCommands(Activity activity)
-    {
-      final List<MenuCommand<BusinessObjectClass>> objectMenuCommands = getMenuCommands(activity, getBusinessObject());
-      if (objectMenuCommands == null)
-      {
-        return null;
-      }
-      final List<MenuCommand<BusinessViewWrapper<?>>> menuCommands = new ArrayList<MenuCommand<BusinessViewWrapper<?>>>();
-      for (final MenuCommand<BusinessObjectClass> objectMenuCommand : objectMenuCommands)
-      {
-        menuCommands.add(new MenuCommand<BusinessViewWrapper<?>>(objectMenuCommand.text, objectMenuCommand.textId, objectMenuCommand.numericalShortcut, objectMenuCommand.characterShortcut, objectMenuCommand.icon, new Commands.Executable<BusinessViewWrapper<?>>()
-        {
-          @SuppressWarnings("unchecked")
-          public boolean isVisible(BusinessViewWrapper<?> businessObject)
-          {
-            return objectMenuCommand.executable.isVisible((BusinessObjectClass) businessObject.getBusinessObject());
-          }
-
-          @SuppressWarnings("unchecked")
-          public boolean isEnabled(BusinessViewWrapper<?> businessObject)
-          {
-            return objectMenuCommand.executable.isEnabled((BusinessObjectClass) businessObject.getBusinessObject());
-          }
-
-          @SuppressWarnings("unchecked")
-          public void run(BusinessViewWrapper<?> businessObject)
-          {
-            objectMenuCommand.executable.run((BusinessObjectClass) businessObject.getBusinessObject());
-          }
-        }));
-      }
-      return menuCommands;
-    }
-
-    public List<MenuCommand<BusinessObjectClass>> getMenuCommands(Activity activity, BusinessObjectClass businessObject)
-    {
-      return null;
     }
 
     public final View getNewView(ViewGroup parent, Activity activity)
