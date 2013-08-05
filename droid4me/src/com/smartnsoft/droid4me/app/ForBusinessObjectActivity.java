@@ -18,14 +18,8 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.List;
-
-import android.os.Bundle;
-
 import com.smartnsoft.droid4me.framework.BusinessObjectLifeCycle;
 import com.smartnsoft.droid4me.framework.ForBusinessObjectImplementation;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-import com.smartnsoft.droid4me.menu.MenuHandler.Custom;
 
 /**
  * An activity which handles the persistence properly, which proposes a framework regarding the custom action, and which provides a framework
@@ -42,11 +36,6 @@ public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectCl
   private final ForBusinessObjectImplementation<BusinessObjectClass> forBusinessObjectImplementation = new ForBusinessObjectImplementation<BusinessObjectClass>()
   {
 
-    public List<MenuCommand<BusinessObjectClass>> getCustomActions()
-    {
-      return ForBusinessObjectActivity.this.getCustomActions();
-    }
-
     public BusinessObjectClass retrieveBusinessObject()
         throws BusinessObjectUnavailableException
     {
@@ -59,24 +48,6 @@ public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectCl
     }
 
   };
-
-  @Override
-  protected void onCreate(Bundle savedInstanceState)
-  {
-    super.onCreate(savedInstanceState);
-
-    if (shouldKeepOn() == false)
-    {
-      // We stop here if a redirection is needed or is something went wrong
-      return;
-    }
-    getCompositeActionHandler().add(forBusinessObjectImplementation.getActionHandler());
-  }
-
-  public final Custom<BusinessObjectClass> getActionHandler()
-  {
-    return forBusinessObjectImplementation.getActionHandler();
-  }
 
   public final BusinessObjectClass getBusinessObject()
   {
@@ -100,14 +71,6 @@ public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectCl
       throws BusinessObjectUnavailableException
   {
     forBusinessObjectImplementation.retrieveBusinessObjects();
-  }
-
-  /**
-   * By default, no action is available.
-   */
-  public List<MenuCommand<BusinessObjectClass>> getCustomActions()
-  {
-    return null;
   }
 
 }

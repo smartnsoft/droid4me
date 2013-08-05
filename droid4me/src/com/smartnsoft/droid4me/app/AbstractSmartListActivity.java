@@ -24,8 +24,6 @@ import java.util.List;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -33,7 +31,6 @@ import android.widget.LinearLayout;
 import com.smartnsoft.droid4me.framework.DetailsProvider;
 import com.smartnsoft.droid4me.framework.SmartAdapters;
 import com.smartnsoft.droid4me.framework.SmartAdapters.ObjectEvent;
-import com.smartnsoft.droid4me.menu.MenuCommand;
 import com.smartnsoft.droid4me.ui.SimpleWrappedListView;
 import com.smartnsoft.droid4me.ui.WrappedListView;
 
@@ -227,14 +224,7 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   @SuppressWarnings("unchecked")
   protected WrappedListView<BusinessObjectClass, ListViewClass, ViewClass> computeWrappedListView()
   {
-    return (WrappedListView<BusinessObjectClass, ListViewClass, ViewClass>) new SimpleWrappedListView<BusinessObjectClass, ViewClass>(this, this)
-    {
-      @Override
-      protected List<MenuCommand<BusinessObjectClass>> getContextualMenuCommands(BusinessObjectClass businessObject)
-      {
-        return AbstractSmartListActivity.this.getContextualMenuCommands(businessObject);
-      }
-    };
+    return (WrappedListView<BusinessObjectClass, ListViewClass, ViewClass>) new SimpleWrappedListView<BusinessObjectClass, ViewClass>(this, this);
   }
 
   public void onRetrieveDisplayObjects()
@@ -243,7 +233,6 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
     final WrappedListView.SmartAdapter<BusinessObjectClass, ListViewClass, ViewClass> ownAdapter = computeAdapter();
     wrappedListView.setAdapter(ownAdapter == null ? new WrappedListView.SmartAdapter<BusinessObjectClass, ListViewClass, ViewClass>(wrappedListView, this)
         : ownAdapter);
-    wrappedListView.declareActionHandlers(getCompositeActionHandler());
 
     // We listen to the selected object, in case we are in a pick mode
     wrappedListView.setOnEventObjectListener(this);
@@ -251,7 +240,6 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
     setContentView(wrapperLayout);
     wrappedListView.onRetrieveDisplayObjects();
     // This call is done only at that point, because we need the smart view inner result handler to be initialized
-    wrappedListView.declareActivityResultHandlers(getCompositeActivityResultHandler());
     registerForContextMenu(wrappedListView.getListView());
   }
 
@@ -276,11 +264,6 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   public void onBusinessObjectsRetrieved()
   {
     wrappedListView.onBusinessObjectsRetrieved();
-  }
-
-  protected List<MenuCommand<BusinessObjectClass>> getContextualMenuCommands(BusinessObjectClass businessObject)
-  {
-    return null;
   }
 
   public void onFulfillDisplayObjects()
@@ -412,13 +395,6 @@ public abstract class AbstractSmartListActivity<AggregateClass, BusinessObjectCl
   protected String getFilterText()
   {
     return wrappedListView.getFilterText();
-  }
-
-  @Override
-  public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo)
-  {
-    super.onCreateContextMenu(menu, view, menuInfo);
-    wrappedListView.onPopulateContextMenu(menu, view, menuInfo, getSelectedObject());
   }
 
 }

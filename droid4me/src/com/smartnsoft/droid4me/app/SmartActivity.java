@@ -18,20 +18,16 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
-import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * The basis class for all activities available in the framework.
@@ -57,6 +53,13 @@ public abstract class SmartActivity<AggregateClass>
   }
 
   @Override
+  public void onAttachedToWindow()
+  {
+    super.onAttachedToWindow();
+    droid4mizer.onAttached(this);
+  }
+
+  @Override
   protected void onCreate(final Bundle savedInstanceState)
   {
     droid4mizer.onCreate(new Runnable()
@@ -66,6 +69,13 @@ public abstract class SmartActivity<AggregateClass>
         SmartActivity.super.onCreate(savedInstanceState);
       }
     }, savedInstanceState);
+  }
+
+  @Override
+  protected void onPostCreate(Bundle savedInstanceState)
+  {
+    super.onPostCreate(savedInstanceState);
+    droid4mizer.onPostCreate(savedInstanceState);
   }
 
   @Override
@@ -90,6 +100,20 @@ public abstract class SmartActivity<AggregateClass>
   }
 
   @Override
+  protected void onPostResume()
+  {
+    super.onPostResume();
+    droid4mizer.onPostResume();
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig)
+  {
+    super.onConfigurationChanged(newConfig);
+    droid4mizer.onConfigurationChanged(newConfig);
+  }
+
+  @Override
   protected void onSaveInstanceState(Bundle outState)
   {
     super.onSaveInstanceState(outState);
@@ -101,6 +125,13 @@ public abstract class SmartActivity<AggregateClass>
   {
     super.onStart();
     droid4mizer.onStart();
+  }
+
+  @Override
+  protected void onRestart()
+  {
+    super.onRestart();
+    droid4mizer.onRestart();
   }
 
   @Override
@@ -139,6 +170,19 @@ public abstract class SmartActivity<AggregateClass>
     finally
     {
       super.onDestroy();
+    }
+  }
+
+  @Override
+  public void onDetachedFromWindow()
+  {
+    try
+    {
+      droid4mizer.onDetached();
+    }
+    finally
+    {
+      super.onDetachedFromWindow();
     }
   }
 
@@ -251,16 +295,6 @@ public abstract class SmartActivity<AggregateClass>
     return droid4mizer.shouldKeepOn();
   }
 
-  public Composite getCompositeActionHandler()
-  {
-    return droid4mizer.getCompositeActionHandler();
-  }
-
-  public CompositeHandler getCompositeActivityResultHandler()
-  {
-    return droid4mizer.getCompositeActivityResultHandler();
-  }
-
   /**
    * Own implementation.
    */
@@ -268,11 +302,6 @@ public abstract class SmartActivity<AggregateClass>
   public void onBusinessObjectsRetrieved()
   {
   }
-
-  public List<StaticMenuCommand> getMenuCommands()
-  {
-    return null;
-  };
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.

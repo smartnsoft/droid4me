@@ -18,20 +18,16 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.util.List;
-
 import android.app.TabActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
-import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * A basis class for an activity that holds some tabs.
@@ -57,6 +53,13 @@ public abstract class SmartTabActivity<AggregateClass>
   }
 
   @Override
+  public void onAttachedToWindow()
+  {
+    super.onAttachedToWindow();
+    droid4mizer.onAttached(this);
+  }
+
+  @Override
   protected void onCreate(final Bundle savedInstanceState)
   {
     droid4mizer.onCreate(new Runnable()
@@ -66,6 +69,13 @@ public abstract class SmartTabActivity<AggregateClass>
         SmartTabActivity.super.onCreate(savedInstanceState);
       }
     }, savedInstanceState);
+  }
+
+  @Override
+  protected void onPostCreate(Bundle savedInstanceState)
+  {
+    super.onPostCreate(savedInstanceState);
+    droid4mizer.onPostCreate(savedInstanceState);
   }
 
   @Override
@@ -87,6 +97,20 @@ public abstract class SmartTabActivity<AggregateClass>
   {
     super.onResume();
     droid4mizer.onResume();
+  }
+
+  @Override
+  protected void onPostResume()
+  {
+    super.onPostResume();
+    droid4mizer.onPostResume();
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig)
+  {
+    super.onConfigurationChanged(newConfig);
+    droid4mizer.onConfigurationChanged(newConfig);
   }
 
   @Override
@@ -139,6 +163,19 @@ public abstract class SmartTabActivity<AggregateClass>
     finally
     {
       super.onDestroy();
+    }
+  }
+
+  @Override
+  public void onDetachedFromWindow()
+  {
+    try
+    {
+      droid4mizer.onDetached();
+    }
+    finally
+    {
+      super.onDetachedFromWindow();
     }
   }
 
@@ -251,16 +288,6 @@ public abstract class SmartTabActivity<AggregateClass>
     return droid4mizer.shouldKeepOn();
   }
 
-  public Composite getCompositeActionHandler()
-  {
-    return droid4mizer.getCompositeActionHandler();
-  }
-
-  public CompositeHandler getCompositeActivityResultHandler()
-  {
-    return droid4mizer.getCompositeActivityResultHandler();
-  }
-
   /**
    * Own implementation.
    */
@@ -272,11 +299,6 @@ public abstract class SmartTabActivity<AggregateClass>
   public void onSynchronizeDisplayObjects()
   {
   }
-
-  public List<StaticMenuCommand> getMenuCommands()
-  {
-    return null;
-  };
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.

@@ -1,10 +1,9 @@
 package com.smartnsoft.droid4me.support.v4.app;
 
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
@@ -15,9 +14,6 @@ import android.view.MenuItem;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.Smartable;
-import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
-import com.smartnsoft.droid4me.menu.MenuHandler.Composite;
-import com.smartnsoft.droid4me.menu.StaticMenuCommand;
 
 /**
  * A basis class for designing an Android compatibility library {@link android.support.v4.app.DialogFragment} compatible with the framework, i.e.
@@ -43,12 +39,9 @@ public abstract class SmartDialogFragment<AggregateClass>
   @Override
   public void onAttach(Activity activity)
   {
-    if (log.isDebugEnabled())
-    {
-      log.debug("SmartDialogFragment::onAttach");
-    }
     super.onAttach(activity);
     droid4mizer = new Droid4mizer<AggregateClass, SmartDialogFragment<AggregateClass>>(getActivity(), this, this, this);
+    droid4mizer.onAttached(activity);
   }
 
   @Override
@@ -68,6 +61,13 @@ public abstract class SmartDialogFragment<AggregateClass>
   {
     super.onResume();
     droid4mizer.onResume();
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig)
+  {
+    super.onConfigurationChanged(newConfig);
+    droid4mizer.onConfigurationChanged(newConfig);
   }
 
   @Override
@@ -229,16 +229,6 @@ public abstract class SmartDialogFragment<AggregateClass>
     return droid4mizer.shouldKeepOn();
   }
 
-  public Composite getCompositeActionHandler()
-  {
-    return droid4mizer.getCompositeActionHandler();
-  }
-
-  public CompositeHandler getCompositeActivityResultHandler()
-  {
-    return droid4mizer.getCompositeActivityResultHandler();
-  }
-
   /**
    * Own implementation.
    */
@@ -272,11 +262,6 @@ public abstract class SmartDialogFragment<AggregateClass>
   public final void refreshBusinessObjectsAndDisplay()
   {
     refreshBusinessObjectsAndDisplay(true, null, false);
-  }
-
-  public List<StaticMenuCommand> getMenuCommands()
-  {
-    return null;
   }
 
   /**

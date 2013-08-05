@@ -23,7 +23,6 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
-import android.view.ContextMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
@@ -36,13 +35,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.smartnsoft.droid4me.LifeCycle;
-import com.smartnsoft.droid4me.framework.ActivityResultHandler;
 import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
 import com.smartnsoft.droid4me.framework.SmartAdapters.BusinessViewWrapper;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-import com.smartnsoft.droid4me.menu.MenuHandler;
 
 /**
  * In order to propose a list which automates many things regarding its underlying business objects.
@@ -256,10 +252,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   private String filterText;
 
-  protected MenuHandler.Custom<BusinessObjectClass> contextualActionHandler;
-
-  private ActivityResultHandler.Handler activityResultHandler;
-
   private final Activity activity;
 
   protected OnEventObjectListener<BusinessObjectClass> onEventObjectListener;
@@ -343,24 +335,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   public WrappedListView(Activity activity)
   {
     this.activity = activity;
-
-    // We ask now for all custom actions, because it will be accessed very early
-    contextualActionHandler = new MenuHandler.Contextual<BusinessObjectClass>()
-    {
-
-      @Override
-      protected List<MenuCommand<BusinessObjectClass>> retrieveCommands()
-      {
-        return getContextualMenuCommands(getActiveBusinessObject(contextualActionHandler));
-      }
-
-      @Override
-      protected BusinessObjectClass getActiveBusinessObject(MenuHandler.Custom<BusinessObjectClass> customActionHandler)
-      {
-        return getSelectedObject();
-      }
-
-    };
   }
 
   public LinearLayout getListWrapperLayout()
@@ -443,16 +417,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     listWrapperLayout.addView(rightLayout, 1 + (leftAdded == true ? 1 : 0), new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
   }
 
-  public final void declareActionHandlers(MenuHandler.Composite compositeActionHandler)
-  {
-    compositeActionHandler.add(contextualActionHandler);
-  }
-
-  public final void declareActivityResultHandlers(ActivityResultHandler.CompositeHandler compositeActivityResultHandler)
-  {
-    compositeActivityResultHandler.add(activityResultHandler);
-  }
-
   public void onFulfillDisplayObjects()
   {
     // And now that the objects have been retrieved, we can provide our tailored list adaptor
@@ -476,22 +440,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   {
   }
 
-  public void onPopulateContextMenu(ContextMenu menu, View view, Object menuInfo, BusinessObjectClass businessObject)
-  {
-    if (businessObject == null)
-    {
-      // This may be the list header or footer
-      return;
-    }
-    final String headerTitle = getForListProvider().getBusinessObjectName(businessObject);
-    if (headerTitle != null)
-    {
-      menu.setHeaderTitle(headerTitle);
-    }
-    // We handle the commands coming from the custom actions
-    contextualActionHandler.onPopulateContextMenu(menu, view, menuInfo);
-  }
-
   public void onRetrieveBusinessObjects()
       throws BusinessObjectUnavailableException
   {
@@ -513,11 +461,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   {
   }
 
-  protected List<MenuCommand<BusinessObjectClass>> getContextualMenuCommands(BusinessObjectClass businessObject)
-  {
-    return null;
-  }
-
   public final void filterHasChanged(boolean recomputeFilteredObjects)
   {
     if (recomputeFilteredObjects == true)
@@ -530,7 +473,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   public void onRetrieveDisplayObjects()
   {
-    activityResultHandler = new ActivityResultHandler.Handler();
   }
 
   public BusinessObjectClass getSelectedObject()

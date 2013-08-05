@@ -38,14 +38,9 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 
 import com.smartnsoft.droid4me.LifeCycle;
-import com.smartnsoft.droid4me.ServiceLifeCycle;
 import com.smartnsoft.droid4me.app.AppPublics.UseNativeBroadcast;
-import com.smartnsoft.droid4me.framework.ActivityResultHandler;
-import com.smartnsoft.droid4me.framework.ActivityResultHandler.CompositeHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-import com.smartnsoft.droid4me.menu.MenuHandler;
 import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
 
 /**
@@ -76,10 +71,6 @@ final class AppInternals
      * @return {@code true} if and only if the implementing {@link Activity}/@{link android.app.Fragment} entity should resume its execution
      */
     boolean shouldKeepOn();
-
-    MenuHandler.Composite getCompositeActionHandler();
-
-    CompositeHandler getCompositeActivityResultHandler();
 
   }
 
@@ -142,17 +133,11 @@ final class AppInternals
 
     private boolean resumedForTheFirstTime = true;
 
-    MenuHandler.Composite compositeActionHandler;
-
-    CompositeHandler compositeActivityResultHandler;
-
     private Handler handler;
 
     private AggregateClass aggregate;
 
     private SharedPreferences preferences;
-
-    boolean actionResultsRetrieved;
 
     private boolean businessObjectsRetrieved;
 
@@ -277,24 +262,7 @@ final class AppInternals
      */
     void initialize()
     {
-      compositeActionHandler = new MenuHandler.Composite();
-      compositeActionHandler.add(createStaticActionHandler());
-      compositeActivityResultHandler = new ActivityResultHandler.CompositeHandler();
       handler = new Handler();
-    }
-
-    private MenuHandler.Static createStaticActionHandler()
-    {
-      final MenuHandler.Static staticActionHandler = new MenuHandler.Static()
-      {
-        @Override
-        protected List<MenuCommand<Void>> retrieveCommands()
-        {
-          final List<MenuCommand<Void>> commands = new ArrayList<MenuCommand<Void>>();
-          return commands;
-        }
-      };
-      return staticActionHandler;
     }
 
     /**
@@ -548,29 +516,17 @@ final class AppInternals
     }
 
     /**
-     * Invoked when the provided activity enters the {@link Activity#onStart()} method. We check whether to invoke the {@link ServiceLifeCycle}
-     * methods.
+     * Invoked when the provided activity enters the {@link Activity#onStart()} method.
      */
     void onStart()
     {
-      if (activity instanceof ServiceLifeCycle)
-      {
-        final ServiceLifeCycle forServices = (ServiceLifeCycle) activity;
-        if (areServicesAsynchronous() == false)
-        {
-          internalPrepareServices(forServices);
-        }
-        else
-        {
-          AppInternals.THREAD_POOL.submit(new Runnable()
-          {
-            public void run()
-            {
-              internalPrepareServices(forServices);
-            }
-          });
-        }
-      }
+    }
+
+    /**
+     * Invoked when the provided activity enters the {@link Activity#onRestart()} method.
+     */
+    void onRestart()
+    {
     }
 
     /**
@@ -579,6 +535,13 @@ final class AppInternals
     void onResume()
     {
       isInteracting = true;
+    }
+
+    /**
+     * Invoked when the provided activity enters the {@link Activity#onPostResume()} method.
+     */
+    void onPostResume()
+    {
     }
 
     void setBusinessObjectsRetrieved()
@@ -633,29 +596,10 @@ final class AppInternals
     }
 
     /**
-     * Invoked when the underlying activity/fragment enters the {@link Activity#onStop()} method. We check whether to invoke the
-     * {@link ServiceLifeCycle} methods.
+     * Invoked when the underlying activity/fragment enters the {@link Activity#onStop()} method.
      */
     void onStop()
     {
-      if (activity instanceof ServiceLifeCycle)
-      {
-        final ServiceLifeCycle forServices = (ServiceLifeCycle) activity;
-        if (areServicesAsynchronous() == false)
-        {
-          internalDisposeServices(forServices);
-        }
-        else
-        {
-          AppInternals.THREAD_POOL.submit(new Runnable()
-          {
-            public void run()
-            {
-              internalDisposeServices(forServices);
-            }
-          });
-        }
-      }
     }
 
     /**
@@ -756,47 +700,6 @@ final class AppInternals
       }
       refreshBusinessObjectsAndDisplayNextTime = null;
       return false;
-    }
-
-    private boolean areServicesAsynchronous()
-    {
-      return activity instanceof ServiceLifeCycle.ForServicesAsynchronousPolicy;
-    }
-
-    private void internalPrepareServices(ServiceLifeCycle forServices)
-    {
-      try
-      {
-        forServices.prepareServices();
-      }
-      catch (ServiceLifeCycle.ServiceException exception)
-      {
-        onInternalServiceException(forServices, exception);
-      }
-    }
-
-    private void internalDisposeServices(ServiceLifeCycle forServices)
-    {
-      try
-      {
-        forServices.disposeServices();
-      }
-      catch (ServiceLifeCycle.ServiceException exception)
-      {
-        onInternalServiceException(forServices, exception);
-      }
-    }
-
-    private void onInternalServiceException(ServiceLifeCycle forServices, ServiceLifeCycle.ServiceException exception)
-    {
-      if (log.isErrorEnabled())
-      {
-        log.error("Cannot access properly to the services", exception);
-      }
-      // TODO: handle another way the component
-      if (ActivityController.getInstance().handleException(activity, component, exception) == false)
-      {
-      }
     }
 
     /**

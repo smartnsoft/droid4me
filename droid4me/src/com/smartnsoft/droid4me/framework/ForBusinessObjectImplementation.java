@@ -18,12 +18,7 @@
 
 package com.smartnsoft.droid4me.framework;
 
-import java.util.List;
-
 import com.smartnsoft.droid4me.LifeCycle;
-import com.smartnsoft.droid4me.menu.MenuCommand;
-import com.smartnsoft.droid4me.menu.MenuHandler;
-import com.smartnsoft.droid4me.menu.MenuHandler.Custom;
 
 /**
  * A basic implementation.
@@ -37,35 +32,9 @@ public abstract class ForBusinessObjectImplementation<BusinessObjectClass>
 
   private BusinessObjectClass businessObject;
 
-  private Custom<BusinessObjectClass> customActionHandler;
-
   public final void discardBusinessObject()
   {
     businessObject = null;
-  }
-
-  public final Custom<BusinessObjectClass> getActionHandler()
-  {
-    if (customActionHandler == null)
-    {
-      customActionHandler = new MenuHandler.Custom<BusinessObjectClass>()
-      {
-
-        @Override
-        protected List<MenuCommand<BusinessObjectClass>> retrieveCommands()
-        {
-          return getCustomActions();
-        }
-
-        @Override
-        protected BusinessObjectClass getActiveBusinessObject(MenuHandler.Custom<BusinessObjectClass> customActionHandler)
-        {
-          return businessObject;
-        }
-
-      };
-    }
-    return customActionHandler;
   }
 
   public final void retrieveBusinessObjects()
