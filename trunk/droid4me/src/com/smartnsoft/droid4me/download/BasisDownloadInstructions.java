@@ -54,6 +54,7 @@ public class BasisDownloadInstructions
      * 
      * @return {@code true} if and only the bitmap should be taken locally, instead of running into the downloading process: in that case, the
      *         {@link Instructions#onBindLocalBitmap(View, String, Object)} will be invoked
+     * @see #onBindLocalBitmap(Viewable, String, Object)
      */
     boolean hasLocalBitmap(String bitmapUid, Object imageSpecs);
 
@@ -63,6 +64,8 @@ public class BasisDownloadInstructions
      * <p>
      * It is ensured that this method will be run from the UI thread.
      * </p>
+     * 
+     * @see #hasLocalBitmap(String, Object)
      */
     void onBindLocalBitmap(ViewClass view, String bitmapUid, Object imageSpecs);
 
@@ -93,13 +96,20 @@ public class BasisDownloadInstructions
      * is {@code null}) should be bound to the underlying view.
      * 
      * <p>
-     * The method will be invoked even with a <code>bitmapUid</code> set to {@code null}.
+     * The method will be invoked even with a <code>bitmapUid</code> set to {@code null}, but not if the
+     * {@link CoreBitmapDownloader#get(Viewable, String, Object, com.smartnsoft.droid4me.download.DownloadContracts.Handlerable, Instructions)} is
+     * invoked with a first argument set to {@code null}. Note that the method is granted to be invoked from the UI thread, unless the
+     * {@link CoreBitmapDownloader#get(boolean, boolean, Viewable, String, Object, com.smartnsoft.droid4me.download.DownloadContracts.Handlerable, Instructions)}
+     * is invoked with a first argument set to {@code true}.
      * </p>
      * 
-     * @return {@code true} if and only if a temporary bitmap should be used for the underlying view: in that case, the
-     *         {@link Instructions#onBindTemporaryBitmap(View, String, Object)} will be invoked
+     * @param view
+     *          the View the command should be executed against: cannot be {@code null}
+     * @return a non-{@code null} bitmap if and only if a temporary bitmap should be used for the underlying view: in that case, the
+     *         {@link Instructions#onBindTemporaryBitmap(View, String, Object)} will be invoked with this provided returned valued
+     * @see #onBindTemporaryBitmap(Viewable, Bitmapable, String, Object)
      */
-    boolean hasTemporaryBitmap(String bitmapUid, Object imageSpecs);
+    BitmapClass hasTemporaryBitmap(ViewClass view, String bitmapUid, Object imageSpecs);
 
     /**
      * When a temporary bitmap usage has been specified, is responsible for binding the view with that temporary bitmap.
@@ -111,8 +121,12 @@ public class BasisDownloadInstructions
      * <p>
      * It is ensured that this method will be run from the UI thread.
      * </p>
+     * 
+     * @param the
+     *          bitmap which has previously returned from the {@link #hasTemporaryBitmap(String, Object)} method, if not {@code null}
+     * @see #hasTemporaryBitmap(String, Object)
      */
-    void onBindTemporaryBitmap(ViewClass view, String bitmapUid, Object imageSpecs);
+    void onBindTemporaryBitmap(ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs);
 
     /**
      * Is invoked just before {@link #downloadInputStream(String, Object, String) the stream download} corresponding to the bitmap is started,
@@ -212,7 +226,7 @@ public class BasisDownloadInstructions
      * <ul>
      * <li>the underlying bitmap has actually been downloaded, and attached to its {@link View},</li>
      * <li>or the underlying bitmap has actually been bound to its {@link View} from a local resource,</li>
-     * <li>or, the underlying bitmap download was failure (wrong or null bitmap URL, connectivity problem).</li>
+     * <li>or, the underlying bitmap download was a failure (wrong or null bitmap URL, connectivity problem).</li>
      * </ul>
      * 
      * <p>
@@ -232,7 +246,7 @@ public class BasisDownloadInstructions
      * This method is invoked systematically once the command is over, either when it has successfully completed, or when it has been aborted.
      * 
      * <p>
-     * Do not make any assumption regarding the thread invoking that method: may be the GUI thread or a background taken from a worker thread!
+     * Do not make any assumption regarding the thread invoking that method: it may be the GUI thread or a background taken from a worker thread!
      * </p>
      * 
      * <p>
@@ -282,12 +296,12 @@ public class BasisDownloadInstructions
       return bitmapUid;
     }
 
-    public boolean hasTemporaryBitmap(String bitmapUid, Object imageSpecs)
+    public BitmapClass hasTemporaryBitmap(ViewClass view, String bitmapUid, Object imageSpecs)
     {
-      return false;
+      return null;
     }
 
-    public void onBindTemporaryBitmap(ViewClass view, String bitmapUid, Object imageSpecs)
+    public void onBindTemporaryBitmap(ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs)
     {
     }
 

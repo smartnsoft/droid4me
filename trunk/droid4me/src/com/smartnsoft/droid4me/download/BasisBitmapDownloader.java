@@ -302,31 +302,28 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       }
 
       // We set a temporary bitmap, if available
-      setTemporaryBitmapIfPossible(isFromGuiThread);
+      setTemporaryBitmapIfPossible(isFromGuiThread, url);
 
       // We handle the special case of a null bitmap URL
       if (url == null)
       {
-        if (view != null)
+        // We need to do that in the GUI thread!
+        state = state == FinalState.NotInCache ? FinalState.NullUriTemporary : FinalState.NullUriNoTemporary;
+        if (isFromGuiThread == false)
         {
-          // We need to do that in the GUI thread!
-          state = state == FinalState.NotInCache ? FinalState.NullUriTemporary : FinalState.NullUriNoTemporary;
-          if (isFromGuiThread == false)
+          if (executeNextThroughHandler() == NextResult.Failed)
           {
-            if (executeNextThroughHandler() == NextResult.Failed)
+            if (log.isWarnEnabled())
             {
-              if (log.isWarnEnabled())
-              {
-                log.warn(logCommandId() + "Failed to notify the instructions regarding a bitmap with null id from the GUI thread");
-              }
+              log.warn(logCommandId() + "Failed to notify the instructions regarding a bitmap with null id from the GUI thread");
             }
           }
-          else
-          {
-            executeNext();
-          }
         }
-        // We do not want to go any further, since the URL is null, and the work is complete
+        else
+        {
+          executeNext();
+        }
+        // We do not want to go any further, since the URL is null, and the work is completed
         return;
       }
 
@@ -406,7 +403,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           break;
         case NullUriTemporary:
-          instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
+          instructions.onBindTemporaryBitmap(view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
           instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
           instructions.onOver(false, view, bitmapUid, imageSpecs);
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
@@ -415,7 +412,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           break;
         case NotInCache:
-          instructions.onBindTemporaryBitmap(view, bitmapUid, imageSpecs);
+          instructions.onBindTemporaryBitmap(view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
             log.debug(logCommandId() + "Set the temporary bitmap with uid '" + bitmapUid + "'");
@@ -491,12 +488,14 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       return false;
     }
 
-    private void setTemporaryBitmapIfPossible(boolean isFromGuiThread)
+    private void setTemporaryBitmapIfPossible(boolean isFromGuiThread, String url)
     {
-      if (instructions.hasTemporaryBitmap(bitmapUid, imageSpecs) == true)
+      final BitmapClass bitmap = view == null ? null : instructions.hasTemporaryBitmap(view, bitmapUid, imageSpecs);
+      if (bitmap != null)
       {
         if (view != null)
         {
+          usedBitmap = new UsedBitmap(bitmap, url);
           // We need to do that in the GUI thread!
           state = FinalState.NotInCache;
           if (isFromGuiThread == false)

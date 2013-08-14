@@ -218,36 +218,50 @@ public class DownloadInstructions
       implements BasisDownloadInstructions.Instructions<DownloadInstructions.BitmapableBitmap, DownloadInstructions.ViewableView>
   {
 
-    public abstract void onBindLocalBitmap(View view, String bitmapUid, Object imageSpecs);
+    protected abstract void onBindLocalBitmap(View view, String bitmapUid, Object imageSpecs);
 
-    public abstract void onBindTemporaryBitmap(View view, String bitmapUid, Object imageSpecs);
+    protected abstract Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs);
 
-    public abstract void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+    protected abstract void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
 
-    public abstract boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+    protected abstract void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
 
-    public abstract void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
+    protected abstract boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
 
+    protected abstract void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
+
+    @Override
     public final void onBindLocalBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
     {
       onBindLocalBitmap(view != null ? view.getView() : null, bitmapUid, imageSpecs);
     }
 
-    public final void onBindTemporaryBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
+    @Override
+    public final BitmapableBitmap hasTemporaryBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
     {
-      onBindTemporaryBitmap(view != null ? view.getView() : null, bitmapUid, imageSpecs);
+      final Bitmap bitmap = hasTemporaryBitmap(view.getView(), bitmapUid, imageSpecs);
+      return bitmap == null ? null : new BitmapableBitmap(bitmap);
     }
 
+    @Override
+    public final void onBindTemporaryBitmap(ViewableView view, BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
+    {
+      onBindTemporaryBitmap(view != null ? view.getView() : null, bitmap.getBitmap(), bitmapUid, imageSpecs);
+    }
+
+    @Override
     public final void onBitmapReady(boolean allright, ViewableView view, BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
     {
       onBitmapReady(allright, view != null ? view.getView() : null, bitmap != null ? bitmap.getBitmap() : null, bitmapUid, imageSpecs);
     }
 
+    @Override
     public final boolean onBindBitmap(boolean downloaded, ViewableView view, BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
     {
       return onBindBitmap(downloaded, view != null ? view.getView() : null, bitmap != null ? bitmap.getBitmap() : null, bitmapUid, imageSpecs);
     }
 
+    @Override
     public final void onBitmapBound(boolean result, ViewableView view, String bitmapUid, Object imageSpecs)
     {
       onBitmapBound(result, view != null ? view.getView() : null, bitmapUid, imageSpecs);
@@ -296,29 +310,35 @@ public class DownloadInstructions
       extends SimpleInstructions
   {
 
+    @Override
     public String computeUrl(String bitmapUid, Object imageSpecs)
     {
       return bitmapUid;
     }
 
-    public boolean hasTemporaryBitmap(String bitmapUid, Object imageSpecs)
+    @Override
+    public Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs)
     {
-      return false;
+      return null;
     }
 
-    public void onBindTemporaryBitmap(View view, String bitmapUid, Object imageSpecs)
+    @Override
+    public void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
     {
     }
 
+    @Override
     public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
     {
       return false;
     }
 
+    @Override
     public void onBindLocalBitmap(View view, String bitmapUid, Object imageSpecs)
     {
     }
 
+    @Override
     public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
         throws IOException
     {
@@ -337,6 +357,7 @@ public class DownloadInstructions
      *          closed, but this will impact the performance)
      * @return by default, the returned wrapped {@link Bitmap} will have the device density
      */
+    @Override
     public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
     {
       // final long start = System.currentTimeMillis();
@@ -354,20 +375,24 @@ public class DownloadInstructions
       return theBitmap == null ? null : new BitmapableBitmap(theBitmap);
     }
 
+    @Override
     public void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
     {
     }
 
+    @Override
     public boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
     {
       ((ImageView) (view)).setImageBitmap(bitmap);
       return true;
     }
 
+    @Override
     public void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs)
     {
     }
 
+    @Override
     public void onOver(boolean aborted, ViewableView view, String bitmapUid, Object imageSpecs)
     {
     }
