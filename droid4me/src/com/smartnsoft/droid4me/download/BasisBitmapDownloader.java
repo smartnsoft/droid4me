@@ -345,7 +345,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         switch (state)
         {
         case Local:
-          instructions.onBindLocalBitmap(view, bitmapUid, imageSpecs);
+          instructions.onBindLocalBitmap(view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
           instructions.onBitmapBound(true, view, bitmapUid, imageSpecs);
           instructions.onOver(false, view, bitmapUid, imageSpecs);
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
@@ -462,10 +462,12 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
      */
     private boolean setLocalBitmapIfPossible(boolean isFromGuiThread)
     {
-      if (instructions.hasLocalBitmap(bitmapUid, imageSpecs) == true)
+      final BitmapClass bitmap = view == null ? null : instructions.hasLocalBitmap(view, bitmapUid, imageSpecs);
+      if (bitmap != null)
       {
         if (view != null)
         {
+          usedBitmap = new UsedBitmap(bitmap, null);
           // We need to do that in the GUI thread!
           state = FinalState.Local;
           if (isFromGuiThread == false)

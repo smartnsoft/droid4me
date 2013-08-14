@@ -204,10 +204,10 @@ public final class BitmapDownloaderTest
       return bitmapUid;
     }
 
-    public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
+    public DummyBitmapable hasLocalBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
     {
       expectations.hasLocalBitmap++;
-      return hasLocalBitmap;
+      return hasLocalBitmap == true ? new DummyBitmapable(100 * 1024) : null;
     }
 
     public DummyBitmapable hasTemporaryBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
@@ -216,7 +216,7 @@ public final class BitmapDownloaderTest
       return hasTemporaryBitmap == true ? new DummyBitmapable(200 * 1024) : null;
     }
 
-    public void onBindLocalBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
+    public void onBindLocalBitmap(DummyViewable view, DummyBitmapable bitmap, String bitmapUid, Object imageSpecs)
     {
       expectations.onBindLocalBitmap++;
     }
@@ -598,7 +598,7 @@ public final class BitmapDownloaderTest
     expectations.waitForOnOver();
     final boolean onOver = true;
     final int computeUrl = 1;
-    final int hasLocalBitmap = 1;
+    final int hasLocalBitmap = 0;
     final int hasTemporaryBitmap = 0;
     final int onBindLocalBitmap = 0;
     final int onBindTemporaryBitmap = 0;
@@ -631,7 +631,7 @@ public final class BitmapDownloaderTest
     expectations.waitForOnOver();
     final boolean onOver = true;
     final int computeUrl = 1;
-    final int hasLocalBitmap = 1;
+    final int hasLocalBitmap = 0;
     final int hasTemporaryBitmap = 0;
     final int onBindLocalBitmap = 0;
     final int onBindTemporaryBitmap = 0;
@@ -655,9 +655,9 @@ public final class BitmapDownloaderTest
         new ExpectedInstructions(expectations, true, false, ExpectedInstructions.SimulationdMethod.FakeSuccess)
         {
           @Override
-          public void onBindLocalBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
+          public void onBindLocalBitmap(DummyViewable view, DummyBitmapable bitmap, String bitmapUid, Object imageSpecs)
           {
-            super.onBindLocalBitmap(view, bitmapUid, imageSpecs);
+            super.onBindLocalBitmap(view, bitmap, bitmapUid, imageSpecs);
             expectations.onOver();
           }
         });
@@ -977,12 +977,12 @@ public final class BitmapDownloaderTest
         new ExpectedInstructions(expectations, true, false, ExpectedInstructions.SimulationdMethod.Null)
         {
           @Override
-          public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
+          public DummyBitmapable hasLocalBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
           {
             // We take the opportunity to ask a new BitmapDownloader "get" command while the first is asking for a local bitmap
             bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
                 new ExpectedInstructions(secondExpectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess));
-            return super.hasLocalBitmap(bitmapUid, imageSpecs);
+            return super.hasLocalBitmap(view, bitmapUid, imageSpecs);
           }
         });
     secondExpectations.waitForOnOver();
@@ -1033,12 +1033,12 @@ public final class BitmapDownloaderTest
         new ExpectedInstructions(expectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess)
         {
           @Override
-          public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
+          public DummyBitmapable hasLocalBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
           {
             // We take the opportunity to ask a new BitmapDownloader "get" command while the first is asking for a local bitmap
             bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
                 new ExpectedInstructions(secondExpectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess));
-            return super.hasLocalBitmap(bitmapUid, imageSpecs);
+            return super.hasLocalBitmap(view, bitmapUid, imageSpecs);
           }
         });
     secondExpectations.waitForOnOver();

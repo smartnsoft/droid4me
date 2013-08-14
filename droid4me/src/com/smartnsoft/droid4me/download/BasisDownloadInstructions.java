@@ -52,11 +52,13 @@ public class BasisDownloadInstructions
      * {@link #onInputStreamDownloaded(String, Object, String, InputStream)} methods instead, for that purpose.
      * </p>
      * 
+     * @param view
+     *          the View the command should be executed against: cannot be {@code null}
      * @return {@code true} if and only the bitmap should be taken locally, instead of running into the downloading process: in that case, the
      *         {@link Instructions#onBindLocalBitmap(View, String, Object)} will be invoked
      * @see #onBindLocalBitmap(Viewable, String, Object)
      */
-    boolean hasLocalBitmap(String bitmapUid, Object imageSpecs);
+    BitmapClass hasLocalBitmap(ViewClass view, String bitmapUid, Object imageSpecs);
 
     /**
      * When a local bitmap usage has been specified, is responsible for binding the view with that local bitmap.
@@ -65,9 +67,11 @@ public class BasisDownloadInstructions
      * It is ensured that this method will be run from the UI thread.
      * </p>
      * 
+     * @param bitmap
+     *          the bitmap which has previously returned from the {@link #hasTemporaryBitmap(String, Object)} method, if not {@code null}
      * @see #hasLocalBitmap(String, Object)
      */
-    void onBindLocalBitmap(ViewClass view, String bitmapUid, Object imageSpecs);
+    void onBindLocalBitmap(ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs);
 
     /**
      * Given the bitmap identifier, its extra specifications, returns its URL, which will be used for downloading it.
@@ -122,8 +126,8 @@ public class BasisDownloadInstructions
      * It is ensured that this method will be run from the UI thread.
      * </p>
      * 
-     * @param the
-     *          bitmap which has previously returned from the {@link #hasTemporaryBitmap(String, Object)} method, if not {@code null}
+     * @param bitmap
+     *          the bitmap which has previously returned from the {@link #hasTemporaryBitmap(String, Object)} method, if not {@code null}
      * @see #hasTemporaryBitmap(String, Object)
      */
     void onBindTemporaryBitmap(ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs);
@@ -158,6 +162,7 @@ public class BasisDownloadInstructions
      *         a {@link IOException} exception instead
      * @throws IOException
      *           if a network problem occurred while downloading the bitmap
+     * @see #onInputStreamDownloaded(String, Object, String, InputStream)
      */
     InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
         throws IOException;
@@ -170,6 +175,7 @@ public class BasisDownloadInstructions
      * </p>
      * 
      * @return the provided inputStream or a tweaked version of that stream
+     * @see #downloadInputStream(String, Object, String)
      */
     InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream);
 
@@ -291,53 +297,64 @@ public class BasisDownloadInstructions
       extends SimpleInstructions<BitmapClass, ViewClass>
   {
 
+    @Override
     public String computeUrl(String bitmapUid, Object imageSpecs)
     {
       return bitmapUid;
     }
 
+    @Override
     public BitmapClass hasTemporaryBitmap(ViewClass view, String bitmapUid, Object imageSpecs)
     {
       return null;
     }
 
+    @Override
     public void onBindTemporaryBitmap(ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs)
     {
     }
 
-    public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
+    @Override
+    public BitmapClass hasLocalBitmap(ViewClass view, String bitmapUid, Object imageSpecs)
     {
-      return false;
+      return null;
     }
 
-    public void onBindLocalBitmap(ViewClass view, String bitmapUid, Object imageSpecs)
+    @Override
+    public void onBindLocalBitmap(ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs)
     {
     }
 
+    @Override
     public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
         throws IOException
     {
       throw new IOException("Not implemented!");
     }
 
+    @Override
     public BitmapClass convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
     {
       return null;
     }
 
+    @Override
     public void onBitmapReady(boolean allright, ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs)
     {
     }
 
+    @Override
     public boolean onBindBitmap(boolean downloaded, ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs)
     {
       return false;
     }
 
+    @Override
     public void onBitmapBound(boolean result, ViewClass view, String bitmapUid, Object imageSpecs)
     {
     }
 
+    @Override
     public void onOver(boolean aborted, ViewClass view, String bitmapUid, Object imageSpecs)
     {
     }

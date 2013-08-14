@@ -218,7 +218,9 @@ public class DownloadInstructions
       implements BasisDownloadInstructions.Instructions<DownloadInstructions.BitmapableBitmap, DownloadInstructions.ViewableView>
   {
 
-    protected abstract void onBindLocalBitmap(View view, String bitmapUid, Object imageSpecs);
+    protected abstract Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs);
+
+    protected abstract void onBindLocalBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
 
     protected abstract Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs);
 
@@ -231,9 +233,16 @@ public class DownloadInstructions
     protected abstract void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
 
     @Override
-    public final void onBindLocalBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
+    public final BitmapableBitmap hasLocalBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
     {
-      onBindLocalBitmap(view != null ? view.getView() : null, bitmapUid, imageSpecs);
+      final Bitmap bitmap = hasLocalBitmap(view.getView(), bitmapUid, imageSpecs);
+      return bitmap == null ? null : new BitmapableBitmap(bitmap);
+    }
+
+    @Override
+    public final void onBindLocalBitmap(ViewableView view, BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
+    {
+      onBindLocalBitmap(view != null ? view.getView() : null, bitmap.getBitmap(), bitmapUid, imageSpecs);
     }
 
     @Override
@@ -311,6 +320,17 @@ public class DownloadInstructions
   {
 
     @Override
+    public Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs)
+    {
+      return null;
+    }
+
+    @Override
+    public void onBindLocalBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    @Override
     public String computeUrl(String bitmapUid, Object imageSpecs)
     {
       return bitmapUid;
@@ -324,17 +344,6 @@ public class DownloadInstructions
 
     @Override
     public void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
-    {
-    }
-
-    @Override
-    public boolean hasLocalBitmap(String bitmapUid, Object imageSpecs)
-    {
-      return false;
-    }
-
-    @Override
-    public void onBindLocalBitmap(View view, String bitmapUid, Object imageSpecs)
     {
     }
 
