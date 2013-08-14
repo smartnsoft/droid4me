@@ -94,27 +94,6 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   }
 
-  protected static final Logger log = LoggerFactory.getInstance("BitmapDownloader");
-
-  /**
-   * A flag which enables to get debug information for the "BitmapDownloader" component: only defined for development purposes. Defaults to
-   * {@code false}.
-   */
-  public static boolean IS_DEBUG_TRACE = false;
-
-  /**
-   * A flag which enables to log dump details about "BitmapDownloader" component, which will have an effect only provided the
-   * {@link CoreBitmapDownloader#IS_DEBUG_TRACE} is set to {@code true}: only defined for development purposes. Defaults to {@code false}.
-   */
-  public static boolean IS_DUMP_TRACE = false;
-
-  /**
-   * When set, i.e. not {@code null} (which is the default), each instance will be notified as soon as its internal state changes.
-   * 
-   * @see #notifiyAnalyticsListener()
-   */
-  public static CoreBitmapDownloader.AnalyticsListener ANALYTICS_LISTENER;
-
   protected final class UsedBitmap
       implements Comparable<UsedBitmap>
   {
@@ -246,6 +225,27 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
     }
 
   }
+
+  protected static final Logger log = LoggerFactory.getInstance("BitmapDownloader");
+
+  /**
+   * A flag which enables to get debug information for the "BitmapDownloader" component: only defined for development purposes. Defaults to
+   * {@code false}.
+   */
+  public static boolean IS_DEBUG_TRACE = false;
+
+  /**
+   * A flag which enables to log dump details about "BitmapDownloader" component, which will have an effect only provided the
+   * {@link CoreBitmapDownloader#IS_DEBUG_TRACE} is set to {@code true}: only defined for development purposes. Defaults to {@code false}.
+   */
+  public static boolean IS_DUMP_TRACE = false;
+
+  /**
+   * When set, i.e. not {@code null} (which is the default), each instance will be notified as soon as its internal state changes.
+   * 
+   * @see #notifiyAnalyticsListener()
+   */
+  public static CoreBitmapDownloader.AnalyticsListener ANALYTICS_LISTENER;
 
   /**
    * The index of the instance, mostly useful for the logs and the analytics.
