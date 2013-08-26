@@ -268,6 +268,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   public final long lowLevelMemoryWaterMarkInBytes;
 
   /**
+   * A flag which states whether the instance is enabled: if not, the commands do nothing. Defaults to {@code true}.
+   */
+  private boolean isEnabled = true;
+
+  /**
    * A flag which states whether the device currently has some Internet connectivity. Defaults to {@code true}.
    */
   private boolean isConnected = true;
@@ -334,6 +339,36 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   }
 
   /**
+   * By default, an instance is enabled.
+   * 
+   * @return {@code true} if and only if the current instance is enabled, i.e. the commands will do something
+   * @see #setEnabled(boolean)
+   */
+  public final boolean isEnabled()
+  {
+    return isEnabled;
+  }
+
+  /**
+   * Changes the instance enabled state. This method is useful for disable an instance, without changing much code.
+   * 
+   * @param isEnabled
+   *          when set to {@code false}, any call to the
+   *          {@link #get(Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)} or
+   *          {@link #get(boolean, boolean, Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)}
+   *          methods will do nothing
+   * @see #isEnabled()
+   */
+  public final void setEnabled(boolean isEnabled)
+  {
+    if (log.isInfoEnabled())
+    {
+      log.info("Marking the BitmapDownloader instance '" + name + "' as " + (isEnabled == true ? "enabled" : "disabled"));
+    }
+    this.isEnabled = isEnabled;
+  }
+
+  /**
    * Indicates the instance assumption regarding the device Internet current connectivity.
    * 
    * @return {@code true} if and only if the current instance considers that the device has Internet connectivity
@@ -355,6 +390,10 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    */
   public final void setConnected(boolean isConnected)
   {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Marking the BitmapDownloader instance '" + name + "' as " + (isConnected == true ? "connected" : "disconnected"));
+    }
     this.isConnected = isConnected;
   }
 
