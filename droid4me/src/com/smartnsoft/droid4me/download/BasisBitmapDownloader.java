@@ -423,13 +423,12 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       finally
       {
         // We clear the priorities stack if the work is over for that command (i.e. no DownloadBitmapCommand is required)
-        if (state != FinalState.NotInCache)
+        if (state != FinalState.NotInCache && view != null)
         {
           prioritiesStack.remove(view);
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug(logCommandId() + "Removed from the priority stack the view" + (view != null ? " " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-                : ""));
+            log.debug(logCommandId() + "Removed from the priority stack the view (id='" + view.getId() + "',hash=" + view.hashCode() + ")");
           }
           dump();
         }
