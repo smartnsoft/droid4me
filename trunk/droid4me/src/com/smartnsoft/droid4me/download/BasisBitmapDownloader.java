@@ -1340,6 +1340,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       log.info("Starting asynchronously a command for the bitmap with uid '" + bitmapUid + "' and " + (view != null ? ("view (id='" + view.getId() + "',hash=" + view.hashCode() + ")")
           : "with no view") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
     }
+    if (isEnabled() == false)
+    {
+      return;
+    }
     if (view != null)
     {
       // We indicate to the potential asynchronous input stream downloads that a new request is now set for the bitmap
@@ -1391,6 +1395,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   public final void get(boolean isPreBlocking, boolean isDownloadBlocking, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
   {
+    if (isEnabled() == false)
+    {
+      return;
+    }
     if (isPreBlocking == false)
     {
       get(view, bitmapUid, imageSpecs, handler, instructions);
