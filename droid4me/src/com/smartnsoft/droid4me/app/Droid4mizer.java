@@ -84,6 +84,11 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     this.component = component;
     this.interceptorComponent = interceptorComponent;
     stateContainer = new AppInternals.StateContainer<AggregateClass, ComponentClass>(activity, component);
+    if (Droid4mizer.ARE_DEBUG_LOG_ENABLED)
+    {
+      log.debug("Creating the droid4mizer for Activity belonging to class '" + activity.getClass().getName() + "'" + (interceptorComponent == null ? ""
+          : " and with Fragment belonging to class '" + interceptorComponent.getClass().getName() + "'"));
+    }
   }
 
   /*
