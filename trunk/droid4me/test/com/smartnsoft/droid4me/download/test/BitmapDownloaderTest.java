@@ -198,34 +198,40 @@ public final class BitmapDownloaderTest
       this.downloadBitmapMethod = bitmapDownloadMethod;
     }
 
+    @Override
     public String computeUrl(String bitmapUid, Object imageSpecs)
     {
       expectations.computeUrl++;
       return bitmapUid;
     }
 
+    @Override
     public DummyBitmapable hasLocalBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
     {
       expectations.hasLocalBitmap++;
       return hasLocalBitmap == true ? new DummyBitmapable(100 * 1024) : null;
     }
 
+    @Override
     public DummyBitmapable hasTemporaryBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
     {
       expectations.hasTemporaryBitmap++;
       return hasTemporaryBitmap == true ? new DummyBitmapable(200 * 1024) : null;
     }
 
+    @Override
     public void onBindLocalBitmap(DummyViewable view, DummyBitmapable bitmap, String bitmapUid, Object imageSpecs)
     {
       expectations.onBindLocalBitmap++;
     }
 
+    @Override
     public void onBindTemporaryBitmap(DummyViewable view, DummyBitmapable bitmap, String bitmapUid, Object imageSpecs)
     {
       expectations.onBindTemporaryBitmap++;
     }
 
+    @Override
     public InputStream getInputStream(String bitmapUid, Object imageSpecs, String url, InputStreamDownloadInstructor instructor)
         throws IOException
     {
@@ -242,6 +248,7 @@ public final class BitmapDownloaderTest
       }
     }
 
+    @Override
     public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
         throws IOException
     {
@@ -259,35 +266,41 @@ public final class BitmapDownloaderTest
       }
     }
 
+    @Override
     public InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream)
     {
       expectations.onInputStreamDownloaded++;
       return inputStream;
     }
 
+    @Override
     public void onBitmapReady(boolean allright, DummyViewable view, DummyBitmapable bitmap, String bitmapUid, Object imageSpecs)
     {
       expectations.onBitmapReady++;
     }
 
+    @Override
     public boolean onBindBitmap(boolean downloaded, DummyViewable view, DummyBitmapable bitmap, String bitmapUid, Object imageSpecs)
     {
       expectations.onBindBitmap++;
       return true;
     }
 
+    @Override
     public void onBitmapBound(boolean result, DummyViewable view, String bitmapUid, Object imageSpecs)
     {
       expectations.onBitmapBound++;
       expectations.onBitmapBoundResult = result;
     }
 
-    public DummyBitmapable convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
+    @Override
+    public DummyBitmapable convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
     {
       expectations.convert++;
       return new DummyBitmapable(300 * 1024);
     }
 
+    @Override
     public void onOver(boolean aborted, DummyViewable view, String bitmapUid, Object imageSpecs)
     {
       expectations.onOver++;
