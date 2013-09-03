@@ -1011,7 +1011,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     {
       try
       {
-        final BitmapClass bitmap = instructions.convert(inputStream, bitmapUid, imageSpecs);
+        final BitmapClass bitmap = instructions.convert(inputStream, bitmapUid, imageSpecs, url);
         if (bitmap == null)
         {
           if (log.isWarnEnabled())

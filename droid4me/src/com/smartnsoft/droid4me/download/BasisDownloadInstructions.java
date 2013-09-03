@@ -186,10 +186,10 @@ public class BasisDownloadInstructions
      * It is not ensured that this method will be invoked from the GUI thread.
      * </p>
      * 
-     * @param the
-     *          input stream that should be converted. It is ensured that this method will not be invoked with a {@code null} input stream
+     * @param inputStream
+     *          the input stream that should be converted. It is ensured that this method will not be invoked with a {@code null} input stream
      */
-    BitmapClass convert(InputStream inputStream, String bitmapUid, Object imageSpecs);
+    BitmapClass convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url);
 
     /**
      * Is invoked every time, once the underlying view bitmap is either not {@code null} ready in memory (the <code>allright</code> parameter is set
@@ -333,7 +333,7 @@ public class BasisDownloadInstructions
     }
 
     @Override
-    public BitmapClass convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
+    public BitmapClass convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
     {
       return null;
     }

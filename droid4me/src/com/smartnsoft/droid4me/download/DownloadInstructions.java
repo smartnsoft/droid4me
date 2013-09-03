@@ -367,20 +367,22 @@ public class DownloadInstructions
      * @return by default, the returned wrapped {@link Bitmap} will have the device density
      */
     @Override
-    public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs)
+    public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
     {
-      // final long start = System.currentTimeMillis();
+      final long start = System.currentTimeMillis();
       final BitmapFactory.Options options = new BitmapFactory.Options();
       options.inScaled = false;
       options.inDither = false;
       options.inDensity = 0;
       final Bitmap theBitmap = BitmapFactory.decodeStream(inputStream, null, options);
-      // final long stop = System.currentTimeMillis();
-      // if (log.isDebugEnabled() && bitmap != null)
-      // {
-      // log.debug("The thread '" + Thread.currentThread().getName() + "' decoded in " + (stop - start) + " ms the bitmap with density " +
-      // theBitmap.getDensity() + " relative to the URL '" + url + "'");
-      // }
+      if (theBitmap != null)
+      {
+        if (CoreBitmapDownloader.IS_DEBUG_TRACE && CoreBitmapDownloader.log.isDebugEnabled())
+        {
+          final long stop = System.currentTimeMillis();
+          CoreBitmapDownloader.log.debug("The thread '" + Thread.currentThread().getName() + "' decoded in " + (stop - start) + " ms the bitmap with density " + theBitmap.getDensity() + " relative to the URL '" + url + "'");
+        }
+      }
       return theBitmap == null ? null : new BitmapableBitmap(theBitmap);
     }
 
