@@ -271,8 +271,13 @@ public class BitmapDownloader
                   : BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES[instanceIndex];
               final boolean references = BitmapDownloader.USE_REFERENCES == null ? false : BitmapDownloader.USE_REFERENCES[instanceIndex];
               final boolean recycle = BitmapDownloader.RECYCLE_BITMAP == null ? false : BitmapDownloader.RECYCLE_BITMAP[instanceIndex];
-              newInstances[instanceIndex] = constructor.newInstance(instanceIndex, "BitmapDownloader-" + instanceIndex, highWaterMark, lowWaterMark,
-                  references, recycle);
+              final BitmapDownloader bitmapDownloader = constructor.newInstance(instanceIndex, "BitmapDownloader-" + instanceIndex, highWaterMark,
+                  lowWaterMark, references, recycle);
+              newInstances[instanceIndex] = bitmapDownloader;
+              if (log.isInfoEnabled())
+              {
+                log.info("Created a BitmapDownloader instance named '" + bitmapDownloader.name + "' with a high water mark set to " + bitmapDownloader.highLevelMemoryWaterMarkInBytes + " bytes and a low water mark set to " + bitmapDownloader.lowLevelMemoryWaterMarkInBytes + " bytes");
+              }
             }
             // We only assign the instances class variable here, once all instances have actually been created
             BitmapDownloader.instances = newInstances;
