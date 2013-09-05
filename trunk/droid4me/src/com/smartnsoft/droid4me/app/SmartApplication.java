@@ -214,6 +214,7 @@ public abstract class SmartApplication
       this.builtinUncaughtExceptionHandler = builtinUncaughtExceptionHandler;
     }
 
+    @Override
     public final void uncaughtException(Thread thread, Throwable throwable)
     {
       try
@@ -422,24 +423,7 @@ public abstract class SmartApplication
     super.onCreate();
 
     // We register the application exception handler as soon as possible, in order to be able to handle exceptions
-    ActivityController.getInstance().registerExceptionHandler(getExceptionHandler());
-    final Thread uiThread = Thread.currentThread();
-    // We explicitly intercept the GUI thread exceptions, so as to override the default behavior
-    final UncaughtExceptionHandler uiBuiltinUuncaughtExceptionHandler = uiThread.getUncaughtExceptionHandler();
-    uiUncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), uiBuiltinUuncaughtExceptionHandler);
-    if (log.isDebugEnabled())
-    {
-      log.debug("The application with package name '" + getPackageName() + "' " + (uiBuiltinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in GUI uncaught exception handler");
-    }
-    Thread.currentThread().setUncaughtExceptionHandler(uiUncaughtExceptionHandler);
-    // We make sure that other uncaught exceptions will be intercepted and handled
-    final UncaughtExceptionHandler builtinUuncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-    uncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), builtinUuncaughtExceptionHandler);
-    if (log.isDebugEnabled())
-    {
-      log.debug("The application with package name '" + getPackageName() + "' " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
-    }
-    Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
+    setupDefaultExceptionHandlers();
 
     // We check the license of the framework
     if (log.isDebugEnabled())
@@ -478,6 +462,45 @@ public abstract class SmartApplication
     {
       log.info("The application with package name '" + getPackageName() + "' has started in " + (System.currentTimeMillis() - start) + " ms");
     }
+  }
+
+  private void setupDefaultExceptionHandlers()
+  {
+    // We let the overidding application register its exception handlers
+    onSetupExceptionHandlers();
+
+    ActivityController.getInstance().registerExceptionHandler(getExceptionHandler());
+    final Thread uiThread = Thread.currentThread();
+    // We explicitly intercept the GUI thread exceptions, so as to override the default behavior
+    final UncaughtExceptionHandler uiBuiltinUuncaughtExceptionHandler = uiThread.getUncaughtExceptionHandler();
+    uiUncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), uiBuiltinUuncaughtExceptionHandler);
+    if (log.isDebugEnabled())
+    {
+      log.debug("The application with package name '" + getPackageName() + "' " + (uiBuiltinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in GUI uncaught exception handler");
+    }
+    Thread.currentThread().setUncaughtExceptionHandler(uiUncaughtExceptionHandler);
+    // We make sure that other uncaught exceptions will be intercepted and handled
+    final UncaughtExceptionHandler builtinUuncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+    uncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), builtinUuncaughtExceptionHandler);
+    if (log.isDebugEnabled())
+    {
+      log.debug("The application with package name '" + getPackageName() + "' " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
+    }
+    Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
+  }
+
+  /**
+   * This is the place where to register other {@link UncaughtExceptionHandler default exception handlers} like <a
+   * href="https://github.com/ACRA/acra">ACRA</a>. The default implementation does nothing, and if overriden, this method should not invoke its
+   * {@code super} method.
+   * 
+   * <p>
+   * It is ensured that the framework default exception handlers will be set-up after this method, and they will fallback to the already registered
+   * default exception handlers.
+   * </p>
+   */
+  protected void onSetupExceptionHandlers()
+  {
   }
 
   /**
