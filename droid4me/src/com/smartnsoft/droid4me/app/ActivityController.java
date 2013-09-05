@@ -317,7 +317,7 @@ public final class ActivityController
     boolean onOtherException(Activity activity, Object component, Throwable throwable);
 
     /**
-     * Is invoked whenever a handled exception is thrown with a non-activity context.
+     * Is invoked whenever a handled exception is thrown with a non-{@link Activity} {@link Context context}.
      * 
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
