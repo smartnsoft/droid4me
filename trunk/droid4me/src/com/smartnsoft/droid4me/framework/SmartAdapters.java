@@ -188,7 +188,8 @@ public abstract class SmartAdapters
      */
     final View setNewView(Activity activity, View view)
     {
-      view.setTag(extractNewViewAttributes(activity, view, getBusinessObject()));
+      final Object viewAttributes = extractNewViewAttributes(activity, view, getBusinessObject());
+      view.setTag(viewAttributes);
       return view;
     }
 
@@ -206,7 +207,8 @@ public abstract class SmartAdapters
 
     public final void updateView(Activity activity, View view, int position)
     {
-      updateView(activity, getViewAttributes(view), view, getBusinessObject(), position);
+      final Object viewAttributes = getViewAttributes(view);
+      updateView(activity, viewAttributes, view, getBusinessObject(), position);
     }
 
   }
