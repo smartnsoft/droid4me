@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ListView;
 
 import com.smartnsoft.droid4me.log.Logger;
@@ -387,6 +388,12 @@ public abstract class SmartAdapters
       listView.setOnItemClickListener(this);
     }
 
+    public void setAdapter(GridView gridView)
+    {
+      gridView.setAdapter(this);
+      gridView.setOnItemClickListener(this);
+    }
+
     public final int getCount()
     {
       return wrappers.size();
@@ -495,7 +502,7 @@ public abstract class SmartAdapters
       {
         return;
       }
-      final int actualPosition = position - ((ListView) adapterView).getHeaderViewsCount();
+      final int actualPosition = position - (adapterView instanceof ListView ? ((ListView) adapterView).getHeaderViewsCount() : 0);
       if (actualPosition < 0 || actualPosition >= wrappers.size())
       {
         return;
