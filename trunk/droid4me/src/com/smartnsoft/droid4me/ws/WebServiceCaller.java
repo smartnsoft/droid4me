@@ -29,6 +29,7 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -227,7 +228,8 @@ public abstract class WebServiceCaller
    * Equivalent to calling {@link #getInputStream(String, WebServiceClient.CallType, HttpEntity)} with {@code callType} parameter set to
    * {@code WebServiceCaller.CallType.Get} and {@code body} parameter set to {@code null}.
    * 
-   * @see WebServiceCaller#getInputStream(String, WebServiceClient.CallType, HttpEntity)
+   * @see #getInputStream(String, WebServiceClient.CallType, HttpEntity)
+   * @see #getInputStream(String, HttpRequestBase)
    */
   public final InputStream getInputStream(String uri)
       throws WebServiceCaller.CallException
@@ -257,18 +259,51 @@ public abstract class WebServiceCaller
    *           Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
    *           {@link #isConnected()} method returns {@code false}, no request will be attempted and a {@link WebServiceCaller.CallException}
    *           exception will be thrown (embedding a {@link UnknownHostException} exception).
+   * @see #getInputStream(String)
+   * @see #getInputStream(String, HttpRequestBase)
    */
   public final InputStream getInputStream(String uri, WebServiceCaller.CallType callType, HttpEntity body)
       throws WebServiceCaller.CallException
   {
-    if (isConnected == false)
-    {
-      throw new WebServiceCaller.CallException(new UnknownHostException("No connectivity"));
-    }
     try
     {
-      final HttpResponse response = performHttpRequest(uri, callType, body, 0);
+      final HttpResponse response = performHttpRequest(uri, callType, body);
       return getContent(uri, callType, response);
+    }
+    catch (WebServiceCaller.CallException exception)
+    {
+      throw exception;
+    }
+    catch (Exception exception)
+    {
+      throw new WebServiceCaller.CallException(exception);
+    }
+  }
+
+  /**
+   * 
+   * Performs an HTTP request corresponding to the provided parameters.
+   * 
+   * <p>
+   * Caution: read the {@link #getInputStream(String, WebServiceClient.CallType, HttpEntity)} documentation.
+   * </p>
+   * 
+   * @param uri
+   *          the URI being requested
+   * @param request
+   *          the HTTP request which should be executed
+   * @return
+   * @throws WebServiceCaller.CallException
+   *           read the {@link #getInputStream(String, WebServiceClient.CallType, HttpEntity)} documentation
+   */
+  public final InputStream getInputStream(String uri, HttpRequestBase request)
+      throws WebServiceCaller.CallException
+  {
+    try
+    {
+      final AtomicReference<CallType> callTypeHolder = new AtomicReference<WebServiceClient.CallType>();
+      final HttpResponse response = performHttpRequest(uri, request, callTypeHolder);
+      return getContent(uri, callTypeHolder.get(), response);
     }
     catch (WebServiceCaller.CallException exception)
     {
@@ -335,7 +370,7 @@ public abstract class WebServiceCaller
   protected final Element performHttpGetDom(String uri)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, SAXException
   {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null, 0);
+    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null);
     return WebServiceCaller.getDom(getContent(uri, WebServiceCaller.CallType.Get, response));
   }
 
@@ -373,28 +408,28 @@ public abstract class WebServiceCaller
   protected final String performHttpGetJson(String uri)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null, 0);
+    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null);
     return getJson(getContent(uri, WebServiceCaller.CallType.Get, response), getContentEncoding());
   }
 
   protected final String performHttpPostJson(String uri, HttpEntity body)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Post, body, 0);
+    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Post, body);
     return getJson(getContent(uri, WebServiceCaller.CallType.Post, response), getContentEncoding());
   }
 
   protected final String performHttpPutJson(String uri, HttpEntity body)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Put, body, 0);
+    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Put, body);
     return getJson(getContent(uri, WebServiceCaller.CallType.Put, response), getContentEncoding());
   }
 
   protected final String performHttpDeleteJson(String uri)
       throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
   {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Delete, null, 0);
+    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Delete, null);
     return getJson(getContent(uri, WebServiceCaller.CallType.Delete, response), getContentEncoding());
   }
 
@@ -528,29 +563,94 @@ public abstract class WebServiceCaller
   protected final HttpResponse performHttpGet(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
       throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
   {
-    return performHttpRequest(computeUri(methodUriPrefix, methodUriSuffix, uriParameters), WebServiceCaller.CallType.Get, null, 0);
+    return performHttpRequest(computeUri(methodUriPrefix, methodUriSuffix, uriParameters), WebServiceCaller.CallType.Get, null);
   }
 
   protected final HttpResponse performHttpPost(String uri, HttpEntity body)
       throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
   {
-    return performHttpRequest(uri, WebServiceCaller.CallType.Post, body, 0);
+    return performHttpRequest(uri, WebServiceCaller.CallType.Post, body);
   }
 
   protected final HttpResponse performHttpPut(String uri, HttpEntity body)
       throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
   {
-    return performHttpRequest(uri, WebServiceCaller.CallType.Put, body, 0);
+    return performHttpRequest(uri, WebServiceCaller.CallType.Put, body);
   }
 
-  private HttpResponse performHttpRequest(String uri, WebServiceCaller.CallType callType, HttpEntity body, int attemptsCount)
+  private HttpResponse performHttpRequest(String uri, HttpRequestBase request, AtomicReference<WebServiceCaller.CallType> callTypeHolder)
+      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
+  {
+    return performHttpRequest(uri, request, callTypeHolder, 0);
+  }
+
+  private HttpResponse performHttpRequest(String uri, HttpRequestBase request, AtomicReference<WebServiceCaller.CallType> callTypeHolder, int attemptsCount)
       throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
   {
     if (uri == null)
     {
       throw new WebServiceCaller.CallException("Cannot perform an HTTP request with a null URI!");
     }
+    if (isConnected == false)
+    {
+      throw new WebServiceCaller.CallException(new UnknownHostException("No connectivity"));
+    }
+
+    final HttpClient httpClient = getHttpClient();
+    onBeforeHttpRequestExecution(httpClient, request);
+    final WebServiceClient.CallType callType;
+    final HttpEntity body;
+    if (request instanceof HttpPost)
+    {
+      callType = CallType.Post;
+      body = ((HttpPost) request).getEntity();
+    }
+    else if (request instanceof HttpPut)
+    {
+      callType = CallType.Put;
+      body = ((HttpPut) request).getEntity();
+    }
+    else if (request instanceof HttpDelete)
+    {
+      callType = CallType.Delete;
+      body = null;
+    }
+    else
+    {
+      callType = CallType.Get;
+      body = null;
+    }
+    callTypeHolder.set(callType);
+    if (log.isDebugEnabled())
+    {
+      log.debug("Running the HTTP " + callType + " request '" + uri + "'");
+    }
     final long start = System.currentTimeMillis();
+    final HttpResponse response = httpClient.execute(request);
+    if (log.isDebugEnabled())
+    {
+      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms");
+    }
+    final int statusCode = response.getStatusLine().getStatusCode();
+    if (log.isInfoEnabled())
+    {
+      log.info("The call to the HTTP " + callType + " request '" + uri + "' returned the status code " + statusCode);
+    }
+
+    if (!(statusCode >= HttpStatus.SC_OK && statusCode <= HttpStatus.SC_MULTI_STATUS))
+    {
+      if (onStatusCodeNotOk(uri, callType, body, response, statusCode, attemptsCount + 1) == true)
+      {
+        return performHttpRequest(uri, request, callTypeHolder, attemptsCount + 1);
+      }
+    }
+
+    return response;
+  }
+
+  private HttpResponse performHttpRequest(String uri, WebServiceCaller.CallType callType, HttpEntity body)
+      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
+  {
     final HttpRequestBase request;
     switch (callType.verb)
     {
@@ -560,12 +660,6 @@ public abstract class WebServiceCaller
       break;
     case Post:
       final HttpPost httpPost = new HttpPost(uri);
-      // final List<NameValuePair> values = new ArrayList<NameValuePair>();
-      // for (Entry<String, String> entry : postContents.entrySet())
-      // {
-      // values.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-      // }
-      // httpPost.setEntity(new UrlEncodedFormEntity(values, getUrlEncoding()));
       httpPost.setEntity(body);
       request = httpPost;
       break;
@@ -579,31 +673,7 @@ public abstract class WebServiceCaller
       request = httpDelete;
       break;
     }
-    final HttpClient httpClient = getHttpClient();
-    onBeforeHttpRequestExecution(httpClient, request);
-    if (log.isDebugEnabled())
-    {
-      log.debug("Running the HTTP " + callType + " request '" + uri + "'");
-    }
-    final HttpResponse response = httpClient.execute(request);
-    if (log.isDebugEnabled())
-    {
-      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms");
-    }
-    final int statusCode = response.getStatusLine().getStatusCode();
-    if (log.isInfoEnabled())
-    {
-      log.info("The call to the HTTP " + callType + " request '" + uri + "' returned the status code " + statusCode);
-    }
-    if (!(statusCode >= HttpStatus.SC_OK && statusCode <= HttpStatus.SC_MULTI_STATUS))
-    {
-      if (onStatusCodeNotOk(uri, callType, body, response, statusCode, attemptsCount + 1) == true)
-      {
-        return performHttpRequest(uri, callType, body, attemptsCount + 1);
-      }
-    }
-
-    return response;
+    return performHttpRequest(uri, request, new AtomicReference<WebServiceClient.CallType>(), 0);
   }
 
   /**
