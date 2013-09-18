@@ -685,6 +685,13 @@ public final class SmartCommands
         {
           GuardedViewClickListener.this.runGuarded(view);
         }
+
+        @Override
+        public Throwable onThrowable(Throwable throwable)
+        {
+          return GuardedViewClickListener.this.onThrowable(throwable);
+        }
+
       });
     }
 
@@ -699,6 +706,20 @@ public final class SmartCommands
      */
     protected abstract void runGuarded(View view)
         throws Exception;
+
+    /**
+     * When an exception occurs during the hunderlying command execution, this method will be invoked, so as to let the caller handle this exception.
+     * The contract is the same as for the {@link SmartCommands.GuardedCommand#onThrowable(Throwable)} method.
+     * 
+     * @param throwable
+     *          the exception that has been raised during the command execution
+     * @return {@code null} if and only if the exception has been handled by the hereby method
+     * @see SmartCommands.GuardedCommand#onThrowable(Throwable)
+     */
+    protected Throwable onThrowable(Throwable throwable)
+    {
+      return throwable;
+    }
 
   }
 
