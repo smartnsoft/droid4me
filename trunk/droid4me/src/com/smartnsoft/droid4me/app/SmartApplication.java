@@ -56,8 +56,6 @@ public abstract class SmartApplication
 
 {
 
-  protected final static Logger log = LoggerFactory.getInstance(SmartApplication.class);
-
   /**
    * Contains various attributes in order to have the default dialog boxes related to exceptions i18ned.
    */
@@ -175,17 +173,6 @@ public abstract class SmartApplication
   }
 
   /**
-   * If the application uses an {@link SmartApplication.DefaultExceptionHandler} as an {@link ActivityController.ExceptionHandler}, when a managed
-   * exception is detected, and is not handled, a dialog box is submitted to the end-user, in order to propose to send the bug cause by inspecting the
-   * Android {@code logcat}. In that case, do not forget to declare the {@code android.permission.READ_LOGS} permission in the
-   * {@code AndroidManifest.xml}.
-   * 
-   * @return the e-mail address that will be used when submitting an error log message ; if it returns {@code null}, the application will not propose
-   *         to send the bug cause
-   */
-  protected abstract String getLogReportRecipient();
-
-  /**
    * Defined as a wrapper over the built-in {@link Thread.UncaughtExceptionHandler uncaught exception handlers}.
    * 
    * @since 2010.07.21
@@ -236,6 +223,23 @@ public abstract class SmartApplication
 
   }
 
+  protected final static Logger log = LoggerFactory.getInstance(SmartApplication.class);
+
+  /**
+   * Enables to know whether the {@link #onCreateCustom()} method has been invoked.
+   * 
+   * @return {@code true} if and only if the {@link #onCreateCustom()} method has been invoked and its executio is over
+   */
+  public static boolean isOnCreatedDone()
+  {
+    return SmartApplication.isOnCreatedDone;
+  }
+
+  /**
+   * A flag which enables to remember when the @link {@link Application#onCreate()} method invocation is over.
+   */
+  private static boolean isOnCreatedDone;
+
   /**
    * The overridden default thread uncaught exception handler.
    * 
@@ -254,6 +258,17 @@ public abstract class SmartApplication
    * The application preferences.
    */
   private SharedPreferences preferences;
+
+  /**
+   * If the application uses an {@link SmartApplication.DefaultExceptionHandler} as an {@link ActivityController.ExceptionHandler}, when a managed
+   * exception is detected, and is not handled, a dialog box is submitted to the end-user, in order to propose to send the bug cause by inspecting the
+   * Android {@code logcat}. In that case, do not forget to declare the {@code android.permission.READ_LOGS} permission in the
+   * {@code AndroidManifest.xml}.
+   * 
+   * @return the e-mail address that will be used when submitting an error log message ; if it returns {@code null}, the application will not propose
+   *         to send the bug cause
+   */
+  protected abstract String getLogReportRecipient();
 
   /**
    * <p>
@@ -397,70 +412,77 @@ public abstract class SmartApplication
   @Override
   public final void onCreate()
   {
-    final long start = System.currentTimeMillis();
-
-    LoggerFactory.logLevel = getLogLevel();
-    // We initialize the preferences very soon, so that they are available
-    preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-    if (shouldBeSilent() == true)
+    try
     {
+      final long start = System.currentTimeMillis();
+
+      LoggerFactory.logLevel = getLogLevel();
+      // We initialize the preferences very soon, so that they are available
+      preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+      if (shouldBeSilent() == true)
+      {
+        if (log.isDebugEnabled())
+        {
+          log.debug("Application starting in silent mode");
+        }
+        super.onCreate();
+        onCreateCustomSilent();
+        return;
+      }
+
+      // This boilerplate is printed whatever the log level
+      log.info("Application with package name '" + getPackageName() + "' powered by droid4me " + SmartApplication.getFrameworkVersionString() + " - Copyright Smart&Soft");
       if (log.isDebugEnabled())
       {
-        log.debug("Application starting in silent mode");
+        log.debug("Application starting");
       }
       super.onCreate();
-      onCreateCustomSilent();
-      return;
+
+      // We register the application exception handler as soon as possible, in order to be able to handle exceptions
+      setupDefaultExceptionHandlers();
+
+      // We check the license of the framework
+      if (log.isDebugEnabled())
+      {
+        log.debug("Checking the droid4me license for the application with package name '" + getPackageName() + "'");
+      }
+      checkLicense(this);
+
+      // We initialize the default intent actions
+      AppPublics.initialize(this);
+
+      // We register the system service provider
+      final ActivityController.SystemServiceProvider systemServiceProvider = getSystemServiceProvider();
+      if (systemServiceProvider != null)
+      {
+        ActivityController.getInstance().registerSystemServiceProvider(systemServiceProvider);
+      }
+
+      // We register the Activity redirector
+      final ActivityController.Redirector redirector = getActivityRedirector();
+      if (redirector != null)
+      {
+        ActivityController.getInstance().registerRedirector(redirector);
+      }
+
+      // We register the entities interceptor
+      final ActivityController.Interceptor interceptor = getInterceptor();
+      if (interceptor != null)
+      {
+        ActivityController.getInstance().registerInterceptor(interceptor);
+      }
+
+      onCreateCustom();
+
+      if (log.isInfoEnabled())
+      {
+        log.info("The application with package name '" + getPackageName() + "' has started in " + (System.currentTimeMillis() - start) + " ms");
+      }
     }
-
-    // This boilerplate is printed whatever the log level
-    log.info("Application with package name '" + getPackageName() + "' powered by droid4me " + SmartApplication.getFrameworkVersionString() + " - Copyright Smart&Soft");
-    if (log.isDebugEnabled())
+    finally
     {
-      log.debug("Application starting");
-    }
-    super.onCreate();
-
-    // We register the application exception handler as soon as possible, in order to be able to handle exceptions
-    setupDefaultExceptionHandlers();
-
-    // We check the license of the framework
-    if (log.isDebugEnabled())
-    {
-      log.debug("Checking the droid4me license for the application with package name '" + getPackageName() + "'");
-    }
-    checkLicense(this);
-
-    // We initialize the default intent actions
-    AppPublics.initialize(this);
-
-    // We register the system service provider
-    final ActivityController.SystemServiceProvider systemServiceProvider = getSystemServiceProvider();
-    if (systemServiceProvider != null)
-    {
-      ActivityController.getInstance().registerSystemServiceProvider(systemServiceProvider);
-    }
-
-    // We register the Activity redirector
-    final ActivityController.Redirector redirector = getActivityRedirector();
-    if (redirector != null)
-    {
-      ActivityController.getInstance().registerRedirector(redirector);
-    }
-
-    // We register the entities interceptor
-    final ActivityController.Interceptor interceptor = getInterceptor();
-    if (interceptor != null)
-    {
-      ActivityController.getInstance().registerInterceptor(interceptor);
-    }
-
-    onCreateCustom();
-
-    if (log.isInfoEnabled())
-    {
-      log.info("The application with package name '" + getPackageName() + "' has started in " + (System.currentTimeMillis() - start) + " ms");
+      SmartApplication.isOnCreatedDone = true;
     }
   }
 
