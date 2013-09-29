@@ -165,16 +165,16 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
           {
             return;
           }
-          // If the hosting activity has been finished in the meantime, or the entity is not alive anymore, we should not update the UI
-          if (activity.isFinishing() == true || smartable.isAlive() == false)
-          {
-            return;
-          }
           // We are handling the UI, and we need to make sure that this is done through the GUI thread
           activity.runOnUiThread(new Runnable()
           {
             public void run()
             {
+              // If the hosting activity has been finished in the meantime, or the entity is not alive anymore, we should not update the UI
+              if (activity.isFinishing() == true || smartable.isAlive() == false)
+              {
+                return;
+              }
               onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
             }
           });
