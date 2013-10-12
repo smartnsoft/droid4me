@@ -208,6 +208,41 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     protected abstract String logCommandIdPrefix();
 
+    protected final Boolean onBindBitmap(boolean downloaded)
+    {
+      try
+      {
+        return instructions.onBindBitmap(downloaded, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == true;
+      }
+      catch (OutOfMemoryError exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn(logCommandId() + "Process exceeding available memory", exception);
+        }
+        outOfMemoryOccurences++;
+        cleanUpCache();
+        return null;
+      }
+    }
+
+    protected final void onBitmapReady(boolean allright, BitmapClass bitmap)
+    {
+      try
+      {
+        instructions.onBitmapReady(allright, view, bitmap, bitmapUid, imageSpecs);
+      }
+      catch (OutOfMemoryError exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn(logCommandId() + "Process exceeding available memory", exception);
+        }
+        outOfMemoryOccurences++;
+        cleanUpCache();
+      }
+    }
+
   }
 
   /**
@@ -354,27 +389,18 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           break;
         case InCache:
-          boolean success = false;
+          Boolean success = null;
           try
           {
-            if (instructions.onBindBitmap(false, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == true)
+            success = onBindBitmap(false);
+            if (success == null)
             {
-              success = true;
+              return;
             }
-          }
-          catch (OutOfMemoryError exception)
-          {
-            if (log.isWarnEnabled())
-            {
-              log.warn(logCommandId() + "Process exceeding available memory", exception);
-            }
-            outOfMemoryOccurences++;
-            cleanUpCache();
-            return;
           }
           finally
           {
-            if (success == false)
+            if (success != Boolean.TRUE)
             {
               instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
               instructions.onOver(true, view, bitmapUid, imageSpecs);
@@ -531,7 +557,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         usedBitmap = otherUsedBitmap;
         usedBitmap.rememberAccessed();
-        instructions.onBitmapReady(true, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs);
+        onBitmapReady(true, usedBitmap.getBitmap());
         if (view != null)
         {
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
@@ -768,8 +794,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         usedBitmap.rememberAccessed();
       }
 
-      instructions.onBitmapReady(usedBitmap != null && usedBitmap.getBitmap() != null, view, usedBitmap == null ? null : usedBitmap.getBitmap(), bitmapUid,
-          imageSpecs);
+      onBitmapReady(usedBitmap != null && usedBitmap.getBitmap() != null, usedBitmap == null ? null : usedBitmap.getBitmap());
       bindBitmap();
     }
 
@@ -783,33 +808,24 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         if (usedBitmap != null)
         {
-          boolean success = false;
+          Boolean success = null;
           try
           {
-            if (instructions.onBindBitmap(downloaded, view, usedBitmap.getBitmap(), bitmapUid, imageSpecs) == true)
+            success = onBindBitmap(downloaded);
+            if (success == null)
             {
-              success = true;
+              return;
             }
-          }
-          catch (OutOfMemoryError exception)
-          {
-            if (log.isWarnEnabled())
-            {
-              log.warn(logCommandId() + "Process exceeding available memory", exception);
-            }
-            outOfMemoryOccurences++;
-            cleanUpCache();
-            return;
           }
           finally
           {
-            if (success == false)
+            if (success != Boolean.TRUE)
             {
               instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
               instructions.onOver(true, view, bitmapUid, imageSpecs);
             }
           }
-          if (success == true)
+          if (success == Boolean.TRUE)
           {
             if (IS_DEBUG_TRACE && log.isDebugEnabled())
             {
@@ -888,7 +904,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         // We first check for the input stream
         if (inputStream == null)
         {
-          instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
+          onBitmapReady(false, null);
           return;
         }
 
@@ -896,14 +912,14 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
         if (bitmap == null)
         {
-          instructions.onBitmapReady(false, view, null, bitmapUid, imageSpecs);
+          onBitmapReady(false, null);
           return;
         }
 
         // We put in cache the bitmap
         usedBitmap = putInCache(url, bitmap);
 
-        instructions.onBitmapReady(true, view, bitmap, bitmapUid, imageSpecs);
+        onBitmapReady(true, bitmap);
 
         // Indicates whether another command has been set for the view in the meantime
         if (view != null && asynchronousDownloadCommands.remove(view) == true)
