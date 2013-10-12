@@ -361,20 +361,22 @@ public class DownloadInstructions
     /**
      * Is responsible for turning the provided input stream into a bitmap representation.
      * 
+     * <p>
+     * The method measures the time taken for the conversion, and logs that duration. The technical part of the method is delegated to the
+     * {@link #convertInputStreamToBitmap(InputStream, String, Object, String)} method.
+     * </p>
+     * 
      * @param inputStream
      *          the implementation should not close the input stream, because the caller will {@link InputStream#close()} it (no problem if it is
      *          closed, but this will impact the performance)
      * @return by default, the returned wrapped {@link Bitmap} will have the device density
+     * @see #convert(InputStream, String, Object, String)
      */
     @Override
     public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
     {
       final long start = System.currentTimeMillis();
-      final BitmapFactory.Options options = new BitmapFactory.Options();
-      options.inScaled = false;
-      options.inDither = false;
-      options.inDensity = 0;
-      final Bitmap theBitmap = BitmapFactory.decodeStream(inputStream, null, options);
+      final Bitmap theBitmap = convertInputStreamToBitmap(inputStream, bitmapUid, imageSpecs, url);
       if (theBitmap != null)
       {
         if (CoreBitmapDownloader.IS_DEBUG_TRACE && CoreBitmapDownloader.log.isDebugEnabled())
@@ -406,6 +408,27 @@ public class DownloadInstructions
     @Override
     public void onOver(boolean aborted, ViewableView view, String bitmapUid, Object imageSpecs)
     {
+    }
+
+    /**
+     * Actually converts the given {@link InputStream} into an Android {@link Bitmap}.
+     * 
+     * <p>
+     * The hereby implementation does not perform any scaling.
+     * </p>
+     * 
+     * @param inputStream
+     *          the representation of the {@link Bitmap} to be decoded
+     * @return the decoded {@link Bitmap} if the conversion could be performed properly ; {@code null} otherwise
+     * @see #convert(InputStream, String, Object, String)
+     */
+    protected Bitmap convertInputStreamToBitmap(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
+    {
+      final BitmapFactory.Options options = new BitmapFactory.Options();
+      options.inScaled = false;
+      options.inDither = false;
+      options.inDensity = 0;
+      return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
   }
