@@ -24,6 +24,8 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
+import javax.net.ssl.SSLException;
+
 import org.apache.http.NoHttpResponseException;
 
 import android.app.Activity;
@@ -382,7 +384,7 @@ public final class ActivityController
     public static boolean isAConnectivityProblem(Throwable throwable)
     {
       return ActivityController.AbstractExceptionHandler.searchForCause(throwable, UnknownHostException.class, SocketException.class,
-          SocketTimeoutException.class, InterruptedIOException.class, NoHttpResponseException.class) != null;
+          SocketTimeoutException.class, InterruptedIOException.class, NoHttpResponseException.class, SSLException.class) != null;
     }
 
     /**
