@@ -46,7 +46,7 @@ public class AssetsConfigurationLoader
     this.configurationParser = configurationParser;
   }
 
-  public final <T> T load(Class<T> theClass)
+  public final <T> T getBean(Class<T> theClass)
       throws ConfigurationLoader.ConfigurationLoaderException
   {
     final InputStream inputStream;
@@ -58,12 +58,27 @@ public class AssetsConfigurationLoader
     {
       throw new ConfigurationLoader.ConfigurationLoaderException(exception);
     }
-    return load(theClass, inputStream);
+    return configurationParser.getBean(theClass, inputStream);
   }
 
-  protected <T> T load(Class<T> theClass, InputStream inputStream)
+  @Override
+  public <T> T setBean(Class<T> theClass, T bean)
+      throws ConfigurationLoader.ConfigurationLoaderException
   {
-    return configurationParser.load(theClass, inputStream);
+    final InputStream inputStream = getInputStream();
+    return configurationParser.setBean(theClass, inputStream, bean);
+  }
+
+  private InputStream getInputStream()
+  {
+    try
+    {
+      return assetManager.open(assetsFileName);
+    }
+    catch (IOException exception)
+    {
+      throw new ConfigurationLoader.ConfigurationLoaderException(exception);
+    }
   }
 
 }
