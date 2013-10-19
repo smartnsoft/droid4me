@@ -108,7 +108,7 @@ public interface ConfigurationLoader
     private static Context applicationContext;
 
     /**
-     * This method should be invoked before the {@link ConfigurationFactory#load(ConfigurationType, String, Class)} method be invoked, hence very
+     * This method should be invoked before the {@link ConfigurationFactory#setBean(ConfigurationType, String, Class)} method be invoked, hence very
      * early at the application start-up (typically during the {@link Application#onCreate() method}.
      * 
      * @param applicationContext
@@ -116,11 +116,22 @@ public interface ConfigurationLoader
      *          {@link Application#getApplicationContext()}, which will be used to load the configuration parameters from the {@code assets} Android
      *          installation package {@code .apk}, or from the internal storage
      * 
-     * @see #load(ConfigurationType, String, Class)
+     * @see #setBean(ConfigurationType, String, Class)
+     * @see #initialize(Context)
      */
     public static void initialize(Context applicationContext)
     {
       ConfigurationFactory.applicationContext = applicationContext;
+    }
+
+    /**
+     * @return the application context which has been provided to the {@link #initialize(Context)} method (returns {@code} if this method has not been
+     *         invoked)
+     * @see #initialize(Context)
+     */
+    public static Context getApplicationContext()
+    {
+      return ConfigurationFactory.applicationContext;
     }
 
     public static ConfigurationLoader getInstance(ConfigurationFactory.ConfigurationLocation configurationLocation,
@@ -182,7 +193,7 @@ public interface ConfigurationLoader
         throws ConfigurationLoader.ConfigurationLoaderException
     {
       final ConfigurationLoader configurationLoader = ConfigurationFactory.getInstance(configurationLocation, configurationFormat, value);
-      return configurationLoader.load(theClass);
+      return configurationLoader.getBean(theClass);
     }
 
   }
@@ -212,8 +223,10 @@ public interface ConfigurationLoader
      * @throws ConfigurationLoader.ConfigurationLoaderException
      *           if an error occurred during the method
      */
-    public abstract <T> T load(Class<T> theClass, InputStream inputStream)
+    public abstract <T> T getBean(Class<T> theClass, InputStream inputStream)
         throws ConfigurationLoader.ConfigurationLoaderException;
+
+    public abstract <T> T setBean(Class<T> theClass, InputStream inputStream, T bean);
 
     /**
      * Creates a bean via introspection
@@ -346,7 +359,14 @@ public interface ConfigurationLoader
   {
 
     @Override
-    public <T> T load(Class<T> theClass, InputStream inputStream)
+    public <T> T getBean(Class<T> theClass, InputStream inputStream)
+    {
+      final T bean = createBean(theClass);
+      return setBean(theClass, inputStream, bean);
+    }
+
+    @Override
+    public <T> T setBean(Class<T> theClass, InputStream inputStream, T bean)
     {
       final Properties properties = new Properties();
       try
@@ -357,7 +377,6 @@ public interface ConfigurationLoader
       {
         throw new ConfigurationLoader.ConfigurationLoaderException(exception);
       }
-      final T bean = createBean(theClass);
       for (Entry<Object, Object> entry : properties.entrySet())
       {
         final String propertyName = (String) entry.getKey();
@@ -379,9 +398,15 @@ public interface ConfigurationLoader
   {
 
     @Override
-    public <T> T load(Class<T> theClass, InputStream inputStream)
+    public <T> T getBean(Class<T> theClass, InputStream inputStream)
     {
-      // Trick taken from http://stackoverflow.com/questions/309424/read-convert-an-inputstream-to-a-string
+      final T bean = createBean(theClass);
+      return setBean(theClass, inputStream, bean);
+    }
+
+    @Override
+    public <T> T setBean(Class<T> theClass, InputStream inputStream, T bean)
+    {
       final Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
       final String jsonString = scanner.hasNext() ? scanner.next() : "";
       JSONObject jsonObject;
@@ -393,7 +418,6 @@ public interface ConfigurationLoader
       {
         throw new ConfigurationLoader.ConfigurationLoaderException(exception);
       }
-      final T bean = createBean(theClass);
       @SuppressWarnings("unchecked")
       final Iterator<String> iterator = jsonObject.keys();
       while (iterator.hasNext())
@@ -415,15 +439,35 @@ public interface ConfigurationLoader
   }
 
   /**
+   * Does the same thing as the {@link #getBean(Class, InputStream)} method, except that the POJO bean is provided.
+   * 
+   * <p>
+   * This method is especially useful, when a pre-defined configuration should be overwritten.
+   * </p>
+   * 
+   * @param theClass
+   *          the type of the POJO which should hold the configuration
+   * @param bean
+   *          an already instantiated bean, which will be updated
+   * @return a valid POJO which holds the loaded configuration parameters
+   * @throws ConfigurationLoader.ConfigurationLoaderException
+   *           if something unrecoverable went wrong during the processing
+   * @see #getBean(Class, InputStream)
+   */
+  <T> T setBean(Class<T> theClass, T bean)
+      throws ConfigurationLoader.ConfigurationLoaderException;
+
+  /**
    * Responsible for loading and returning a Plain Old Java Object (POJO) of the given class.
    * 
    * @param theClass
    *          the type of the POJO which should hold the configuration
    * @return a valid POJO which holds the loaded configuration parameters
    * @throws ConfigurationLoader.ConfigurationLoaderException
-   *           if something unrecoverable went wrong during the loading
+   *           if something unrecoverable went wrong during the processing
+   * @see #setBean(Class, Object)
    */
-  <T> T load(Class<T> theClass)
+  <T> T getBean(Class<T> theClass)
       throws ConfigurationLoader.ConfigurationLoaderException;
 
 }

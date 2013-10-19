@@ -17,6 +17,7 @@
 
 package com.smartnsoft.droid4me.config;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -45,24 +46,42 @@ public class InternalStorageConfigurationLoader
     this.configurationParser = configurationParser;
   }
 
-  public final <T> T load(Class<T> theClass)
+  public final <T> T getBean(Class<T> theClass)
       throws ConfigurationLoader.ConfigurationLoaderException
   {
     final InputStream inputStream;
     try
     {
-      inputStream = context.openFileInput(fileName);
+      inputStream = getInputStream();
     }
     catch (IOException exception)
     {
       throw new ConfigurationLoader.ConfigurationLoaderException(exception);
     }
-    return load(theClass, inputStream);
+    return configurationParser.getBean(theClass, inputStream);
   }
 
-  protected <T> T load(Class<T> theClass, InputStream inputStream)
+  @Override
+  public <T> T setBean(Class<T> theClass, T bean)
+      throws ConfigurationLoader.ConfigurationLoaderException
   {
-    return configurationParser.load(theClass, inputStream);
+    final InputStream inputStream;
+    try
+    {
+      inputStream = getInputStream();
+    }
+    catch (FileNotFoundException exception)
+    {
+      // Does not matter
+      return bean;
+    }
+    return configurationParser.setBean(theClass, inputStream, bean);
+  }
+
+  private InputStream getInputStream()
+      throws FileNotFoundException
+  {
+    return context.openFileInput(fileName);
   }
 
 }
