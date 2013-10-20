@@ -222,11 +222,26 @@ public interface ConfigurationLoader
      * @return a valid and fulfilled bean
      * @throws ConfigurationLoader.ConfigurationLoaderException
      *           if an error occurred during the method
+     * @see #setBean(Class, InputStream, Object)
      */
     public abstract <T> T getBean(Class<T> theClass, InputStream inputStream)
         throws ConfigurationLoader.ConfigurationLoaderException;
 
-    public abstract <T> T setBean(Class<T> theClass, InputStream inputStream, T bean);
+    /**
+     * Does the same job as the {@link #getBean(Class, InputStream)} method, except that the bean is provided. the class the bean to be created
+     * belongs to
+     * 
+     * @param inputStream
+     *          the stream which holds the bean state, and which will be parsed
+     * @param bean
+     *          the bean that should be updated
+     * @return the provided fulfilled bean
+     * @throws ConfigurationLoader.ConfigurationLoaderException
+     *           if an error occurred during the method
+     * @see #getBean(Class, InputStream)
+     */
+    public abstract <T> T setBean(Class<T> theClass, InputStream inputStream, T bean)
+        throws ConfigurationLoader.ConfigurationLoaderException;
 
     /**
      * Creates a bean via introspection
@@ -360,6 +375,7 @@ public interface ConfigurationLoader
 
     @Override
     public <T> T getBean(Class<T> theClass, InputStream inputStream)
+        throws ConfigurationLoader.ConfigurationLoaderException
     {
       final T bean = createBean(theClass);
       return setBean(theClass, inputStream, bean);
@@ -367,6 +383,7 @@ public interface ConfigurationLoader
 
     @Override
     public <T> T setBean(Class<T> theClass, InputStream inputStream, T bean)
+        throws ConfigurationLoader.ConfigurationLoaderException
     {
       final Properties properties = new Properties();
       try
@@ -399,6 +416,7 @@ public interface ConfigurationLoader
 
     @Override
     public <T> T getBean(Class<T> theClass, InputStream inputStream)
+        throws ConfigurationLoader.ConfigurationLoaderException
     {
       final T bean = createBean(theClass);
       return setBean(theClass, inputStream, bean);
@@ -406,10 +424,11 @@ public interface ConfigurationLoader
 
     @Override
     public <T> T setBean(Class<T> theClass, InputStream inputStream, T bean)
+        throws ConfigurationLoader.ConfigurationLoaderException
     {
       final Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
       final String jsonString = scanner.hasNext() ? scanner.next() : "";
-      JSONObject jsonObject;
+      final JSONObject jsonObject;
       try
       {
         jsonObject = new JSONObject(jsonString);
