@@ -38,6 +38,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -141,6 +142,15 @@ public abstract class WebServiceCaller
     }
 
   }
+
+  /**
+   * A flag which indicates whether the hereby {@code WebServiceCaller} internal logs should be enabled. Logs will report useful {@code curl}
+   * equivalent commands, for instance.
+   * <p>
+   * Do not set this flag to {@code true} under the production mode!
+   * </p>
+   */
+  public static boolean ARE_DEBUG_LOG_ENABLED = false;
 
   protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
 
@@ -623,18 +633,45 @@ public abstract class WebServiceCaller
     callTypeHolder.set(callType);
     if (log.isDebugEnabled())
     {
-      log.debug("Running the HTTP " + callType + " request '" + uri + "'");
+      final StringBuilder sb = new StringBuilder();
+      final StringBuilder curlSb = new StringBuilder();
+      if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+      {
+        curlSb.append("\n").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
+        if (body != null && body.getContentLength() < 2048 && body.getContent() != null && body.getContent().markSupported() == true)
+        {
+          body.getContent().mark((int) body.getContentLength());
+          try
+          {
+            final String bodyAsString = getString(body.getContent());
+            sb.append(" with body '").append(bodyAsString).append("'");
+            curlSb.append(" --data \"").append(bodyAsString).append("\"");
+          }
+          catch (IOException exception)
+          {
+            if (log.isWarnEnabled())
+            {
+              log.warn("Cannot log the HTTP body", exception);
+            }
+          }
+          finally
+          {
+            body.getContent().reset();
+          }
+        }
+        for (Header header : request.getAllHeaders())
+        {
+          curlSb.append(" --header \"").append(header.getName()).append(": ").append(header.getValue()).append("\"");
+        }
+      }
+      log.debug("Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + curlSb.toString());
     }
     final long start = System.currentTimeMillis();
     final HttpResponse response = httpClient.execute(request);
+    final int statusCode = response.getStatusLine().getStatusCode();
     if (log.isDebugEnabled())
     {
-      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms");
-    }
-    final int statusCode = response.getStatusLine().getStatusCode();
-    if (log.isInfoEnabled())
-    {
-      log.info("The call to the HTTP " + callType + " request '" + uri + "' returned the status code " + statusCode);
+      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + statusCode);
     }
 
     if (!(statusCode >= HttpStatus.SC_OK && statusCode <= HttpStatus.SC_MULTI_STATUS))
