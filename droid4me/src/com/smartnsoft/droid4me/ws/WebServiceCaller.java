@@ -149,8 +149,16 @@ public abstract class WebServiceCaller
    * <p>
    * Do not set this flag to {@code true} under the production mode!
    * </p>
+   * 
+   * @see WebServiceCaller#BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED
    */
   public static boolean ARE_DEBUG_LOG_ENABLED = false;
+
+  /**
+   * If the {@link #ARE_DEBUG_LOG_ENABLED} is {@code true}, indicates the maximum size of an HTTP request body to be logged: if an HTTP request body
+   * size is beyond that limit, it will not be logged, for performance reasons.
+   */
+  public static long BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED = 4096;
 
   protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
 
@@ -635,36 +643,53 @@ public abstract class WebServiceCaller
     {
       final StringBuilder sb = new StringBuilder();
       final StringBuilder curlSb = new StringBuilder();
+      final boolean logCurlCommand;
       if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
       {
-        curlSb.append("\n").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
-        if (body != null && body.getContentLength() < 2048 && body.getContent() != null && body.getContent().markSupported() == true)
+        curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
+        if (body != null && body.getContent() != null)
         {
-          body.getContent().mark((int) body.getContentLength());
-          try
+          if (body.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED && body.getContent().markSupported() == true)
           {
-            final String bodyAsString = getString(body.getContent());
-            sb.append(" with body '").append(bodyAsString).append("'");
-            curlSb.append(" --data \"").append(bodyAsString).append("\"");
-          }
-          catch (IOException exception)
-          {
-            if (log.isWarnEnabled())
+            logCurlCommand = true;
+            body.getContent().mark((int) body.getContentLength());
+            try
             {
-              log.warn("Cannot log the HTTP body", exception);
+              final String bodyAsString = getString(body.getContent());
+              sb.append(" with body '").append(bodyAsString).append("'");
+              curlSb.append(" --data \"").append(bodyAsString).append("\"");
+            }
+            catch (IOException exception)
+            {
+              if (log.isWarnEnabled())
+              {
+                log.warn("Cannot log the HTTP body", exception);
+              }
+            }
+            finally
+            {
+              body.getContent().reset();
             }
           }
-          finally
+          else
           {
-            body.getContent().reset();
+            logCurlCommand = false;
+          }
+          for (Header header : request.getAllHeaders())
+          {
+            curlSb.append(" --header \"").append(header.getName()).append(": ").append(header.getValue().replace("\"", "\\\"")).append("\"");
           }
         }
-        for (Header header : request.getAllHeaders())
+        else
         {
-          curlSb.append(" --header \"").append(header.getName()).append(": ").append(header.getValue()).append("\"");
+          logCurlCommand = true;
         }
       }
-      log.debug("Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + curlSb.toString());
+      else
+      {
+        logCurlCommand = false;
+      }
+      log.debug("Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + (logCurlCommand == true ? curlSb.toString() : ""));
     }
     final long start = System.currentTimeMillis();
     final HttpResponse response = httpClient.execute(request);
