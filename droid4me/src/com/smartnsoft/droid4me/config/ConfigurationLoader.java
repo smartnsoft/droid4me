@@ -349,6 +349,8 @@ public interface ConfigurationLoader
       }
       try
       {
+        // We make sure that the field may be accessed (in the case it is not "public", for instance)
+        field.setAccessible(true);
         field.set(bean, propertyValue);
       }
       catch (Exception exception)
