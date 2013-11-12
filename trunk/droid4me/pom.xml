@@ -181,7 +181,7 @@
     <directory>${project.basedir}/target</directory>
     <sourceDirectory>${basedir}/src</sourceDirectory>
     <outputDirectory>${basedir}/target/classes</outputDirectory>
-
+    <testSourceDirectory>${basedir}/test</testSourceDirectory>
     <finalName>${project.artifactId}-${project.version}</finalName>
 
     <pluginManagement>
