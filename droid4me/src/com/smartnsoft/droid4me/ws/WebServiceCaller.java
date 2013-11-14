@@ -643,51 +643,51 @@ public abstract class WebServiceCaller
     {
       final StringBuilder sb = new StringBuilder();
       final StringBuilder curlSb = new StringBuilder();
-      final boolean logCurlCommand;
+      boolean logCurlCommand = false;
       if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
       {
-        curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
-        if (body != null && body.getContent() != null)
+        try
         {
-          if (body.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED && body.getContent().markSupported() == true)
+          curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
+          if (body != null && body.getContent() != null)
           {
-            logCurlCommand = true;
-            body.getContent().mark((int) body.getContentLength());
-            try
+            if (body.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED && body.getContent().markSupported() == true)
             {
-              final String bodyAsString = getString(body.getContent());
-              sb.append(" with body '").append(bodyAsString).append("'");
-              curlSb.append(" --data \"").append(bodyAsString).append("\"");
-            }
-            catch (IOException exception)
-            {
-              if (log.isWarnEnabled())
+              logCurlCommand = true;
+              body.getContent().mark((int) body.getContentLength());
+              try
               {
-                log.warn("Cannot log the HTTP body", exception);
+                final String bodyAsString = getString(body.getContent());
+                sb.append(" with body '").append(bodyAsString).append("'");
+                curlSb.append(" --data \"").append(bodyAsString).append("\"");
+              }
+              catch (IOException exception)
+              {
+                if (log.isWarnEnabled())
+                {
+                  log.warn("Cannot log the HTTP body", exception);
+                }
+              }
+              finally
+              {
+                body.getContent().reset();
               }
             }
-            finally
+            for (Header header : request.getAllHeaders())
             {
-              body.getContent().reset();
+              curlSb.append(" --header \"").append(header.getName()).append(": ").append(header.getValue().replace("\"", "\\\"")).append("\"");
             }
           }
           else
           {
-            logCurlCommand = false;
-          }
-          for (Header header : request.getAllHeaders())
-          {
-            curlSb.append(" --header \"").append(header.getName()).append(": ").append(header.getValue().replace("\"", "\\\"")).append("\"");
+            logCurlCommand = true;
           }
         }
-        else
+        catch (Exception exception)
         {
-          logCurlCommand = true;
+          // The exception is very likely to be due to a body with a non-consumable "body.getContent()"!
+          // We simply ignore the issue
         }
-      }
-      else
-      {
-        logCurlCommand = false;
       }
       log.debug("Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + (logCurlCommand == true ? curlSb.toString() : ""));
     }
