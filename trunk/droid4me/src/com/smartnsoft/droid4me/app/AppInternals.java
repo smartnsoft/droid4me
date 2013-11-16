@@ -176,7 +176,7 @@ final class AppInternals
     /**
      * Contains all the commands which have been registered.
      */
-    private List<Future<?>> futures = new ArrayList<Future<?>>();
+    private final List<Future<?>> futures = new ArrayList<Future<?>>();
 
     static boolean isFirstCycle(Bundle savedInstanceState)
     {
@@ -246,6 +246,16 @@ final class AppInternals
     final boolean isAlive()
     {
       return isAlive;
+    }
+
+    /**
+     * @return {@code true} if and only of the underlying entity is {@link #isAlive()} and the {@link #activity hosting Activity} is still not
+     *         {@link Activity#isFinishing()}
+     * @see #isAlive
+     */
+    final boolean isAliveAsWellAsHostingActivity()
+    {
+      return isAlive() == true && activity.isFinishing() == false;
     }
 
     synchronized SharedPreferences getPreferences(Context applicationContext)
@@ -567,7 +577,8 @@ final class AppInternals
     synchronized void onRefreshingBusinessObjectsAndDisplayStop(LifeCycle lifeCycleActivity)
     {
       refreshingBusinessObjectsAndDisplayCount--;
-      if (activity.isFinishing() == true)
+      // If the entity or the hosting Activity is not alive, we do nothing more
+      if (isAliveAsWellAsHostingActivity() == false)
       {
         return;
       }
@@ -672,8 +683,8 @@ final class AppInternals
 
     synchronized boolean shouldDelayRefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
     {
-      // If the Activity is finishing, we give up
-      if (activity.isFinishing() == true)
+      // If the entity or the hosting Activity is finishing, we give up
+      if (isAliveAsWellAsHostingActivity() == false)
       {
         return true;
       }
@@ -718,6 +729,11 @@ final class AppInternals
      */
     void execute(Activity activity, Object component, Runnable runnable)
     {
+      if (isAliveAsWellAsHostingActivity() == false)
+      {
+        // The hosting entity or Activity can be considered as finished, hence we do nothing
+        return;
+      }
       final Future<?> future = AppInternals.THREAD_POOL.submit(runnable);
       futures.add(future);
     }

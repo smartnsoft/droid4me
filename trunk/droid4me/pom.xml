@@ -9,7 +9,7 @@
 
   <artifactId>droid4me</artifactId>
   <name>droid4me</name>
-  <version>2.2.3.2</version>
+  <version>2.2.4</version>
   <packaging>jar</packaging>
   <description>droid4me is a framework library dedicated to the development of Android applications.</description>
   <url>http://code.google.com/p/droid4me</url>
@@ -200,35 +200,35 @@
 
     <plugins>
       <plugin>
-	<artifactId>maven-source-plugin</artifactId>
-	<executions>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
           <execution>
             <id>attach-sources</id>
             <phase>deploy</phase>
             <goals><goal>jar-no-fork</goal></goals>
           </execution>
-	</executions>
+        </executions>
       </plugin>
       <plugin>
-	<artifactId>maven-javadoc-plugin</artifactId>
-	<executions>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
           <execution>
             <id>attach-javadocs</id>
             <phase>deploy</phase>
             <goals><goal>jar</goal></goals>
           </execution>
-	</executions>
+        </executions>
       </plugin>
       <plugin>
-	<!-- explicitly define maven-deploy-plugin after other to force exec order -->
-	<artifactId>maven-deploy-plugin</artifactId>
-	<executions>
+      <!-- explicitly define maven-deploy-plugin after other to force exec order -->
+      <artifactId>maven-deploy-plugin</artifactId>
+        <executions>
           <execution>
             <id>deploy</id>
             <phase>deploy</phase>
             <goals><goal>deploy</goal></goals>
           </execution>
-	</executions>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
