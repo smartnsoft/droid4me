@@ -148,9 +148,17 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   @SuppressWarnings("deprecation")
   public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
   {
+    if (stateContainer.isAliveAsWellAsHostingActivity() == false)
+    {
+      // In that case, we skip the processing
+    }
     if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
     {
       return;
+    }
+    if (stateContainer.isAliveAsWellAsHostingActivity() == false)
+    {
+      // In that case, we skip the processing
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
@@ -171,8 +179,10 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
             public void run()
             {
               // If the hosting activity has been finished in the meantime, or the entity is not alive anymore, we should not update the UI
-              if (activity.isFinishing() == true || smartable.isAlive() == false)
+              if (stateContainer.isAliveAsWellAsHostingActivity() == false)
               {
+                // And in that case, since we are currently in the UI thread, we are ensured that neither the entity nor the hosting Activity will be
+                // destroyed in the meantime!
                 return;
               }
               onFulfillAndSynchronizeDisplayObjectsInternal(onOver);
@@ -538,33 +548,50 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   }
 
   /**
-   * This method should not trigger any exception!
+   * This method should not trigger any exception, otherwise we have a huge bug!
+   * 
+   * @return {@code true} if and only if the processing should resume
    */
   private boolean onRetrieveBusinessObjectsInternal(boolean retrieveBusinessObjects)
   {
-    onBeforeRefreshBusinessObjectsAndDisplay();
-    if (retrieveBusinessObjects == true)
+    try
     {
-      try
+      onBeforeRefreshBusinessObjectsAndDisplay();
+      if (retrieveBusinessObjects == true)
       {
+        if (stateContainer.isAliveAsWellAsHostingActivity() == false)
+        {
+          // If the entity is no more alive, we give up the process
+          return false;
+        }
+
         onRetrieveBusinessObjects();
         // We notify the entity that the business objects have actually been loaded
-        if (isAlive() == false)
+        if (stateContainer.isAliveAsWellAsHostingActivity() == false)
         {
           // If the entity is no more alive, we give up the process
           return false;
         }
         onBusinessObjectsRetrieved();
+
       }
-      catch (Throwable throwable)
+      stateContainer.setBusinessObjectsRetrieved();
+      return true;
+    }
+    catch (Throwable throwable)
+    {
+      stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
+      // We check whether the issue does not come from a non-alive entity
+      if (stateContainer.isAliveAsWellAsHostingActivity() == false)
       {
-        stateContainer.onRefreshingBusinessObjectsAndDisplayStop(this);
-        onInternalBusinessObjectAvailableException(throwable);
+        // In that case, we just ignore the exception: it is very likely that the entity or the hosting Activity have turned as non-alive
+        // during the "onRetrieveBusinessObjects()" method!
         return false;
       }
+      // Otherwise, we report the exception
+      onInternalBusinessObjectAvailableException(throwable);
+      return false;
     }
-    stateContainer.setBusinessObjectsRetrieved();
-    return true;
   }
 
   private void onBeforeRefreshBusinessObjectsAndDisplay()
