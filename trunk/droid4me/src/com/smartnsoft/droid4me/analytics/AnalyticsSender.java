@@ -21,6 +21,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
+
 /**
  * A very basic abstraction of an agent which is able to send analytics.
  * 
@@ -33,6 +36,8 @@ import android.os.Bundle;
  */
 public interface AnalyticsSender<DictionaryType>
 {
+
+  public final static Logger log = LoggerFactory.getInstance(AnalyticsSender.class);
 
   /**
    * Logs an analytics event.
