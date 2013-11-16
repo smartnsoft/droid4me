@@ -104,6 +104,22 @@ public interface AnalyticsLogger
   }
 
   /**
+   * An annotation which enables to express that an entity, usually an {@link Activity} or a {@link Fragment}, wishes to report analytics usage.
+   * 
+   * <p>
+   * Use this annotation, when you explicitly want the underlying entity to report an activity.
+   * </p>
+   * 
+   * @see AnalyticsLogger.AnalyticsDisabledLoggerAnnotation
+   */
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.TYPE)
+  public static @interface AnalyticsEnabledLoggerAnnotation
+  {
+
+  }
+
+  /**
    * An annotation which enables to express that an entity, usually an {@link Activity} or a {@link Fragment}, does not wish to report any analytics
    * usage.
    * 
@@ -113,6 +129,7 @@ public interface AnalyticsLogger
    * 
    * @see AnalyticsLogger.AnalyticsTagLogger
    * @see AnalyticsLogger.AnalyticsTagLoggerAnnotation
+   * @see AnalyticsLogger.AnalyticsEnabledLoggerAnnotation
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)

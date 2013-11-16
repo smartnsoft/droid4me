@@ -64,7 +64,7 @@ public interface AnalyticsSender<DictionaryType>
   void logError(Context context, String name, Bundle dictionary);
 
   /**
-   * Logs the start or resume of an {@link Activity}.
+   * Logs the start or resume of an {@link Activity} or {@code Fragment} (i.e. an entity).
    * 
    * @param activity
    *          the {@link Activity} the event applies on
@@ -76,7 +76,7 @@ public interface AnalyticsSender<DictionaryType>
   void onStartActivity(Activity activity, String tag, DictionaryType dictionary);
 
   /**
-   * Logs the end or pause of an {@link Activity}.
+   * Logs the end or pause of an {@link Activity} or {@code Fragment} (i.e. an entity).
    * 
    * @param activity
    *          the {@link Activity} the event applies on
