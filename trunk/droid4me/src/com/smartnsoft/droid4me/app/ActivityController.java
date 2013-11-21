@@ -222,11 +222,11 @@ public final class ActivityController
        */
       onStop,
       /**
-       * Called just after the {@link LifeCycle.ForActivity#onFulfillDisplayObjects} method.
+       * Called just after the {@link LifeCycle#onFulfillDisplayObjects} method.
        */
       onFulfillDisplayObjectsDone,
       /**
-       * Called just after the {@link LifeCycle.ForActivity#onSynchronizeDisplayObjects} method.
+       * Called just after the {@link LifeCycle#onSynchronizeDisplayObjects} method.
        */
       onSynchronizeDisplayObjectsDone,
       /**
