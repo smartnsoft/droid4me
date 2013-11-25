@@ -136,34 +136,29 @@ public abstract class SmartApplication
       }
       else
       {
-        activity.runOnUiThread(new Runnable()
+
+        final I18N i18n = getI18N();
+        // If the logger recipient is not set, no e-mail submission is proposed
+        showDialog(activity, getI18N().dialogBoxErrorTitle, getI18N().otherProblemHint, i18n.reportButtonLabel, new OnClickListener()
         {
-          public void run()
+          public void onClick(DialogInterface dialogInterface, int which)
           {
-            final I18N i18n = getI18N();
-            // If the logger recipient is not set, no e-mail submission is proposed
-            showDialog(activity, getI18N().dialogBoxErrorTitle, getI18N().otherProblemHint, i18n.reportButtonLabel, new OnClickListener()
-            {
-              public void onClick(DialogInterface dialogInterface, int which)
-              {
-                new SendLogsTask(activity, i18n.retrievingLogProgressMessage, "[" + i18n.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
-                    null, null);
-              }
-            }, activity.getString(android.R.string.cancel), new OnClickListener()
-            {
-              public void onClick(DialogInterface dialogInterface, int which)
-              {
-                // We leave the activity, because we cannot go any further
-                activity.finish();
-              }
-            }, new DialogInterface.OnCancelListener()
-            {
-              public void onCancel(DialogInterface dialog)
-              {
-                // We leave the activity, because we cannot go any further
-                activity.finish();
-              }
-            });
+            new SendLogsTask(activity, i18n.retrievingLogProgressMessage, "[" + i18n.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
+                null, null);
+          }
+        }, activity.getString(android.R.string.cancel), new OnClickListener()
+        {
+          public void onClick(DialogInterface dialogInterface, int which)
+          {
+            // We leave the activity, because we cannot go any further
+            activity.finish();
+          }
+        }, new DialogInterface.OnCancelListener()
+        {
+          public void onCancel(DialogInterface dialog)
+          {
+            // We leave the activity, because we cannot go any further
+            activity.finish();
           }
         });
         return true;
