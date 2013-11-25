@@ -485,23 +485,16 @@ public final class ActivityController
      */
     protected boolean onBusinessObjectAvailableExceptionFallback(final Activity activity, Object component, BusinessObjectUnavailableException exception)
     {
-      // We make sure that the dialog is popped from the UI thread
-      activity.runOnUiThread(new Runnable()
-      {
-        public void run()
-        {
-          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.businessObjectAvailabilityProblemHint, activity.getString(android.R.string.ok),
-              new DialogInterface.OnClickListener()
-              {
-                public void onClick(DialogInterface dialog, int which)
-                {
-                  // We leave the activity, because we cannot go any further
-                  dialog.dismiss();
-                  activity.finish();
-                }
-              }, null, null, null);
-        }
-      });
+      showDialog(activity, i18n.dialogBoxErrorTitle, i18n.businessObjectAvailabilityProblemHint, activity.getString(android.R.string.ok),
+          new DialogInterface.OnClickListener()
+          {
+            public void onClick(DialogInterface dialog, int which)
+            {
+              // We leave the activity, because we cannot go any further
+              dialog.dismiss();
+              activity.finish();
+            }
+          }, null, null, null);
       return true;
     }
 
@@ -536,22 +529,15 @@ public final class ActivityController
      */
     protected boolean onOtherExceptionFallback(final Activity activity, Object component, Throwable throwable)
     {
-      // We make sure that the dialog is popped from the UI thread
-      activity.runOnUiThread(new Runnable()
+      showDialog(activity, i18n.dialogBoxErrorTitle, i18n.otherProblemHint, activity.getString(android.R.string.ok), new DialogInterface.OnClickListener()
       {
-        public void run()
+        public void onClick(DialogInterface dialog, int which)
         {
-          showDialog(activity, i18n.dialogBoxErrorTitle, i18n.otherProblemHint, activity.getString(android.R.string.ok), new DialogInterface.OnClickListener()
-          {
-            public void onClick(DialogInterface dialog, int which)
-            {
-              dialog.dismiss();
-              // We leave the activity, because we cannot go any further
-              activity.finish();
-            }
-          }, null, null, null);
+          dialog.dismiss();
+          // We leave the activity, because we cannot go any further
+          activity.finish();
         }
-      });
+      }, null, null, null);
       return true;
     }
 
@@ -767,8 +753,9 @@ public final class ActivityController
      * @param onCancelListener
      *          the callback which will be invoked from the UI thread when the end-user hits the "back" button ; may be {@code null}, and in that
      *          case, the dialog box will not be {@link Builder#setCancelable(boolean) cancelleable}
+     * @see #showDialog()
      */
-    protected void showDialog(Activity activity, CharSequence dialogTitle, CharSequence dialogMessage, CharSequence positiveButton,
+    protected void onShowDialog(Activity activity, CharSequence dialogTitle, CharSequence dialogMessage, CharSequence positiveButton,
         DialogInterface.OnClickListener positiveClickListener, CharSequence negativeButton, DialogInterface.OnClickListener negativeClickListener,
         DialogInterface.OnCancelListener onCancelListener)
     {
@@ -786,6 +773,56 @@ public final class ActivityController
       builder.show();
     }
 
+    /**
+     * The method which should be invoked internally when reporting an error dialog box. The parameters are the same as for the
+     * {@link #onShowDialog()} method.
+     * 
+     * <p>
+     * It is possible to invoke that method from any thread.
+     * </p>
+     * 
+     * @see #onShowDialog()
+     */
+    protected final void showDialog(final Activity activity, final CharSequence dialogTitle, final CharSequence dialogMessage,
+        final CharSequence positiveButton, final DialogInterface.OnClickListener positiveClickListener, final CharSequence negativeButton,
+        final DialogInterface.OnClickListener negativeClickListener, final DialogInterface.OnCancelListener onCancelListener)
+    {
+      if (activity.isFinishing() == true)
+      {
+        // We do nothing, because there is no user interface any more!
+        return;
+      }
+      // We make sure that the dialog is popped from the UI thread
+      activity.runOnUiThread(new Runnable()
+      {
+        public void run()
+        {
+          if (activity.isFinishing() == true)
+          {
+            // We do nothing, because there is no user interface any more!
+            return;
+          }
+          try
+          {
+            onShowDialog(activity, dialogTitle, dialogMessage, positiveButton, positiveClickListener, negativeButton, negativeClickListener, onCancelListener);
+          }
+          catch (Throwable throwable)
+          {
+            if (activity.isFinishing() == false)
+            {
+              if (log.isErrorEnabled())
+              {
+                log.error("Could not open an error dialog box, because an exceptin occurred while displaying it!", throwable);
+              }
+            }
+            else
+            {
+              // It is very likely that the activity has been finished in the meantime, hence we do not log anything
+            }
+          }
+        }
+      });
+    }
   }
 
   private static final Logger log = LoggerFactory.getInstance(ActivityController.class);

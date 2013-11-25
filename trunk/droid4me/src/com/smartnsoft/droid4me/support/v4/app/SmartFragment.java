@@ -67,7 +67,11 @@ public abstract class SmartFragment<AggregateClass>
   public void onConfigurationChanged(Configuration newConfig)
   {
     super.onConfigurationChanged(newConfig);
-    droid4mizer.onConfigurationChanged(newConfig);
+    if (droid4mizer != null)
+    {
+      // It may happen that the "Fragment.onAttach()" may have not been called beforehand!
+      droid4mizer.onConfigurationChanged(newConfig);
+    }
   }
 
   @Override
