@@ -151,6 +151,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     if (stateContainer.isAliveAsWellAsHostingActivity() == false)
     {
       // In that case, we skip the processing
+      return;
     }
     if (stateContainer.shouldDelayRefreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately) == true)
     {
@@ -159,6 +160,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     if (stateContainer.isAliveAsWellAsHostingActivity() == false)
     {
       // In that case, we skip the processing
+      return;
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
