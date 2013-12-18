@@ -50,7 +50,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * 
    * @since 2012.06.07
    */
-  public static class AnalyticsData
+  public static class CoreAnalyticsData
   {
 
     public final int bitmapsCount;
@@ -59,7 +59,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
     public final int outOfMemoryOccurences;
 
-    public AnalyticsData(int bitmapsCount, int cleanUpsCount, int outOfMemoryOccurences)
+    protected CoreAnalyticsData(int bitmapsCount, int cleanUpsCount, int outOfMemoryOccurences)
     {
       this.bitmapsCount = bitmapsCount;
       this.cleanUpsCount = cleanUpsCount;
@@ -90,7 +90,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
      * @param analyticsData
      *          the information about the instance internal state
      */
-    void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader, CoreBitmapDownloader.AnalyticsData analyticsData);
+    void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader, CoreBitmapDownloader.CoreAnalyticsData analyticsData);
 
   }
 
@@ -246,7 +246,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * When set, i.e. not {@code null} (which is the default), each instance will be notified as soon as its internal state changes.
    * 
-   * @see #notifiyAnalyticsListener()
+   * @see #notifyAnalyticsListener()
    */
   public static CoreBitmapDownloader.AnalyticsListener ANALYTICS_LISTENER;
 
@@ -310,7 +310,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * The number of times the {@link #cleanUpCache()} method has actually cleaned up the cache.
    */
-  private int cleanUpsCount = 0;
+  protected int cleanUpsCount = 0;
 
   /**
    * The number of times an {@link OutOfMemoryError} has occurred for this instance.
@@ -528,7 +528,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       cleanUpCache();
     }
 
-    notifiyAnalyticsListener();
+    notifyAnalyticsListener();
     return usedBitmap;
   }
 
@@ -642,18 +642,27 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
     {
       log.debug("'" + name + "' statistics: " + "cache.size()=" + cache.size());
     }
-    notifiyAnalyticsListener();
+    notifyAnalyticsListener();
   }
 
   /**
-   * If the {@link CoreBitmapDownloader#ANALYTICS_LISTENER} is not {@code null}, it notifies it.
+   * Forces the BitmapDownloader to send its analytics. If the {@link CoreBitmapDownloader#ANALYTICS_LISTENER} is not {@code null}, it will be
+   * notified with the latest analytics.
    */
-  protected final void notifiyAnalyticsListener()
+  public final void notifyAnalyticsListener()
   {
     if (CoreBitmapDownloader.ANALYTICS_LISTENER != null)
     {
-      CoreBitmapDownloader.ANALYTICS_LISTENER.onAnalytics(this, new CoreBitmapDownloader.AnalyticsData(cache.size(), cleanUpsCount, outOfMemoryOccurences));
+      CoreBitmapDownloader.ANALYTICS_LISTENER.onAnalytics(this, computeAnalyticsData());
     }
+  }
+
+  /**
+   * @return the analytics currently available
+   */
+  protected CoreAnalyticsData computeAnalyticsData()
+  {
+    return new CoreBitmapDownloader.CoreAnalyticsData(cache.size(), cleanUpsCount, outOfMemoryOccurences);
   }
 
 }

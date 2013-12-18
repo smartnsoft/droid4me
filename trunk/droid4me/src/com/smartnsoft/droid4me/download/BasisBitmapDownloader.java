@@ -57,6 +57,38 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 {
 
   /**
+   * Contains extra information about a {@link BasisBitmapDownloader} instance internal state.
+   * 
+   * @since 2013.12.18
+   */
+  public static class BasisAnalyticsData
+      extends CoreAnalyticsData
+  {
+
+    public final int commandsCount;
+
+    public final int prioritiesPreStackSize;
+
+    public final int prioritiesStackSize;
+
+    public final int prioritiesDownloadStackSize;
+
+    public final int inProgressDownloadsSize;
+
+    protected BasisAnalyticsData(int bitmapsCount, int cleanUpsCount, int outOfMemoryOccurences, int commandsCount, int prioritiesPreStackSize,
+        int prioritiesStackSize, int prioritiesDownloadStackSize, int inProgressDownloadsSize)
+    {
+      super(bitmapsCount, cleanUpsCount, outOfMemoryOccurences);
+      this.commandsCount = commandsCount;
+      this.prioritiesPreStackSize = prioritiesPreStackSize;
+      this.prioritiesStackSize = prioritiesStackSize;
+      this.prioritiesDownloadStackSize = prioritiesDownloadStackSize;
+      this.inProgressDownloadsSize = inProgressDownloadsSize;
+    }
+
+  }
+
+  /**
    * Indicates to the command how it should handle the {@link BasisCommand#executeEnd()} method.
    */
   private static enum NextResult
@@ -149,6 +181,15 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         if (log.isErrorEnabled())
         {
           log.error(logCommandId() + "An unhandled exception has been raised during the processing of a command", throwable);
+        }
+        // We notify the caller
+//        instructions.onOver(true, view, bitmapUid, imageSpecs);
+        if (view != null)
+        {
+          // In case of an exception, we forget the command
+          prioritiesStack.remove(view);
+          prioritiesDownloadStack.remove(view);
+          prioritiesDownloadStack.remove(view);
         }
       }
     }
@@ -246,7 +287,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   }
 
   /**
-   * Indicates to the command what it should do eventually.
+   * Indicates to the {@link PreCommand} what it should do eventually.
    * 
    * @since 2011.09.02
    */
@@ -275,7 +316,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   }
 
   // TODO: define a pool of Command objects, so as to minimize GC, if possible
-  private class PreCommand
+  private final class PreCommand
       extends BasisCommand
   {
 
@@ -663,7 +704,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   }
 
   protected class DownloadBitmapCommand
-      extends PreCommand
+      extends BasisCommand
       implements InputStreamDownloadInstructor
   {
 
@@ -1169,6 +1210,9 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   }
 
+  /**
+   * An internal class used when donwloading a bitmap.
+   */
   private final class DownloadingBitmap
   {
 
@@ -1474,6 +1518,12 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     {
       log.debug("'" + name + "' statistics: " + "prioritiesStack.size()=" + prioritiesStack.size() + " - " + "prioritiesPreStack.size()=" + prioritiesPreStack.size() + " - " + "prioritiesDownloadStack.size()=" + prioritiesDownloadStack.size() + " - " + "inProgressDownloads.size()=" + inProgressDownloads.size());
     }
+  }
+
+  @Override
+  protected CoreAnalyticsData computeAnalyticsData()
+  {
+    return new BasisAnalyticsData(cache.size(), cleanUpsCount, outOfMemoryOccurences, commandsCount, prioritiesPreStack.size(), prioritiesStack.size(), prioritiesDownloadStack.size(), inProgressDownloads.size());
   }
 
 }
