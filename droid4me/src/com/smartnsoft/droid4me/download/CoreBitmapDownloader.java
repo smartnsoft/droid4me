@@ -94,6 +94,9 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   }
 
+  /**
+   * Enables to remember the bound bitmaps.
+   */
   protected final class UsedBitmap
       implements Comparable<UsedBitmap>
   {
