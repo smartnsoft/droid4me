@@ -78,7 +78,7 @@ public class BitmapDownloader
 
       private float jaugeWaterLevel;
 
-      private CoreBitmapDownloader.AnalyticsData analyticsData;
+      private CoreBitmapDownloader.CoreAnalyticsData analyticsData;
 
       public JaugeView(Context context, String label)
       {
@@ -156,7 +156,7 @@ public class BitmapDownloader
       CoreBitmapDownloader.ANALYTICS_LISTENER = this;
     }
 
-    public void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader, CoreBitmapDownloader.AnalyticsData analyticsData)
+    public void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader, CoreBitmapDownloader.CoreAnalyticsData analyticsData)
     {
       jauges[coreBitmapDownloader.instanceIndex].jaugeLevel = (float) coreBitmapDownloader.getMemoryConsumptionInBytes() / (float) coreBitmapDownloader.highLevelMemoryWaterMarkInBytes;
       jauges[coreBitmapDownloader.instanceIndex].jaugeWaterLevel = (float) coreBitmapDownloader.lowLevelMemoryWaterMarkInBytes / (float) coreBitmapDownloader.highLevelMemoryWaterMarkInBytes;

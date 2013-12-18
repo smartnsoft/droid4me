@@ -14,8 +14,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.smartnsoft.droid4me.download.BasisBitmapDownloader;
+import com.smartnsoft.droid4me.download.BasisBitmapDownloader.BasisAnalyticsData;
 import com.smartnsoft.droid4me.download.BasisDownloadInstructions;
 import com.smartnsoft.droid4me.download.BasisDownloadInstructions.InputStreamDownloadInstructor;
+import com.smartnsoft.droid4me.download.CoreBitmapDownloader;
+import com.smartnsoft.droid4me.download.CoreBitmapDownloader.CoreAnalyticsData;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
@@ -160,6 +163,7 @@ public final class BitmapDownloaderTest
       {
         wait(timeOutInMilliseconds);
       }
+      Thread.sleep(200);
     }
 
   }
@@ -329,14 +333,26 @@ public final class BitmapDownloaderTest
 
   private DummyHandlerable handler;
 
+  private BasisAnalyticsData analyticsData;
+
   @Before
   public void setup()
   {
     super.setup();
     BasisBitmapDownloader.IS_DEBUG_TRACE = true;
+    BasisBitmapDownloader.IS_DUMP_TRACE = true;
+    analyticsData = null;
     bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>(0, "0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
     view = new DummyViewable(1234);
     handler = new DummyHandlerable();
+    BasisBitmapDownloader.ANALYTICS_LISTENER = new CoreBitmapDownloader.AnalyticsListener()
+    {
+      @Override
+      public void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader, CoreAnalyticsData analyticsData)
+      {
+        BitmapDownloaderTest.this.analyticsData = (BasisAnalyticsData) analyticsData;
+      }
+    };
   }
 
   @Test
@@ -363,6 +379,7 @@ public final class BitmapDownloaderTest
     final int convert = 1;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -389,6 +406,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -414,6 +432,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -431,8 +450,8 @@ public final class BitmapDownloaderTest
       }
     });
 
-    expectations.waitForOnOver(500);
-    final boolean onOver = false;
+    expectations.waitForOnOver();
+    final boolean onOver = true;
     final int computeUrl = 1;
     final int hasLocalBitmap = 1;
     final int hasTemporaryBitmap = 0;
@@ -447,6 +466,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -480,6 +500,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -506,6 +527,7 @@ public final class BitmapDownloaderTest
     final Boolean onBitmapBoundResult = Boolean.TRUE;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -532,6 +554,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -557,6 +580,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -590,6 +614,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -624,6 +649,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -657,6 +683,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -691,6 +718,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -717,6 +745,7 @@ public final class BitmapDownloaderTest
     final int convert = 0;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -751,6 +780,7 @@ public final class BitmapDownloaderTest
     final int convert = 1;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -797,6 +827,7 @@ public final class BitmapDownloaderTest
         expectations1.downloadInputStream + expectations2.downloadInputStream + expectations3.downloadInputStream);
     Assert.assertEquals("The 'onBindBitmap()' method has not been invoked the expected number of times", 2,
         expectations1.onBindBitmap + expectations2.onBindBitmap + expectations3.onBindBitmap);
+    checkAnalyticsData();
   }
 
   @Test
@@ -856,6 +887,7 @@ public final class BitmapDownloaderTest
         expectations1.downloadInputStream + expectations2.downloadInputStream + expectations3.downloadInputStream);
     Assert.assertEquals("The 'onBindBitmap()' method has not been invoked the expected number of times", 2,
         expectations1.onBindBitmap + expectations2.onBindBitmap + expectations3.onBindBitmap);
+    checkAnalyticsData();
   }
 
   @Test
@@ -895,6 +927,7 @@ public final class BitmapDownloaderTest
     assertPreExpectations(expectations2, true, 1, 1, 1, 0, 0);
     assertPreExpectations(expectations3, true, 1, 1, 1, 0, 0);
     assertBindingExpectations(expectations3, true, 1, 0, 1, Boolean.FALSE);
+    checkAnalyticsData();
   }
 
   @Test
@@ -948,6 +981,7 @@ public final class BitmapDownloaderTest
     final Boolean onBitmapBoundResult = Boolean.TRUE;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    checkAnalyticsData();
   }
 
   @Test
@@ -955,6 +989,7 @@ public final class BitmapDownloaderTest
       throws InterruptedException
   {
     onBindBitmapExceptionInternal(false, new NullPointerException(), null);
+    checkAnalyticsData();
   }
 
   @Test
@@ -963,6 +998,7 @@ public final class BitmapDownloaderTest
   {
     onBindBitmapExceptionInternal(false, new NullPointerException(), null);
     onBindBitmapExceptionInternal(true, new NullPointerException(), null);
+    checkAnalyticsData();
   }
 
   @Test
@@ -970,6 +1006,7 @@ public final class BitmapDownloaderTest
       throws InterruptedException
   {
     onBindBitmapExceptionInternal(false, null, new OutOfMemoryError());
+    checkAnalyticsData();
   }
 
   @Test
@@ -978,6 +1015,7 @@ public final class BitmapDownloaderTest
   {
     onBindBitmapExceptionInternal(false, null, new OutOfMemoryError());
     onBindBitmapExceptionInternal(true, null, new OutOfMemoryError());
+    checkAnalyticsData();
   }
 
   @Test
@@ -1033,6 +1071,7 @@ public final class BitmapDownloaderTest
       final Boolean onBitmapBoundResult = Boolean.TRUE;
       assertAllExpectations(secondExpectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap,
           onBitmapReady, onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+      checkAnalyticsData();
     }
   }
 
@@ -1090,16 +1129,17 @@ public final class BitmapDownloaderTest
       assertAllExpectations(secondExpectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap,
           onBitmapReady, onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
     }
+    checkAnalyticsData();
   }
 
   @Test
   public void onCommandOverwrittenDuringDownload()
       throws InterruptedException
   {
-    final Expectations expectations = new Expectations();
+    final Expectations firstExpectations = new Expectations();
     final Expectations secondExpectations = new Expectations();
     bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
-        new ExpectedInstructions(expectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess)
+        new ExpectedInstructions(firstExpectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess)
         {
           @Override
           public InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream)
@@ -1110,6 +1150,7 @@ public final class BitmapDownloaderTest
             return super.onInputStreamDownloaded(bitmapUid, imageSpecs, url, inputStream);
           }
         });
+    firstExpectations.waitForOnOver();
     secondExpectations.waitForOnOver();
 
     {
@@ -1126,7 +1167,7 @@ public final class BitmapDownloaderTest
       final int onBitmapBound = 0;
       final int convert = 1;
       final Boolean onBitmapBoundResult = null;
-      assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
+      assertAllExpectations(firstExpectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
           onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
     }
     {
@@ -1146,6 +1187,7 @@ public final class BitmapDownloaderTest
       assertAllExpectations(secondExpectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap,
           onBitmapReady, onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
     }
+    checkAnalyticsData();
   }
 
   private void onBindBitmapExceptionInternal(boolean fromCache, final RuntimeException exception, final Error error)
@@ -1195,6 +1237,17 @@ public final class BitmapDownloaderTest
     Assert.assertEquals("The 'prioritiesPreStack' size does not have the right size", 0, prioritiesPreStack.get());
     Assert.assertEquals("The 'prioritiesStack' size does not have the right size", 0, prioritiesStack.get());
     Assert.assertEquals("The 'prioritiesDownloadStack' size does not have the right size", 0, prioritiesDownloadStack.get());
+    checkAnalyticsData();
+  }
+
+  private void checkAnalyticsData()
+  {
+    bitmapDownloader.notifyAnalyticsListener();
+    Assert.assertNotNull("The 'analyticsData' should not be null", analyticsData);
+    Assert.assertEquals("The 'analyticsData' in-progress downloads size is incorrect", 0, analyticsData.inProgressDownloadsSize);
+    Assert.assertEquals("The 'analyticsData' priorities-download stack size is incorrect", 0, analyticsData.prioritiesDownloadStackSize);
+    Assert.assertEquals("The 'analyticsData' priorities-pre stack size is incorrect", 0, analyticsData.prioritiesPreStackSize);
+    Assert.assertEquals("The 'analyticsData' priorities stack size is incorrect", 0, analyticsData.prioritiesStackSize);
   }
 
   private void assertAllExpectations(final Expectations expectations, boolean onOver, final int computeUrl, final int hasLocalBitmap,
