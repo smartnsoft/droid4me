@@ -523,21 +523,26 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         if (view != null)
         {
           usedBitmap = new UsedBitmap(bitmap, url);
-          // We need to do that in the GUI thread!
           state = FinalState.NotInCache;
-          if (isFromGuiThread == false)
+
+          // Beware: we have a special handling in the caller method if the bitmap URL is null!
+          if (url != null)
           {
-            if (executeNextThroughHandler() == NextResult.Failed)
+            // We need to do that in the GUI thread!
+            if (isFromGuiThread == false)
             {
-              if (log.isWarnEnabled())
+              if (executeNextThroughHandler() == NextResult.Failed)
               {
-                log.warn(logCommandId() + "Failed to apply the temporary for the bitmap with uid '" + bitmapUid + "'");
+                if (log.isWarnEnabled())
+                {
+                  log.warn(logCommandId() + "Failed to apply the temporary for the bitmap with uid '" + bitmapUid + "'");
+                }
               }
             }
-          }
-          else
-          {
-            executeNext();
+            else
+            {
+              executeNext();
+            }
           }
         }
       }
