@@ -985,6 +985,14 @@ public final class BitmapDownloaderTest
   }
 
   @Test
+  public void hasTemporaryBitmapException()
+      throws InterruptedException
+  {
+    hasTemporaryBitmapExceptionInternal(false, new NullPointerException(), null);
+    checkAnalyticsData();
+  }
+
+  @Test
   public void onBindBitmapException()
       throws InterruptedException
   {
@@ -1228,6 +1236,55 @@ public final class BitmapDownloaderTest
     final int onBitmapBound = 1;
     final int convert = fromCache == false ? 1 : 0;
     final Boolean onBitmapBoundResult = Boolean.FALSE;
+    assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
+        onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
+    final AtomicInteger prioritiesPreStack = new AtomicInteger();
+    final AtomicInteger prioritiesStack = new AtomicInteger();
+    final AtomicInteger prioritiesDownloadStack = new AtomicInteger();
+    bitmapDownloader.getStacks(prioritiesPreStack, prioritiesStack, prioritiesDownloadStack, new AtomicInteger(), new AtomicInteger());
+    Assert.assertEquals("The 'prioritiesPreStack' size does not have the right size", 0, prioritiesPreStack.get());
+    Assert.assertEquals("The 'prioritiesStack' size does not have the right size", 0, prioritiesStack.get());
+    Assert.assertEquals("The 'prioritiesDownloadStack' size does not have the right size", 0, prioritiesDownloadStack.get());
+    checkAnalyticsData();
+  }
+
+  private void hasTemporaryBitmapExceptionInternal(boolean fromCache, final RuntimeException exception, final Error error)
+      throws InterruptedException
+  {
+    final Expectations expectations = new Expectations();
+    bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler, new ExpectedInstructions(expectations, false, true, null)
+    {
+
+      @Override
+      public DummyBitmapable hasTemporaryBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
+      {
+        super.hasTemporaryBitmap(view, bitmapUid, imageSpecs);
+        if (exception != null)
+        {
+          throw exception;
+        }
+        else
+        {
+          throw error;
+        }
+      }
+
+    });
+
+    expectations.waitForOnOver();
+    final boolean onOver = true;
+    final int computeUrl = 1;
+    final int hasLocalBitmap = 1;
+    final int hasTemporaryBitmap = fromCache == false ? 1 : 0;
+    final int onBindLocalBitmap = 0;
+    final int onBindTemporaryBitmap = 0;
+    final int getInputStream = 0;//fromCache == false ? 1 : 0;
+    final int onInputStreamDownloaded = 0;//fromCache == false ? 1 : 0;
+    final int onBitmapReady = 0;
+    final int onBindBitmap = 0;
+    final int onBitmapBound = 0;
+    final int convert = 0;//fromCache == false ? 1 : 0;
+    final Boolean onBitmapBoundResult = null;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
     final AtomicInteger prioritiesPreStack = new AtomicInteger();
