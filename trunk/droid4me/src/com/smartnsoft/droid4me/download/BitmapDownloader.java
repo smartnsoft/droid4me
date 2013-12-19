@@ -120,7 +120,7 @@ public class BitmapDownloader
 
     /**
      * Creates on the fly a new Android {@link ViewGroup} which is able to display the data exposed by an
-     * {@link CoreBitmapDownloader.AnalyticsListener} implementaton.
+     * {@link CoreBitmapDownloader.AnalyticsListener} implementation.
      * 
      * <p>
      * The container widget displays as many jauges as declared through the {@link BitmapDownloader#INSTANCES_COUNT} attribute, each jauge supposed to

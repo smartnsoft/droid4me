@@ -183,7 +183,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           log.error(logCommandId() + "An unhandled exception has been raised during the processing of a command", throwable);
         }
         // We notify the caller
-//        instructions.onOver(true, view, bitmapUid, imageSpecs);
+        instructions.onOver(true, view, bitmapUid, imageSpecs);
         if (view != null)
         {
           // In case of an exception, we forget the command
@@ -249,7 +249,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     protected abstract String logCommandIdPrefix();
 
-    protected final Boolean onBindBitmap(boolean downloaded)
+    protected final boolean onBindBitmap(boolean downloaded)
     {
       try
       {
@@ -263,7 +263,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         }
         outOfMemoryOccurences++;
         cleanUpCache();
-        return null;
+        throw exception;
       }
     }
 
@@ -430,26 +430,26 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           break;
         case InCache:
-          Boolean success = null;
+          boolean success = false;
           try
           {
             success = onBindBitmap(false);
-            if (success == null)
-            {
-              return;
-            }
           }
           finally
           {
-            if (success != Boolean.TRUE)
+            if (success != true)
             {
               instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
-              instructions.onOver(true, view, bitmapUid, imageSpecs);
             }
+          }
+          if (success != true)
+          {
+            instructions.onOver(true, view, bitmapUid, imageSpecs);
+            return;
           }
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug(logCommandId() + "Binded the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? ""
+            log.debug(logCommandId() + "Bound the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? ""
                 : (" and with specs '" + imageSpecs.toString() + "'")));
           }
           usedBitmap.forgetBitmap();
@@ -854,33 +854,30 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         if (usedBitmap != null)
         {
-          Boolean success = null;
+          boolean success = false;
           try
           {
             success = onBindBitmap(downloaded);
-            if (success == null)
-            {
-              return;
-            }
           }
           finally
           {
-            if (success != Boolean.TRUE)
+            if (success != true)
             {
               instructions.onBitmapBound(false, view, bitmapUid, imageSpecs);
-              instructions.onOver(true, view, bitmapUid, imageSpecs);
             }
           }
-          if (success == Boolean.TRUE)
+          if (success != true)
           {
-            if (IS_DEBUG_TRACE && log.isDebugEnabled())
-            {
-              log.debug(logCommandId() + "Binded the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? ""
-                  : (" and with specs '" + imageSpecs.toString() + "'")));
-            }
-            usedBitmap.forgetBitmap();
-            usedBitmap.rememberBinding(view);
+            instructions.onOver(true, view, bitmapUid, imageSpecs);
+            return;
           }
+          if (IS_DEBUG_TRACE && log.isDebugEnabled())
+          {
+            log.debug(logCommandId() + "Bound the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? ""
+                : (" and with specs '" + imageSpecs.toString() + "'")));
+          }
+          usedBitmap.forgetBitmap();
+          usedBitmap.rememberBinding(view);
         }
         instructions.onBitmapBound(usedBitmap != null, view, bitmapUid, imageSpecs);
         instructions.onOver(false, view, bitmapUid, imageSpecs);
