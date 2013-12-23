@@ -39,6 +39,7 @@ import android.util.Log;
 import android.view.WindowManager;
 
 import com.smartnsoft.droid4me.app.ActivityController.ExceptionHandler;
+import com.smartnsoft.droid4me.app.ActivityController.IssueAnalyzer;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 import com.smartnsoft.droid4me.util.SendLogsTask;
@@ -121,9 +122,9 @@ public abstract class SmartApplication
       extends ActivityController.AbstractExceptionHandler
   {
 
-    public DefaultExceptionHandler(I18N i18n)
+    public DefaultExceptionHandler(I18N i18n, IssueAnalyzer issueAnalyzer)
     {
-      super(i18n);
+      super(i18n, issueAnalyzer);
     }
 
     @Override
@@ -234,20 +235,6 @@ public abstract class SmartApplication
    * A flag which enables to remember when the @link {@link Application#onCreate()} method invocation is over.
    */
   private static boolean isOnCreatedDone;
-
-  /**
-   * The overridden default thread uncaught exception handler.
-   * 
-   * @see SmartApplication#uncaughtExceptionHandler
-   */
-  private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
-
-  /**
-   * The overridden GUI thread uncaught exception handler.
-   * 
-   * @see SmartApplication#uncaughtExceptionHandler
-   */
-  private Thread.UncaughtExceptionHandler uiUncaughtExceptionHandler;
 
   /**
    * The application preferences.
@@ -374,7 +361,7 @@ public abstract class SmartApplication
    */
   protected ActivityController.ExceptionHandler getExceptionHandler()
   {
-    return new SmartApplication.DefaultExceptionHandler(getI18N());
+    return new SmartApplication.DefaultExceptionHandler(getI18N(), null);
   }
 
   /**
@@ -487,18 +474,9 @@ public abstract class SmartApplication
     onSetupExceptionHandlers();
 
     ActivityController.getInstance().registerExceptionHandler(getExceptionHandler());
-    final Thread uiThread = Thread.currentThread();
-    // We explicitly intercept the GUI thread exceptions, so as to override the default behavior
-    final UncaughtExceptionHandler uiBuiltinUuncaughtExceptionHandler = uiThread.getUncaughtExceptionHandler();
-    uiUncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), uiBuiltinUuncaughtExceptionHandler);
-    if (log.isDebugEnabled())
-    {
-      log.debug("The application with package name '" + getPackageName() + "' " + (uiBuiltinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in GUI uncaught exception handler");
-    }
-    Thread.currentThread().setUncaughtExceptionHandler(uiUncaughtExceptionHandler);
-    // We make sure that other uncaught exceptions will be intercepted and handled
+    // We make sure that all uncaught exceptions will be intercepted and handled
     final UncaughtExceptionHandler builtinUuncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-    uncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), builtinUuncaughtExceptionHandler);
+    final SmartUncaughtExceptionHandler uncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), builtinUuncaughtExceptionHandler);
     if (log.isDebugEnabled())
     {
       log.debug("The application with package name '" + getPackageName() + "' " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
