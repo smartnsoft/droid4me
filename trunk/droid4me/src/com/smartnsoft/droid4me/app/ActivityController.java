@@ -18,7 +18,6 @@
 
 package com.smartnsoft.droid4me.app;
 
-import java.io.File;
 import java.io.InterruptedIOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -34,9 +33,11 @@ import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Debug;
-import android.os.Environment;
 import android.os.Parcelable;
 import android.view.Window;
 import android.widget.Toast;
@@ -345,58 +346,83 @@ public final class ActivityController
   }
 
   /**
-   * A simple implementation of {@link ActivityController.ExceptionHandler} which pops-up error dialog boxes and toasts.
+   * Responsible for analyzing issues resulting from {@link Throwable} entities.
    * 
-   * <p>
-   * The labels of the dialogs and the toasts are i18ned though the provided {@link SmartApplication.I18N} provided instance.
-   * </p>
+   * @since 2013.12.23
+   * 
    */
-  public static class AbstractExceptionHandler
-      implements ActivityController.ExceptionHandler
+  public static abstract class IssueAnalyzer
   {
 
-    /**
-     * Defines how the framework should behave when an Internet connectivity problem has been detected.
-     */
-    public static enum ConnectivityUIExperience
+    public final static class IssueContext
     {
-      /**
-       * Should open a {@link android.app.Dialog dialog box} with a "retry"/"ok" button.
-       */
-      DialogRetry,
-      /**
-       * Should open a {@link android.app.Dialog dialog box} with a single "ok" button.
-       */
-      Dialog,
-      /**
-       * Should issue an Android {@link Toast.LENGTH_SHORT short} {@link android.widget.Toast}.
-       */
-      Toast
+
+      private final static String SPLITTER = ";";
+
+      public final String applicationName;
+
+      public final String applicationVersionName;
+
+      public final int applicationVersionCode;
+
+      public final String deviceModel;
+
+      public final String firmwareVersion;
+
+      public final String buildNumber;
+
+      public IssueContext(String string)
+      {
+        final String[] tokens = string.split(IssueContext.SPLITTER);
+        int index = 0;
+        applicationName = tokens[index++];
+        applicationVersionName = tokens[index++];
+        applicationVersionCode = Integer.parseInt(tokens[index++]);
+        deviceModel = tokens[index++];
+        firmwareVersion = tokens[index++];
+        buildNumber = tokens[index++];
+      }
+
+      public IssueContext(Context context)
+      {
+        applicationName = context.getString(context.getApplicationInfo().labelRes);
+        PackageInfo packageInfo = null;
+        try
+        {
+          packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+        }
+        catch (NameNotFoundException exception)
+        {
+          // Cannot happen
+        }
+        applicationVersionName = packageInfo == null ? "" : packageInfo.versionName;
+        applicationVersionCode = packageInfo == null ? -1 : packageInfo.versionCode;
+        deviceModel = Build.MODEL;
+        firmwareVersion = Build.VERSION.RELEASE;
+        buildNumber = Build.DISPLAY;
+      }
+
+      @Override
+      public String toString()
+      {
+        return applicationName + IssueContext.SPLITTER + applicationVersionName + IssueContext.SPLITTER + applicationVersionCode + IssueContext.SPLITTER + deviceModel + IssueContext.SPLITTER + firmwareVersion + IssueContext.SPLITTER + buildNumber;
+      }
+
+      public String toHumanString()
+      {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("applicationName = ").append(applicationName).append("\n");
+        sb.append("applicationVersionName = ").append(applicationVersionName).append("\n");
+        sb.append("applicationVersionCode = ").append(applicationVersionCode).append("\n");
+        sb.append("deviceModel = ").append(deviceModel).append("\n");
+        sb.append("firmwareVersion = ").append(firmwareVersion).append("\n");
+        sb.append("buildNumber = ").append(buildNumber).append("\n");
+        return sb.toString();
+      }
+
     }
 
-    private final SmartApplication.I18N i18n;
-
-    /**
-     * @param throwable
-     *          the exception to investigate
-     * @return {@code true} if and only if the exception results from a connectivity issue by inspecting its causes tree
-     */
-    public static boolean isAConnectivityProblem(Throwable throwable)
-    {
-      return ActivityController.AbstractExceptionHandler.searchForCause(throwable, UnknownHostException.class, SocketException.class,
-          SocketTimeoutException.class, InterruptedIOException.class, NoHttpResponseException.class, SSLException.class) != null;
-    }
-
-    /**
-     * @param throwable
-     *          the exception to investigate
-     * @return {@code true} if and only if the exception results from a memory saturation issue (i.e. a {@link OutOfMemoryError} exception) by
-     *         inspecting its causes tree
-     */
-    public static boolean isAMemoryProblem(Throwable throwable)
-    {
-      return ActivityController.AbstractExceptionHandler.searchForCause(throwable, OutOfMemoryError.class) != null;
-    }
+    protected final static Logger log = LoggerFactory.getInstance(IssueAnalyzer.class);
 
     /**
      * Attempts to find a specific exception in the provided exception by iterating over the causes, starting with the provided exception itself.
@@ -445,12 +471,93 @@ public final class ActivityController
     }
 
     /**
+     * @param throwable
+     *          the exception to investigate
+     * @return {@code true} if and only if the exception results from a connectivity issue by inspecting its causes tree
+     */
+    public static boolean isAConnectivityProblem(Throwable throwable)
+    {
+      return ActivityController.IssueAnalyzer.searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class,
+          InterruptedIOException.class, NoHttpResponseException.class, SSLException.class) != null;
+    }
+
+    /**
+     * @param throwable
+     *          the exception to investigate
+     * @return {@code true} if and only if the exception results from a memory saturation issue (i.e. a {@link OutOfMemoryError} exception) by
+     *         inspecting its causes tree
+     */
+    public static boolean isAMemoryProblem(Throwable throwable)
+    {
+      return ActivityController.IssueAnalyzer.searchForCause(throwable, OutOfMemoryError.class) != null;
+    }
+
+    protected final Context context;
+
+    /**
+     * @param context
+     *          should be an application {@link Context}
+     */
+    public IssueAnalyzer(Context context)
+    {
+      this.context = context;
+    }
+
+    /**
+     * Is responsible for analyzing the provided exception, and indicates whether it has been handled.
+     * 
+     * @param throwable
+     *          the issue to analyze
+     * @return {@code true} if and only if the issue has actually been handled by the implementation
+     */
+    public abstract boolean handleIssue(Throwable throwable);
+
+  }
+
+  /**
+   * A simple implementation of {@link ActivityController.ExceptionHandler} which pops-up error dialog boxes and toasts.
+   * 
+   * <p>
+   * The labels of the dialogs and the toasts are i18ned though the provided {@link SmartApplication.I18N} provided instance.
+   * </p>
+   */
+  public static class AbstractExceptionHandler
+      implements ActivityController.ExceptionHandler
+  {
+
+    /**
+     * Defines how the framework should behave when an Internet connectivity problem has been detected.
+     */
+    public static enum ConnectivityUIExperience
+    {
+      /**
+       * Should open a {@link android.app.Dialog dialog box} with a "retry"/"ok" button.
+       */
+      DialogRetry,
+      /**
+       * Should open a {@link android.app.Dialog dialog box} with a single "ok" button.
+       */
+      Dialog,
+      /**
+       * Should issue an Android {@link Toast.LENGTH_SHORT short} {@link android.widget.Toast}.
+       */
+      Toast
+    }
+
+    private final SmartApplication.I18N i18n;
+
+    protected final IssueAnalyzer issueAnalyzer;
+
+    /**
      * @param i18n
      *          will be used at runtime, so as to display i18ned labels in the UI
+     * @param issueAnalyzer
+     *          will be used when it comes to analyze an issue represented by an {@link Throwable}
      */
-    public AbstractExceptionHandler(SmartApplication.I18N i18n)
+    public AbstractExceptionHandler(SmartApplication.I18N i18n, ActivityController.IssueAnalyzer issueAnalyzer)
     {
       this.i18n = i18n;
+      this.issueAnalyzer = issueAnalyzer;
     }
 
     public boolean onBusinessObjectAvailableException(final Activity activity, Object component, BusinessObjectUnavailableException exception)
@@ -624,7 +731,7 @@ public final class ActivityController
     protected boolean handleConnectivityProblemInCause(final Activity activity, Object component, Throwable throwable,
         final ActivityController.AbstractExceptionHandler.ConnectivityUIExperience connectivityUIExperience)
     {
-      if (ActivityController.AbstractExceptionHandler.isAConnectivityProblem(throwable) == true)
+      if (ActivityController.IssueAnalyzer.isAConnectivityProblem(throwable) == true)
       {
         final LifeCycle lifeCycle;
         if (component instanceof LifeCycle)
@@ -702,26 +809,8 @@ public final class ActivityController
      */
     protected final boolean handleMemoryProblemInCause(Context context, Throwable throwable)
     {
-      if (ActivityController.AbstractExceptionHandler.isAMemoryProblem(throwable) == true)
+      if (issueAnalyzer != null && issueAnalyzer.handleIssue(throwable) == true)
       {
-        // We first run a garbage collection, in the hope to free some memory ;(
-        System.gc();
-        final File file = new File(Environment.getExternalStorageDirectory(), context.getPackageName() + "-outofmemory-" + System.currentTimeMillis() + ".hprof");
-        if (log.isErrorEnabled())
-        {
-          log.error("A memory saturation issue has been detected: dumping the memory usage to file '" + file.getAbsolutePath() + "'", throwable);
-        }
-        try
-        {
-          Debug.dumpHprofData(file.getAbsolutePath());
-        }
-        catch (Throwable innerThrowable)
-        {
-          if (log.isErrorEnabled())
-          {
-            log.error("A problem occurred while attempting to dump the memory usage to file '" + file.getAbsolutePath() + "'", innerThrowable);
-          }
-        }
         return true;
       }
       return false;
