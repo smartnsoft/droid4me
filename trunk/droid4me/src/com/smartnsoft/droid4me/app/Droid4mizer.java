@@ -17,6 +17,8 @@
 
 package com.smartnsoft.droid4me.app;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -54,6 +56,25 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    */
   public static boolean ARE_DEBUG_LOG_ENABLED = false;
 
+  private static int allocatedCount = 0;
+
+  private static int aliveCount = 0;
+
+  /**
+   * Provide statistics about the allocated and alive {@link Droid4mizer} instances. This may be useful when it comes to hunt for memory leaks.
+   * 
+   * @param allocatedCount
+   *          will eventually hold the total number of allocated {@link Droid4mizer} instances from the hosting process start
+   * @param aliveCount
+   *          will eventually hold the total number of currently alive {@link Droid4mizer} instances within the hosting process, i.e. the number of
+   *          non yet garbage collected instances
+   */
+  public static void getStatistics(AtomicInteger allocatedCount, AtomicInteger aliveCount)
+  {
+    allocatedCount.set(Droid4mizer.allocatedCount);
+    aliveCount.set(Droid4mizer.aliveCount);
+  }
+
   private final Activity activity;
 
   private final ComponentClass component;
@@ -79,6 +100,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    */
   public Droid4mizer(Activity activity, Smartable<AggregateClass> smartable, ComponentClass component, ComponentClass interceptorComponent)
   {
+    Droid4mizer.allocatedCount++;
+    Droid4mizer.aliveCount++;
     this.activity = activity;
     this.smartable = smartable;
     this.component = component;
@@ -94,6 +117,14 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   /*
    * The {@link Smarted} methods.
    */
+
+  @Override
+  protected void finalize()
+      throws Throwable
+  {
+    Droid4mizer.aliveCount--;
+    super.finalize();
+  }
 
   public AggregateClass getAggregate()
   {
