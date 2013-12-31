@@ -242,6 +242,11 @@ public abstract class SmartApplication
   private SharedPreferences preferences;
 
   /**
+   * Indicates whether the {@link #onCreate()} method has already been invoked.
+   */
+  private boolean onCreateInvoked;
+
+  /**
    * If the application uses an {@link SmartApplication.DefaultExceptionHandler} as an {@link ActivityController.ExceptionHandler}, when a managed
    * exception is detected, and is not handled, a dialog box is submitted to the end-user, in order to propose to send the bug cause by inspecting the
    * Android {@code logcat}. In that case, do not forget to declare the {@code android.permission.READ_LOGS} permission in the
@@ -386,14 +391,28 @@ public abstract class SmartApplication
    * <li>logs how much time the {@link #onCreate()} method execution took.</li>
    * </ol>
    * 
+   * <p>
+   * Note: if the method has already been invoked once, the second time (because of a concurrent access), it will do nothing but output an error log.
+   * This is the reason why the method has been declared as synchronized.
+   * </p>
+   * 
    * @see #getLogLevel()
    * @see #getExceptionHandler()
    * @see #getActivityRedirector()
    * @see #getInterceptor()
    */
   @Override
-  public final void onCreate()
+  public final synchronized void onCreate()
   {
+    if (onCreateInvoked == true)
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("The 'Application.onCreate()' method has already been invoked!");
+      }
+      return;
+    }
+    onCreateInvoked = true;
     try
     {
       final long start = System.currentTimeMillis();
