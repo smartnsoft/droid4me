@@ -99,15 +99,24 @@ public class IssueReporter
       handleOutOfMemoryError((OutOfMemoryError) throwable);
       return true;
     }
-    return false;
+    else
+    {
+      reportAnalyticsError(throwable);
+      return false;
+    }
   }
 
-  public final void handleOutOfMemoryError(OutOfMemoryError throwable)
+  protected final void reportAnalyticsError(Throwable throwable)
   {
     if (analyticsSender != null)
     {
       analyticsSender.logError(context, throwable.getClass().getName(), null);
     }
+  }
+
+  public final void handleOutOfMemoryError(OutOfMemoryError throwable)
+  {
+    reportAnalyticsError(throwable);
     // We first run a garbage collection, in the hope to free some memory ;(
     System.gc();
     final String entry = context.getPackageName() + "-outofmemory-" + new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());

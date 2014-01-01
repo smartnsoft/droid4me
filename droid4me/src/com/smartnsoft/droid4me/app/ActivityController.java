@@ -28,10 +28,7 @@ import javax.net.ssl.SSLException;
 import org.apache.http.NoHttpResponseException;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -40,7 +37,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.Window;
-import android.widget.Toast;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.LifeCycle.BusinessObjectUnavailableException;
@@ -61,7 +57,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * @author Édouard Mercier
  * @since 2009.04.28
  */
-public final class ActivityController
+public class ActivityController
 {
 
   /**
@@ -288,19 +284,19 @@ public final class ActivityController
      * </p>
      * 
      * @param activity
-     *          the activity that issued the exception ; cannot be {@code null}
+     *          the activity that issued the exception, and which is ensured not to be {@link Activity#finish() finishing} ; cannot be {@code null}
      * @param component
      *          the component that issued the exception ; may be {@code null}
      * @param exception
-     *          the exception that has been triggered
+     *          the exception that has been thrown
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
      *         for a further exception handler anymore
      */
     boolean onBusinessObjectAvailableException(Activity activity, Object component, BusinessObjectUnavailableException exception);
 
     /**
-     * Is invoked whenever an activity implementing {@link LifeCycle} throws an unexpected exception, or when an exception is thrown during a
-     * {@link AppPublics.GuardedCommand} execution.
+     * Is invoked whenever an activity implementing {@link LifeCycle} throws an unexpected exception outside from the
+     * {@link LifeCycle#onRetrieveBusinessObjects()} method.
      * 
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
@@ -315,14 +311,34 @@ public final class ActivityController
      * @param component
      *          the component that issued the exception ; may be {@code null}
      * @param throwable
-     *          the throwable that has been triggered
+     *          the exception that has been triggered
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
      *         for a further exception handler anymore
      */
-    boolean onOtherException(Activity activity, Object component, Throwable throwable);
+    boolean onActivityException(Activity activity, Object component, Throwable throwable);
 
     /**
-     * Is invoked whenever a handled exception is thrown with a non-{@link Activity} {@link Context context}.
+     * Is invoked whenever a handled exception is thrown with a non-{@link Activity} / {@link android.app.Fragment} {@link Context context}.
+     * 
+     * <p>
+     * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
+     * </p>
+     * 
+     * <p>
+     * Warning, it is not ensured that this method will be invoked from the UI thread!
+     * </p>
+     * 
+     * @param context
+     *          the context that issued the exception
+     * @param throwable
+     *          the exception that has been triggered
+     * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
+     *         for a further exception handler anymore
+     */
+    boolean onContextException(Context context, Throwable throwable);
+
+    /**
+     * Is invoked whenever a handled exception is thrown outside from an available {@link Context context}.
      * 
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
@@ -333,15 +349,11 @@ public final class ActivityController
      * </p>
      * 
      * @param throwable
-     *          the throwable that has been triggered
-     * @param component
-     *          the component that issued the exception ; may be {@code null}
-     * @param context
-     *          the context that issued the exception
+     *          the exception that has been triggered
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
      *         for a further exception handler anymore
      */
-    boolean onContextException(Context context, Object component, Throwable throwable);
+    boolean onException(Throwable throwable);
 
   }
 
@@ -514,406 +526,6 @@ public final class ActivityController
 
   }
 
-  /**
-   * A simple implementation of {@link ActivityController.ExceptionHandler} which pops-up error dialog boxes and toasts.
-   * 
-   * <p>
-   * The labels of the dialogs and the toasts are i18ned though the provided {@link SmartApplication.I18N} provided instance.
-   * </p>
-   */
-  public static class AbstractExceptionHandler
-      implements ActivityController.ExceptionHandler
-  {
-
-    /**
-     * Defines how the framework should behave when an Internet connectivity problem has been detected.
-     */
-    public static enum ConnectivityUIExperience
-    {
-      /**
-       * Should open a {@link android.app.Dialog dialog box} with a "retry"/"ok" button.
-       */
-      DialogRetry,
-      /**
-       * Should open a {@link android.app.Dialog dialog box} with a single "ok" button.
-       */
-      Dialog,
-      /**
-       * Should issue an Android {@link Toast.LENGTH_SHORT short} {@link android.widget.Toast}.
-       */
-      Toast
-    }
-
-    private final SmartApplication.I18N i18n;
-
-    protected final IssueAnalyzer issueAnalyzer;
-
-    /**
-     * @param i18n
-     *          will be used at runtime, so as to display i18ned labels in the UI
-     * @param issueAnalyzer
-     *          will be used when it comes to analyze an issue represented by an {@link Throwable}
-     */
-    public AbstractExceptionHandler(SmartApplication.I18N i18n, ActivityController.IssueAnalyzer issueAnalyzer)
-    {
-      this.i18n = i18n;
-      this.issueAnalyzer = issueAnalyzer;
-    }
-
-    public boolean onBusinessObjectAvailableException(final Activity activity, Object component, BusinessObjectUnavailableException exception)
-    {
-      if (handleCommonCauses(activity, component, exception, ConnectivityUIExperience.DialogRetry) == true)
-      {
-        return true;
-      }
-      else if (handleOtherCauses(activity, component, exception) == true)
-      {
-        return true;
-      }
-      return onBusinessObjectAvailableExceptionFallback(activity, component, exception);
-    }
-
-    /**
-     * This method will be invoked by the {@link #onBusinessObjectAvailableException()} method, as a fallback if the provided throwable has not been
-     * handled neither by the {@link #handleCommonCauses()} nor the {@link #handleOtherCauses()} methods.
-     * 
-     * <p>
-     * It is up to the implementation to pop up a dialog box or not. The implement is very likely to {@link Activity#finish()} the provided
-     * {@code activity}.
-     * </p>
-     * 
-     * @param activity
-     *          the activity from which the throwable has been thrown ; cannot be {@code null}
-     * @param component
-     *          the component responsible for having thrown the exception
-     * @param throwable
-     *          the throwable that has been triggered
-     * @return {@code true} if and only if the throwable has been handled
-     */
-    protected boolean onBusinessObjectAvailableExceptionFallback(final Activity activity, Object component, BusinessObjectUnavailableException exception)
-    {
-      showDialog(activity, i18n.dialogBoxErrorTitle, i18n.businessObjectAvailabilityProblemHint, activity.getString(android.R.string.ok),
-          new DialogInterface.OnClickListener()
-          {
-            public void onClick(DialogInterface dialog, int which)
-            {
-              // We leave the activity, because we cannot go any further
-              dialog.dismiss();
-              activity.finish();
-            }
-          }, null, null, null);
-      return true;
-    }
-
-    public boolean onOtherException(final Activity activity, Object component, Throwable throwable)
-    {
-      if (handleCommonCauses(activity, component, throwable, ConnectivityUIExperience.Toast) == true)
-      {
-        return true;
-      }
-      else if (handleOtherCauses(activity, component, throwable) == true)
-      {
-        return true;
-      }
-      return onOtherExceptionFallback(activity, component, throwable);
-    }
-
-    /**
-     * This method will be invoked by the {@link #onOtherException()} method, as a fallback if the provided throwable has not been handled neither by
-     * the {@link #handleCommonCauses()} nor the {@link #handleOtherCauses()} methods.
-     * 
-     * <p>
-     * A dialog box which reports the problem will be popped up.
-     * </p>
-     * 
-     * @param activity
-     *          the activity from which the throwable has been thrown ; cannot be {@code null}
-     * @param component
-     *          the component responsible for having thrown the exception
-     * @param throwable
-     *          the throwable that has been triggered
-     * @return {@code true} if and only if the throwable has been handled
-     */
-    protected boolean onOtherExceptionFallback(final Activity activity, Object component, Throwable throwable)
-    {
-      showDialog(activity, i18n.dialogBoxErrorTitle, i18n.otherProblemHint, activity.getString(android.R.string.ok), new DialogInterface.OnClickListener()
-      {
-        public void onClick(DialogInterface dialog, int which)
-        {
-          dialog.dismiss();
-          // We leave the activity, because we cannot go any further
-          activity.finish();
-        }
-      }, null, null, null);
-      return true;
-    }
-
-    /**
-     * @return {@code false} in the current implementation
-     */
-    public boolean onContextException(Context context, Object component, Throwable throwable)
-    {
-      if (handleMemoryProblemInCause(context, throwable) == true)
-      {
-        return true;
-      }
-      return false;
-    }
-
-    /**
-     * A place holder for handling in a centralized way all kinds of exceptions.
-     * 
-     * <p>
-     * When deriving from the {@link ActivityController.AbstractExceptionHandler} class, this method should be overridden, so as to handle all
-     * application specific exceptions.
-     * </p>
-     * 
-     * @param activity
-     *          the activity which has triggered the exception
-     * @param component
-     *          the component which has triggered the exception ; may be {@code null}
-     * @param throwable
-     *          the throwable to analyze
-     * @return {@code true} if and only if the throwable has been handled; the current implementation returns {@code false}
-     */
-    protected boolean handleOtherCauses(Activity activity, Object component, Throwable throwable)
-    {
-      return false;
-    }
-
-    /**
-     * Checks for an Internet connectivity issue or a memory saturation issue inside the provided throwable root causes.
-     * 
-     * <p>
-     * This method is especially useful when overriding the {@link ActivityController.AbstractExceptionHandler}, in order to let the framework hunt
-     * for common troubles.
-     * </p>
-     * 
-     * @param activity
-     *          the activity which has triggered the exception
-     * @param component
-     *          the component which has triggered the exception ; may be {@code null}
-     * @param throwable
-     *          the throwable to analyze
-     * @param connectivityUIExperience
-     *          indicates what end-user experience to deliver if the problem is an Internet connectivity issue
-     * @return {@code true} if and only if the throwable has been handled
-     * @see #handleConnectivityProblemInCause(Activity, Throwable, ConnectivityUIExperience)
-     * @see #handleMemoryProblemInCause(Activity, Throwable)
-     */
-    protected final boolean handleCommonCauses(final Activity activity, Object component, Throwable throwable, ConnectivityUIExperience connectivityUIExperience)
-    {
-      if (handleConnectivityProblemInCause(activity, component, throwable, connectivityUIExperience) == true)
-      {
-        return true;
-      }
-      else if (handleMemoryProblemInCause(activity, throwable) == true)
-      {
-        return true;
-      }
-      return false;
-    }
-
-    /**
-     * Attempts to find an Internet connection issue in the provided exception by iterating over the causes, and display a dialog box if any.
-     * 
-     * @param activity
-     *          in case a connection issue is discovered, it will be used to pop up a dialog box. When the dialog box "OK" button is hit, it will be
-     *          simply dismissed
-     * @param component
-     *          the component which has triggered the exception ; may be {@code null}
-     * @param throwable
-     *          the exception to be inspected
-     * @param connectivityUIExperience
-     *          indicates the end-user experience to provide if a connectivity problem has been detected
-     * @return {@code true} if and only a connection issue has been detected
-     */
-    protected boolean handleConnectivityProblemInCause(final Activity activity, Object component, Throwable throwable,
-        final ActivityController.AbstractExceptionHandler.ConnectivityUIExperience connectivityUIExperience)
-    {
-      if (ActivityController.IssueAnalyzer.isAConnectivityProblem(throwable) == true)
-      {
-        final LifeCycle lifeCycle;
-        if (component instanceof LifeCycle)
-        {
-          lifeCycle = (LifeCycle) component;
-        }
-        else if (activity instanceof LifeCycle)
-        {
-          lifeCycle = (LifeCycle) activity;
-        }
-        else
-        {
-          lifeCycle = null;
-        }
-        activity.runOnUiThread(new Runnable()
-        {
-          public void run()
-          {
-            if (lifeCycle == null || connectivityUIExperience == ConnectivityUIExperience.Toast)
-            {
-              // Either the activity/fragment is not droi4mized, or the end-user experience should be a toast
-              Toast.makeText(activity, i18n.connectivityProblemHint, Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-              final boolean retry = connectivityUIExperience == ConnectivityUIExperience.DialogRetry && activity instanceof LifeCycle;
-              showDialog(activity, i18n.dialogBoxErrorTitle, retry == true ? i18n.connectivityProblemRetryHint : i18n.connectivityProblemHint,
-                  activity.getString(android.R.string.ok), new DialogInterface.OnClickListener()
-                  {
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                      if (retry == true)
-                      {
-                        lifeCycle.refreshBusinessObjectsAndDisplay(true, null, false);
-                      }
-                      dialog.dismiss();
-                    }
-                  }, activity.getString(android.R.string.no), retry == false ? null : new DialogInterface.OnClickListener()
-                  {
-                    public void onClick(DialogInterface dialog, int which)
-                    {
-                      dialog.cancel();
-                      activity.finish();
-                    }
-                  }, retry == false ? null : new DialogInterface.OnCancelListener()
-                  {
-                    public void onCancel(DialogInterface dialog)
-                    {
-                      dialog.dismiss();
-                      activity.finish();
-                    }
-                  });
-
-            }
-          }
-        });
-        return true;
-      }
-      return false;
-    }
-
-    /**
-     * Attempts to find a memory saturation issue in the provided exception by iterating over the causes, and display a dialog box if any.
-     * 
-     * <p>
-     * In the exception root cause is a memory saturation issue, a @{link .hprof} dump file will be generated into the directory {@link
-     * Environment.getExternalStorageDirectory()}, and the exact name of this file will be traced.
-     * </p>
-     * 
-     * @param context
-     *          the context responsible for triggering the exception
-     * @param throwable
-     *          the exception to be inspected
-     * @return {@code true} if and only a memory saturation issue has been detected
-     */
-    protected final boolean handleMemoryProblemInCause(Context context, Throwable throwable)
-    {
-      if (issueAnalyzer != null && issueAnalyzer.handleIssue(throwable) == true)
-      {
-        return true;
-      }
-      return false;
-    }
-
-    /**
-     * Is responsible for displaying a dialog box. This enables to customize in a centralized way the dialog boxes look & feel.
-     * 
-     * <p>
-     * It is ensured that the framework will invoke that method from the UI thread, and when invoking that method directly, this must be done from the
-     * UI thread as well.
-     * </p>
-     * 
-     * @param activity
-     *          the activity which is bound to pop up the dialog box
-     * @param dialogTitle
-     *          the dialog box title
-     * @param dialogMessage
-     *          the dialog box message
-     * @param positiveButton
-     *          the label to display for the dialog box positive button ; may be {@code null} if {@code positiveClickListener} is also {@code null}
-     * @param positiveClickListener
-     *          the callback which will be invoked from the UI thread when the end-user hits the positive button
-     * @param negativeButton
-     *          the label to display for the dialog box positive button ; may be {@code null} if {@code negativeClickListener} is also {@code null}
-     * @param negativeClickListener
-     *          the callback which will be invoked from the UI thread when the end-user hits the negative button ; may be {@code null}, and in that
-     *          case, the "No" button is hidden
-     * @param onCancelListener
-     *          the callback which will be invoked from the UI thread when the end-user hits the "back" button ; may be {@code null}, and in that
-     *          case, the dialog box will not be {@link Builder#setCancelable(boolean) cancelleable}
-     * @see #showDialog()
-     */
-    protected void onShowDialog(Activity activity, CharSequence dialogTitle, CharSequence dialogMessage, CharSequence positiveButton,
-        DialogInterface.OnClickListener positiveClickListener, CharSequence negativeButton, DialogInterface.OnClickListener negativeClickListener,
-        DialogInterface.OnCancelListener onCancelListener)
-    {
-      final Builder builder = new AlertDialog.Builder(activity).setTitle(dialogTitle).setIcon(android.R.drawable.ic_dialog_alert).setMessage(dialogMessage).setPositiveButton(
-          positiveButton, positiveClickListener);
-      builder.setCancelable(onCancelListener == null ? false : true);
-      if (onCancelListener != null)
-      {
-        builder.setOnCancelListener(onCancelListener);
-      }
-      if (negativeClickListener != null)
-      {
-        builder.setNegativeButton(negativeButton, negativeClickListener);
-      }
-      builder.show();
-    }
-
-    /**
-     * The method which should be invoked internally when reporting an error dialog box. The parameters are the same as for the
-     * {@link #onShowDialog()} method.
-     * 
-     * <p>
-     * It is possible to invoke that method from any thread.
-     * </p>
-     * 
-     * @see #onShowDialog()
-     */
-    protected final void showDialog(final Activity activity, final CharSequence dialogTitle, final CharSequence dialogMessage,
-        final CharSequence positiveButton, final DialogInterface.OnClickListener positiveClickListener, final CharSequence negativeButton,
-        final DialogInterface.OnClickListener negativeClickListener, final DialogInterface.OnCancelListener onCancelListener)
-    {
-      if (activity.isFinishing() == true)
-      {
-        // We do nothing, because there is no user interface any more!
-        return;
-      }
-      // We make sure that the dialog is popped from the UI thread
-      activity.runOnUiThread(new Runnable()
-      {
-        public void run()
-        {
-          if (activity.isFinishing() == true)
-          {
-            // We do nothing, because there is no user interface any more!
-            return;
-          }
-          try
-          {
-            onShowDialog(activity, dialogTitle, dialogMessage, positiveButton, positiveClickListener, negativeButton, negativeClickListener, onCancelListener);
-          }
-          catch (Throwable throwable)
-          {
-            if (activity.isFinishing() == false)
-            {
-              if (log.isErrorEnabled())
-              {
-                log.error("Could not open an error dialog box, because an exceptin occurred while displaying it!", throwable);
-              }
-            }
-            else
-            {
-              // It is very likely that the activity has been finished in the meantime, hence we do not log anything
-            }
-          }
-        }
-      });
-    }
-  }
-
   private static final Logger log = LoggerFactory.getInstance(ActivityController.class);
 
   /**
@@ -936,17 +548,17 @@ public final class ActivityController
   // Implements a "double-checked locking" pattern.
   public static ActivityController getInstance()
   {
-    if (instance == null)
+    if (ActivityController.instance == null)
     {
       synchronized (ActivityController.class)
       {
-        if (instance == null)
+        if (ActivityController.instance == null)
         {
-          instance = new ActivityController();
+          ActivityController.instance = new ActivityController();
         }
       }
     }
-    return instance;
+    return ActivityController.instance;
   }
 
   private ActivityController.Redirector redirector;
@@ -1100,6 +712,8 @@ public final class ActivityController
    * 
    * @param context
    *          the context that originated the exception ; may be {@code null}
+   * @param component
+   *          when not {@code null}, this will be the {@link android.app.Fragment} the exception has been thrown from
    * @param throwable
    *          the reported exception
    * @return {@code true} if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception handled
@@ -1111,11 +725,8 @@ public final class ActivityController
     {
       if (log.isWarnEnabled())
       {
-        if (log.isWarnEnabled())
-        {
-          log.warn("Caught an exception which will not be handled during the processing of the context with name '" + (context == null ? "null"
-              : context.getClass().getName()) + "'", throwable);
-        }
+        log.warn("Detected an exception which will not be handled during the processing of the context with name '" + (context == null ? "null"
+            : context.getClass().getName()) + "'", throwable);
       }
       return false;
     }
@@ -1130,14 +741,15 @@ public final class ActivityController
     }
     try
     {
-      if (throwable instanceof BusinessObjectUnavailableException)
+      if (activity != null && throwable instanceof BusinessObjectUnavailableException)
       {
         // Should only occur with a non-null activity
         final BusinessObjectUnavailableException exception = (BusinessObjectUnavailableException) throwable;
         if (log.isWarnEnabled())
         {
-          log.warn("Caught an exception during the retrieval of the business objects from the activity with name '" + (activity == null ? "null"
-              : activity.getClass().getName()) + "'", exception);
+          log.warn(
+              "Caught an exception during the retrieval of the business objects from the activity from class with name '" + activity.getClass().getName() + "'",
+              exception);
         }
         // We do nothing if the activity is dying
         if (activity != null && activity.isFinishing() == true)
@@ -1150,27 +762,31 @@ public final class ActivityController
       {
         if (log.isWarnEnabled())
         {
-          log.warn("Caught an exception during the processing of the context with name '" + (context == null ? "null" : context.getClass().getName()) + "'",
-              throwable);
+          log.warn("Caught an exception during the processing of " + (context == null ? "a null Context"
+              : "the Context from class with name '" + context.getClass().getName()) + "'", throwable);
         }
         // For this special case, we ignore the case when the activity is dying
         if (activity != null)
         {
-          return exceptionHandler.onOtherException(activity, component, throwable);
+          return exceptionHandler.onActivityException(activity, component, throwable);
+        }
+        else if (context != null)
+        {
+          return exceptionHandler.onContextException(context, throwable);
         }
         else
         {
-          return exceptionHandler.onContextException(context, component, throwable);
+          return exceptionHandler.onException(throwable);
         }
       }
     }
     catch (Throwable otherThrowable)
     {
-      // Just to make sure that handled exceptions do not trigger unhandled exceptions on their turn;)
+      // Just to make sure that handled exceptions do not trigger un-handled exceptions on their turn ;(
       if (log.isErrorEnabled())
       {
-        log.error("An error occurred while handling an exception coming from the context with name '" + (context == null ? "null"
-            : context.getClass().getName()) + "'", otherThrowable);
+        log.error("An error occurred while attempting to handle an exception coming from " + (context == null ? "a null Context"
+            : "the Context from class with name '" + context.getClass().getName()) + "'", otherThrowable);
       }
       return false;
     }

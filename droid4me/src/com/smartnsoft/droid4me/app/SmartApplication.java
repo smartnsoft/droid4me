@@ -25,8 +25,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
@@ -39,10 +37,8 @@ import android.util.Log;
 import android.view.WindowManager;
 
 import com.smartnsoft.droid4me.app.ActivityController.ExceptionHandler;
-import com.smartnsoft.droid4me.app.ActivityController.IssueAnalyzer;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.util.SendLogsTask;
 
 /**
  * An abstract to be implemented when using the framework, because it initializes some of the components, and eases the development.
@@ -114,107 +110,6 @@ public abstract class SmartApplication
       this.applicationName = applicationName;
       this.reportButtonLabel = reportButtonLabel;
       this.retrievingLogProgressMessage = retrievingLogProgressMessage;
-    }
-
-  }
-
-  protected class DefaultExceptionHandler
-      extends ActivityController.AbstractExceptionHandler
-  {
-
-    public DefaultExceptionHandler(I18N i18n, IssueAnalyzer issueAnalyzer)
-    {
-      super(i18n, issueAnalyzer);
-    }
-
-    @Override
-    protected boolean onOtherExceptionFallback(final Activity activity, Object component, Throwable throwable)
-    {
-      final boolean proposeToSendLog = getLogReportRecipient() != null;
-      if (proposeToSendLog == false)
-      {
-        return super.onOtherExceptionFallback(activity, component, throwable);
-      }
-      else
-      {
-
-        final I18N i18n = getI18N();
-        // If the logger recipient is not set, no e-mail submission is proposed
-        showDialog(activity, getI18N().dialogBoxErrorTitle, getI18N().otherProblemHint, i18n.reportButtonLabel, new OnClickListener()
-        {
-          public void onClick(DialogInterface dialogInterface, int which)
-          {
-            new SendLogsTask(activity, i18n.retrievingLogProgressMessage, "[" + i18n.applicationName + "] Error log - v%1s", getLogReportRecipient()).execute(
-                null, null);
-          }
-        }, activity.getString(android.R.string.cancel), new OnClickListener()
-        {
-          public void onClick(DialogInterface dialogInterface, int which)
-          {
-            // We leave the activity, because we cannot go any further
-            activity.finish();
-          }
-        }, new DialogInterface.OnCancelListener()
-        {
-          public void onCancel(DialogInterface dialog)
-          {
-            // We leave the activity, because we cannot go any further
-            activity.finish();
-          }
-        });
-        return true;
-      }
-    }
-
-  }
-
-  /**
-   * Defined as a wrapper over the built-in {@link Thread.UncaughtExceptionHandler uncaught exception handlers}.
-   * 
-   * @since 2010.07.21
-   */
-  private final static class SmartUncaughtExceptionHandler
-      implements Thread.UncaughtExceptionHandler
-  {
-
-    /**
-     * The context in which the exception handler lives.
-     */
-    private final Context context;
-
-    /**
-     * The previous exception handler.
-     */
-    private final Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler;
-
-    /**
-     * @param builtinUncaughtExceptionHandler
-     *          the built-in uncaught exception handler that will be invoked eventually.
-     */
-    public SmartUncaughtExceptionHandler(Context context, Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler)
-    {
-      this.context = context;
-      this.builtinUncaughtExceptionHandler = builtinUncaughtExceptionHandler;
-    }
-
-    @Override
-    public final void uncaughtException(Thread thread, Throwable throwable)
-    {
-      try
-      {
-        ActivityController.getInstance().handleException(context, null, throwable);
-      }
-      finally
-      {
-        if (builtinUncaughtExceptionHandler != null)
-        {
-          if (log.isDebugEnabled())
-          {
-            log.debug("Resorting to the built-in uncaught exception handler");
-          }
-          builtinUncaughtExceptionHandler.uncaughtException(thread, throwable);
-        }
-      }
     }
 
   }
@@ -366,7 +261,7 @@ public abstract class SmartApplication
    */
   protected ActivityController.ExceptionHandler getExceptionHandler()
   {
-    return new SmartApplication.DefaultExceptionHandler(getI18N(), null);
+    return new ExceptionHandlers.DefaultExceptionHandler(getI18N(), null, getLogReportRecipient());
   }
 
   /**
@@ -495,7 +390,7 @@ public abstract class SmartApplication
     ActivityController.getInstance().registerExceptionHandler(getExceptionHandler());
     // We make sure that all uncaught exceptions will be intercepted and handled
     final UncaughtExceptionHandler builtinUuncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-    final SmartUncaughtExceptionHandler uncaughtExceptionHandler = new SmartApplication.SmartUncaughtExceptionHandler(getApplicationContext(), builtinUuncaughtExceptionHandler);
+    final SmartCommands.SmartUncaughtExceptionHandler uncaughtExceptionHandler = new SmartCommands.SmartUncaughtExceptionHandler(getApplicationContext(), builtinUuncaughtExceptionHandler);
     if (log.isDebugEnabled())
     {
       log.debug("The application with package name '" + getPackageName() + "' " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
