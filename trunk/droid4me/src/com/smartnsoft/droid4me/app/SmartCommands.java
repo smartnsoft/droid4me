@@ -724,6 +724,60 @@ public final class SmartCommands
   }
 
   /**
+   * Defined as a wrapper over the built-in {@link Thread.UncaughtExceptionHandler uncaught exception handlers}.
+   * 
+   * @since 2010.07.21
+   */
+  final static class SmartUncaughtExceptionHandler
+      implements Thread.UncaughtExceptionHandler
+  {
+
+    /**
+     * The context in which the exception handler lives.
+     */
+    private final Context context;
+
+    /**
+     * The previous exception handler.
+     */
+    private final Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler;
+
+    /**
+     * @param context
+     *          the context which will be used to handle the exception via the {@link ActivityController#handleException(Context, Object, Throwable)}
+     *          method
+     * @param builtinUncaughtExceptionHandler
+     *          the built-in uncaught exception handler that will be invoked eventually
+     */
+    public SmartUncaughtExceptionHandler(Context context, Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler)
+    {
+      this.context = context;
+      this.builtinUncaughtExceptionHandler = builtinUncaughtExceptionHandler;
+    }
+
+    @Override
+    public final void uncaughtException(Thread thread, Throwable throwable)
+    {
+      try
+      {
+        ActivityController.getInstance().handleException(context, null, throwable);
+      }
+      finally
+      {
+        if (builtinUncaughtExceptionHandler != null)
+        {
+          if (SmartApplication.log.isDebugEnabled())
+          {
+            SmartApplication.log.debug("Resorting to the built-in uncaught exception handler");
+          }
+          builtinUncaughtExceptionHandler.uncaughtException(thread, throwable);
+        }
+      }
+    }
+
+  }
+
+  /**
    * Introduced so as to be able to catch the exceptions thrown in the framework thread pools.
    * 
    * @since 2010.03.02
@@ -733,12 +787,41 @@ public final class SmartCommands
   {
 
     /**
+     * A flag which indicates whether the hereby {@code SmartThreadPoolExecutor} internal logs should be enabled. Logs will report execution durations
+     * statistics. The default value is {@code false}.
+     * 
+     * @see #getExecutionDurationSumInNanoseconds()
+     */
+    public static boolean ARE_DEBUG_LOG_ENABLED = false;
+
+    /**
+     * Records the sum of the durations of all command executions for this instance. Only fulfilled if {@link #ARE_DEBUG_LOG_ENABLED} is set to
+     * {@code true}.
+     */
+    private long executionDurationSumInNanoseconds;
+
+    /**
      * {@inheritDoc}
      */
     public SmartThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue,
         ThreadFactory threadFactory)
     {
       super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
+    }
+
+    /**
+     * Available for statistics.
+     * 
+     * <p>
+     * Warning: this method will return valid data only if {@link #ARE_DEBUG_LOG_ENABLED} is set to {@code true}.
+     * </p>
+     * 
+     * @return the sum of the durations of all command executions for this instance
+     * @see #ARE_DEBUG_LOG_ENABLED
+     */
+    public long getExecutionDurationSumInNanoseconds()
+    {
+      return executionDurationSumInNanoseconds;
     }
 
     /**
@@ -767,15 +850,39 @@ public final class SmartCommands
     }
 
     /**
-     * This method does the same thing as its parent {@link ThreadPoolExecutor#execute() super method}, but this form should not be used!
-     * 
-     * @deprecated should not be used!
+     * This method does the same thing as its parent {@link ThreadPoolExecutor#execute() super method}.
      */
-    // @Override
-    // public void execute(Runnable command)
-    // {
-    // super.execute(command);
-    // }
+    @Override
+    public void execute(Runnable command)
+    {
+      super.execute(command);
+    }
+
+    @Override
+    protected void beforeExecute(Thread thread, Runnable runnable)
+    {
+      if (SmartThreadPoolExecutor.ARE_DEBUG_LOG_ENABLED == true)
+      {
+        new ThreadLocal<Long>().set(System.nanoTime());
+      }
+      super.beforeExecute(thread, runnable);
+    }
+
+    @Override
+    protected void afterExecute(Runnable runnable, Throwable throwable)
+    {
+      super.afterExecute(runnable, throwable);
+      if (SmartThreadPoolExecutor.ARE_DEBUG_LOG_ENABLED == true)
+      {
+        final Long startInNanoseconds = new ThreadLocal<Long>().get();
+        final long durationInNanoseconds = System.nanoTime() - startInNanoseconds;
+        executionDurationSumInNanoseconds += durationInNanoseconds;
+        if (log.isDebugEnabled())
+        {
+          log.debug("A command has just end-up its execution and has lasted " + durationInNanoseconds + " ns.");
+        }
+      }
+    }
 
   }
 
@@ -804,11 +911,19 @@ public final class SmartCommands
   public final static SmartCommands.SmartThreadPoolExecutor LOW_PRIORITY_THREAD_POOL = new SmartCommands.SmartThreadPoolExecutor(SmartCommands.LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE, SmartCommands.LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE, 10l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory()
   {
 
+    /**
+     * The number of threads created so far for this worker threads pool.
+     */
     private final AtomicInteger threadsCount = new AtomicInteger(1);
 
     public Thread newThread(Runnable runnable)
     {
       final Thread thread = new Thread(runnable);
+      if (Thread.getDefaultUncaughtExceptionHandler() instanceof SmartUncaughtExceptionHandler == false)
+      {
+        // In the case when no default exception handler is defined or is not a "SmartUncaughtExceptionHandler", we provide ours
+        thread.setUncaughtExceptionHandler(new SmartUncaughtExceptionHandler(null, null));
+      }
       thread.setPriority(Thread.MIN_PRIORITY);
       thread.setName("droid4me-lowpool-thread #" + threadsCount.getAndIncrement());
       return thread;
