@@ -599,4 +599,12 @@ public final class ExceptionHandlers
     }
 
   }
+
+  /**
+   * We do not want any instance of that class to be created.
+   */
+  private ExceptionHandlers()
+  {
+  }
+
 }
