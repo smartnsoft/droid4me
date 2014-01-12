@@ -543,7 +543,7 @@ public abstract class WebServiceCaller
    * 
    * @see #getHttpClient()
    */
-  protected synchronized final void resetHttpClient()
+  public synchronized final void resetHttpClient()
   {
     if (log.isInfoEnabled())
     {
