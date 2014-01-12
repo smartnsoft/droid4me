@@ -48,6 +48,39 @@ public interface WebServiceClient
   {
 
     /**
+     * Turns a string into a {@link CallType}.
+     * 
+     * @param string
+     *          may be {@code null} ; the recognized values (case insensitive) are: {@code GET}, {@code POST}, {@code PUT} and {@code DELETE}
+     * @return {@code null} if the string could not be properly parsed and identified ; otherwise, a value among {@code #Get}, {@code #Post},
+     *         {@code #Put}, {@code #Delete}
+     */
+    public static CallType fromString(String string)
+    {
+      if (string != null)
+      {
+        final String upperString = string.toUpperCase().trim();
+        if ("POST".equals(upperString) == true)
+        {
+          return CallType.Post;
+        }
+        else if ("PUT".equals(upperString) == true)
+        {
+          return CallType.Put;
+        }
+        else if ("DELETE".equals(upperString) == true)
+        {
+          return CallType.Delete;
+        }
+        else if ("GET".equals(upperString) == true)
+        {
+          return CallType.Get;
+        }
+      }
+      return null;
+    }
+
+    /**
      * The call code when not defined.
      */
     public final static int NO_CALL_CODE = -1;

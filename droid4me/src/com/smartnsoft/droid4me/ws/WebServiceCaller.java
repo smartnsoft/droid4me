@@ -19,7 +19,6 @@
 package com.smartnsoft.droid4me.ws;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,13 +29,6 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -57,15 +49,6 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -162,65 +145,25 @@ public abstract class WebServiceCaller
 
   protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
 
-  private static DocumentBuilder builder;
-
   private boolean isConnected = true;
 
   private HttpClient httpClient;
 
   /**
-   * A helper method for generating an input stream from a {@link JSONObject} object.
-   * 
-   * @param jsonObject
-   *          the JSON object to turn into an input stream
-   * @return the input stream resulting from the JSON marshalling
+   * @return the charset to use for encoding the URI parameters
    */
-  public static InputStream createInputStreamFromJson(JSONObject jsonObject)
-  {
-    return new ByteArrayInputStream(jsonObject.toString().getBytes());
-  }
+  protected abstract String getUrlEncoding();
 
   /**
-   * A helper method for generating an input stream from a {@link JSONArray} object.
+   * This method will be invoked when the instance reads a web service result body.
    * 
-   * @param jsonArray
-   *          the JSON array to turn into an input stream
-   * @return the input stream resulting from the JSON marshalling
+   * @return the charset to use for decoding the web service requests content
+   * @see #getString(InputStream)
+   * @see #getString(InputStream, String)
+   * @see #getJson(InputStream)
+   * @see #getJson(InputStream, String)
    */
-  public static InputStream createInputStreamFromJson(JSONArray jsonArray)
-  {
-    return new ByteArrayInputStream(jsonArray.toString().getBytes());
-  }
-
-  private static XMLReader getNewXmlReader()
-      throws FactoryConfigurationError
-  {
-    final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-    XMLReader theReader = null;
-    try
-    {
-      final SAXParser saxParser = saxParserFactory.newSAXParser();
-      try
-      {
-        theReader = saxParser.getXMLReader();
-      }
-      catch (SAXException exception)
-      {
-        if (log.isFatalEnabled())
-        {
-          log.fatal("Cannot create the SAX XML reader", exception);
-        }
-      }
-    }
-    catch (Exception exception)
-    {
-      if (log.isFatalEnabled())
-      {
-        log.fatal("Cannot create the SAX parser", exception);
-      }
-    }
-    return theReader;
-  }
+  protected abstract String getContentEncoding();
 
   /**
    * @return the value previously set by the {@link #setConnected(boolean)} method
@@ -334,22 +277,6 @@ public abstract class WebServiceCaller
   }
 
   /**
-   * @return the charset to use for encoding the URI parameters
-   */
-  protected abstract String getUrlEncoding();
-
-  /**
-   * This method will be invoked when the instance reads a web service result body.
-   * 
-   * @return the charset to use for decoding the web service requests content
-   * @see #getString(InputStream)
-   * @see #getString(InputStream, String)
-   * @see #getJson(InputStream)
-   * @see #getJson(InputStream, String)
-   */
-  protected abstract String getContentEncoding();
-
-  /**
    * Equivalent to {@code WebServiceCaller.getString(inputStream, getContentEncoding())}.
    * 
    * @see #getString(InputStream, String)
@@ -358,97 +285,6 @@ public abstract class WebServiceCaller
       throws IOException
   {
     return WebServiceCaller.getString(inputStream, getContentEncoding());
-  }
-
-  /**
-   * Equivalent to {@code WebServiceCaller.getJson(inputStream, getContentEncoding())}.
-   * 
-   * @throws JSONException
-   * 
-   * @see #getJson(InputStream, String)
-   */
-  public final String getJson(InputStream inputStream)
-      throws JSONException
-  {
-    return WebServiceCaller.getJson(inputStream, getContentEncoding());
-  }
-
-  /**
-   * @return the top XML element of the DOM
-   */
-  protected final Element performHttpGetDom(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, IllegalStateException, SAXException
-  {
-    return performHttpGetDom(computeUri(methodUriPrefix, methodUriSuffix, uriParameters));
-  }
-
-  /**
-   * @see #performHttpGetDom(String, String, Map)
-   */
-  protected final Element performHttpGetDom(String uri)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, SAXException
-  {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null);
-    return WebServiceCaller.getDom(getContent(uri, WebServiceCaller.CallType.Get, response));
-  }
-
-  protected final void performHttpGetSAX(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters, ContentHandler contentHandler)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, IllegalStateException, SAXException, ParserConfigurationException,
-      WebServiceCaller.CallException
-  {
-    parseSax(contentHandler, getInputStream(computeUri(methodUriPrefix, methodUriSuffix, uriParameters)));
-  }
-
-  protected final String performHttpGetJson(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
-  {
-    return performHttpGetJson(computeUri(methodUriPrefix, methodUriSuffix, uriParameters));
-  }
-
-  protected final String performHttpPostJson(String methodUriPrefix, String methodUriSuffix, HttpEntity postContents)
-      throws UnsupportedEncodingException, ClientProtocolException, IllegalStateException, IOException, CallException, JSONException
-  {
-    return performHttpPostJson(computeUri(methodUriPrefix, methodUriSuffix, null), postContents);
-  }
-
-  protected final String performHttpPutJson(String methodUriPrefix, String methodUriSuffix, HttpEntity postContents)
-      throws UnsupportedEncodingException, ClientProtocolException, IllegalStateException, IOException, CallException, JSONException
-  {
-    return performHttpPutJson(computeUri(methodUriPrefix, methodUriSuffix, null), postContents);
-  }
-
-  protected final String performHttpDeleteJson(String methodUriPrefix, String methodUriSuffix)
-      throws UnsupportedEncodingException, ClientProtocolException, IllegalStateException, IOException, CallException, JSONException
-  {
-    return performHttpDeleteJson(computeUri(methodUriPrefix, methodUriSuffix, null));
-  }
-
-  protected final String performHttpGetJson(String uri)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
-  {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Get, null);
-    return getJson(getContent(uri, WebServiceCaller.CallType.Get, response), getContentEncoding());
-  }
-
-  protected final String performHttpPostJson(String uri, HttpEntity body)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
-  {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Post, body);
-    return getJson(getContent(uri, WebServiceCaller.CallType.Post, response), getContentEncoding());
-  }
-
-  protected final String performHttpPutJson(String uri, HttpEntity body)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
-  {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Put, body);
-    return getJson(getContent(uri, WebServiceCaller.CallType.Put, response), getContentEncoding());
-  }
-
-  protected final String performHttpDeleteJson(String uri)
-      throws UnsupportedEncodingException, ClientProtocolException, IOException, CallException, JSONException
-  {
-    final HttpResponse response = performHttpRequest(uri, WebServiceCaller.CallType.Delete, null);
-    return getJson(getContent(uri, WebServiceCaller.CallType.Delete, response), getContentEncoding());
   }
 
   public static String getString(InputStream inputStream, String encoding)
@@ -468,116 +304,6 @@ public abstract class WebServiceCaller
     return writer.toString();
   }
 
-  public static String getJson(InputStream inputStream, String encoding)
-      throws JSONException
-  {
-    try
-    {
-      return WebServiceCaller.getString(inputStream, encoding);
-    }
-    catch (IOException exception)
-    {
-      throw new JSONException(exception.getMessage());
-    }
-  }
-
-  public static final Element getDom(InputStream inputStream)
-      throws SAXException, IOException
-  {
-    return WebServiceCaller.parseDom(inputStream).getDocumentElement();
-  }
-
-  public static Document parseDom(InputStream inputStream)
-      throws SAXException, IOException
-  {
-    // TODO: make this thread-safe one day, even if it is very likely that it is not necessary at all
-    if (WebServiceCaller.builder == null)
-    {
-      final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setNamespaceAware(false);
-      factory.setValidating(false);
-      try
-      {
-        WebServiceCaller.builder = factory.newDocumentBuilder();
-      }
-      catch (ParserConfigurationException exception)
-      {
-        if (log.isFatalEnabled())
-        {
-          log.fatal("Cannot create the DOM XML parser factories", exception);
-        }
-      }
-    }
-    return builder.parse(inputStream);
-  }
-
-  protected final Document parseDom(String uri, WebServiceCaller.CallType callType, HttpResponse response)
-      throws CallException
-  {
-    try
-    {
-      return WebServiceCaller.parseDom(getContent(uri, callType, response));
-    }
-    catch (IOException exception)
-    {
-      throw new WebServiceCaller.CallException("A I/O problem occurred while attempting to parse in DOM the HTTP response!", exception);
-    }
-    catch (SAXException exception)
-    {
-      throw new WebServiceCaller.CallException("Cannot parse properly in DOM the input stream!", exception);
-    }
-  }
-
-  /**
-   * Runs the input stream SAX parsing.
-   * 
-   * @param contentHandler
-   *          the SAX parser
-   * @param inputStream
-   *          the input stream which contains the XML to be parsed
-   */
-  public final void parseSax(ContentHandler contentHandler, InputStream inputStream)
-      throws FactoryConfigurationError, IOException, SAXException
-  {
-    // Now that multiple SAX parsings can be done in parallel, we create a new XML reader each time
-    try
-    {
-      final InputSource inputSource = new InputSource(inputStream);
-      parseSax(contentHandler, inputSource);
-    }
-    finally
-    {
-      try
-      {
-        inputStream.close();
-      }
-      catch (IOException exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.warn("Could not properly close the input stream used for parsing the XML in SAX", exception);
-        }
-      }
-    }
-  }
-
-  /**
-   * Runs the input source SAX parsing.
-   * 
-   * @param contentHandler
-   *          the SAX parser
-   * @param inputSource
-   *          the XML to be parsed
-   */
-  public final void parseSax(ContentHandler contentHandler, InputSource inputSource)
-      throws FactoryConfigurationError, IOException, SAXException
-  {
-    final XMLReader xmlReader = getNewXmlReader();
-    xmlReader.setContentHandler(contentHandler);
-    inputSource.setEncoding(getUrlEncoding());
-    xmlReader.parse(inputSource);
-  }
-
   protected final HttpResponse performHttpGet(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
       throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
   {
@@ -594,148 +320,6 @@ public abstract class WebServiceCaller
       throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
   {
     return performHttpRequest(uri, WebServiceCaller.CallType.Put, body);
-  }
-
-  private HttpResponse performHttpRequest(String uri, HttpRequestBase request, AtomicReference<WebServiceCaller.CallType> callTypeHolder)
-      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
-  {
-    return performHttpRequest(uri, request, callTypeHolder, 0);
-  }
-
-  private HttpResponse performHttpRequest(String uri, HttpRequestBase request, AtomicReference<WebServiceCaller.CallType> callTypeHolder, int attemptsCount)
-      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
-  {
-    if (uri == null)
-    {
-      throw new WebServiceCaller.CallException("Cannot perform an HTTP request with a null URI!");
-    }
-    if (isConnected == false)
-    {
-      throw new WebServiceCaller.CallException(new UnknownHostException("No connectivity"));
-    }
-
-    final HttpClient httpClient = getHttpClient();
-    onBeforeHttpRequestExecution(httpClient, request);
-    final WebServiceClient.CallType callType;
-    final HttpEntity body;
-    if (request instanceof HttpPost)
-    {
-      callType = CallType.Post;
-      body = ((HttpPost) request).getEntity();
-    }
-    else if (request instanceof HttpPut)
-    {
-      callType = CallType.Put;
-      body = ((HttpPut) request).getEntity();
-    }
-    else if (request instanceof HttpDelete)
-    {
-      callType = CallType.Delete;
-      body = null;
-    }
-    else
-    {
-      callType = CallType.Get;
-      body = null;
-    }
-    callTypeHolder.set(callType);
-    if (log.isDebugEnabled())
-    {
-      final StringBuilder sb = new StringBuilder();
-      final StringBuilder curlSb = new StringBuilder();
-      boolean logCurlCommand = false;
-      if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
-      {
-        try
-        {
-          curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
-          if (body != null && body.getContent() != null)
-          {
-            if (body.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED && body.getContent().markSupported() == true)
-            {
-              logCurlCommand = true;
-              body.getContent().mark((int) body.getContentLength());
-              try
-              {
-                final String bodyAsString = getString(body.getContent());
-                sb.append(" with body '").append(bodyAsString).append("'");
-                curlSb.append(" --data \"").append(bodyAsString).append("\"");
-              }
-              catch (IOException exception)
-              {
-                if (log.isWarnEnabled())
-                {
-                  log.warn("Cannot log the HTTP body", exception);
-                }
-              }
-              finally
-              {
-                body.getContent().reset();
-              }
-            }
-            for (Header header : request.getAllHeaders())
-            {
-              curlSb.append(" --header \"").append(header.getName()).append(": ").append(header.getValue().replace("\"", "\\\"")).append("\"");
-            }
-          }
-          else
-          {
-            logCurlCommand = true;
-          }
-        }
-        catch (Exception exception)
-        {
-          // The exception is very likely to be due to a body with a non-consumable "body.getContent()"!
-          // We simply ignore the issue
-        }
-      }
-      log.debug("Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + (logCurlCommand == true ? curlSb.toString() : ""));
-    }
-    final long start = System.currentTimeMillis();
-    final HttpResponse response = httpClient.execute(request);
-    final int statusCode = response.getStatusLine().getStatusCode();
-    if (log.isDebugEnabled())
-    {
-      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + statusCode);
-    }
-
-    if (!(statusCode >= HttpStatus.SC_OK && statusCode <= HttpStatus.SC_MULTI_STATUS))
-    {
-      if (onStatusCodeNotOk(uri, callType, body, response, statusCode, attemptsCount + 1) == true)
-      {
-        return performHttpRequest(uri, request, callTypeHolder, attemptsCount + 1);
-      }
-    }
-
-    return response;
-  }
-
-  private HttpResponse performHttpRequest(String uri, WebServiceCaller.CallType callType, HttpEntity body)
-      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
-  {
-    final HttpRequestBase request;
-    switch (callType.verb)
-    {
-    default:
-    case Get:
-      request = new HttpGet(uri);
-      break;
-    case Post:
-      final HttpPost httpPost = new HttpPost(uri);
-      httpPost.setEntity(body);
-      request = httpPost;
-      break;
-    case Put:
-      final HttpPut httpPut = new HttpPut(uri);
-      httpPut.setEntity(body);
-      request = httpPut;
-      break;
-    case Delete:
-      final HttpDelete httpDelete = new HttpDelete(uri);
-      request = httpDelete;
-      break;
-    }
-    return performHttpRequest(uri, request, new AtomicReference<WebServiceClient.CallType>(), 0);
   }
 
   /**
@@ -794,10 +378,12 @@ public abstract class WebServiceCaller
    *          the Apache HTTP client that will run the HTTP request
    * @param request
    *          the HTTP request
+   * @param callType
+   *          the type of the HTTP method
    * @throws WebServiceCaller.CallException
    *           in case the HTTP request cannot be eventually invoked properly
    */
-  protected void onBeforeHttpRequestExecution(HttpClient httpClient, HttpRequestBase request)
+  protected void onBeforeHttpRequestExecution(HttpClient httpClient, HttpRequestBase request, WebServiceClient.CallType callType)
       throws WebServiceCaller.CallException
   {
   }
@@ -997,6 +583,148 @@ public abstract class WebServiceCaller
     {
       return new SensibleHttpClient();
     }
+  }
+
+  private HttpResponse performHttpRequest(String uri, HttpRequestBase request, AtomicReference<WebServiceCaller.CallType> callTypeHolder)
+      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
+  {
+    return performHttpRequest(uri, request, callTypeHolder, 0);
+  }
+
+  private HttpResponse performHttpRequest(String uri, HttpRequestBase request, AtomicReference<WebServiceCaller.CallType> callTypeHolder, int attemptsCount)
+      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
+  {
+    if (uri == null)
+    {
+      throw new WebServiceCaller.CallException("Cannot perform an HTTP request with a null URI!");
+    }
+    if (isConnected == false)
+    {
+      throw new WebServiceCaller.CallException(new UnknownHostException("No connectivity"));
+    }
+
+    final HttpClient httpClient = getHttpClient();
+    final WebServiceClient.CallType callType;
+    final HttpEntity body;
+    if (request instanceof HttpPost)
+    {
+      callType = CallType.Post;
+      body = ((HttpPost) request).getEntity();
+    }
+    else if (request instanceof HttpPut)
+    {
+      callType = CallType.Put;
+      body = ((HttpPut) request).getEntity();
+    }
+    else if (request instanceof HttpDelete)
+    {
+      callType = CallType.Delete;
+      body = null;
+    }
+    else
+    {
+      callType = CallType.Get;
+      body = null;
+    }
+    onBeforeHttpRequestExecution(httpClient, request, callType);
+    callTypeHolder.set(callType);
+    if (log.isDebugEnabled())
+    {
+      final StringBuilder sb = new StringBuilder();
+      final StringBuilder curlSb = new StringBuilder();
+      boolean logCurlCommand = false;
+      if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+      {
+        try
+        {
+          curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
+          if (body != null && body.getContent() != null)
+          {
+            if (body.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED && body.getContent().markSupported() == true)
+            {
+              logCurlCommand = true;
+              body.getContent().mark((int) body.getContentLength());
+              try
+              {
+                final String bodyAsString = getString(body.getContent());
+                sb.append(" with body '").append(bodyAsString).append("'");
+                curlSb.append(" --data \"").append(bodyAsString).append("\"");
+              }
+              catch (IOException exception)
+              {
+                if (log.isWarnEnabled())
+                {
+                  log.warn("Cannot log the HTTP body", exception);
+                }
+              }
+              finally
+              {
+                body.getContent().reset();
+              }
+            }
+            for (Header header : request.getAllHeaders())
+            {
+              curlSb.append(" --header \"").append(header.getName()).append(": ").append(header.getValue().replace("\"", "\\\"")).append("\"");
+            }
+          }
+          else
+          {
+            logCurlCommand = true;
+          }
+        }
+        catch (Exception exception)
+        {
+          // The exception is very likely to be due to a body with a non-consumable "body.getContent()"!
+          // We simply ignore the issue
+        }
+      }
+      log.debug("Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + (logCurlCommand == true ? curlSb.toString() : ""));
+    }
+    final long start = System.currentTimeMillis();
+    final HttpResponse response = httpClient.execute(request);
+    final int statusCode = response.getStatusLine().getStatusCode();
+    if (log.isDebugEnabled())
+    {
+      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + statusCode);
+    }
+
+    if (!(statusCode >= HttpStatus.SC_OK && statusCode <= HttpStatus.SC_MULTI_STATUS))
+    {
+      if (onStatusCodeNotOk(uri, callType, body, response, statusCode, attemptsCount + 1) == true)
+      {
+        return performHttpRequest(uri, request, callTypeHolder, attemptsCount + 1);
+      }
+    }
+
+    return response;
+  }
+
+  private HttpResponse performHttpRequest(String uri, WebServiceCaller.CallType callType, HttpEntity body)
+      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
+  {
+    final HttpRequestBase request;
+    switch (callType.verb)
+    {
+    default:
+    case Get:
+      request = new HttpGet(uri);
+      break;
+    case Post:
+      final HttpPost httpPost = new HttpPost(uri);
+      httpPost.setEntity(body);
+      request = httpPost;
+      break;
+    case Put:
+      final HttpPut httpPut = new HttpPut(uri);
+      httpPut.setEntity(body);
+      request = httpPut;
+      break;
+    case Delete:
+      final HttpDelete httpDelete = new HttpDelete(uri);
+      request = httpDelete;
+      break;
+    }
+    return performHttpRequest(uri, request, new AtomicReference<WebServiceClient.CallType>(), 0);
   }
 
 }
