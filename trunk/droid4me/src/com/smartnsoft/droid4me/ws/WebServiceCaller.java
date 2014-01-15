@@ -49,6 +49,7 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.json.JSONException;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -263,7 +264,7 @@ public abstract class WebServiceCaller
     try
     {
       final AtomicReference<CallType> callTypeHolder = new AtomicReference<WebServiceClient.CallType>();
-      final HttpResponse response = performHttpRequest(uri, request, callTypeHolder);
+      final HttpResponse response = performHttpRequest(uri, request, callTypeHolder, 0);
       return getContent(uri, callTypeHolder.get(), response);
     }
     catch (WebServiceCaller.CallException exception)
@@ -280,6 +281,7 @@ public abstract class WebServiceCaller
    * Equivalent to {@code WebServiceCaller.getString(inputStream, getContentEncoding())}.
    * 
    * @see #getString(InputStream, String)
+   * @see #getJson(InputStream)
    */
   public final String getString(InputStream inputStream)
       throws IOException
@@ -287,6 +289,19 @@ public abstract class WebServiceCaller
     return WebServiceCaller.getString(inputStream, getContentEncoding());
   }
 
+  /**
+   * Turns the provided {@link InputStream} into a {@link String}, using the provided encoding.
+   * 
+   * @param inputStream
+   *          the input stream to convert ; not that it will have been {@link InputStream#close() closed}
+   * @param encoding
+   *          the encoding to use
+   * @return the string resulting from the provided input stream
+   * @throws IOException
+   *           if an error happened during the conversion
+   * @see #getString(InputStream)
+   * @see #getJson(InputStream, String)
+   */
   public static String getString(InputStream inputStream, String encoding)
       throws IOException
   {
@@ -304,22 +319,37 @@ public abstract class WebServiceCaller
     return writer.toString();
   }
 
-  protected final HttpResponse performHttpGet(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
-      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
+  /**
+   * Equivalent to {@code WebServiceCaller.getJson(inputStream, getContentEncoding())}.
+   * 
+   * @throws JSONException
+   * 
+   * @see #getJson(InputStream, String)
+   * @see #getString(InputStream, String)
+   */
+  public final String getJson(InputStream inputStream)
+      throws JSONException
   {
-    return performHttpRequest(computeUri(methodUriPrefix, methodUriSuffix, uriParameters), WebServiceCaller.CallType.Get, null);
+    return WebServiceCaller.getJson(inputStream, getContentEncoding());
   }
 
-  protected final HttpResponse performHttpPost(String uri, HttpEntity body)
-      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
+  /**
+   * Invokes the {@link #getString(InputStream, String)} method, but just turn the potential {@link IOException} into a {@link JSONException}.
+   * 
+   * @see #getString(InputStream)
+   * @see #getJson(InputStream)
+   */
+  public static String getJson(InputStream inputStream, String encoding)
+      throws JSONException
   {
-    return performHttpRequest(uri, WebServiceCaller.CallType.Post, body);
-  }
-
-  protected final HttpResponse performHttpPut(String uri, HttpEntity body)
-      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
-  {
-    return performHttpRequest(uri, WebServiceCaller.CallType.Put, body);
+    try
+    {
+      return WebServiceCaller.getString(inputStream, encoding);
+    }
+    catch (IOException exception)
+    {
+      throw new JSONException(exception.getMessage());
+    }
   }
 
   /**
@@ -583,12 +613,6 @@ public abstract class WebServiceCaller
     {
       return new SensibleHttpClient();
     }
-  }
-
-  private HttpResponse performHttpRequest(String uri, HttpRequestBase request, AtomicReference<WebServiceCaller.CallType> callTypeHolder)
-      throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
-  {
-    return performHttpRequest(uri, request, callTypeHolder, 0);
   }
 
   private HttpResponse performHttpRequest(String uri, HttpRequestBase request, AtomicReference<WebServiceCaller.CallType> callTypeHolder, int attemptsCount)

@@ -225,8 +225,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     protected final boolean wasCommandStackedMeanwhile()
     {
       final Integer commandId = prioritiesStack.get(view);
-      final boolean isCommandStillValid = commandId == null || commandId.intValue() != id;
-      return isCommandStillValid;
+      final boolean wasOtherCommandBeenStacked = commandId == null || commandId.intValue() != id;
+      return wasOtherCommandBeenStacked;
     }
 
     public final int compareTo(BasisCommand other)
@@ -762,8 +762,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           synchronized (downloadingBitmap)
           {
+            // We wait for the other download to complete
             bitmap = downloadingBitmap.bitmap;
             downloadingBitmap.referencesCount--;
+            usedBitmap = downloadingBitmap.usedBitmap;
             if (downloadingBitmap.referencesCount <= 0)
             {
               inProgressDownloads.remove(url);
@@ -796,15 +798,21 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
               }
             }
             bitmap = retrievedBitmap;
+
+            if (bitmap != null)
+            {
+              // If the bitmap is not null, we cache it immediately
+              usedBitmap = putInCache(url, bitmap);
+              newDownloadingBitmap.usedBitmap = usedBitmap;
+            }
+
             // A minor optimization
             if (newDownloadingBitmap.referencesCount <= 0)
             {
               inProgressDownloads.remove(url);
             }
-            else
-            {
-              newDownloadingBitmap.bitmap = bitmap;
-            }
+            newDownloadingBitmap.bitmap = bitmap;
+
             if (inputStreamAsynchronous == true)
             {
               return;
@@ -826,11 +834,6 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
             }
           }
           // We let intentionally the 'usedBitmap' null
-        }
-        else
-        {
-          // TODO: invoke the 'putInCache()' only once when the same URL is asked for multiple times
-          usedBitmap = putInCache(url, bitmap);
         }
       }
       else
@@ -1217,6 +1220,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     private int referencesCount;
 
+    private UsedBitmap usedBitmap;
+
   }
 
   /**
@@ -1290,6 +1295,27 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
    * The internal unique identifier of a command.
    */
   private int commandIdCount = -1;
+
+  /**
+   * Resets the BitmapDownloader, so that the commands count is reset to {@code 0} and so that the internal worker thread are purged.
+   */
+  public static void reset()
+  {
+    if (log.isInfoEnabled())
+    {
+      log.info("Resetting the BitmapDownloader");
+    }
+    BasisBitmapDownloader.commandsCount = 0;
+    if (BasisBitmapDownloader.PRE_THREAD_POOL != null)
+    {
+      BasisBitmapDownloader.PRE_THREAD_POOL.purge();
+    }
+    if (BasisBitmapDownloader.DOWNLOAD_THREAD_POOL != null)
+    {
+      BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.purge();
+    }
+    BasisBitmapDownloader.ANALYTICS_LISTENER = null;
+  }
 
   /**
    * Enables to tune how many threads at most will be available in the "pre" threads pool.
@@ -1430,7 +1456,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         }
         else
         {
-          // In that case, the command is aborted over
+          // In that case, the command is aborted and is over
           instructions.onOver(true, alreadyStackedCommand.view, alreadyStackedCommand.bitmapUid, alreadyStackedCommand.imageSpecs);
         }
       }
@@ -1520,7 +1546,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   @Override
   protected CoreAnalyticsData computeAnalyticsData()
   {
-    return new BasisAnalyticsData(cache.size(), cleanUpsCount, outOfMemoryOccurences, commandsCount, prioritiesPreStack.size(), prioritiesStack.size(), prioritiesDownloadStack.size(), inProgressDownloads.size());
+    return new BasisAnalyticsData(cache.size(), cleanUpsCount, outOfMemoryOccurences, BasisBitmapDownloader.commandsCount, prioritiesPreStack.size(), prioritiesStack.size(), prioritiesDownloadStack.size(), inProgressDownloads.size());
   }
 
 }
