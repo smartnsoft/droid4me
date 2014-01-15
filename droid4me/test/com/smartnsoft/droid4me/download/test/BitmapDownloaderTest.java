@@ -149,7 +149,7 @@ public final class BitmapDownloaderTest
     public void waitForOnOver()
         throws InterruptedException
     {
-      waitForOnOver(5000);
+      waitForOnOver(timeOutInMilliseconds);
     }
 
     public void waitForOnOver(int timeOutInMilliseconds)
@@ -327,6 +327,8 @@ public final class BitmapDownloaderTest
 
   private final String INVALID_BITMAP_URL = "http://abcd.smartnsoft.com";
 
+  private final static int timeOutInMilliseconds = 1000;
+
   private BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable> bitmapDownloader;
 
   private DummyViewable view;
@@ -339,6 +341,7 @@ public final class BitmapDownloaderTest
   public void setup()
   {
     super.setup();
+    BasisBitmapDownloader.reset();
     BasisBitmapDownloader.IS_DEBUG_TRACE = true;
     BasisBitmapDownloader.IS_DUMP_TRACE = true;
     analyticsData = null;
@@ -1141,19 +1144,22 @@ public final class BitmapDownloaderTest
   }
 
   @Test
-  public void onCommandOverwrittenDuringDownload()
+  public void onCommandOverwrittenDuringInConcurrentDownload()
       throws InterruptedException
   {
+//    bitmapValidUrl();
+//    setup();
     final Expectations firstExpectations = new Expectations();
     final Expectations secondExpectations = new Expectations();
-    bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
+    final String bitmapUrl = "http://www.google.com";
+    bitmapDownloader.get(view, bitmapUrl, null, handler,
         new ExpectedInstructions(firstExpectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess)
         {
           @Override
           public InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream)
           {
-            // We take the opportunity to ask a new BitmapDownloader "get" command while the first is asking for a local bitmap
-            bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
+            // We take the opportunity to ask a new BitmapDownloader "get" command while the second has downloaded its bitmap
+            bitmapDownloader.get(view, bitmapUrl, null, handler,
                 new ExpectedInstructions(secondExpectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess));
             return super.onInputStreamDownloaded(bitmapUid, imageSpecs, url, inputStream);
           }
@@ -1203,7 +1209,7 @@ public final class BitmapDownloaderTest
   {
     final Expectations expectations = new Expectations();
     bitmapDownloader.get(view, VALID_BITMAP_URL, null, handler,
-        new ExpectedInstructions(expectations, false, false, ExpectedInstructions.SimulationdMethod.ActuallyRun)
+        new ExpectedInstructions(expectations, false, false, ExpectedInstructions.SimulationdMethod.FakeSuccess)
         {
 
           @Override
@@ -1278,12 +1284,12 @@ public final class BitmapDownloaderTest
     final int hasTemporaryBitmap = fromCache == false ? 1 : 0;
     final int onBindLocalBitmap = 0;
     final int onBindTemporaryBitmap = 0;
-    final int getInputStream = 0;//fromCache == false ? 1 : 0;
-    final int onInputStreamDownloaded = 0;//fromCache == false ? 1 : 0;
+    final int getInputStream = 0;// fromCache == false ? 1 : 0;
+    final int onInputStreamDownloaded = 0;// fromCache == false ? 1 : 0;
     final int onBitmapReady = 0;
     final int onBindBitmap = 0;
     final int onBitmapBound = 0;
-    final int convert = 0;//fromCache == false ? 1 : 0;
+    final int convert = 0;// fromCache == false ? 1 : 0;
     final Boolean onBitmapBoundResult = null;
     assertAllExpectations(expectations, onOver, computeUrl, hasLocalBitmap, hasTemporaryBitmap, onBindLocalBitmap, onBindTemporaryBitmap, onBitmapReady,
         onBindBitmap, onBitmapBound, onBitmapBoundResult, getInputStream, onInputStreamDownloaded, convert);
