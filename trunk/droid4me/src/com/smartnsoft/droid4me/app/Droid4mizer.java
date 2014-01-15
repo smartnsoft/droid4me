@@ -143,7 +143,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   public void onException(Throwable throwable, boolean fromGuiThread)
   {
-    ActivityController.getInstance().handleException(activity, interceptorComponent, throwable);
+    ActivityController.getInstance().handleException(true, activity, interceptorComponent, throwable);
   }
 
   public void registerBroadcastListeners(BroadcastListener[] broadcastListeners)
