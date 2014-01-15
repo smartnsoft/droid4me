@@ -328,6 +328,8 @@ public class ActivityController
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
      * 
+     * @param isRecoverable
+     *          indicates whether the application is about to crash when the exception has been triggered
      * @param context
      *          the context that issued the exception
      * @param throwable
@@ -335,7 +337,7 @@ public class ActivityController
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
      *         for a further exception handler anymore
      */
-    boolean onContextException(Context context, Throwable throwable);
+    boolean onContextException(boolean isRecoverable, Context context, Throwable throwable);
 
     /**
      * Is invoked whenever a handled exception is thrown outside from an available {@link Context context}.
@@ -348,12 +350,14 @@ public class ActivityController
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
      * 
+     * @param isRecoverable
+     *          indicates whether the application is about to crash when the exception has been triggered
      * @param throwable
      *          the exception that has been triggered
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
      *         for a further exception handler anymore
      */
-    boolean onException(Throwable throwable);
+    boolean onException(boolean isRecoverable, Throwable throwable);
 
   }
 
@@ -710,6 +714,8 @@ public class ActivityController
    * only one {@link Throwable} may be handled at the same time.
    * </p>
    * 
+   * @param isRecoverable
+   *          indicates whether the application is about to crash when the exception has been triggered
    * @param context
    *          the context that originated the exception ; may be {@code null}
    * @param component
@@ -719,7 +725,7 @@ public class ActivityController
    * @return {@code true} if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception handled
    *         has been set}, returns {@code false}
    */
-  public synchronized boolean handleException(Context context, Object component, Throwable throwable)
+  public synchronized boolean handleException(boolean isRecoverable, Context context, Object component, Throwable throwable)
   {
     if (exceptionHandler == null)
     {
@@ -772,11 +778,11 @@ public class ActivityController
         }
         else if (context != null)
         {
-          return exceptionHandler.onContextException(context, throwable);
+          return exceptionHandler.onContextException(isRecoverable, context, throwable);
         }
         else
         {
-          return exceptionHandler.onException(throwable);
+          return exceptionHandler.onException(isRecoverable, throwable);
         }
       }
     }

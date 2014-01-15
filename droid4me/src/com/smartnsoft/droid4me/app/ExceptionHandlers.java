@@ -120,24 +120,34 @@ public final class ExceptionHandlers
       return onActivityExceptionFallback(activity, component, throwable);
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see #onContextExceptionFallback(boolean, Context, Throwable)
+     */
     @Override
-    public final boolean onContextException(Context context, Throwable throwable)
+    public final boolean onContextException(boolean isRecoverable, Context context, Throwable throwable)
     {
       if (handleCommonCauses(null, null, throwable, null) == true)
       {
         return true;
       }
-      return onContextExceptionFallback(context, throwable);
+      return onContextExceptionFallback(isRecoverable, context, throwable);
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @see #onExceptionFallback(boolean, Throwable)
+     */
     @Override
-    public final boolean onException(Throwable throwable)
+    public final boolean onException(boolean isRecoverable, Throwable throwable)
     {
       if (handleCommonCauses(null, null, throwable, null) == true)
       {
         return true;
       }
-      return onExceptionFallback(throwable);
+      return onExceptionFallback(isRecoverable, throwable);
     }
 
     /**
@@ -214,6 +224,8 @@ public final class ExceptionHandlers
      * This method will be invoked by the {@link #onContextException()()} method, as a fallback if the provided exception has not been handled neither
      * by the {@link #handleCommonCauses()} method.
      * 
+     * @param isRecoverable
+     *          indicates whether the application is about to crash when the exception has been triggered
      * @param context
      *          the context that issued the exception
      * @param throwable
@@ -221,7 +233,7 @@ public final class ExceptionHandlers
      * @return {@code true} if and only if the exception has been handled
      * @see #onContextException()
      */
-    protected boolean onContextExceptionFallback(Context context, Throwable throwable)
+    protected boolean onContextExceptionFallback(boolean isRecoverable, Context context, Throwable throwable)
     {
       submitToIssueAnalyzer(throwable);
       return false;
@@ -231,12 +243,14 @@ public final class ExceptionHandlers
      * This method will be invoked by the {@link #onException()()} method, as a fallback if the provided exception has not been handled neither by the
      * {@link #handleCommonCauses()} method.
      * 
+     * @param isRecoverable
+     *          indicates whether the application is about to crash when the exception has been triggered
      * @param throwable
      *          the exception that has been triggered
      * @return {@code true} if and only if the exception has been handled
      * @see #onException()
      */
-    protected boolean onExceptionFallback(Throwable throwable)
+    protected boolean onExceptionFallback(boolean isRecoverable, Throwable throwable)
     {
       submitToIssueAnalyzer(throwable);
       return false;
