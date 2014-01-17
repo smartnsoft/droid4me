@@ -114,8 +114,6 @@ public class BitmapDownloader
 
     }
 
-    public static int HEIGHT = 150;
-
     protected JaugeView[] jauges;
 
     /**
@@ -129,9 +127,11 @@ public class BitmapDownloader
      * 
      * @param context
      *          the context that will host the created widget
+     * @param height
+     *          the height of the generated widget
      * @return an Android {@link ViewGroup}, that you may add to a widgets hierarchy
      */
-    public ViewGroup getView(Context context)
+    public ViewGroup getView(Context context, int height)
     {
       jauges = new JaugeView[BitmapDownloader.INSTANCES_COUNT];
       final LinearLayout container = new LinearLayout(context);
@@ -140,7 +140,7 @@ public class BitmapDownloader
       {
         final JaugeView jauge = new JaugeView(context, Integer.toString(index));
         jauges[index] = jauge;
-        final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, AnalyticsDisplayer.HEIGHT, 1f);
+        final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, height, 1f);
         layoutParams.leftMargin = layoutParams.rightMargin = 3;
         container.addView(jauge, layoutParams);
       }
@@ -154,6 +154,18 @@ public class BitmapDownloader
     public void plug()
     {
       CoreBitmapDownloader.ANALYTICS_LISTENER = this;
+    }
+
+    /**
+     * Unplugs the current {@link CoreBitmapDownloader.AnalyticsListener} to the {@link CoreBitmapDownloader#ANALYTICS_LISTENER}, if it is currently
+     * the registered analytics listener.
+     */
+    public void unplug()
+    {
+      if (CoreBitmapDownloader.ANALYTICS_LISTENER == this)
+      {
+        CoreBitmapDownloader.ANALYTICS_LISTENER = null;
+      }
     }
 
     public void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader, CoreBitmapDownloader.CoreAnalyticsData analyticsData)
