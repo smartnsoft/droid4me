@@ -343,7 +343,7 @@ public final class BitmapDownloaderTest
     super.setup();
     BasisBitmapDownloader.reset();
     BasisBitmapDownloader.IS_DEBUG_TRACE = true;
-    BasisBitmapDownloader.IS_DUMP_TRACE = true;
+    BasisBitmapDownloader.IS_DUMP_TRACE = false;
     analyticsData = null;
     bitmapDownloader = new BasisBitmapDownloader<DummyBitmapable, DummyViewable, DummyHandlerable>(0, "0", 4 * 1024 * 1024, 2 * 1024 * 1024, false, false);
     view = new DummyViewable(1234);
@@ -1147,8 +1147,6 @@ public final class BitmapDownloaderTest
   public void onCommandOverwrittenDuringInConcurrentDownload()
       throws InterruptedException
   {
-//    bitmapValidUrl();
-//    setup();
     final Expectations firstExpectations = new Expectations();
     final Expectations secondExpectations = new Expectations();
     final String bitmapUrl = "http://www.google.com";
@@ -1188,7 +1186,7 @@ public final class BitmapDownloaderTest
       final boolean onOver = true;
       final int computeUrl = 1;
       final int hasLocalBitmap = 1;
-      final int hasTemporaryBitmap = 1;
+      final int hasTemporaryBitmap = -1;
       final int onBindLocalBitmap = 0;
       final int onBindTemporaryBitmap = 0;
       final int getInputStream = 0;
@@ -1338,8 +1336,11 @@ public final class BitmapDownloaderTest
   {
     Assert.assertEquals("The 'computeUrl()' method has not been invoked the expected number of times", computeUrl, expectations.computeUrl);
     Assert.assertEquals("The 'hasLocalBitmap()' method has not been invoked the expected number of times", hasLocalBitmap, expectations.hasLocalBitmap);
-    Assert.assertEquals("The 'hasTemporaryBitmap()' method has not been invoked the expected number of times", hasTemporaryBitmap,
-        expectations.hasTemporaryBitmap);
+    if (hasTemporaryBitmap >= 0)
+    {
+      Assert.assertEquals("The 'hasTemporaryBitmap()' method has not been invoked the expected number of times", hasTemporaryBitmap,
+          expectations.hasTemporaryBitmap);
+    }
     Assert.assertEquals("The 'onBindLocalBitmap()' method has not been invoked the expected number of times", onBindLocalBitmap, expectations.onBindLocalBitmap);
     Assert.assertEquals("The 'onBindTemporaryBitmap()' method has not been invoked the expected number of times", onBindTemporaryBitmap,
         expectations.onBindTemporaryBitmap);
@@ -1358,6 +1359,14 @@ public final class BitmapDownloaderTest
 
   private static ByteArrayInputStream generateBitmapInputStream()
   {
+    try
+    {
+      Thread.sleep(10);
+    }
+    catch (InterruptedException exception)
+    {
+      // Does not matter
+    }
     return new ByteArrayInputStream(new byte[300 * 200 * 4]);
   }
 

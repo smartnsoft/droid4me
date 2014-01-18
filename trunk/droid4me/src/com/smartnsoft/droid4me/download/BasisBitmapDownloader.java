@@ -111,7 +111,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       implements Runnable, Comparable<BasisCommand>
   {
 
-    private final int ordinal = BasisBitmapDownloader.commandsCount++;
+    private final int ordinal = ++BasisBitmapDownloader.commandOrdinalCount;
 
     protected final int id;
 
@@ -1259,9 +1259,14 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   private static ThreadPoolExecutor DOWNLOAD_THREAD_POOL;
 
   /**
-   * The counter of all commands, which is incremented on every new command, so as to identify them.
+   * The counter of all commands, which is incremented by one on every new command, so as to be able to determine their creation order.
    */
-  private static int commandsCount = 0;
+  private static int commandOrdinalCount = -1;
+
+  /**
+   * The internal unique identifier of a command.
+   */
+  private static int commandIdCount = -1;
 
   /**
    * A map which handles the priorities of the {@link BasisBitmapDownloader.PreCommand pre-commands}: when a new command for an {@link View} is asked
@@ -1292,11 +1297,6 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   private final Set<ViewClass> asynchronousDownloadCommands;
 
   /**
-   * The internal unique identifier of a command.
-   */
-  private int commandIdCount = -1;
-
-  /**
    * Resets the BitmapDownloader, so that the commands count is reset to {@code 0} and so that the internal worker thread are purged.
    */
   public static void reset()
@@ -1305,14 +1305,17 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     {
       log.info("Resetting the BitmapDownloader");
     }
-    BasisBitmapDownloader.commandsCount = 0;
+    BasisBitmapDownloader.commandOrdinalCount = -1;
+    BasisBitmapDownloader.commandIdCount = -1;
     if (BasisBitmapDownloader.PRE_THREAD_POOL != null)
     {
       BasisBitmapDownloader.PRE_THREAD_POOL.purge();
+      // BasisBitmapDownloader.PRE_THREAD_POOL = null;
     }
     if (BasisBitmapDownloader.DOWNLOAD_THREAD_POOL != null)
     {
       BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.purge();
+      // BasisBitmapDownloader.DOWNLOAD_THREAD_POOL = null;
     }
     BasisBitmapDownloader.ANALYTICS_LISTENER = null;
   }
@@ -1461,7 +1464,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         }
       }
     }
-    final PreCommand command = new PreCommand(++commandIdCount, view, bitmapUid, imageSpecs, handler, instructions);
+    final PreCommand command = new PreCommand(++BasisBitmapDownloader.commandIdCount, view, bitmapUid, imageSpecs, handler, instructions);
     if (view != null)
     {
       prioritiesStack.put(view, command.id);
@@ -1493,7 +1496,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
     else
     {
-      final PreCommand preCommand = new PreCommand(++commandIdCount, view, bitmapUid, imageSpecs, handler, instructions, true);
+      final PreCommand preCommand = new PreCommand(++BasisBitmapDownloader.commandIdCount, view, bitmapUid, imageSpecs, handler, instructions, true);
       if (view != null)
       {
         prioritiesStack.put(view, preCommand.id);
@@ -1546,7 +1549,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   @Override
   protected CoreAnalyticsData computeAnalyticsData()
   {
-    return new BasisAnalyticsData(cache.size(), cleanUpsCount, outOfMemoryOccurences, BasisBitmapDownloader.commandsCount, prioritiesPreStack.size(), prioritiesStack.size(), prioritiesDownloadStack.size(), inProgressDownloads.size());
+    return new BasisAnalyticsData(cache.size(), cleanUpsCount, outOfMemoryOccurences, BasisBitmapDownloader.commandOrdinalCount, prioritiesPreStack.size(), prioritiesStack.size(), prioritiesDownloadStack.size(), inProgressDownloads.size());
   }
 
 }
