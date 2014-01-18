@@ -25,10 +25,12 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
 import com.smartnsoft.droid4me.download.DownloadInstructions.BitmapableBitmap;
@@ -64,34 +66,44 @@ public class BitmapDownloader
         extends View
     {
 
-      private final Paint jaugePaint;
-
-      private final Paint markPaint;
-
-      private final Paint textPaint;
-
-      private final Paint errorTextPaint;
-
-      private final String label;
+      private CoreBitmapDownloader.CoreAnalyticsData analyticsData;
 
       private float jaugeLevel;
 
       private float jaugeWaterLevel;
 
-      private CoreBitmapDownloader.CoreAnalyticsData analyticsData;
+      private final Paint jaugePaint;
+
+      private final Paint markPaint;
+
+      private final Paint leftTextPaint;
+
+      private final Paint rightTextPaint;
+
+      private final Paint errorTextPaint;
+
+      private final String label;
 
       public JaugeView(Context context, String label)
       {
         super(context);
         this.label = label;
         jaugePaint = new Paint();
-        jaugePaint.setColor(Color.CYAN);
+        jaugePaint.setColor(Color.BLACK);
         markPaint = new Paint();
         markPaint.setColor(Color.GRAY);
-        textPaint = new Paint();
-        textPaint.setColor(Color.BLACK);
+        final float density = context.getResources().getDisplayMetrics().density;
+        final int textSizeInDip = 8;
+        leftTextPaint = new Paint();
+        leftTextPaint.setColor(Color.WHITE);
+        leftTextPaint.setTextAlign(Align.LEFT);
+        leftTextPaint.setTextSize(density * textSizeInDip);
+        rightTextPaint = new Paint(leftTextPaint);
+        rightTextPaint.setTextAlign(Align.RIGHT);
         errorTextPaint = new Paint();
         errorTextPaint.setColor(Color.RED);
+        errorTextPaint.setTextAlign(Align.RIGHT);
+        errorTextPaint.setTextSize(density * textSizeInDip);
       }
 
       @Override
@@ -99,16 +111,17 @@ public class BitmapDownloader
       {
         super.onDraw(canvas);
 
+        final int textOffset = 10;
         canvas.drawRect(new Rect(0, getHeight() - (int) ((float) getHeight() * jaugeLevel), getWidth(), getHeight()), jaugePaint);
         final int markY = getHeight() - (int) ((float) getHeight() * jaugeWaterLevel);
         canvas.drawLine(0, markY, getWidth(), markY, markPaint);
-        canvas.drawText(label, 0, getHeight(), textPaint);
+        canvas.drawText(label, textOffset, getHeight() - textOffset, leftTextPaint);
         if (analyticsData != null)
         {
-          final int textOffset = 20;
-          canvas.drawText(Integer.toString(analyticsData.cleanUpsCount), 0, textOffset, textPaint);
-          canvas.drawText(Integer.toString(analyticsData.bitmapsCount), getWidth() - textOffset, getHeight(), textPaint);
-          canvas.drawText(Integer.toString(analyticsData.outOfMemoryOccurences), getWidth() - textOffset, textOffset, errorTextPaint);
+          canvas.drawText(Integer.toString(analyticsData.cleanUpsCount), textOffset, leftTextPaint.getTextSize() + textOffset, leftTextPaint);
+          canvas.drawText(Integer.toString(analyticsData.bitmapsCount), getWidth() - textOffset, getHeight() - textOffset, rightTextPaint);
+          canvas.drawText(Integer.toString(analyticsData.outOfMemoryOccurences), getWidth() - textOffset, errorTextPaint.getTextSize() + textOffset,
+              errorTextPaint);
         }
       }
 
@@ -131,7 +144,7 @@ public class BitmapDownloader
      *          the height of the generated widget
      * @return an Android {@link ViewGroup}, that you may add to a widgets hierarchy
      */
-    public ViewGroup getView(Context context, int height)
+    public ViewGroup getView(Context context)
     {
       jauges = new JaugeView[BitmapDownloader.INSTANCES_COUNT];
       final LinearLayout container = new LinearLayout(context);
@@ -140,7 +153,7 @@ public class BitmapDownloader
       {
         final JaugeView jauge = new JaugeView(context, Integer.toString(index));
         jauges[index] = jauge;
-        final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, height, 1f);
+        final LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f);
         layoutParams.leftMargin = layoutParams.rightMargin = 3;
         container.addView(jauge, layoutParams);
       }
