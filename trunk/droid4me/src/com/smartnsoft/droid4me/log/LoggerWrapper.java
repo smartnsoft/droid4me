@@ -85,6 +85,7 @@ public class LoggerWrapper
     LoggerWrapper.instances.put(category, this);
   }
 
+  @Override
   public void debug(String message)
   {
     if (logger == null)
@@ -94,6 +95,7 @@ public class LoggerWrapper
     logger.debug(message);
   }
 
+  @Override
   public void info(String message)
   {
     if (logger == null)
@@ -103,6 +105,7 @@ public class LoggerWrapper
     logger.info(message);
   }
 
+  @Override
   public void warn(String message)
   {
     if (logger == null)
@@ -112,6 +115,7 @@ public class LoggerWrapper
     logger.warn(message);
   }
 
+  @Override
   public void warn(String message, Throwable throwable)
   {
     if (logger == null)
@@ -121,6 +125,7 @@ public class LoggerWrapper
     logger.warn(message, throwable);
   }
 
+  @Override
   public void warn(StringBuffer message, Throwable throwable)
   {
     if (logger == null)
@@ -130,6 +135,7 @@ public class LoggerWrapper
     logger.warn(message, throwable);
   }
 
+  @Override
   public void error(String message)
   {
     if (logger == null)
@@ -139,6 +145,7 @@ public class LoggerWrapper
     logger.error(message);
   }
 
+  @Override
   public void error(String message, Throwable throwable)
   {
     if (logger == null)
@@ -148,6 +155,7 @@ public class LoggerWrapper
     logger.error(message, throwable);
   }
 
+  @Override
   public void error(StringBuffer message, Throwable throwable)
   {
     if (logger == null)
@@ -157,6 +165,7 @@ public class LoggerWrapper
     logger.error(message, throwable);
   }
 
+  @Override
   public void fatal(String message)
   {
     if (logger == null)
@@ -166,6 +175,7 @@ public class LoggerWrapper
     logger.fatal(message);
   }
 
+  @Override
   public void fatal(String message, Throwable throwable)
   {
     if (logger == null)
@@ -175,29 +185,34 @@ public class LoggerWrapper
     logger.fatal(message, throwable);
   }
 
+  @Override
   public boolean isDebugEnabled()
   {
-    return LoggerFactory.logLevel <= android.util.Log.DEBUG;
+    return logger.isDebugEnabled();
   }
 
+  @Override
   public boolean isInfoEnabled()
   {
-    return LoggerFactory.logLevel <= android.util.Log.INFO;
+    return logger.isInfoEnabled();
   }
 
+  @Override
   public boolean isWarnEnabled()
   {
-    return LoggerFactory.logLevel <= android.util.Log.WARN;
+    return logger.isWarnEnabled();
   }
 
+  @Override
   public boolean isErrorEnabled()
   {
-    return LoggerFactory.logLevel <= android.util.Log.ERROR;
+    return logger.isErrorEnabled();
   }
 
+  @Override
   public boolean isFatalEnabled()
   {
-    return LoggerFactory.logLevel <= android.util.Log.ERROR;
+    return logger.isFatalEnabled();
   }
 
 }
