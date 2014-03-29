@@ -325,12 +325,32 @@ public final class DbPersistence
 
   /**
    * {@inheritDoc}
+   * 
+   * @see #DbPersistence(String, int, String, String)
    */
   public DbPersistence(String storageDirectoryPath, int instanceIndex)
   {
+    this(storageDirectoryPath, instanceIndex, DbPersistence.FILE_NAMES[instanceIndex], DbPersistence.TABLE_NAMES[instanceIndex]);
+  }
+
+  /**
+   * Creates a persistence instance with all the necessary information to indicate its location.
+   * 
+   * @param storageDirectoryPath
+   *          the directory path where the persistence database should be created
+   * @param instanceIndex
+   *          the ordinal of the instance which is bound to be created. Starts with {@code 0}
+   * @param fileName
+   *          the name of the database file
+   * @param tableName
+   *          the name of the table which will handle the persistence
+   * @see #DbPersistence(String, int)
+   */
+  public DbPersistence(String storageDirectoryPath, int instanceIndex, String fileName, String tableName)
+  {
     super(storageDirectoryPath, instanceIndex);
-    this.fileName = DbPersistence.FILE_NAMES[instanceIndex];
-    this.tableName = DbPersistence.TABLE_NAMES[instanceIndex];
+    this.fileName = fileName;
+    this.tableName = tableName;
     readInputStreamQuery = new StringBuilder("SELECT ").append(DbPersistence.CacheColumns.CONTENTS).append(", ").append(DbPersistence.CacheColumns.LAST_UPDATE).append(
         ", ").append(DbPersistence.CacheColumns.CONTEXT).append(" FROM ").append(tableName).append(" WHERE ").append(DbPersistence.CacheColumns.URI).append(
         " = ?").toString();

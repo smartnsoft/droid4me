@@ -491,7 +491,7 @@ public abstract class Persistence
    * @param storageDirectoryPath
    *          the location where the persistence should be performed
    * @param instanceIndex
-   *          the ordinal of the instance which is bound to be created. Starts with {@code 0}.
+   *          the ordinal of the instance which is bound to be created. Starts with {@code 0}
    * @see #initialize()
    */
   protected Persistence(String storageDirectoryPath, int instanceIndex)
