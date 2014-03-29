@@ -188,31 +188,31 @@ public class LoggerWrapper
   @Override
   public boolean isDebugEnabled()
   {
-    return logger.isDebugEnabled();
+    return logger == null ? LoggerFactory.logLevel <= android.util.Log.DEBUG : logger.isDebugEnabled();
   }
 
   @Override
   public boolean isInfoEnabled()
   {
-    return logger.isInfoEnabled();
+    return logger == null ? LoggerFactory.logLevel <= android.util.Log.INFO : logger.isInfoEnabled();
   }
 
   @Override
   public boolean isWarnEnabled()
   {
-    return logger.isWarnEnabled();
+    return logger == null ? LoggerFactory.logLevel <= android.util.Log.WARN : logger.isWarnEnabled();
   }
 
   @Override
   public boolean isErrorEnabled()
   {
-    return logger.isErrorEnabled();
+    return logger == null ? LoggerFactory.logLevel <= android.util.Log.ERROR : logger.isErrorEnabled();
   }
 
   @Override
   public boolean isFatalEnabled()
   {
-    return logger.isFatalEnabled();
+    return logger == null ? LoggerFactory.logLevel <= android.util.Log.ERROR : logger.isFatalEnabled();
   }
 
 }
