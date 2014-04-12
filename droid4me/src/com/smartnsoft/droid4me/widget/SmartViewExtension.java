@@ -23,8 +23,8 @@ import android.view.ViewGroup;
 import android.widget.Gallery;
 
 /**
- * An interface introduced in order to get notified when a container size changes, because there is no {@code OnSizeChangedListener} in Android {@link View},
- * whereas there is a {@link View#onSizeChanged()} method.
+ * An interface introduced in order to get notified when a container size changes, because there is no {@code OnSizeChangedListener} in Android
+ * {@link View}, whereas there is a {@link View#onSizeChanged()} method.
  * 
  * <p>
  * In addition, this interface for disabling the {@link View#requestLayout()} method dynamically.
@@ -58,6 +58,16 @@ public interface SmartViewExtension<ViewClass extends View>
     private float ratio = 0f;
 
     /**
+     * Holds the widget maximum width.
+     */
+    private int maxWidth = Integer.MAX_VALUE;
+
+    /**
+     * Holds the widget maximum height.
+     */
+    private int maxHeight = Integer.MAX_VALUE;
+
+    /**
      * A flag which states whether the {@link #requestLayout()} calls should be disabled.
      */
     private boolean requestLayoutDisabled;
@@ -82,6 +92,16 @@ public interface SmartViewExtension<ViewClass extends View>
     public void setRatio(float ratio)
     {
       this.ratio = ratio;
+    }
+
+    public void setMaxWidth(int maxWidth)
+    {
+      this.maxWidth = maxWidth;
+    }
+
+    public void setMaxHeight(int maxHeight)
+    {
+      this.maxHeight = maxHeight;
     }
 
     @Override
@@ -115,26 +135,88 @@ public interface SmartViewExtension<ViewClass extends View>
       {
         if (ratio == 0f)
         {
-          smartViewExtension.onSuperMeasure(widthMeasureSpec, heightMeasureSpec);
+          if (maxWidth == Integer.MAX_VALUE && maxHeight == Integer.MAX_VALUE)
+          {
+            smartViewExtension.onSuperMeasure(widthMeasureSpec, heightMeasureSpec);
+          }
+          else
+          {
+            // The view has a maximum width or a maximum height
+            final int originalWidth = MeasureSpec.getSize(widthMeasureSpec);
+            final int originalHeight = MeasureSpec.getSize(heightMeasureSpec);
+            final int originalWidthMode = MeasureSpec.getMode(widthMeasureSpec);
+            final int originalHeightMode = MeasureSpec.getMode(heightMeasureSpec);
+            final int finalWidth, finalHeight;
+            final int finalWidthMode, finalHeightMode;
+            if (originalWidthMode == MeasureSpec.EXACTLY && originalHeightMode == MeasureSpec.EXACTLY)
+            {
+              finalWidth = originalWidth;
+              finalHeight = originalHeight;
+              finalWidthMode = MeasureSpec.EXACTLY;
+              finalHeightMode = MeasureSpec.EXACTLY;
+            }
+            else
+            {
+              if (maxWidth != Integer.MAX_VALUE)
+              {
+                if (originalWidthMode == MeasureSpec.EXACTLY)
+                {
+                  finalWidth = originalWidth;
+                  finalWidthMode = MeasureSpec.EXACTLY;
+                }
+                else
+                {
+                  finalWidth = Math.min(originalWidth, maxWidth);
+                  finalWidthMode = MeasureSpec.AT_MOST;
+                }
+              }
+              else
+              {
+                finalWidth = originalWidth;
+                finalWidthMode = originalWidthMode;
+              }
+
+              if (maxHeight != Integer.MAX_VALUE)
+              {
+                if (originalHeightMode == MeasureSpec.EXACTLY)
+                {
+                  finalHeight = originalHeight;
+                  finalHeightMode = MeasureSpec.EXACTLY;
+                }
+                else
+                {
+                  finalHeight = Math.min(originalHeight, maxHeight);
+                  finalHeightMode = originalHeightMode;
+                }
+              }
+              else
+              {
+                finalHeight = originalHeight;
+                finalHeightMode = originalHeightMode;
+              }
+            }
+            smartViewExtension.onSuperMeasure(MeasureSpec.makeMeasureSpec(finalWidth, finalWidthMode),
+                MeasureSpec.makeMeasureSpec(finalHeight, finalHeightMode));
+          }
         }
         else
         {
           final float actualRatio = ratio > 0 ? ratio : -1f / ratio;
           final int originalWidth = MeasureSpec.getSize(widthMeasureSpec);
           final int originalHeight = MeasureSpec.getSize(heightMeasureSpec);
-          final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-          final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+          final int originalWidthMode = MeasureSpec.getMode(widthMeasureSpec);
+          final int originalHeightMode = MeasureSpec.getMode(heightMeasureSpec);
           final int finalWidth, finalHeight;
-          if (widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY)
+          if (originalWidthMode == MeasureSpec.EXACTLY && originalHeightMode == MeasureSpec.EXACTLY)
           {
             finalWidth = originalWidth;
             finalHeight = originalHeight;
           }
-          else if (widthMode == MeasureSpec.EXACTLY)
+          else if (originalWidthMode == MeasureSpec.EXACTLY)
           {
             finalWidth = originalWidth;
             final float idealHeight = finalWidth * actualRatio;
-            if (heightMode == MeasureSpec.UNSPECIFIED)
+            if (originalHeightMode == MeasureSpec.UNSPECIFIED)
             {
               finalHeight = (int) idealHeight;
             }
@@ -143,11 +225,11 @@ public interface SmartViewExtension<ViewClass extends View>
               finalHeight = idealHeight > originalHeight ? originalHeight : (int) idealHeight;
             }
           }
-          else if (heightMode == MeasureSpec.EXACTLY)
+          else if (originalHeightMode == MeasureSpec.EXACTLY)
           {
             finalHeight = originalHeight;
             final float idealWidth = finalHeight / actualRatio;
-            if (widthMode == MeasureSpec.UNSPECIFIED)
+            if (originalWidthMode == MeasureSpec.UNSPECIFIED)
             {
               finalWidth = (int) idealWidth;
             }
@@ -235,6 +317,24 @@ public interface SmartViewExtension<ViewClass extends View>
    * @see #getRatio()
    */
   void setRatio(float ratio);
+
+  /**
+   * Sets the widget maximum width. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
+   * 
+   * @param maxWidth
+   *          the new widget maximum width
+   * @see #setMaxHeight(int)
+   */
+  void setMaxWidth(int maxWidth);
+
+  /**
+   * Sets the widget maximum height. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
+   * 
+   * @param maxHeight
+   *          the new widget maximum height
+   * @see #setMaxWidth(int)
+   */
+  void setMaxHeight(int maxHeight);
 
   /**
    * @return the currently registered interface which listens for the widget size changes events ; is {@code null} by default
