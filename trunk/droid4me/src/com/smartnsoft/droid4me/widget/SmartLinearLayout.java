@@ -39,16 +39,6 @@ public class SmartLinearLayout
 
   private SmartViewExtension.ViewExtensionDelegate<SmartLinearLayout> viewExtensionDelegate;
 
-  /**
-   * Holds the widget maximum width.
-   */
-  protected int maxWidth = Integer.MAX_VALUE;
-
-  /**
-   * Holds the widget maximum height.
-   */
-  protected int maxHeight = Integer.MAX_VALUE;
-
   public SmartLinearLayout(Context context)
   {
     this(context, null);
@@ -77,6 +67,18 @@ public class SmartLinearLayout
   public final void setRatio(float ratio)
   {
     viewExtensionDelegate.setRatio(ratio);
+  }
+
+  @Override
+  public final void setMaxWidth(int maxWidth)
+  {
+    viewExtensionDelegate.setMaxWidth(maxWidth);
+  }
+
+  @Override
+  public final void setMaxHeight(int maxHeight)
+  {
+    viewExtensionDelegate.setMaxHeight(maxHeight);
   }
 
   @Override
@@ -113,28 +115,6 @@ public class SmartLinearLayout
   public final void setSelfMeasuredDimension(int measuredWidth, int measuredHeight)
   {
     setMeasuredDimension(measuredWidth, measuredHeight);
-  }
-
-  /**
-   * Sets the widget maximum width. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
-   * 
-   * @param maxWidth
-   *          the new widget maximum width
-   */
-  public final void setMaxWidth(int maxWidth)
-  {
-    this.maxWidth = maxWidth;
-  }
-
-  /**
-   * Sets the widget maximum height. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
-   * 
-   * @param maxHeight
-   *          the new widget maximum height
-   */
-  public final void setMaxHeight(int maxHeight)
-  {
-    this.maxHeight = maxHeight;
   }
 
   @Override
