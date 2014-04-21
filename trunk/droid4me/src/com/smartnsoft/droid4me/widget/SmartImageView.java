@@ -76,12 +76,16 @@ public class SmartImageView
   @Override
   public final void setMaxWidth(int maxWidth)
   {
+    super.setMaxWidth(maxWidth);
+    initializeViewExtensionDelegateIfNecessary();
     viewExtensionDelegate.setMaxWidth(maxWidth);
   }
 
   @Override
   public final void setMaxHeight(int maxHeight)
   {
+    super.setMaxHeight(maxHeight);
+    initializeViewExtensionDelegateIfNecessary();
     viewExtensionDelegate.setMaxHeight(maxHeight);
   }
 
