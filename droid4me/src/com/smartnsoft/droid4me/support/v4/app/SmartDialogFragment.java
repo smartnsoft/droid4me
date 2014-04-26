@@ -278,7 +278,9 @@ public abstract class SmartDialogFragment<AggregateClass>
    * @return a never-null activity, which is the hosting activity
    * @throws IllegalStateException
    *           if the fragment activity is currently null
+   * @deprecated do not use that method anymore!
    */
+  @Deprecated
   public final Activity getCheckedActivity()
       throws IllegalStateException
   {

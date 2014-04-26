@@ -19,6 +19,10 @@
 package com.smartnsoft.droid4me.app;
 
 import java.io.InterruptedIOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -109,9 +113,26 @@ public class ActivityController
    * 
    * @since 2012.04.11
    * @see ActivityController#needsRedirection(Activity)
+   * @see ActivityController.EscapeToRedirectorAnnotation
+   * @deprecated now use the {@link ActivityController.EscapeToRedirectorAnnotation} annotation instead
    */
+  @Deprecated
   public interface EscapeToRedirector
   {
+  }
+
+  /**
+   * An annotation which offers the same effect as the {@link ActivityController.EscapeToRedirector} interface.
+   * 
+   * @since 2014.04.26
+   * @see ActivityController#needsRedirection(Activity)
+   * @see ActivityController.EscapeToRedirector
+   */
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.TYPE)
+  public static @interface EscapeToRedirectorAnnotation
+  {
+
   }
 
   /**
@@ -804,7 +825,8 @@ public class ActivityController
    * {@link ActivityController#CALLING_INTENT} key.
    * 
    * <p>
-   * If the provided {@code activity} implements the {@link ActivityController.EscapeToRedirector} interface, the method returns {@code false}.
+   * If the provided {@code activity} implements the {@link ActivityController.EscapeToRedirector} interface or exposes the
+   * {@link ActivityController.EscapeToRedirectorAnnotation} annotation, the method returns {@code false}.
    * </p>
    * 
    * <p>
@@ -818,6 +840,7 @@ public class ActivityController
    * @see ActivityController#extractCallingIntent(Activity)
    * @see ActivityController.Redirector#getRedirection(Activity)
    * @see ActivityController.EscapeToRedirector
+   * @see ActivityController.EscapeToRedirectorAnnotation
    */
   public boolean needsRedirection(Activity activity)
   {
@@ -825,7 +848,7 @@ public class ActivityController
     {
       return false;
     }
-    if (activity instanceof ActivityController.EscapeToRedirector)
+    if (activity instanceof ActivityController.EscapeToRedirector || activity.getClass().getAnnotation(ActivityController.EscapeToRedirectorAnnotation.class) != null)
     {
       if (log.isDebugEnabled())
       {
