@@ -19,7 +19,6 @@ package com.smartnsoft.droid4me.analytics;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Bundle;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -61,7 +60,7 @@ public interface AnalyticsSender<DictionaryType>
    * @param dictionary
    *          the dictionary to use when reporting the error ; may be {@code null}
    */
-  void logError(Context context, String name, Bundle dictionary);
+  void logError(Context context, String name, DictionaryType dictionary);
 
   /**
    * Logs the start or resume of an {@link Activity} or {@code Fragment} (i.e. an entity).
