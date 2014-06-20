@@ -37,9 +37,9 @@ public class InternalStorageConfigurationLoader
 
   private final String fileName;
 
-  private final ConfigurationParser configurationParser;
+  private final ConfigurationParser<InputStream> configurationParser;
 
-  public InternalStorageConfigurationLoader(Context context, String fileName, ConfigurationParser configurationParser)
+  public InternalStorageConfigurationLoader(Context context, String fileName, ConfigurationParser<InputStream> configurationParser)
   {
     this.context = context;
     this.fileName = fileName;
