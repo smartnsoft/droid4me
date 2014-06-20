@@ -20,6 +20,7 @@ package com.smartnsoft.droid4me.config;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -171,14 +172,37 @@ public interface ConfigurationLoader
       }
       if (configurationParser != null)
       {
+        final Type genericSuperclass = configurationParser.getClass().getGenericSuperclass();
+        final Type[] actualTypeArguments = ((java.lang.reflect.ParameterizedType) genericSuperclass).getActualTypeArguments();
+        final Class<?> genericClass;
+        if (actualTypeArguments.length >= 1)
+        {
+          genericClass = (Class<?>) actualTypeArguments[0];
+        }
+        else
+        {
+          genericClass = null;
+        }
         switch (configurationLocation)
         {
         case Assets:
-          return new AssetsConfigurationLoader(ConfigurationFactory.applicationContext.getAssets(), value, (ConfigurationParser<InputStream>) configurationParser);
+          if (genericClass == InputStream.class)
+          {
+            return new AssetsConfigurationLoader(ConfigurationFactory.applicationContext.getAssets(), value, (ConfigurationParser<InputStream>) configurationParser);
+          }
+          break;
         case InternalStorage:
-          return new InternalStorageConfigurationLoader(ConfigurationFactory.applicationContext, value, (ConfigurationParser<InputStream>) configurationParser);
+          if (genericClass == InputStream.class)
+          {
+            return new InternalStorageConfigurationLoader(ConfigurationFactory.applicationContext, value, (ConfigurationParser<InputStream>) configurationParser);
+          }
+          break;
         case Resources:
-          return new ResourcesConfigurationLoader(ConfigurationFactory.applicationContext, (ConfigurationParser<Context>) configurationParser);
+          if (genericClass == Context.class)
+          {
+            return new ResourcesConfigurationLoader(ConfigurationFactory.applicationContext, (ConfigurationParser<Context>) configurationParser);
+          }
+          break;
         }
       }
       throw new ConfigurationLoader.ConfigurationLoaderException("Does not support the '" + configurationLocation + "' configuration location mixed with the '" + configurationFormat + "' format!");
