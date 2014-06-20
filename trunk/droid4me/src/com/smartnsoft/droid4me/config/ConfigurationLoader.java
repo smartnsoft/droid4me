@@ -515,7 +515,7 @@ public interface ConfigurationLoader
           }
           else if (fieldType == float.class || fieldType == double.class)
           {
-            resourceType = "float";
+            resourceType = "dimen";
           }
           else
           {
@@ -527,7 +527,7 @@ public interface ConfigurationLoader
             final String rawPropertyValue;
             if (fieldType == int.class || fieldType == long.class)
             {
-              rawPropertyValue = Long.toString(resources.getInteger(identifier));
+              rawPropertyValue = Integer.toString(resources.getInteger(identifier));
             }
             else if (fieldType == boolean.class)
             {
@@ -537,7 +537,7 @@ public interface ConfigurationLoader
             {
               final TypedValue typedValue = new TypedValue();
               resources.getValue(identifier, typedValue, true);
-              rawPropertyValue = Double.toString(typedValue.getFloat());
+              rawPropertyValue = Float.toString(typedValue.getFloat());
             }
             else
             {
