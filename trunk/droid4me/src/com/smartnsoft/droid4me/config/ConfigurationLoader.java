@@ -31,6 +31,8 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.res.Resources;
+import android.util.TypedValue;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -87,7 +89,12 @@ public interface ConfigurationLoader
        * The configuration will be loaded from a file located in the application internal storage (hence, outside of the {@code .apk} installation
        * package file).
        */
-      InternalStorage
+      InternalStorage,
+      /**
+       * The configuration will be loaded from the resources located in the {@code res} application sub-directories, embedded in the {@code .apk}
+       * installation package file.
+       */
+      Resources
     }
 
     /**
@@ -102,7 +109,11 @@ public interface ConfigurationLoader
       /**
        * The configuration is expressed in the JSON format.
        */
-      Json
+      Json,
+      /**
+       * The configuration is expressed through the Android "resource" system (@link Resource}.
+       */
+      Resources
     }
 
     private static Context applicationContext;
@@ -134,6 +145,7 @@ public interface ConfigurationLoader
       return ConfigurationFactory.applicationContext;
     }
 
+    @SuppressWarnings("unchecked")
     public static ConfigurationLoader getInstance(ConfigurationFactory.ConfigurationLocation configurationLocation,
         ConfigurationFactory.ConfigurationFormat configurationFormat, String value)
     {
@@ -141,7 +153,7 @@ public interface ConfigurationLoader
       {
         throw new ConfigurationLoader.ConfigurationLoaderException("The 'ConfigurationFactory.initialize()' has not been invoked!");
       }
-      final ConfigurationParser configurationParser;
+      final ConfigurationParser<?> configurationParser;
       switch (configurationFormat)
       {
       case Properties:
@@ -149,6 +161,9 @@ public interface ConfigurationLoader
         break;
       case Json:
         configurationParser = new JsonParser();
+        break;
+      case Resources:
+        configurationParser = new ResourcesParser();
         break;
       default:
         configurationParser = null;
@@ -159,9 +174,11 @@ public interface ConfigurationLoader
         switch (configurationLocation)
         {
         case Assets:
-          return new AssetsConfigurationLoader(ConfigurationFactory.applicationContext.getAssets(), value, configurationParser);
+          return new AssetsConfigurationLoader(ConfigurationFactory.applicationContext.getAssets(), value, (ConfigurationParser<InputStream>) configurationParser);
         case InternalStorage:
-          return new InternalStorageConfigurationLoader(ConfigurationFactory.applicationContext, value, configurationParser);
+          return new InternalStorageConfigurationLoader(ConfigurationFactory.applicationContext, value, (ConfigurationParser<InputStream>) configurationParser);
+        case Resources:
+          return new ResourcesConfigurationLoader(ConfigurationFactory.applicationContext, (ConfigurationParser<Context>) configurationParser);
         }
       }
       throw new ConfigurationLoader.ConfigurationLoaderException("Does not support the '" + configurationLocation + "' configuration location mixed with the '" + configurationFormat + "' format!");
@@ -204,35 +221,34 @@ public interface ConfigurationLoader
    * 
    * @since 2013.10.19
    */
-  public static abstract class ConfigurationParser
+  public static abstract class ConfigurationParser<InputClass>
   {
 
     /**
      * Is responsible for creating a bean, and then fulfilling its fields.
      * 
      * <p>
-     * The method is supposed to skip fields available in the {@code inputStream}, but which cannot be mapped properly to any of the created bean
-     * fields.
+     * The method is supposed to skip fields available in the {@code input}, but which cannot be mapped properly to any of the created bean fields.
      * </p>
      * 
      * @param theClass
      *          the class the bean to be created belongs to
-     * @param inputStream
-     *          the stream which holds the bean state, and which will be parsed
+     * @param input
+     *          the source which holds the bean state, and which will be parsed
      * @return a valid and fulfilled bean
      * @throws ConfigurationLoader.ConfigurationLoaderException
      *           if an error occurred during the method
      * @see #setBean(Class, InputStream, Object)
      */
-    public abstract <T> T getBean(Class<T> theClass, InputStream inputStream)
+    public abstract <T> T getBean(Class<T> theClass, InputClass input)
         throws ConfigurationLoader.ConfigurationLoaderException;
 
     /**
      * Does the same job as the {@link #getBean(Class, InputStream)} method, except that the bean is provided. the class the bean to be created
      * belongs to
      * 
-     * @param inputStream
-     *          the stream which holds the bean state, and which will be parsed
+     * @param input
+     *          the source which holds the bean state, and which will be parsed
      * @param bean
      *          the bean that should be updated
      * @return the provided fulfilled bean
@@ -240,7 +256,7 @@ public interface ConfigurationLoader
      *           if an error occurred during the method
      * @see #getBean(Class, InputStream)
      */
-    public abstract <T> T setBean(Class<T> theClass, InputStream inputStream, T bean)
+    public abstract <T> T setBean(Class<T> theClass, InputClass input, T bean)
         throws ConfigurationLoader.ConfigurationLoaderException;
 
     /**
@@ -372,25 +388,25 @@ public interface ConfigurationLoader
    * @since 2013.10.19
    */
   public final static class PropertiesParser
-      extends ConfigurationParser
+      extends ConfigurationParser<InputStream>
   {
 
     @Override
-    public <T> T getBean(Class<T> theClass, InputStream inputStream)
+    public <T> T getBean(Class<T> theClass, InputStream input)
         throws ConfigurationLoader.ConfigurationLoaderException
     {
       final T bean = createBean(theClass);
-      return setBean(theClass, inputStream, bean);
+      return setBean(theClass, input, bean);
     }
 
     @Override
-    public <T> T setBean(Class<T> theClass, InputStream inputStream, T bean)
+    public <T> T setBean(Class<T> theClass, InputStream input, T bean)
         throws ConfigurationLoader.ConfigurationLoaderException
     {
       final Properties properties = new Properties();
       try
       {
-        properties.load(inputStream);
+        properties.load(input);
       }
       catch (IOException exception)
       {
@@ -413,22 +429,22 @@ public interface ConfigurationLoader
    * @since 2013.10.19
    */
   public final static class JsonParser
-      extends ConfigurationParser
+      extends ConfigurationParser<InputStream>
   {
 
     @Override
-    public <T> T getBean(Class<T> theClass, InputStream inputStream)
+    public <T> T getBean(Class<T> theClass, InputStream input)
         throws ConfigurationLoader.ConfigurationLoaderException
     {
       final T bean = createBean(theClass);
-      return setBean(theClass, inputStream, bean);
+      return setBean(theClass, input, bean);
     }
 
     @Override
-    public <T> T setBean(Class<T> theClass, InputStream inputStream, T bean)
+    public <T> T setBean(Class<T> theClass, InputStream input, T bean)
         throws ConfigurationLoader.ConfigurationLoaderException
     {
-      final Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
+      final Scanner scanner = new Scanner(input).useDelimiter("\\A");
       final String jsonString = scanner.hasNext() ? scanner.next() : "";
       final JSONObject jsonObject;
       try
@@ -452,6 +468,97 @@ public interface ConfigurationLoader
         catch (JSONException exception)
         {
           // Cannot happen, hence we silently ignore this issue
+        }
+      }
+      return bean;
+    }
+
+  }
+
+  /**
+   * A helper class which is able to create and fulfill a bean from the Android {@link Resources resources}.
+   * 
+   * @since 2014.06.20
+   */
+  public final static class ResourcesParser
+      extends ConfigurationParser<Context>
+  {
+
+    @Override
+    public <T> T getBean(Class<T> theClass, Context input)
+        throws ConfigurationLoader.ConfigurationLoaderException
+    {
+      final T bean = createBean(theClass);
+      return setBean(theClass, input, bean);
+    }
+
+    @Override
+    public <T> T setBean(Class<T> theClass, Context input, T bean)
+        throws ConfigurationLoader.ConfigurationLoaderException
+    {
+      final Resources resources = input.getResources();
+      final Field[] fields = bean.getClass().getDeclaredFields();
+      for (Field field : fields)
+      {
+        final Class<?> fieldType = field.getType();
+        final String fieldName = field.getName();
+        if (fieldType == String.class || fieldType == int.class || fieldType == long.class || fieldType == boolean.class || fieldType == float.class || fieldType == double.class)
+        {
+          final String resourceType;
+          if (fieldType == int.class || fieldType == long.class)
+          {
+            resourceType = "integer";
+          }
+          else if (fieldType == boolean.class)
+          {
+            resourceType = "bool";
+          }
+          else if (fieldType == float.class || fieldType == double.class)
+          {
+            resourceType = "float";
+          }
+          else
+          {
+            resourceType = "string";
+          }
+          final int identifier = resources.getIdentifier(fieldName, resourceType, input.getPackageName());
+          if (identifier != 0)
+          {
+            final String rawPropertyValue;
+            if (fieldType == int.class || fieldType == long.class)
+            {
+              rawPropertyValue = Long.toString(resources.getInteger(identifier));
+            }
+            else if (fieldType == boolean.class)
+            {
+              rawPropertyValue = Boolean.toString(resources.getBoolean(identifier));
+            }
+            else if (fieldType == float.class || fieldType == double.class)
+            {
+              final TypedValue typedValue = new TypedValue();
+              resources.getValue(identifier, typedValue, true);
+              rawPropertyValue = Double.toString(typedValue.getFloat());
+            }
+            else
+            {
+              rawPropertyValue = input.getString(identifier);
+            }
+            setField(theClass, bean, fieldName, rawPropertyValue);
+          }
+          else
+          {
+            if (log.isErrorEnabled())
+            {
+              log.error("Could set the '" + fieldName + "' field on the '" + theClass.getName() + "' class, because it is not an available field within the bean");
+            }
+          }
+        }
+        else
+        {
+          if (log.isErrorEnabled())
+          {
+            log.error("Could set the '" + fieldName + "' field on the '" + theClass.getName() + "' class, because its type '" + fieldType.getSimpleName() + "' is not supported");
+          }
         }
       }
       return bean;

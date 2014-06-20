@@ -37,9 +37,9 @@ public class AssetsConfigurationLoader
 
   private final String assetsFileName;
 
-  private final ConfigurationParser configurationParser;
+  private final ConfigurationParser<InputStream> configurationParser;
 
-  public AssetsConfigurationLoader(AssetManager assetManager, String assetsFileName, ConfigurationParser configurationParser)
+  public AssetsConfigurationLoader(AssetManager assetManager, String assetsFileName, ConfigurationParser<InputStream> configurationParser)
   {
     this.assetManager = assetManager;
     this.assetsFileName = assetsFileName;

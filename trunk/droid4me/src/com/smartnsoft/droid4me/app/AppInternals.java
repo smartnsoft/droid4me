@@ -614,7 +614,7 @@ final class AppInternals
     }
 
     /**
-     * Invoked when the underlying activity/fragment enters the {@link Activity#onDestro()} method.
+     * Invoked when the underlying activity/fragment enters the {@link Activity#onDestroy()} method.
      * 
      * <p>
      * The method marks the entity as {@link #isAlive no more alive}, unregisters the previously registered {@link AppPublics.BroadcastListener
