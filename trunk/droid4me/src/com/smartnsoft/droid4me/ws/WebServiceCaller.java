@@ -544,22 +544,39 @@ public abstract class WebServiceCaller
    * </p>
    * 
    * @return a valid HTTP client
+   * @throws WebServiceCaller.CallException
+   *           is the invocation of the {@link #computeHttpClient()} threw an exception
    * @see #computeHttpClient()
    * @see #resetHttpClient()
    */
   protected synchronized final HttpClient getHttpClient()
+      throws WebServiceCaller.CallException
   {
     if (this instanceof WebServiceCaller.ReuseHttpClient)
     {
       if (httpClient == null)
       {
-        httpClient = computeHttpClient();
+        try
+        {
+          httpClient = computeHttpClient();
+        }
+        catch (Exception exception)
+        {
+          throw new WebServiceCaller.CallException("Cannot instantiate the 'HttpClient'", exception);
+        }
       }
       return httpClient;
     }
     else
     {
-      return computeHttpClient();
+      try
+      {
+        return computeHttpClient();
+      }
+      catch (Exception exception)
+      {
+        throw new WebServiceCaller.CallException("Cannot instantiate the 'HttpClient'", exception);
+      }
     }
   }
 
