@@ -140,6 +140,7 @@ public abstract class Persistence
       return ++accessCount;
     }
 
+    @Override
     public int compareTo(Persistence.UriUsage another)
     {
       if (accessCount > another.accessCount)
@@ -603,6 +604,7 @@ public abstract class Persistence
    *           in case an error occurred while processing the request or if the storage back-end is not available
    * @see #getLastUpdateInstance()
    */
+  @Override
   public final Date getLastUpdate(String uri)
       throws Persistence.PersistenceException
   {
@@ -682,6 +684,7 @@ public abstract class Persistence
    *           if a problem occurred while reading the data or if the storage back-end is not available
    * @see #readInputStreamInstance()
    */
+  @Override
   public final Business.InputAtom readInputStream(String uri)
       throws Persistence.PersistenceException
   {
@@ -706,6 +709,7 @@ public abstract class Persistence
    *           if a problem occurred while writing the data or if the storage back-end is not available
    * @see #writeInputStreamInstance()
    */
+  @Override
   public final InputStream writeInputStream(String uri, Business.InputAtom inputAtom, boolean returnStream)
       throws Persistence.PersistenceException
   {
@@ -737,6 +741,7 @@ public abstract class Persistence
    *           if a problem occurred while erasing the data or if the storage back-end is not available
    * @see #removeInstance()
    */
+  @Override
   public final void remove(String uri)
       throws Persistence.PersistenceException
   {

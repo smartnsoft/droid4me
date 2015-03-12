@@ -224,6 +224,7 @@ public abstract class WebServiceCaller
    * @see #getInputStream(String)
    * @see #getInputStream(String, HttpRequestBase)
    */
+  @Override
   public final InputStream getInputStream(String uri, WebServiceCaller.CallType callType, HttpEntity body)
       throws WebServiceCaller.CallException
   {
@@ -444,6 +445,7 @@ public abstract class WebServiceCaller
   /**
    * Just invokes {@code #computeUri(String, String, Map, boolean)}, with {@code false} as last parameter.
    */
+  @Override
   public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
   {
     return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, false, getUrlEncoding());
@@ -727,6 +729,17 @@ public abstract class WebServiceCaller
     if (log.isDebugEnabled())
     {
       log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + statusCode);
+    }
+
+    if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+    {
+      final StringBuilder sb = new StringBuilder("The headers of the response are :'");
+      for (final Header header : response.getAllHeaders())
+      {
+        sb.append("\"").append(header.getName()).append(": ").append(header.getValue().replace("\"", "\\\"")).append("\"");
+      }
+
+      log.debug(sb.toString());
     }
 
     if (!(statusCode >= HttpStatus.SC_OK && statusCode <= HttpStatus.SC_MULTI_STATUS))
