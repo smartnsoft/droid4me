@@ -19,6 +19,8 @@
 package com.smartnsoft.droid4me.ws;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -439,6 +441,56 @@ public abstract class WebServiceCaller
   protected InputStream getContent(String uri, WebServiceCaller.CallType callType, HttpResponse response)
       throws IOException
   {
+    if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+    {
+      final HttpEntity entity = response.getEntity();
+      final InputStream content = entity.getContent();
+      InputStream debugContent;
+
+      if (content.markSupported() == true)
+      {
+        debugContent = content;
+      }
+      else
+      {
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final byte[] buffer = new byte[8192];
+        int bufferLength;
+
+        while ((bufferLength = content.read(buffer)) > 0)
+        {
+          outputStream.write(buffer, 0, bufferLength);
+        }
+
+        content.close();
+        outputStream.close();
+        debugContent = new ByteArrayInputStream(outputStream.toByteArray());
+      }
+
+      final int length = (int) (entity.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED ? entity.getContentLength()
+          : WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED);
+      debugContent.mark(length);
+
+      try
+      {
+        final String bodyAsString = getString(debugContent);
+        log.debug("The body of the response is : '" + bodyAsString + "'");
+      }
+      catch (IOException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Cannot log the HTTP body of the response", exception);
+        }
+      }
+      finally
+      {
+        debugContent.reset();
+      }
+
+      return debugContent;
+    }
+
     return response.getEntity().getContent();
   }
 
