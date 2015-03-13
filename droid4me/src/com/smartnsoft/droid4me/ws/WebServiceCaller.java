@@ -136,15 +136,15 @@ public abstract class WebServiceCaller
    * Do not set this flag to {@code true} under the production mode!
    * </p>
    * 
-   * @see WebServiceCaller#BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED
+   * @see WebServiceCaller#BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES
    */
   public static boolean ARE_DEBUG_LOG_ENABLED = false;
 
   /**
-   * If the {@link #ARE_DEBUG_LOG_ENABLED} is {@code true}, indicates the maximum size of an HTTP request body to be logged: if an HTTP request body
-   * size is beyond that limit, it will not be logged, for performance reasons.
+   * If the {@link #ARE_DEBUG_LOG_ENABLED} is {@code true}, indicates the maximum size of an HTTP request and response body to be logged: if an HTTP
+   * request body size is beyond that limit, it will not be logged, for performance reasons.
    */
-  public static long BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED = 4096;
+  public static long BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES = 8192;
 
   protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
 
@@ -441,11 +441,11 @@ public abstract class WebServiceCaller
   protected InputStream getContent(String uri, WebServiceCaller.CallType callType, HttpResponse response)
       throws IOException
   {
-    if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+    final HttpEntity entity = response.getEntity();
+    final InputStream content = entity.getContent();
+    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
     {
-      final HttpEntity entity = response.getEntity();
-      final InputStream content = entity.getContent();
-      InputStream debugContent;
+      final InputStream debugContent;
 
       if (content.markSupported() == true)
       {
@@ -467,14 +467,14 @@ public abstract class WebServiceCaller
         debugContent = new ByteArrayInputStream(outputStream.toByteArray());
       }
 
-      final int length = (int) (entity.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED ? entity.getContentLength()
-          : WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED);
+      final int length = (int) (entity.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? entity.getContentLength()
+          : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
       debugContent.mark(length);
 
       try
       {
         final String bodyAsString = getString(debugContent);
-        log.debug("The body of the response is : '" + bodyAsString + "'");
+        log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
       }
       catch (IOException exception)
       {
@@ -491,7 +491,7 @@ public abstract class WebServiceCaller
       return debugContent;
     }
 
-    return response.getEntity().getContent();
+    return content;
   }
 
   /**
@@ -735,7 +735,7 @@ public abstract class WebServiceCaller
           curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
           if (body != null && body.getContent() != null)
           {
-            if (body.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_IN_BYTES_LOGGED && body.getContent().markSupported() == true)
+            if (body.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES && body.getContent().markSupported() == true)
             {
               logCurlCommand = true;
               body.getContent().mark((int) body.getContentLength());
@@ -778,20 +778,22 @@ public abstract class WebServiceCaller
     final long start = System.currentTimeMillis();
     final HttpResponse response = httpClient.execute(request);
     final int statusCode = response.getStatusLine().getStatusCode();
-    if (log.isDebugEnabled())
+    final StringBuilder responseHeadersSb = new StringBuilder();
+    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
     {
-      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + statusCode);
-    }
-
-    if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
-    {
-      final StringBuilder sb = new StringBuilder("The headers of the response are :'");
       for (final Header header : response.getAllHeaders())
       {
-        sb.append("\"").append(header.getName()).append(": ").append(header.getValue().replace("\"", "\\\"")).append("\"");
+        if (responseHeadersSb.length() > 0)
+        {
+          responseHeadersSb.append(",");
+        }
+        responseHeadersSb.append("(\"").append(header.getName()).append(": ").append(header.getValue().replace("\"", "\\\"")).append("\")");
       }
-
-      log.debug(sb.toString());
+    }
+    if (log.isDebugEnabled())
+    {
+      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + statusCode + (responseHeadersSb.length() <= 0 ? ""
+          : " with the HTTP headers:" + responseHeadersSb.toString()));
     }
 
     if (!(statusCode >= HttpStatus.SC_OK && statusCode <= HttpStatus.SC_MULTI_STATUS))
