@@ -446,6 +446,8 @@ public abstract class WebServiceCaller
     if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
     {
       final InputStream debugContent;
+      final int length = (int) (entity.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? entity.getContentLength()
+          : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
 
       if (content.markSupported() == true)
       {
@@ -455,20 +457,40 @@ public abstract class WebServiceCaller
       {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final byte[] buffer = new byte[8192];
-        int bufferLength;
+        int bufferLength = 0;
 
-        while ((bufferLength = content.read(buffer)) > 0)
+        while ((bufferLength = content.read(buffer)) > 0 && (bufferLength <= length || length < 0))
         {
           outputStream.write(buffer, 0, bufferLength);
         }
 
-        content.close();
-        outputStream.close();
+        try
+        {
+          content.close();
+        }
+        catch (IOException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.error("Could not close the input stream corresponding to the HTTP response content", exception);
+          }
+        }
+
+        try
+        {
+          outputStream.close();
+        }
+        catch (IOException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.error("Could not close the input stream corresponding to the copy of the HTTP response content", exception);
+          }
+        }
+
         debugContent = new ByteArrayInputStream(outputStream.toByteArray());
       }
 
-      final int length = (int) (entity.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? entity.getContentLength()
-          : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
       debugContent.mark(length);
 
       try
