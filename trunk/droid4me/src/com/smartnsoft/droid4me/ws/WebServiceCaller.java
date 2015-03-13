@@ -455,13 +455,26 @@ public abstract class WebServiceCaller
       }
       else
       {
+        final int bufferMaxLength = (int) (length < 0 ? WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES : length);
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final byte[] buffer = new byte[8192];
         int bufferLength = 0;
 
-        while ((bufferLength = content.read(buffer)) > 0 && (bufferLength <= length || length < 0))
+        try
         {
-          outputStream.write(buffer, 0, bufferLength);
+          while ((bufferLength = content.read(buffer)) > 0 && bufferLength <= bufferMaxLength)
+          {
+            outputStream.write(buffer, 0, bufferLength);
+          }
+        }
+        catch (IndexOutOfBoundsException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.error("Could not copy the input stream corresponding to the HTTP response content in order to log it", exception);
+          }
+
+          return content;
         }
 
         try
@@ -491,10 +504,9 @@ public abstract class WebServiceCaller
         debugContent = new ByteArrayInputStream(outputStream.toByteArray());
       }
 
-      debugContent.mark(length);
-
       try
       {
+        debugContent.mark(length);
         final String bodyAsString = getString(debugContent);
         log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
       }
