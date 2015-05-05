@@ -10,7 +10,7 @@ body {
   color: #606c71; }
 
 a {
-  color: #1196b7;
+  color: #729900;
   text-decoration: none; }
   a:hover {
     text-decoration: underline; }
@@ -56,8 +56,14 @@ a {
 .page-header {
   color: #fff;
   text-align: center;
-  background-color: #159957;
-  background-image: linear-gradient(120deg, #155799, #33ccff); }
+  background: #4aa316; /* Old browsers */
+  background: -moz-linear-gradient(left,  #4aa316 0%, #8fc400 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, right top, color-stop(0%,#4aa316), color-stop(100%,#8fc400)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(left,  #4aa316 0%,#8fc400 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(left,  #4aa316 0%,#8fc400 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(left,  #4aa316 0%,#8fc400 100%); /* IE10+ */
+  background: linear-gradient(to right,  #4aa316 0%,#8fc400 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4aa316', endColorstr='#8fc400',GradientType=1 ); /* IE6-9 */ }
 
 @media screen and (min-width: 64em) {
   .page-header {
@@ -112,7 +118,7 @@ a {
   margin-top: 2rem;
   margin-bottom: 1rem;
   font-weight: normal;
-  color: #33ccff; }
+  color: #8fc400; }
 .main-content p {
   margin-bottom: 1em; }
 .main-content code {
