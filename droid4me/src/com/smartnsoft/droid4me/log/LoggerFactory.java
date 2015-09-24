@@ -103,6 +103,9 @@ public class LoggerFactory
    */
   private static LoggerConfigurator loggerConfigurator;
 
+  // Used for a synchronization purpose.
+  private static final Object synchronizationObject = new Object();
+
   /**
    * @param category
    *          the category used for logging
@@ -126,33 +129,38 @@ public class LoggerFactory
 
   private static Logger getInstance(String category, Class<?> theClass)
   {
-    if (LoggerFactory.loggerImplementation == null)
+    synchronized (synchronizationObject)
     {
-      // The logger implementation has not been decided yet
-      final String loggerConfiguratorClassFqn = "SmartConfigurator";
-      try
+      // We need to synchronize this part of the code
+      if (LoggerFactory.loggerImplementation == null)
       {
-        final Class<?> loggerConfiguratorClass = Class.forName(loggerConfiguratorClassFqn);
-        LoggerFactory.loggerConfigurator = (LoggerConfigurator) loggerConfiguratorClass.newInstance();
-        LoggerFactory.loggerImplementation = LoggerImplementation.Other;
-      }
-      catch (Exception exception)
-      {
-        // This means that the project does not expose the class which enables to configure the logging system
-        if (System.getProperty("droid4me.logging", "true").equals("false") == true)
+        // The logger implementation has not been decided yet
+        final String loggerConfiguratorClassFqn = "SmartConfigurator";
+        try
         {
-          LoggerFactory.loggerImplementation = LoggerImplementation.NativeLogger;
+          final Class<?> loggerConfiguratorClass = Class.forName(loggerConfiguratorClassFqn);
+          LoggerFactory.loggerConfigurator = (LoggerConfigurator) loggerConfiguratorClass.newInstance();
+          LoggerFactory.loggerImplementation = LoggerImplementation.Other;
         }
-        else
+        catch (Exception exception)
         {
-          LoggerFactory.loggerImplementation = LoggerImplementation.AndroidLogger;
+          // This means that the project does not expose the class which enables to configure the logging system
+          if (System.getProperty("droid4me.logging", "true").equals("false") == true)
+          {
+            LoggerFactory.loggerImplementation = LoggerImplementation.NativeLogger;
+          }
+          else
+          {
+            LoggerFactory.loggerImplementation = LoggerImplementation.AndroidLogger;
+          }
         }
-      }
-      if (LoggerFactory.logLevel >= android.util.Log.INFO)
-      {
-        Log.d("LoggerFactory", "Using the logger '" + LoggerFactory.loggerImplementation + "'");
+        if (LoggerFactory.logLevel >= android.util.Log.INFO)
+        {
+          Log.d("LoggerFactory", "Using the logger '" + LoggerFactory.loggerImplementation + "'");
+        }
       }
     }
+
     switch (LoggerFactory.loggerImplementation)
     {
     case Other:
