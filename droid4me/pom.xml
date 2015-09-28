@@ -18,7 +18,7 @@
   <version>2.2.18-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>droid4me is a framework library dedicated to the development of Android applications.</description>
-  <url>http://code.google.com/p/droid4me</url>
+  <url>https://github.com/smartnsoft/droid4me</url>
 
   <properties>
     <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
