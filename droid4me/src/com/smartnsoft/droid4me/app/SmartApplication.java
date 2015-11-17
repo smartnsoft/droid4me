@@ -290,6 +290,10 @@ public abstract class SmartApplication
    * Note: if the method has already been invoked once, the second time (because of a concurrent access), it will do nothing but output an error log.
    * This is the reason why the method has been declared as synchronized.
    * </p>
+   *
+   * <p>
+   * This method normally does not need to be override, if needed override rather the {@link #onCreateCustom() method}
+   * </p>
    * 
    * @see #getLogLevel()
    * @see #getExceptionHandler()
@@ -297,7 +301,7 @@ public abstract class SmartApplication
    * @see #getInterceptor()
    */
   @Override
-  public final synchronized void onCreate()
+  public synchronized void onCreate()
   {
     if (onCreateInvoked == true)
     {
