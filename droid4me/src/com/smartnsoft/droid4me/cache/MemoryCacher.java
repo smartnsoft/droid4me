@@ -28,7 +28,7 @@ import com.smartnsoft.droid4me.bo.Business;
 
 /**
  * A class which enables to cache the result of web service calls in RAM only.
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.07.20
  */
@@ -38,8 +38,10 @@ public class MemoryCacher<BusinessObjectType, ParameterType, ParseExceptionType 
 
   private final Map<String, Values.Info<BusinessObjectType>> cache = new HashMap<String, Values.Info<BusinessObjectType>>();
 
-  public MemoryCacher(Business.UriStreamParser<BusinessObjectType, String, ParameterType, ParseExceptionType> uriStreamParser,
-      Business.IOStreamer<String, StreamerExceptionType> ioStreamer, Business.UriInputStreamer<String, InputExceptionType> uriInputStreamer)
+  public MemoryCacher(
+      Business.UriStreamParser<BusinessObjectType, String, ParameterType, ParseExceptionType> uriStreamParser,
+      Business.IOStreamer<String, StreamerExceptionType> ioStreamer,
+      Business.UriInputStreamer<String, InputExceptionType> uriInputStreamer)
   {
     super(uriStreamParser, ioStreamer, uriInputStreamer);
   }
@@ -64,7 +66,8 @@ public class MemoryCacher<BusinessObjectType, ParameterType, ParseExceptionType 
   }
 
   @Override
-  protected InputStream onNewInputStream(ParameterType parameter, String uri, Business.InputAtom atom, boolean returnStream)
+  protected InputStream onNewInputStream(ParameterType parameter, String uri, Business.InputAtom atom,
+      boolean returnStream)
   {
     return returnStream == false ? null : atom.inputStream;
   }

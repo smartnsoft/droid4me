@@ -32,13 +32,11 @@ import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
 
 /**
  * A basis activity class which is displayed while the application is loading.
- * 
+ * <p/>
  * The loading of the business objects is synchronous, but in the derived class, if necessary, think of making it
  * {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy asynchronous} if necessary, so as to relief the UI.
- * 
- * @param <AggregateClass>
- *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
- * 
+ *
+ * @param <AggregateClass> the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
  * @author Édouard Mercier
  * @since 2010.01.05
  */
@@ -49,11 +47,10 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
 
   /**
    * Indicates whether an {@link Activity} is marked as initialized.
-   * 
-   * @param activityClass
-   *          the class of the splash screen
+   *
+   * @param activityClass the class of the splash screen
    * @return a non {@code null} date, if and only if the given screen has been initialized ; in that case, the returned date is the timestamp when it
-   *         has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class))}
+   * has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class))}
    */
   public static Date isInitialized(Class<? extends Activity> activityClass)
   {
@@ -62,15 +59,13 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
 
   /**
    * Indicates whether the provided {@code activity} should be considered as initialized.
-   * 
+   * <p/>
    * <p>
    * This is useful within an application which provides a "reset-to-factory" or "log-out" feature.
    * </p>
-   * 
-   * @param activityClass
-   *          the class of the screen
-   * @param isInitialized
-   *          the flag which indicates the provided activity initialization status
+   *
+   * @param activityClass the class of the screen
+   * @param isInitialized the flag which indicates the provided activity initialization status
    */
   public static void markAsInitialized(Class<? extends Activity> activityClass, boolean isInitialized)
   {
@@ -159,11 +154,11 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
 
   /**
    * The method that should be overriden, instead of the usual {@link LifeCycle#onRetrieveDisplayObjects()} method.
-   * 
+   * <p/>
    * <p>
    * This method will be invoked just once for the first {@link Activity} instance.
    * </p>
-   * 
+   * <p/>
    * <p>
    * This method is invoked even if an external storage is required and no external storage is available at runtime.
    * </p>
@@ -172,11 +167,11 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
 
   /**
    * The method that should be overriden, instead of the usual {@link LifeCycle#onRetrieveBusinessObjects()} method.
-   * 
+   * <p/>
    * <p>
    * This method is not invoked when an external storage is required and no external storage is available at runtime.
    * </p>
-   * 
+   *
    * @return a business object ; may be {@code null}
    */
   protected abstract BusinessObjectClass onRetrieveBusinessObjectsCustom()
@@ -185,26 +180,24 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
   /**
    * This method will be invoked when the business objects retrieval is over. This is the ideal place to run something, before the splash screen is
    * dismissed.
-   * 
+   * <p/>
    * <p>
    * It is ensured that this method will be invoked from the UI thread!
    * </p>
-   * 
+   * <p/>
    * <p>
    * It is ensured that this callback will be not be invoked anymore as soon as an instance has {@link Runnable#run()} the provided
    * {@code finishRunnable} callback.
    * </p>
-   * 
+   * <p/>
    * <p>
    * The default implementation just invokes the provided {@code finishRunnable} {@link Runnable#run()} method, which {@link Activity#finish()
    * finishes} the current splash screen.
    * </p>
-   * 
-   * @param businessObject
-   *          the business object that has been returned by the {@link #onRetrieveDisplayObjectsCustom()} method ; may be {@code null}
-   * @param finishRunnable
-   *          the callback that should be {@link Runnable#run()} as soon as the splash screen should be ended. The provided callback may be invoked
-   *          from any thread.
+   *
+   * @param businessObject the business object that has been returned by the {@link #onRetrieveDisplayObjectsCustom()} method ; may be {@code null}
+   * @param finishRunnable the callback that should be {@link Runnable#run()} as soon as the splash screen should be ended. The provided callback may be invoked
+   *                       from any thread.
    */
   protected void onRetrieveBusinessObjectsCustomOver(BusinessObjectClass businessObject, Runnable finishRunnable)
   {
@@ -222,11 +215,11 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
   /**
    * If the {@link #requiresExternalStorage()} method returns {@code true} and that, at runtime, non external storage is available, this method will
    * be invoked.
-   * 
-   * <p>
+   * <p/>
+   * <p/>
    * This is a good place to pop-up an error dialog box and prevent the application from resuming. It is ensured that this callback will be invoked
    * from the GUI thread.
-   * <p>
+   * <p/>
    */
   protected void onNoExternalStorage()
   {
@@ -235,11 +228,11 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
   /**
    * Indicates to the splash screen to stop doing anything, prevents the calling Intent from being executed, and considers the splash-screen as
    * {@link #markAsUnitialized(Class) uninitialized}. Once this method has been invoked, the splash screen will never be able to resume.
-   * 
+   * <p/>
    * <p>
    * Invoke this method during the {@link #onRetrieveBusinessObjectsCustom() method}. It may be called from any thread.
    * </p>
-   * 
+   * <p/>
    * <p>
    * This may be extremely useful if you to integrate a licensing mechanism, for instance.
    * </p>
@@ -253,11 +246,11 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
   /**
    * Indicates to the splash screen to pause, and prevents the calling Intent from being executed, and the current {@link Activity} from
    * {@link Activity#finish() finishing}.
-   * 
-   * <p>
+   * <p/>
+   * <p/>
    * Invoke this method during the {@link #onRetrieveBusinessObjectsCustom() method}. It may be called from any thread.
    * <p/>
-   * 
+   *
    * @see #resumeActivity()
    */
   protected final void pauseActivity()
@@ -268,11 +261,11 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
   /**
    * Indicates to the splash screen to resume: the calling Intent will be executed, and the current {@link Activity} will {@link Activity#finish()
    * finish}.
-   * 
+   * <p/>
    * <p>
    * Invoke this method during the {@link #onRetrieveBusinessObjectsCustom() method}. It may be called from any thread.
    * </p>
-   * 
+   *
    * @see #pauseActivity()
    */
   protected final void resumeActivity()
@@ -352,14 +345,12 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
         }
       }
       SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver = true;
-      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
-          new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
+      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
     }
     else if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver == true)
     {
       // A previous activity instance has already completed the business objects retrieval, but the current instance was not active at this time
-      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
-          new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
+      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
     }
   }
 
@@ -475,7 +466,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
   /**
    * Invoked when the splash screen is bound to complete successfully, and that it has not been started with a
    * {@link ActivityController#CALLING_INTENT calling intent}.
-   * 
+   *
    * @return the intent that will be started next
    */
   protected Intent computeNextIntent()

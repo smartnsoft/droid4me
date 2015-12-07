@@ -24,12 +24,11 @@ import android.widget.RelativeLayout;
 
 /**
  * An extension of its parent {@link View} class, which offers the {@link SmartViewExtension} features.
- * 
+ *
+ * @author Édouard Mercier
  * @see SmartLinearLayout
  * @see SmartFrameLayout
  * @see SmartImageView
- * 
- * @author Édouard Mercier
  * @since 2011.04.01
  */
 public class SmartRelativeLayout

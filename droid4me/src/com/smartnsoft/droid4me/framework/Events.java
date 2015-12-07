@@ -20,15 +20,16 @@ package com.smartnsoft.droid4me.framework;
 
 /**
  * In order to provide closure events.
- * 
+ *
  * @author Édouard Mercier
  * @since 2008.05.20
  */
 public interface Events
 {
 
-  public static interface OnBusinessCompletion<BusinessObjectClass>
+  interface OnBusinessCompletion<BusinessObjectClass>
   {
+
     void done(BusinessObjectClass businessObject);
   }
 

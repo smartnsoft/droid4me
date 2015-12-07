@@ -41,7 +41,7 @@ import com.smartnsoft.droid4me.download.BitmapDownloader.AnalyticsDisplayer;
 
 /**
  * An interceptor which may be used to display debug and development indicators on the screen.
- * 
+ *
  * @author Édouard Mercier
  * @since 2014.01.18
  */

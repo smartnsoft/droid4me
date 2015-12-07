@@ -27,7 +27,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * A {@link IntentService} with the logging feature.
- * 
+ *
  * @author Édouard Mercier
  * @since 2011.01.30
  */

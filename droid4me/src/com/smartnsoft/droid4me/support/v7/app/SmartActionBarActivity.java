@@ -1,50 +1,36 @@
-/*
- * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * Contributors:
- *     E2M - initial API and implementation
- *     Smart&Soft - initial API and implementation
- */
+package com.smartnsoft.droid4me.support.v7.app;
 
-package com.smartnsoft.droid4me.app;
-
-import android.app.TabActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
+import com.smartnsoft.droid4me.app.Droid4mizer;
+import com.smartnsoft.droid4me.app.SmartableActivity;
 
 /**
- * A basis class for an activity that holds some tabs.
- * 
- * @param <AggregateClass>
- *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
- * 
- * @author Édouard Mercier
- * @since 2009.04.14
+ * @author Jocelyn Girard
+ * @since 2014.10.29
  */
-@Deprecated
-public abstract class SmartTabActivity<AggregateClass>
-    extends TabActivity
+public abstract class SmartActionBarActivity<AggregateClass>
+    extends ActionBarActivity
     implements SmartableActivity<AggregateClass>
 {
 
-  private final Droid4mizer<AggregateClass, SmartTabActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartTabActivity<AggregateClass>>(this, this, this, null);
+  private final Droid4mizer<AggregateClass, SmartActionBarActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartActionBarActivity<AggregateClass>>(this, this, this, null);
+
+  @Override
+  public LayoutInflater getLayoutInflater()
+  {
+    return (LayoutInflater) droid4mizer.getSystemService(Context.LAYOUT_INFLATER_SERVICE, super.getLayoutInflater());
+  }
 
   @Override
   public Object getSystemService(String name)
@@ -66,7 +52,7 @@ public abstract class SmartTabActivity<AggregateClass>
     {
       public void run()
       {
-        SmartTabActivity.super.onCreate(savedInstanceState);
+        SmartActionBarActivity.super.onCreate(savedInstanceState);
       }
     }, savedInstanceState);
   }
@@ -79,18 +65,18 @@ public abstract class SmartTabActivity<AggregateClass>
   }
 
   @Override
-  public void onNewIntent(Intent intent)
+  protected void onNewIntent(Intent intent)
   {
     super.onNewIntent(intent);
     droid4mizer.onNewIntent(intent);
   }
 
-  @Override
-  public void onContentChanged()
-  {
-    super.onContentChanged();
-    droid4mizer.onContentChanged();
-  }
+  // @Override
+  // public void onContentChanged()
+  // {
+  // super.onContentChanged();
+  // droid4mizer.onContentChanged();
+  // }
 
   @Override
   protected void onResume()
@@ -125,6 +111,13 @@ public abstract class SmartTabActivity<AggregateClass>
   {
     super.onStart();
     droid4mizer.onStart();
+  }
+
+  @Override
+  protected void onRestart()
+  {
+    super.onRestart();
+    droid4mizer.onRestart();
   }
 
   @Override
@@ -274,7 +267,7 @@ public abstract class SmartTabActivity<AggregateClass>
     return droid4mizer.isAlive();
   }
 
-  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
+  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);
   }
@@ -296,18 +289,13 @@ public abstract class SmartTabActivity<AggregateClass>
   {
   }
 
-  public void onSynchronizeDisplayObjects()
-  {
-  }
-
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
-   * 
+   *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()
   {
     refreshBusinessObjectsAndDisplay(true, null, false);
   }
-
 }

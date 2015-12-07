@@ -29,7 +29,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * A {@link BroadcastReceiver} with the logging feature.
- * 
+ *
  * @author Édouard Mercier
  * @since 2010.03.25
  */

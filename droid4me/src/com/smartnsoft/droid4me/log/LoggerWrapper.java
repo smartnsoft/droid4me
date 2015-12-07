@@ -23,15 +23,15 @@ import java.util.Map.Entry;
 
 /**
  * A class which enables to wrap a {@link Logger}, and to delegate all its interface methods to its underlying logger.
- * 
+ * <p/>
  * <p>
  * All instances of this class are recorded, so that it is possible to {@link LoggerWrapper#configure(LoggerFactory.LoggerConfigurator) configure}
  * them later on. This is especially useful, when it is required to change the implementation in the middle of an application.
  * </p>
- * 
+ *
  * @author Édouard Mercier
- * @since 2013.04.19
  * @see LoggerFactory
+ * @since 2013.04.19
  */
 public class LoggerWrapper
     implements Logger
@@ -42,9 +42,8 @@ public class LoggerWrapper
 
   /**
    * Enables to configure all already created {@link LoggerWrapper} instances.
-   * 
-   * @param loggerConfigurator
-   *          the interface responsible for returning the {@link Logger} that will be wrapped
+   *
+   * @param loggerConfigurator the interface responsible for returning the {@link Logger} that will be wrapped
    */
   public static void configure(LoggerFactory.LoggerConfigurator loggerConfigurator)
   {
@@ -73,11 +72,9 @@ public class LoggerWrapper
 
   /**
    * Creates a wrapper around the provided {@link Logger} instance.
-   * 
-   * @param category
-   *          the logger category
-   * @param logger
-   *          the wrapped logger ; may be {@code null}
+   *
+   * @param category the logger category
+   * @param logger   the wrapped logger ; may be {@code null}
    */
   public LoggerWrapper(String category, Logger logger)
   {

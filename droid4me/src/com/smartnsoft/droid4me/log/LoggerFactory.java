@@ -23,21 +23,21 @@ import android.util.Log;
 /**
  * In order to have an entry point for the logging interface. Because, when we use the Android logger, there are problems during the unitary tests on
  * a desktop machine.
- * 
+ * <p/>
  * <p>
  * By default, the {@link AndroidLogger} implementation is used.
  * </p>
- * 
+ * <p/>
  * <p>
  * In order to tune the {@link Logger} implementation that should be used at runtime, you may define the {@code SmartConfigurator} class, as explained
  * in {@link LoggerFactory.LoggerConfigurator}.
  * </p>
- * 
+ * <p/>
  * <p>
  * If no {@code SmartConfigurator} class is present in the classpath, when the the Java system property <code>droid4me.logging</code> is defined with
  * the value "false", the logging uses the standard error and output streams. This is useful when unit-testing the framework.
  * </p>
- * 
+ *
  * @author Édouard Mercier
  * @since 2008.01.15
  */
@@ -48,15 +48,14 @@ public class LoggerFactory
    * The interface that should be implemented through the {@code SmartConfigurator} class (with no package name, because of Android restriction), in
    * order to indicate to the framework which {@link Logger} implementation should be used.
    */
-  public static interface LoggerConfigurator
+  public interface LoggerConfigurator
   {
 
     /**
      * The method will be invoked by the {@link LoggerFactory#getInstance(String)} every time a logger needs to be created.
-     * 
-     * @param category
-     *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
-     *          libraries
+     *
+     * @param category the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
+     *                 libraries
      * @return the {@link Logger} that should be used for logging on that category; is not allowed to be {@code null}
      * @see #getLogger(Class)
      */
@@ -64,10 +63,9 @@ public class LoggerFactory
 
     /**
      * The method will be invoked by the {@link LoggerFactory#getInstance(Class)} every time a logger needs to be created.
-     * 
-     * @param category
-     *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
-     *          libraries
+     *
+     * @param category the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
+     *                 libraries
      * @return the {@link Logger} that should be used for logging on that category; is not allowed to be {@code null}
      * @see #getLogger(String)
      */
@@ -78,7 +76,7 @@ public class LoggerFactory
   /**
    * Enumerates various logger implementations.
    */
-  private static enum LoggerImplementation
+  private enum LoggerImplementation
   {
     AndroidLogger, NativeLogger, Other;
   }
@@ -86,7 +84,7 @@ public class LoggerFactory
   /**
    * Tunes the logging system verbosity. The {@code Logger#isXXXEnabled()} method return values will depend on this trigger level. Defaults to
    * {@code Log.WARN}.
-   * 
+   * <p/>
    * <p>
    * It uses the Android built-in {@link android.util.Log} attributes for defining those log levels.
    * </p>
@@ -107,8 +105,7 @@ public class LoggerFactory
   private static final Object synchronizationObject = new Object();
 
   /**
-   * @param category
-   *          the category used for logging
+   * @param category the category used for logging
    * @return a new instance of {@link Logger} implementation, holding the provided {@code category}
    * @see #getInstance(Class)
    */
@@ -118,8 +115,7 @@ public class LoggerFactory
   }
 
   /**
-   * @param theClass
-   *          the class used for computing the logging category
+   * @param theClass the class used for computing the logging category
    * @return a new instance of {@link Logger} implementation, holding the provided {@code category}
    */
   public static Logger getInstance(Class<?> theClass)

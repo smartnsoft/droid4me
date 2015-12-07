@@ -21,7 +21,7 @@ import android.app.Activity;
 
 /**
  * Provides a way to handle progress in an application, while it is computed something and the end-user is prompted to wait until a task completion.
- * 
+ *
  * @author Édouard Mercier
  * @since 2010.07.10
  */
@@ -48,44 +48,37 @@ public abstract class ProgressHandler
 
   /**
    * Should be implemented so as to indicate to the end-user that some operation is under progress.
-   * 
-   * @param activity
-   *          the activity that originated a progress event
-   * @param progressExtra
-   *          the free object that has been passed when declaring the progress event
+   *
+   * @param activity      the activity that originated a progress event
+   * @param progressExtra the free object that has been passed when declaring the progress event
    * @see #onProgress(Activity, boolean, Object)
    */
   protected abstract void show(Activity activity, Object progressExtra);
 
   /**
    * Should be implemented so as to indicate to the end-user that no more operation is under progress.
-   * 
-   * @param activity
-   *          the activity that originated a progress event
-   * @param progressExtra
-   *          the free object that has been passed when declaring the progress event
+   *
+   * @param activity      the activity that originated a progress event
+   * @param progressExtra the free object that has been passed when declaring the progress event
    * @see #onProgress(Activity, boolean, Object)
    */
   protected abstract void dismiss(Activity activity, Object progressExtra);
 
   /**
    * Should be invoked when a progress event occurs.
-   * 
+   * <p/>
    * <p>
    * If the provided activity is {@link Activity#isFinishing() finishing}, it does nothing.
    * </p>
-   * 
-   * <p>
+   * <p/>
+   * <p/>
    * Caution: this method must be exclusively invoked from the GUI thread!
-   * <p>
-   * 
-   * @param activity
-   *          the activity from which the progress event is triggered
-   * @param inProgress
-   *          whether the progression is on or off
-   * @param progressExtra
-   *          a free object that will be passed along, and which can deliver additional information about the progress. Typically, those extra data
-   *          can be the progression level, a title, a text...
+   * <p/>
+   *
+   * @param activity      the activity from which the progress event is triggered
+   * @param inProgress    whether the progression is on or off
+   * @param progressExtra a free object that will be passed along, and which can deliver additional information about the progress. Typically, those extra data
+   *                      can be the progression level, a title, a text...
    */
   public final void onProgress(Activity activity, boolean inProgress, Object progressExtra)
   {
@@ -105,10 +98,11 @@ public abstract class ProgressHandler
   }
 
   /**
-   * The same method as {@link #onProgress(Activity, boolean) except that it can be invoked from a non-GUI thread. In that case, the
+   * The same method as {@link #onProgress(Activity, boolean, Object)} except that it can be invoked from a non-GUI thread. In that case, the
    * <code>fromGuiThread</code> parameter must be set to {@code false}.
    */
-  public final void onProgress(final Activity activity, final boolean isLoading, final Object progressExtra, boolean fromGuiThread)
+  public final void onProgress(final Activity activity, final boolean isLoading, final Object progressExtra,
+      boolean fromGuiThread)
   {
     if (fromGuiThread == true)
     {

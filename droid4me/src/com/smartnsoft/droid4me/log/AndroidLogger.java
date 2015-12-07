@@ -22,14 +22,14 @@ import android.util.Log;
 
 /**
  * The logger implementation for Android.
- * 
+ * <p/>
  * <p>
  * This implementation can only be used when the code integrating the library runs environment with the Android runtime.
  * </p>
- * 
+ *
  * @author Édouard Mercier
- * @since 2007.12.23
  * @see LoggerFactory
+ * @since 2007.12.23
  */
 public class AndroidLogger
     implements Logger

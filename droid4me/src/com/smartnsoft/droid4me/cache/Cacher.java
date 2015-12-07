@@ -34,11 +34,11 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * A class which enables to cache business objects.
- * 
+ * <p/>
  * <p>
  * The class is not thread-safe in the sense that if multiple threads attempts to modify or get the underlying cached object, no atomicity is granted.
  * </p>
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.06.18
  */
@@ -47,10 +47,10 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
 
   /**
    * Defines some common statuses.
-   * 
+   *
    * @since 2011.07.31
    */
-  public static enum Status
+  public enum Status
   {
     Attempt, Success
     /* , Failure */
@@ -59,22 +59,21 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
   /**
    * Indicates whether the current cached data should be taken from the cache.
    */
-  public static interface Instructions
+  public interface Instructions
   {
 
     /**
      * Is invoked to determine whether the persistence timestamp field should be requested, on the {@link IOStreamer} layer.
-     * 
+     *
      * @return {@code true} if and only if the timestamp of the underlying business object should be requested on the persistence layer
      */
     boolean queryTimestamp();
 
     /**
      * Indicates whether the underlying business is still valid regarding its storage timestamp. Is invoked in two ways:
-     * 
-     * @param timestamp
-     *          the date corresponding to the last data retrieval ; may be {@code null}, and will be if the {@link #queryTimestamp()} previously
-     *          returned {@code false}
+     *
+     * @param timestamp the date corresponding to the last data retrieval ; may be {@code null}, and will be if the {@link #queryTimestamp()} previously
+     *                  returned {@code false}
      * @return {@code true} if and only if the business object state should be taken from the persistence layer
      */
     boolean takeFromCache(Date timestamp);
@@ -82,18 +81,16 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     /**
      * Invoked every time the underlying business object is bound to be fetched from the {@link IOStreamer}, or when it has actually been retrieved.
      * from it.
-     * 
-     * @param status
-     *          indicates the status: {@link Cacher.Status#Attempt} when first attempting, {@link Cacher.Status#Success} when successfully retrieved
+     *
+     * @param status indicates the status: {@link Cacher.Status#Attempt} when first attempting, {@link Cacher.Status#Success} when successfully retrieved
      */
     void onIOStreamer(Cacher.Status status);
 
     /**
      * Invoked every time the underlying business object is bound to be fetched from the {@link UriStreamParser}, or when it has actually been
      * retrieved.
-     * 
-     * @param status
-     *          indicates the status: {@link Cacher.Status#Attempt} when first attempting, {@link Cacher.Status#Success} when successfully retrieved
+     *
+     * @param status indicates the status: {@link Cacher.Status#Attempt} when first attempting, {@link Cacher.Status#Success} when successfully retrieved
      */
     void onUriStreamParser(Cacher.Status status);
 
@@ -107,13 +104,16 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
 
   private final Business.UriInputStreamer<UriType, InputExceptionType> uriInputStreamer;
 
-  public Cacher(Business.Cacheable<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacheable)
+  public Cacher(
+      Business.Cacheable<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacheable)
   {
     this(cacheable, cacheable, cacheable);
   }
 
-  public Cacher(Business.UriStreamParser<BusinessObjectType, UriType, ParameterType, ParseExceptionType> uriStreamParser,
-      Business.IOStreamer<UriType, StreamerExceptionType> ioStreamer, Business.UriInputStreamer<UriType, InputExceptionType> uriInputStreamer)
+  public Cacher(
+      Business.UriStreamParser<BusinessObjectType, UriType, ParameterType, ParseExceptionType> uriStreamParser,
+      Business.IOStreamer<UriType, StreamerExceptionType> ioStreamer,
+      Business.UriInputStreamer<UriType, InputExceptionType> uriInputStreamer)
   {
     this.uriStreamParser = uriStreamParser;
     this.ioStreamer = ioStreamer;
@@ -136,22 +136,17 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
 
   /**
    * Retrieves the business object corresponding to the provided parameter, by specifying the routing instructions.
-   * 
-   * @param instructions
-   *          enables to control the source where the business object should be retrieved: either from a {@link UriInputStreamer} or from an
-   *          {@link IOStreamer}.
-   * @param parameter
-   *          the URI corresponding to the business object
+   *
+   * @param instructions enables to control the source where the business object should be retrieved: either from a {@link UriInputStreamer} or from an
+   *                     {@link IOStreamer}.
+   * @param parameter    the URI corresponding to the business object
    * @return a wrapper around the extracted business object, along with a retrieval timestamp and a {@link Business.Source origin}.
-   * @throws InputExceptionType
-   *           if a problem occurred while attempting to extract the business object raw data {@link Business.InputAtom} from the
-   *           {@link UriInputStreamer}, via the {@link UriInputStreamer#getInputStream(Object)} method
-   * @throws StreamerExceptionType
-   *           if a problem occurred while attempting to extract the business object raw data {@link Business.InputAtom} from the {@link IOStreamer},
-   *           via the {@link IOStreamer#readInputStream(Object)} method
-   * @throws ParseExceptionType
-   *           if a problem occurred while parsing the business object from its {@link Business.InputAtom} raw data from the {@link UriStreamParser},
-   *           via the {@link UriStreamParser#parse} method
+   * @throws InputExceptionType    if a problem occurred while attempting to extract the business object raw data {@link Business.InputAtom} from the
+   *                               {@link UriInputStreamer}, via the {@link UriInputStreamer#getInputStream(Object)} method
+   * @throws StreamerExceptionType if a problem occurred while attempting to extract the business object raw data {@link Business.InputAtom} from the {@link IOStreamer},
+   *                               via the {@link IOStreamer#readInputStream(Object)} method
+   * @throws ParseExceptionType    if a problem occurred while parsing the business object from its {@link Business.InputAtom} raw data from the {@link UriStreamParser},
+   *                               via the {@link UriStreamParser#parse} method
    */
   public final Values.Info<BusinessObjectType> getValue(Cacher.Instructions instructions, ParameterType parameter)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
@@ -248,7 +243,8 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     return fetchValueFromUriStreamParser(null, parameter, uriStreamParser.computeUri(parameter));
   }
 
-  private Values.Info<BusinessObjectType> fetchValueFromUriStreamParser(Cacher.Instructions instructions, ParameterType parameter, final UriType uri)
+  private Values.Info<BusinessObjectType> fetchValueFromUriStreamParser(Cacher.Instructions instructions,
+      ParameterType parameter, final UriType uri)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
     final Values.Info<BusinessObjectType> info = retrieveRemoteBusinessObject(instructions, parameter, uri);
@@ -257,7 +253,8 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
   }
 
   @SuppressWarnings("unchecked")
-  private Values.Info<BusinessObjectType> retrieveRemoteBusinessObject(Cacher.Instructions instructions, ParameterType parameter, UriType uri)
+  private Values.Info<BusinessObjectType> retrieveRemoteBusinessObject(Cacher.Instructions instructions,
+      ParameterType parameter, UriType uri)
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
     // We notify the instructions that the business object is bound to be read from the URI streamer
@@ -271,8 +268,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     {
       if (uriInputStreamer instanceof Business.NullableUriInputStreamer)
       {
-        final BusinessObjectType businessObject = ((Business.NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, InputExceptionType, InputExceptionType>) uriInputStreamer).onNullInputStream(
-            parameter, uri);
+        final BusinessObjectType businessObject = ((Business.NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, InputExceptionType, InputExceptionType>) uriInputStreamer).onNullInputStream(parameter, uri);
         final Values.Info<BusinessObjectType> info = new Values.Info<BusinessObjectType>(businessObject, new Date(), Business.Source.IOStreamer);
         if (businessObject == null)
         {
@@ -282,10 +278,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         else if (uriStreamParser instanceof Business.UriStreamParserSerializer<?, ?, ?, ?>)
         {
           // In that case, we put the business object in the cache
-          ioStreamer.writeInputStream(
-              uri,
-              new Business.InputAtom(new Date(), ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(
-                  parameter, info.value)), true);
+          ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(parameter, info.value)), true);
           return info;
         }
         else
@@ -348,8 +341,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         invokeOnNewInputStream = false;
         if (log.isErrorEnabled())
         {
-          log.error("Cannot reset and hence cannot persist the input stream corresponding to the URI '" + uri + "' and to the parameter '" + parameter + "'",
-              exception);
+          log.error("Cannot reset and hence cannot persist the input stream corresponding to the URI '" + uri + "' and to the parameter '" + parameter + "'", exception);
         }
       }
     }
@@ -378,10 +370,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     if (uriStreamParser instanceof Business.UriStreamParserSerializer<?, ?, ?, ?>)
     {
       final UriType uri = computeUri(parameter);
-      ioStreamer.writeInputStream(
-          uri,
-          new Business.InputAtom(info.timestamp, ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(
-              parameter, info.value)), true);
+      ioStreamer.writeInputStream(uri, new Business.InputAtom(info.timestamp, ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(parameter, info.value)), true);
     }
     else
     {
@@ -417,7 +406,8 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     ioStreamer.remove(computeUri(parameter));
   }
 
-  protected InputStream onNewInputStream(ParameterType parameter, UriType uri, Business.InputAtom atom, boolean returnStream)
+  protected InputStream onNewInputStream(ParameterType parameter, UriType uri, Business.InputAtom atom,
+      boolean returnStream)
       throws StreamerExceptionType
   {
     return ioStreamer.writeInputStream(uri, atom, returnStream);

@@ -26,25 +26,21 @@ import com.smartnsoft.droid4me.bo.Business;
 
 /**
  * An abstract class which implements its interface via web service calls.
- * 
+ *
  * @since 2009.06.18
  */
 public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType extends Exception>
-    implements Business.UriStreamParser<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType>,
-    Business.UriInputStreamer<WSUriStreamParser.KeysAggregator<ParameterType>, WebServiceCaller.CallException>
+    implements Business.UriStreamParser<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType>, Business.UriInputStreamer<WSUriStreamParser.KeysAggregator<ParameterType>, WebServiceCaller.CallException>
 {
 
   /**
    * Is responsible for returning a key corresponding to a business object entity, in order to be able to access to it later on.
-   * 
-   * @param <UriType>
-   *          the kind of URI that this source will deliver, so as to locate the business object
-   * @param <ParameterType>
-   *          the kind of parameters that will be used to identify and generate the business object URI
-   * 
+   *
+   * @param <UriType>       the kind of URI that this source will deliver, so as to locate the business object
+   * @param <ParameterType> the kind of parameters that will be used to identify and generate the business object URI
    * @since 2011.10.06
    */
-  public static interface SourceKey<UriType, ParameterType>
+  public interface SourceKey<UriType, ParameterType>
       extends Business.Urier<UriType, ParameterType>
   {
 
@@ -53,10 +49,8 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   /**
    * A {@link WSUriStreamParser.SourceKey} aggregator, which redirects the computing of a business object entity URI depending on the
    * {@link Business.Source} it is asked for.
-   * 
-   * @param <ParameterType>
-   *          the parameter class which identify the business object, and enable to compute its URIs
-   * 
+   *
+   * @param <ParameterType> the parameter class which identify the business object, and enable to compute its URIs
    * @since 2011.10.06
    */
   public static class KeysAggregator<ParameterType>
@@ -76,19 +70,17 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
 
     /**
      * Creates a keys aggregator and adds immediately a source key to it.
-     * 
+     * <p/>
      * <p>
      * That constructor will invoke the {@link #add(Business.Source, SourceKey)} method.
      * </p>
-     * 
-     * @param parameter
-     *          the parameter that will be stored, so as to be able to generate the various business object URIs
-     * @param source
-     *          the source the source key is attached to
-     * @param sourceKey
-     *          the source key to register
+     *
+     * @param parameter the parameter that will be stored, so as to be able to generate the various business object URIs
+     * @param source    the source the source key is attached to
+     * @param sourceKey the source key to register
      */
-    public KeysAggregator(ParameterType parameter, Business.Source source, WSUriStreamParser.SourceKey<?, ParameterType> sourceKey)
+    public KeysAggregator(ParameterType parameter, Business.Source source,
+        WSUriStreamParser.SourceKey<?, ParameterType> sourceKey)
     {
       this.parameter = parameter;
       if (sourceKey != null && source != null)
@@ -107,25 +99,25 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
 
     /**
      * Registers a source key to the aggregator, for a given source.
-     * 
+     * <p/>
      * <p>
      * Note that invoking the method multiple times with the same <coce>source</code> parameter value will just replace the existing source key.
      * </p>
-     * 
-     * @param source
-     *          the source the provided key belongs to
-     * @param sourceKey
-     *          a source key that will be registered for the given source
+     *
+     * @param source    the source the provided key belongs to
+     * @param sourceKey a source key that will be registered for the given source
      * @return the aggregator itself, so as to ease the usage
      */
-    public WSUriStreamParser.KeysAggregator<ParameterType> add(Business.Source source, WSUriStreamParser.SourceKey<?, ParameterType> sourceKey)
+    public WSUriStreamParser.KeysAggregator<ParameterType> add(Business.Source source,
+        WSUriStreamParser.SourceKey<?, ParameterType> sourceKey)
     {
       sourceLocators.put(source, sourceKey);
       return this;
     }
 
     @SuppressWarnings("unchecked")
-    public <SourceKeyType extends WSUriStreamParser.SourceKey<?, ParameterType>> SourceKeyType getSourceLocator(Business.Source source)
+    public <SourceKeyType extends WSUriStreamParser.SourceKey<?, ParameterType>> SourceKeyType getSourceLocator(
+        Business.Source source)
     {
       final SourceKey<?, ParameterType> sourceKey = sourceLocators.get(source);
       return (SourceKeyType) sourceKey;
@@ -136,17 +128,15 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   /**
    * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#UriStreamer} source,
    * i.e. through a {#link {@link Business.UriStreamParser}.
-   * 
+   * <p/>
    * <p>
    * Indicates the type of HTTP request and the underlying HTTP body and URL.
    * </p>
-   * 
-   * @param <ParameterType>
-   *          the kind of parameters that will be used to identify and generate the business object URI
-   * 
+   *
+   * @param <ParameterType> the kind of parameters that will be used to identify and generate the business object URI
    * @since 2011.10.06
    */
-  public static interface UriStreamerSourceKey<ParameterType>
+  public interface UriStreamerSourceKey<ParameterType>
       extends WSUriStreamParser.SourceKey<WebServiceClient.HttpCallTypeAndBody, ParameterType>
   {
 
@@ -154,12 +144,9 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
 
   /**
    * A basic implementation of the {@link WSUriStreamParser.UriStreamerSourceKey}.
-   * 
-   * @param <ParameterType>
-   *          the kind of parameters that will be used to identify and generate the business object URI
-   * 
+   *
+   * @param <ParameterType> the kind of parameters that will be used to identify and generate the business object URI
    * @since 2011.10.06
-   * 
    */
   public static class SimpleUriStreamerSourceKey<ParameterType>
       implements WSUriStreamParser.UriStreamerSourceKey<ParameterType>

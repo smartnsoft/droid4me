@@ -19,10 +19,10 @@ package com.smartnsoft.droid4me.log;
 
 /**
  * An interface which enables to log.
- * 
+ *
  * @author Édouard Mercier
- * @since 2014.04.26
  * @see Logger
+ * @since 2014.04.26
  */
 public interface Loggerable
 {

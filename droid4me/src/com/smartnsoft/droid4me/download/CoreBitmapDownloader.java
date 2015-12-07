@@ -38,7 +38,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * Responsible for downloading the bitmaps in dedicated threads and to bind them to Android {@link View Views}.
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.02.19
  */
@@ -47,7 +47,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * Contains information about a {@link CoreBitmapDownloader} instance internal state.
-   * 
+   *
    * @since 2012.06.07
    */
   public static class CoreAnalyticsData
@@ -71,26 +71,25 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * When defining the {@link CoreBitmapDownloader#ANALYTICS_LISTENER} variable with an implementation of this interface, it will be notified as soon
    * as the cache internal state changes.
-   * 
+   *
    * @since 2012.06.07
    */
-  public static interface AnalyticsListener
+  public interface AnalyticsListener
   {
 
     /**
      * Is invoked every time the underlying attached {@link CoreBitmapDownloader} internal state changes.
-     * 
+     * <p/>
      * <p>
      * In particular, this method will be invoked when the instance cache is {@link CoreBitmapDownloader#cleanUpCache() cleaned up}, or when an
      * {@link OutOfMemoryError} occurs.
      * </p>
-     * 
-     * @param coreBitmapDownloader
-     *          the instance involved in the internal state change
-     * @param analyticsData
-     *          the information about the instance internal state
+     *
+     * @param coreBitmapDownloader the instance involved in the internal state change
+     * @param analyticsData        the information about the instance internal state
      */
-    void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader, CoreBitmapDownloader.CoreAnalyticsData analyticsData);
+    void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader,
+        CoreBitmapDownloader.CoreAnalyticsData analyticsData);
 
   }
 
@@ -168,8 +167,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       {
         return;
       }
-      @SuppressWarnings("unchecked")
-      final UsedBitmap otherUsedBitmap = (UsedBitmap) view.getTag();
+      @SuppressWarnings("unchecked") final UsedBitmap otherUsedBitmap = (UsedBitmap) view.getTag();
       if (otherUsedBitmap != null)
       {
         otherUsedBitmap.bindingCount--;
@@ -245,7 +243,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * When set, i.e. not {@code null} (which is the default), each instance will be notified as soon as its internal state changes.
-   * 
+   *
    * @see #notifyAnalyticsListener()
    */
   public static CoreBitmapDownloader.AnalyticsListener ANALYTICS_LISTENER;
@@ -290,7 +288,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * Holds the instance bitmap memory cache. The {@link Map} {@link String} entry if the
    * {@link BasisDownloadInstructions.Instructions#computeUrl(String, Object) URL} of a cached bitmap.
-   * 
+   * <p/>
    * <p>
    * A {@link HashMap} is used instead of a {@link java.util.Hashtable}, because we want to allow null values.
    * </p>
@@ -318,20 +316,16 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   protected int outOfMemoryOccurences = 0;
 
   /**
-   * @param instanceIndex
-   *          the index of the current instance. When creating multiple instances, it is important to provide a unique index, so that the
-   *          {@link CoreBitmapDownloader.AnalyticsListener} knows what instance is at stake
-   * @param name
-   *          the name of the instance, used for the logs and the analytics
-   * @param highLevelMemoryWaterMarkInBytes
-   *          the number of maximum bytes space that this instance will allow cached bitmaps to take in memory
-   * @param lowLevelMemoryWaterMarkInBytes
-   *          when the instance has been {@link #cleanUpCache() cleaned up}, how much space the cached bitmap will take at most
+   * @param instanceIndex                   the index of the current instance. When creating multiple instances, it is important to provide a unique index, so that the
+   *                                        {@link CoreBitmapDownloader.AnalyticsListener} knows what instance is at stake
+   * @param name                            the name of the instance, used for the logs and the analytics
+   * @param highLevelMemoryWaterMarkInBytes the number of maximum bytes space that this instance will allow cached bitmaps to take in memory
+   * @param lowLevelMemoryWaterMarkInBytes  when the instance has been {@link #cleanUpCache() cleaned up}, how much space the cached bitmap will take at most
    * @param useReferences
    * @param recycleMap
    */
-  protected CoreBitmapDownloader(int instanceIndex, String name, long highLevelMemoryWaterMarkInBytes, long lowLevelMemoryWaterMarkInBytes,
-      boolean useReferences, boolean recycleMap)
+  protected CoreBitmapDownloader(int instanceIndex, String name, long highLevelMemoryWaterMarkInBytes,
+      long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
     this.instanceIndex = instanceIndex;
     this.name = name;
@@ -343,7 +337,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * By default, an instance is enabled.
-   * 
+   *
    * @return {@code true} if and only if the current instance is enabled, i.e. the commands will do something
    * @see #setEnabled(boolean)
    */
@@ -354,12 +348,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * Changes the instance enabled state. This method is useful for disable an instance, without changing much code.
-   * 
-   * @param isEnabled
-   *          when set to {@code false}, any call to the
-   *          {@link #get(Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)} or
-   *          {@link #get(boolean, boolean, Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)}
-   *          methods will do nothing
+   *
+   * @param isEnabled when set to {@code false}, any call to the
+   *                  {@link #get(Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)} or
+   *                  {@link #get(boolean, boolean, Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)}
+   *                  methods will do nothing
    * @see #isEnabled()
    */
   public final void setEnabled(boolean isEnabled)
@@ -373,7 +366,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * Indicates the instance assumption regarding the device Internet current connectivity.
-   * 
+   *
    * @return {@code true} if and only if the current instance considers that the device has Internet connectivity
    * @see #setConnected(boolean)
    * @see BasisDownloadInstructions.Instructions#downloadInputStream(String, Object, String)
@@ -387,9 +380,8 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * Notifies the instance about Internet connectivity. When set to {@code false}, the
    * {@link BasisDownloadInstructions.Instructions#downloadInputStream(String, Object, String)} will not be invoked, and not bitmap will be
    * downloaded.
-   * 
-   * @param isConnected
-   *          indicates the device current Internet connectivity
+   *
+   * @param isConnected indicates the device current Internet connectivity
    */
   public final void setConnected(boolean isConnected)
   {
@@ -411,11 +403,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * This method will retrieve the bitmap corresponding to the provided identifier along with the provided instructions, and bind it to the provided
    * {@link View}. This instruction is considered as a download and binding job.
-   * 
+   * <p/>
    * <p>
    * Can be invoked from any thread, not only the GUI's! The method is non-blocking, which means that the job is done in an asynchronous way.
    * </p>
-   * 
+   * <p/>
    * Here are some noteworthy contracts that the component enforces:
    * <ul>
    * <li>The component ensures that any {@link OutOfMemoryError} exception thrown during the commands of the job are caught properly, so that the
@@ -424,19 +416,14 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * {@link BasisDownloadInstructions.Instructions#computeUrl(String, Object) URL}, even if several commands are run successively for the same URL, in
    * order to save battery and network band usage.</li>
    * </ul>
-   * 
-   * @param view
-   *          the view that will be bound with the retrieved {@link Bitmap}. May be {@code null}, which enables to simply download a bitmap and put it
-   *          into the cache
-   * @param bitmapUid
-   *          the identifier of the bitmap to retrieve. Most of the time, this is the URL of the bitmap on Internet, but it can serve as a basis to
-   *          {@link BasisBitmapDownloader.Instructions#computeUrl(String, Object) compute} the actual URL
-   * @param imageSpecs
-   *          a free object that will be passed along during the bitmap retrieval workflow
-   * @param handler
-   *          will be used for performing GUI-thread operations
-   * @param instructions
-   *          the instructions that will be invoked during the retrieval workflow
+   *
+   * @param view         the view that will be bound with the retrieved {@link Bitmap}. May be {@code null}, which enables to simply download a bitmap and put it
+   *                     into the cache
+   * @param bitmapUid    the identifier of the bitmap to retrieve. Most of the time, this is the URL of the bitmap on Internet, but it can serve as a basis to
+   *                     {@link BasisBitmapDownloader.Instructions#computeUrl(String, Object) compute} the actual URL
+   * @param imageSpecs   a free object that will be passed along during the bitmap retrieval workflow
+   * @param handler      will be used for performing GUI-thread operations
+   * @param instructions the instructions that will be invoked during the retrieval workflow
    * @see #get(boolean, boolean, Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)
    */
   public abstract void get(ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
@@ -445,28 +432,27 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * Provides the same feature as {@link #computeAndGetUrl(View, String, Object, HandlerClass, BasisBitmapDownloader.Instructions)}, except that it
    * may be called from the GUI thread and blocking.
-   * 
+   * <p/>
    * <p>
    * Invoking that method with the two {@code isPreBlocking} and {@code isDownloadBlocking} parameters set to {@code true} will execute the command
    * from the calling thread, which involves that the caller should be the UI thread, or that the provided {@code view} parameter is {@code null}.
    * This type of invocation is especially useful when the download and bind command must be run in a synchronous way.
    * </p>
-   * 
-   * @param isPreBlocking
-   *          indicates whether the generated command first step will be executed directly from the calling thread. If {@code true}, the call must be
-   *          done from the GUI thread, or the provided {@code view} must be {@code null}!
-   * @param isDownloadBlocking
-   *          indicates whether the generated command second step will be executed directly from the calling thread. If the previous
-   *          {@code isPreBlocking} argument is set to {@code false}, this parameter is ignored. If {@code true}, the call must be done from the GUI
-   *          thread, or the provided {@code view} must be {@code null}!
+   *
+   * @param isPreBlocking      indicates whether the generated command first step will be executed directly from the calling thread. If {@code true}, the call must be
+   *                           done from the GUI thread, or the provided {@code view} must be {@code null}!
+   * @param isDownloadBlocking indicates whether the generated command second step will be executed directly from the calling thread. If the previous
+   *                           {@code isPreBlocking} argument is set to {@code false}, this parameter is ignored. If {@code true}, the call must be done from the GUI
+   *                           thread, or the provided {@code view} must be {@code null}!
    * @see #get(Viewable, String, Object, Handlerable, com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions)
    */
-  public abstract void get(boolean isPreBlocking, boolean isDownloadBlocking, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+  public abstract void get(boolean isPreBlocking, boolean isDownloadBlocking, ViewClass view, String bitmapUid,
+      Object imageSpecs, HandlerClass handler,
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions);
 
   /**
    * Empties the cache, so that no more bitmap is available in memory.
-   * 
+   * <p/>
    * <p>
    * All operations in progress should be canceled.
    * </p>
@@ -534,11 +520,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * Is responsible for cleaning up the cache, until the low-level memory water mark is reached.
-   * 
+   * <p/>
    * <p>
    * If o clean-up is already {@link #cleanUpInProgress in progress}, the method returns immediately without processing anything.
    * </p>
-   * 
+   *
    * @see #cleanUpCacheInstance()
    */
   protected final void cleanUpCache()
@@ -575,11 +561,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * This method is responsible for actually cleaning up the memory cache, by enforcing the {@link #highLevelMemoryWaterMarkInBytes} and
    * {@link #lowLevelMemoryWaterMarkInBytes} limits. This method is aimed at being overridden, so as to set up another clean up policy.
-   * 
+   * <p/>
    * <p>
    * It is responsible for cleaning up the {@link #cache} attribute and update the {@link #memoryConsumptionInBytes} attribute accordingly.
    * </p>
-   * 
+   *
    * @see #cleanUpCache()
    */
   protected void cleanUpCacheInstance()
@@ -593,7 +579,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       final Iterator<UsedBitmap> iterator = toBeDiscardedUsedBitmaps.iterator();
       while (iterator.hasNext())
       {
-        final UsedBitmap usedBitmap = (UsedBitmap) iterator.next();
+        final UsedBitmap usedBitmap = iterator.next();
         if (usedBitmap.getBitmap() == null)
         {
           iterator.remove();

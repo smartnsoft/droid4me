@@ -35,13 +35,11 @@ public final class WithCacheWSUriStreamParser
   /**
    * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#IOStreamer} source,
    * i.e. through a {#link {@link Business.IOStreamer}.
-   * 
-   * @param <ParameterType>
-   *          the kind of parameters that will be used to identify and generate the business object URI
-   * 
+   *
+   * @param <ParameterType> the kind of parameters that will be used to identify and generate the business object URI
    * @since 2011.10.06
    */
-  public static interface IOStreamerSourceKey<ParameterType>
+  public interface IOStreamerSourceKey<ParameterType>
       extends WSUriStreamParser.SourceKey<String, ParameterType>
   {
 
@@ -49,10 +47,8 @@ public final class WithCacheWSUriStreamParser
 
   /**
    * A basic implementation of the {@link WithCacheWSUriStreamParser.IOStreamerSourceKey}.
-   * 
-   * @param <ParameterType>
-   *          the kind of parameters that will be used to identify and generate the business object URI
-   * 
+   *
+   * @param <ParameterType> the kind of parameters that will be used to identify and generate the business object URI
    * @since 2011.10.06
    */
   public static class SimpleIOStreamerSourceKey<ParameterType>
@@ -65,10 +61,8 @@ public final class WithCacheWSUriStreamParser
     public final String ioStreamerUri;
 
     /**
-     * @param uriStreamerUri
-     *          the business object entity {@link Business.UriStreamParser} URI
-     * @param ioStreamerUri
-     *          the business object entity {@link Business.IOStreamer} URI
+     * @param uriStreamerUri the business object entity {@link Business.UriStreamParser} URI
+     * @param ioStreamerUri  the business object entity {@link Business.IOStreamer} URI
      */
     public SimpleIOStreamerSourceKey(String ioStreamerUri)
     {
@@ -83,27 +77,24 @@ public final class WithCacheWSUriStreamParser
     /**
      * A helper method, which enables to build both an {@link Business.Source#UriStreamer} and {@link Business.Source#IOStreamer} keys aggregator from
      * an HTTP request expression.
-     * 
-     * @param httpCallTypeAndBody
-     *          the HTTP request that will be used to build the {@link WSUriStreamParser.UriStreamerSourceKey}
-     * @param parameter
-     *          the parameter that will be used to create the returned keys aggregator
+     *
+     * @param httpCallTypeAndBody the HTTP request that will be used to build the {@link WSUriStreamParser.UriStreamerSourceKey}
+     * @param parameter           the parameter that will be used to create the returned keys aggregator
      * @return a new keys aggregator composed of a newly created {@link WSUriStreamParser.UriStreamerSourceKey}, and a
-     *         {@link WithCacheWSUriStreamParser.IOStreamerSourceKey} the URI of which will be taken from the previously created
-     *         {@link WSUriStreamParser.UriStreamerSourceKey} via its {@link WSUriStreamParser.UriStreamerSourceKey#computeUri(ParameterType)} method
+     * {@link WithCacheWSUriStreamParser.IOStreamerSourceKey} the URI of which will be taken from the previously created
+     * {@link WSUriStreamParser.UriStreamerSourceKey} via its {@link WSUriStreamParser.UriStreamerSourceKey#computeUri(ParameterType)} method
      */
     public static <ParameterType> WSUriStreamParser.KeysAggregator<ParameterType> fromUriStreamerSourceKey(
         WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody, ParameterType parameter)
     {
       final WSUriStreamParser.SimpleUriStreamerSourceKey<ParameterType> uriStreamerSourceKey = new WSUriStreamParser.SimpleUriStreamerSourceKey<ParameterType>(httpCallTypeAndBody);
-      return new WSUriStreamParser.KeysAggregator<ParameterType>(parameter).add(Business.Source.UriStreamer, uriStreamerSourceKey).add(
-          Business.Source.IOStreamer, new WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType>()
-          {
-            public String computeUri(ParameterType parameter)
-            {
-              return uriStreamerSourceKey.computeUri(parameter).url;
-            }
-          });
+      return new WSUriStreamParser.KeysAggregator<ParameterType>(parameter).add(Business.Source.UriStreamer, uriStreamerSourceKey).add(Business.Source.IOStreamer, new WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType>()
+      {
+        public String computeUri(ParameterType parameter)
+        {
+          return uriStreamerSourceKey.computeUri(parameter).url;
+        }
+      });
     }
 
     @Override
@@ -119,13 +110,13 @@ public final class WithCacheWSUriStreamParser
    */
   public static abstract class CacheableWebUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
       extends WSUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType>
-      implements
-      Business.Cacheable<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
+      implements Business.Cacheable<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
   {
 
     private final Business.IOStreamer<String, StreamerExceptionType> ioStreamer;
 
-    public CacheableWebUriStreamParser(Business.IOStreamer<String, StreamerExceptionType> ioStreamer, WebServiceClient webServiceClient)
+    public CacheableWebUriStreamParser(Business.IOStreamer<String, StreamerExceptionType> ioStreamer,
+        WebServiceClient webServiceClient)
     {
       super(webServiceClient);
       this.ioStreamer = ioStreamer;
@@ -150,7 +141,8 @@ public final class WithCacheWSUriStreamParser
       return ioStreamer.readInputStream(ioSourceKey.computeUri(uri.getParameter()));
     }
 
-    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom, boolean returnStream)
+    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri,
+        Business.InputAtom inputAtom, boolean returnStream)
         throws StreamerExceptionType
     {
       final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
@@ -167,13 +159,13 @@ public final class WithCacheWSUriStreamParser
   }
 
   public static abstract class CachedWebUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
-      extends
-      Business.Cached<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
+      extends Business.Cached<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>
   {
 
     private final WebServiceClient webServiceClient;
 
-    public CachedWebUriStreamParser(Business.IOStreamer<String, StreamerExceptionType> ioStreamer, WebServiceClient webServiceClient)
+    public CachedWebUriStreamParser(Business.IOStreamer<String, StreamerExceptionType> ioStreamer,
+        WebServiceClient webServiceClient)
     {
       super(ioStreamer);
       this.webServiceClient = webServiceClient;
@@ -228,7 +220,8 @@ public final class WithCacheWSUriStreamParser
       return readInputStream(ioSourceKey.computeUri(uri.getParameter()));
     }
 
-    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri, Business.InputAtom inputAtom, boolean returnStream)
+    public final InputStream writeInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri,
+        Business.InputAtom inputAtom, boolean returnStream)
         throws StreamerExceptionType
     {
       final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);

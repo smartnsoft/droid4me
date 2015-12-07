@@ -1,4 +1,4 @@
-package com.smartnsoft.droid4me.app;
+package com.smartnsoft.droid4me.support.v7.app;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
+import com.smartnsoft.droid4me.app.Droid4mizer;
+import com.smartnsoft.droid4me.app.SmartableActivity;
 
 /**
  * @author Jocelyn Girard
@@ -304,7 +306,7 @@ public abstract class SmartAppCompatActivity<AggregateClass>
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
-   * 
+   *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()

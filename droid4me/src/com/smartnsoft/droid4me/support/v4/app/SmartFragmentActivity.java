@@ -18,12 +18,12 @@ import com.smartnsoft.droid4me.app.SmartableActivity;
 /**
  * A basis class for designing an Android compatibility library {@link android.support.v4.app.FragmentActivity} compatible with the framework, i.e.
  * droid4me-ready.
- * 
+ * <p/>
  * <p>
  * Warning: this class is only available for applications running under Android v1.6+, i.e. API level 4+, with the <a
  * href="http://developer.android.com/sdk/compatibility-library.html">Android Support Package</a>!
  * </p>
- * 
+ *
  * @author Jocelyn Girard, Édouard Mercier
  * @since 2011.12.08
  */
@@ -299,7 +299,7 @@ public abstract class SmartFragmentActivity<AggregateClass>
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
-   * 
+   *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()

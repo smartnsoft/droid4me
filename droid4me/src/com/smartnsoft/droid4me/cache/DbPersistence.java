@@ -50,7 +50,7 @@ import com.smartnsoft.droid4me.bo.Business;
 
 /**
  * Enables to store some input streams on a SQLite database.
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.06.19
  */
@@ -66,14 +66,14 @@ public final class DbPersistence
    * The implementing class must have a {@code public} constructor, which takes a single {@code int} as argument, which is the persistence instance
    * index.
    * </p>
-   * 
+   *
    * @since 2012.03.13
    */
-  public static interface DbCleanUpPolicy
+  public interface DbCleanUpPolicy
       extends Persistence.CleanUpPolicy
   {
 
-    public void cleanUp(SQLiteDatabase writeableDatabase, String tableName)
+    void cleanUp(SQLiteDatabase writeableDatabase, String tableName)
         throws SQLException;
 
   }
@@ -81,7 +81,7 @@ public final class DbPersistence
   /**
    * A simple clean up strategy, which removes the entries older that a certain of time, which is customizable through the
    * {@link LastUpdateDbCleanUpPolicy#RETENTION_DURATION_IN_MILLISECONDS} field.
-   * 
+   *
    * @since 2012.03.13
    */
   public static class LastUpdateDbCleanUpPolicy
@@ -186,9 +186,7 @@ public final class DbPersistence
     protected Cursor getCursor(SQLiteDatabase writeableDatabase, String tableName)
         throws SQLException
     {
-      return writeableDatabase.rawQuery(
-          "SELECT " + DbPersistence.CacheColumns._ID + ", " + DbPersistence.CacheColumns.URI + ", " + DbPersistence.CacheColumns.LAST_UPDATE + " FROM " + tableName + " ORDER BY " + DbPersistence.CacheColumns.LAST_UPDATE,
-          new String[0]);
+      return writeableDatabase.rawQuery("SELECT " + DbPersistence.CacheColumns._ID + ", " + DbPersistence.CacheColumns.URI + ", " + DbPersistence.CacheColumns.LAST_UPDATE + " FROM " + tableName + " ORDER BY " + DbPersistence.CacheColumns.LAST_UPDATE, new String[0]);
     }
 
     protected boolean shouldCleanUp(Cursor cursor, long now)
@@ -243,7 +241,7 @@ public final class DbPersistence
 
   /**
    * The file names of the instances database files.
-   * 
+   * <p/>
    * <p>
    * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
    * </p>
@@ -252,7 +250,7 @@ public final class DbPersistence
 
   /**
    * The table names of the instances database files.
-   * 
+   * <p/>
    * <p>
    * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
    * </p>
@@ -262,7 +260,7 @@ public final class DbPersistence
   /**
    * The fully qualified classes names of the {@link DbPersistence.DbCleanUpPolicy clean up policies} to use. Each array element may be {@code null},
    * and in that case, no policy is attached to the corresponding instance.
-   * 
+   * <p/>
    * <p>
    * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
    * </p>
@@ -325,7 +323,7 @@ public final class DbPersistence
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see #DbPersistence(String, int, String, String)
    */
   public DbPersistence(String storageDirectoryPath, int instanceIndex)
@@ -335,15 +333,11 @@ public final class DbPersistence
 
   /**
    * Creates a persistence instance with all the necessary information to indicate its location.
-   * 
-   * @param storageDirectoryPath
-   *          the directory path where the persistence database should be created
-   * @param instanceIndex
-   *          the ordinal of the instance which is bound to be created. Starts with {@code 0}
-   * @param fileName
-   *          the name of the database file
-   * @param tableName
-   *          the name of the table which will handle the persistence
+   *
+   * @param storageDirectoryPath the directory path where the persistence database should be created
+   * @param instanceIndex        the ordinal of the instance which is bound to be created. Starts with {@code 0}
+   * @param fileName             the name of the database file
+   * @param tableName            the name of the table which will handle the persistence
    * @see #DbPersistence(String, int)
    */
   public DbPersistence(String storageDirectoryPath, int instanceIndex, String fileName, String tableName)
@@ -351,9 +345,7 @@ public final class DbPersistence
     super(storageDirectoryPath, instanceIndex);
     this.fileName = fileName;
     this.tableName = tableName;
-    readInputStreamQuery = new StringBuilder("SELECT ").append(DbPersistence.CacheColumns.CONTENTS).append(", ").append(DbPersistence.CacheColumns.LAST_UPDATE).append(
-        ", ").append(DbPersistence.CacheColumns.CONTEXT).append(" FROM ").append(tableName).append(" WHERE ").append(DbPersistence.CacheColumns.URI).append(
-        " = ?").toString();
+    readInputStreamQuery = new StringBuilder("SELECT ").append(DbPersistence.CacheColumns.CONTENTS).append(", ").append(DbPersistence.CacheColumns.LAST_UPDATE).append(", ").append(DbPersistence.CacheColumns.CONTEXT).append(" FROM ").append(tableName).append(" WHERE ").append(DbPersistence.CacheColumns.URI).append(" = ?").toString();
   }
 
   @Override
@@ -425,7 +417,7 @@ public final class DbPersistence
 
   /**
    * Opens a new database if necessary, and updates the references.
-   * 
+   * <p/>
    * <p>
    * This enables to share the database instances when possible.
    * </p>
@@ -447,11 +439,11 @@ public final class DbPersistence
 
   /**
    * Closes the shared database if necessary, and updates the references.
-   * 
+   * <p/>
    * <p>
    * This enables to share the database instances when possible.
    * </p>
-   * 
+   *
    * @return
    */
   private static synchronized SQLiteDatabase releaseDatabase(String filePath)
@@ -486,8 +478,7 @@ public final class DbPersistence
       final boolean tableExists;
       final boolean needsSchemaUpgrade;
       {
-        final Cursor cursor = database.query("sqlite_master", new String[] { "name", "sql" }, "name='" + tableName + "' AND type = 'table'", null, null, null,
-            null);
+        final Cursor cursor = database.query("sqlite_master", new String[] { "name", "sql" }, "name='" + tableName + "' AND type = 'table'", null, null, null, null);
         try
         {
           tableExists = (cursor.moveToFirst() == true);
@@ -724,7 +715,7 @@ public final class DbPersistence
   /**
    * The implementation makes use of the {@link DbPersistence#CLEAN_UP_POLICY_FQN} to decide what {@link DbPersistence.DbCleanUpPolicy clean up
    * policy} to use.
-   * 
+   *
    * @see DbPersistence#CLEAN_UP_POLICY_FQN
    */
   @SuppressWarnings("unchecked")
@@ -765,7 +756,8 @@ public final class DbPersistence
   }
 
   @Override
-  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(CleanUpPolicyClass cleanUpPolicy)
+  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(
+      CleanUpPolicyClass cleanUpPolicy)
       throws Persistence.PersistenceException
   {
     // We know that the policy is a 'DbPersistence.DbCleanUpPolicy'
@@ -829,7 +821,8 @@ public final class DbPersistence
     writeableDatabase = null;
   }
 
-  private Business.InputAtom internalCacheInputStream(final String uri, Business.InputAtom inputAtom, final boolean asynchronous, boolean returnStream)
+  private Business.InputAtom internalCacheInputStream(final String uri, Business.InputAtom inputAtom,
+      final boolean asynchronous, boolean returnStream)
       throws Persistence.PersistenceException
   {
     // We do not allow null URIs
@@ -916,7 +909,8 @@ public final class DbPersistence
     return returnStream == false ? null : new Business.InputAtom(timestamp, newInputStream, context);
   }
 
-  private void updateDb(String uri, Date timestamp, Serializable context, byte[] bytes, long start, boolean asynchronous)
+  private void updateDb(String uri, Date timestamp, Serializable context, byte[] bytes, long start,
+      boolean asynchronous)
   {
     if (log.isDebugEnabled())
     {

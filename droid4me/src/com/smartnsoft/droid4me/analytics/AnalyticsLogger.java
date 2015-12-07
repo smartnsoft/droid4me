@@ -53,7 +53,7 @@ public interface AnalyticsLogger
    * 
    * @see AnalyticsLogger.AnalyticsTagLoggerAnnotation
    */
-  public static interface AnalyticsTagLogger
+  interface AnalyticsTagLogger
       extends AnalyticsLogger
   {
 
@@ -70,7 +70,7 @@ public interface AnalyticsLogger
    * @param <DictionaryType>
    *          the type of the dictionary used when reporting events
    */
-  public static interface AnalyticsDictionaryLogger<DictionaryType>
+  interface AnalyticsDictionaryLogger<DictionaryType>
       extends AnalyticsLogger.AnalyticsTagLogger
   {
 
@@ -93,7 +93,7 @@ public interface AnalyticsLogger
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
-  public static @interface AnalyticsTagLoggerAnnotation
+  @interface AnalyticsTagLoggerAnnotation
   {
 
     /**
@@ -114,7 +114,7 @@ public interface AnalyticsLogger
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
-  public static @interface AnalyticsEnabledLoggerAnnotation
+  @interface AnalyticsEnabledLoggerAnnotation
   {
 
   }
@@ -133,7 +133,7 @@ public interface AnalyticsLogger
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
-  public static @interface AnalyticsDisabledLoggerAnnotation
+  @interface AnalyticsDisabledLoggerAnnotation
   {
 
   }

@@ -25,21 +25,19 @@ import android.widget.Gallery;
 /**
  * An interface introduced in order to get notified when a container size changes, because there is no {@code OnSizeChangedListener} in Android
  * {@link View}, whereas there is a {@link View#onSizeChanged()} method.
- * 
+ * <p/>
  * <p>
  * In addition, this interface for disabling the {@link View#requestLayout()} method dynamically.
  * </p>
- * 
- * @param <ViewClass>
- *          the {@link View} class the extension is applied on
- * 
+ *
+ * @param <ViewClass> the {@link View} class the extension is applied on
  * @author Édouard Mercier
  * @since 2013.06.06
  */
 public interface SmartViewExtension<ViewClass extends View>
 {
 
-  static final class ViewExtensionDelegate<ViewClass extends View>
+  final class ViewExtensionDelegate<ViewClass extends View>
       implements SmartViewExtension<ViewClass>
   {
 
@@ -195,8 +193,7 @@ public interface SmartViewExtension<ViewClass extends View>
                 finalHeightMode = originalHeightMode;
               }
             }
-            smartViewExtension.onSuperMeasure(MeasureSpec.makeMeasureSpec(finalWidth, finalWidthMode),
-                MeasureSpec.makeMeasureSpec(finalHeight, finalHeightMode));
+            smartViewExtension.onSuperMeasure(MeasureSpec.makeMeasureSpec(finalWidth, finalWidthMode), MeasureSpec.makeMeasureSpec(finalHeight, finalHeightMode));
           }
         }
         else
@@ -244,8 +241,7 @@ public interface SmartViewExtension<ViewClass extends View>
             return;
           }
           // This is a way to notify the children about the dimensions
-          smartViewExtension.onSuperMeasure(MeasureSpec.makeMeasureSpec(finalWidth, MeasureSpec.EXACTLY),
-              MeasureSpec.makeMeasureSpec(finalHeight, MeasureSpec.EXACTLY));
+          smartViewExtension.onSuperMeasure(MeasureSpec.makeMeasureSpec(finalWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(finalHeight, MeasureSpec.EXACTLY));
           smartViewExtension.setSelfMeasuredDimension(finalWidth, finalHeight);
         }
       }
@@ -273,8 +269,7 @@ public interface SmartViewExtension<ViewClass extends View>
             finalWidth = originalWidth;
             finalHeight = calculatedHeight;
           }
-          smartViewExtension.onSuperMeasure(MeasureSpec.makeMeasureSpec(finalWidth, MeasureSpec.EXACTLY),
-              MeasureSpec.makeMeasureSpec(finalHeight, MeasureSpec.EXACTLY));
+          smartViewExtension.onSuperMeasure(MeasureSpec.makeMeasureSpec(finalWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(finalHeight, MeasureSpec.EXACTLY));
         }
       }
     }
@@ -303,7 +298,7 @@ public interface SmartViewExtension<ViewClass extends View>
 
   /**
    * Sets the ratio between the width and the height of the image. The default value is {@code 9 / 16}.
-   * 
+   * <p/>
    * <p>
    * <ul>
    * <li>When set to a positive value, the image width is taken as a reference to force the height.</li>
@@ -311,27 +306,24 @@ public interface SmartViewExtension<ViewClass extends View>
    * taken.</li>
    * </ul>
    * </p>
-   * 
-   * @param ratio
-   *          when set to {@code 0}, no ratio is applied
+   *
+   * @param ratio when set to {@code 0}, no ratio is applied
    * @see #getRatio()
    */
   void setRatio(float ratio);
 
   /**
    * Sets the widget maximum width. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
-   * 
-   * @param maxWidth
-   *          the new widget maximum width
+   *
+   * @param maxWidth the new widget maximum width
    * @see #setMaxHeight(int)
    */
   void setMaxWidth(int maxWidth);
 
   /**
    * Sets the widget maximum height. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
-   * 
-   * @param maxHeight
-   *          the new widget maximum height
+   *
+   * @param maxHeight the new widget maximum height
    * @see #setMaxWidth(int)
    */
   void setMaxHeight(int maxHeight);
@@ -343,15 +335,14 @@ public interface SmartViewExtension<ViewClass extends View>
 
   /**
    * Sets the interface that will be invoked when the widget size changes.
-   * 
-   * @param onSizeChangedListener
-   *          may be {@code null}, and in that case, no interface will be notified
+   *
+   * @param onSizeChangedListener may be {@code null}, and in that case, no interface will be notified
    */
   void setOnSizeChangedListener(OnSizeChangedListener<ViewClass> onSizeChangedListener);
 
   /**
    * The default value of the underlying flag is {@code false}.
-   * 
+   *
    * @return {@code true} if and only if the {@link #requestLayout()} method execution should do nothing
    * @see #setRequestLayoutEnabled(boolean)
    */
@@ -359,14 +350,13 @@ public interface SmartViewExtension<ViewClass extends View>
 
   /**
    * Indicates that the view {@link #requestLayout()} method execution should do nothing (not invoking the parent method).
-   * 
+   * <p/>
    * <p>
    * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
    * inside a {@link ViewGroup}.
    * </p>
-   * 
-   * @param requestLayoutDisabled
-   *          when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
+   *
+   * @param requestLayoutDisabled when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
    */
   void setRequestLayoutDisabled(boolean requestLayoutDisabled);
 

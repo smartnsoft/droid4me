@@ -29,7 +29,7 @@ import org.xml.sax.ext.DefaultHandler2;
 
 /**
  * A basis class for SAX parsing, which makes the parsing easier and faster to write.
- * 
+ *
  * @author Édouard Mercier
  * @since 2010.02.16
  */
@@ -68,6 +68,7 @@ public abstract class StatefulDefaultHandler
    */
   private final static class Expectation
   {
+
     public final String localName;
 
     public final String parentLocalName;
@@ -168,24 +169,27 @@ public abstract class StatefulDefaultHandler
     return meetCriteria(localName, expectedLocalName, null, null, expectedLevel);
   }
 
-  protected final boolean meetCriteria(String localName, String expectedLocalName, String expectedParentLocalName, int expectedLevel)
+  protected final boolean meetCriteria(String localName, String expectedLocalName, String expectedParentLocalName,
+      int expectedLevel)
   {
     return meetCriteria(localName, expectedLocalName, expectedParentLocalName, null, expectedLevel);
   }
 
-  protected final boolean meetCriteria(String localName, String expectedLocalName, String expectedParentLocalName, String expectedGrandParentLocalName,
-      int expectedLevel)
+  protected final boolean meetCriteria(String localName, String expectedLocalName, String expectedParentLocalName,
+      String expectedGrandParentLocalName, int expectedLevel)
   {
     // We test the XML DOM depth first, because it does not consume much, and it is a good discriminator candidate
     return level == expectedLevel && (expectedParentLocalName == null || isParent(expectedParentLocalName) == true) && localName.equals(expectedLocalName) == true && (expectedGrandParentLocalName == null || isGrandParent(expectedGrandParentLocalName) == true);
   }
 
-  protected final boolean rememberCharacters(String expectedLocalName, String expectedParentLocalName, int expectedLevel)
+  protected final boolean rememberCharacters(String expectedLocalName, String expectedParentLocalName,
+      int expectedLevel)
   {
     return rememberCharacters(expectedLocalName, expectedParentLocalName, null, expectedLevel);
   }
 
-  protected final boolean rememberCharacters(String expectedLocalName, String expectedParentLocalName, String expectedGrandParentLocalName, int expectedLevel)
+  protected final boolean rememberCharacters(String expectedLocalName, String expectedParentLocalName,
+      String expectedGrandParentLocalName, int expectedLevel)
   {
     if (meetCriteria(path[level], expectedLocalName, expectedParentLocalName, expectedGrandParentLocalName, expectedLevel) == true)
     {
@@ -203,13 +207,14 @@ public abstract class StatefulDefaultHandler
     active = false;
   }
 
-  protected final boolean catchCharacters(String expectedLocalName, String expectedParentLocalName, int expectedLevel, StringHolder field)
+  protected final boolean catchCharacters(String expectedLocalName, String expectedParentLocalName, int expectedLevel,
+      StringHolder field)
   {
     return catchCharacters(expectedLocalName, expectedParentLocalName, null, expectedLevel, field);
   }
 
-  protected final boolean catchCharacters(String expectedLocalName, String expectedParentLocalName, String expectedGrandParentLocalName, int expectedLevel,
-      StringHolder field)
+  protected final boolean catchCharacters(String expectedLocalName, String expectedParentLocalName,
+      String expectedGrandParentLocalName, int expectedLevel, StringHolder field)
   {
     if (rememberCharacters(expectedLocalName, expectedParentLocalName, expectedGrandParentLocalName, expectedLevel) == true)
     {

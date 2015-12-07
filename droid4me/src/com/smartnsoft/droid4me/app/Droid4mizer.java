@@ -36,13 +36,10 @@ import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 
 /**
  * The class that should be used when extending a legacy class to support the whole droid4me framework features.
- * 
- * @param <AggregateClass>
- *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
- * @param <ComponentClass>
- *          the instance that will be used to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
- *          asynchronously}, and to {@linkplain #registerBroadcastListeners(BroadcastListener[]) register broadcast listeners}
- * 
+ *
+ * @param <AggregateClass> the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * @param <ComponentClass> the instance that will be used to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
+ *                         asynchronously}, and to {@linkplain #registerBroadcastListeners(BroadcastListener[]) register broadcast listeners}
  * @author Édouard Mercier
  * @since 2011.06.14
  */
@@ -62,12 +59,10 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   /**
    * Provide statistics about the allocated and alive {@link Droid4mizer} instances. This may be useful when it comes to hunt for memory leaks.
-   * 
-   * @param allocatedCount
-   *          will eventually hold the total number of allocated {@link Droid4mizer} instances from the hosting process start
-   * @param aliveCount
-   *          will eventually hold the total number of currently alive {@link Droid4mizer} instances within the hosting process, i.e. the number of
-   *          non yet garbage collected instances
+   *
+   * @param allocatedCount will eventually hold the total number of allocated {@link Droid4mizer} instances from the hosting process start
+   * @param aliveCount     will eventually hold the total number of currently alive {@link Droid4mizer} instances within the hosting process, i.e. the number of
+   *                       non yet garbage collected instances
    */
   public static void getStatistics(AtomicInteger allocatedCount, AtomicInteger aliveCount)
   {
@@ -87,18 +82,15 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   /**
    * The only way to create an instance.
-   * 
-   * @param activity
-   *          the activity this instance relies on
-   * @param smartable
-   *          the component to be droid4mized
-   * @param component
-   *          the declared component used to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
-   *          asynchronously}, and to {@linkplain #registerBroadcastListeners(BroadcastListener[]) register broadcast listeners}
-   * @param interceptorComponent
-   *          the declared component used to send life-cycle events to the {@link ActivityController.Interceptor}
+   *
+   * @param activity             the activity this instance relies on
+   * @param smartable            the component to be droid4mized
+   * @param component            the declared component used to determine whether {@linkplain #onRetrieveBusinessObjects() the business object should be retrieved
+   *                             asynchronously}, and to {@linkplain #registerBroadcastListeners(BroadcastListener[]) register broadcast listeners}
+   * @param interceptorComponent the declared component used to send life-cycle events to the {@link ActivityController.Interceptor}
    */
-  public Droid4mizer(Activity activity, Smartable<AggregateClass> smartable, ComponentClass component, ComponentClass interceptorComponent)
+  public Droid4mizer(Activity activity, Smartable<AggregateClass> smartable, ComponentClass component,
+      ComponentClass interceptorComponent)
   {
     Droid4mizer.allocatedCount++;
     Droid4mizer.aliveCount++;
@@ -109,8 +101,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     stateContainer = new AppInternals.StateContainer<AggregateClass, ComponentClass>(activity, component);
     if (Droid4mizer.ARE_DEBUG_LOG_ENABLED)
     {
-      log.debug("Creating the droid4mizer for Activity belonging to class '" + activity.getClass().getName() + "'" + (interceptorComponent == null ? ""
-          : " and with Fragment belonging to class '" + interceptorComponent.getClass().getName() + "'"));
+      log.debug("Creating the droid4mizer for Activity belonging to class '" + activity.getClass().getName() + "'" + (interceptorComponent == null ? "" : " and with Fragment belonging to class '" + interceptorComponent.getClass().getName() + "'"));
     }
   }
 
@@ -158,7 +149,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
-   * 
+   *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public void refreshBusinessObjectsAndDisplay()
@@ -168,7 +159,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, null, false)}.
-   * 
+   *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
@@ -177,7 +168,8 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   }
 
   @SuppressWarnings("deprecation")
-  public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
+  public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver,
+      boolean immediately)
   {
     if (stateContainer.isAliveAsWellAsHostingActivity() == false)
     {
@@ -567,11 +559,9 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   /**
    * Has the same responsibility as the {@link Context#getSystemService()} method. It only applies to the {@link Activity} entity, and not to the
    * {@link Fragment} entity!
-   * 
-   * @param name
-   *          the name of the desired service
-   * @param defaultService
-   *          the default service provided by the underlying {@link #activity Activity}
+   *
+   * @param name           the name of the desired service
+   * @param defaultService the default service provided by the underlying {@link #activity Activity}
    * @return the service or {@code null} if the name does not exist
    * @see Context#getSystemService(name)
    */
@@ -582,7 +572,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
 
   /**
    * This method should not trigger any exception, otherwise we have a huge bug!
-   * 
+   *
    * @return {@code true} if and only if the processing should resume
    */
   private boolean onRetrieveBusinessObjectsInternal(boolean retrieveBusinessObjects)
@@ -647,8 +637,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
         stateContainer.onStopLoading();
         return;
       }
-      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent,
-          ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
+      ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onFulfillDisplayObjectsDone);
     }
     try
     {
@@ -665,8 +654,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       stateContainer.onStopLoading();
     }
-    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent,
-        ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
+    ActivityController.getInstance().onLifeCycleEvent(activity, interceptorComponent, ActivityController.Interceptor.InterceptorEvent.onSynchronizeDisplayObjectsDone);
     stateContainer.markNotResumedForTheFirstTime();
     if (onOver != null)
     {

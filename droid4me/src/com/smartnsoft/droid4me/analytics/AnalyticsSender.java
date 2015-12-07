@@ -36,7 +36,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public interface AnalyticsSender<DictionaryType>
 {
 
-  public final static Logger log = LoggerFactory.getInstance(AnalyticsSender.class);
+  Logger log = LoggerFactory.getInstance(AnalyticsSender.class);
 
   /**
    * Logs an analytics event.

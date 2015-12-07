@@ -36,7 +36,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * Gathers various interfaces which handle business objects.
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.08.29
  */
@@ -66,14 +66,14 @@ public final class Business
   /**
    * Indicates the origin of a business object.
    */
-  public static enum Source
+  public enum Source
   {
     Memory, IOStreamer, UriStreamer
   }
 
   /**
    * Associates a time stamp to an object.
-   * 
+   *
    * @since 2009.08.31
    */
   public static abstract class Atom
@@ -115,7 +115,7 @@ public final class Business
 
   /**
    * Associates a time stamp to an output stream.
-   * 
+   *
    * @since 2009.08.31
    */
   public final static class OutputAtom
@@ -134,22 +134,18 @@ public final class Business
 
   /**
    * Enables to define the way to reach a business object entity depending on its source.
-   * 
-   * @param <UriType>
-   *          the type of URI returned to locate the business object entity
-   * @param <ParameterType>
-   *          the type of parameter used for getting the business object entity
-   * 
+   *
+   * @param <UriType>       the type of URI returned to locate the business object entity
+   * @param <ParameterType> the type of parameter used for getting the business object entity
    * @since 2009.06.19
    */
-  public static interface Urier<UriType, ParameterType>
+  public interface Urier<UriType, ParameterType>
   {
 
     /**
      * Is responsible for returning the URI of a business object entity.
-     * 
-     * @param parameter
-     *          the parameters which enable to compute the entity URI
+     *
+     * @param parameter the parameters which enable to compute the entity URI
      * @return the URI which enables to access to the underlying business object entity ; should return {@code null} if no URI is available
      */
     UriType computeUri(ParameterType parameter);
@@ -159,10 +155,10 @@ public final class Business
   /**
    * An interface which proposes in addition to its parent to split each web service call into three separate actions: compute the URI, get the
    * corresponding input stream, and then parse the result.
-   * 
+   *
    * @since 2009.08.29
    */
-  public static interface UriStreamParser<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception>
+  public interface UriStreamParser<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception>
       extends Business.Urier<UriType, ParameterType>
   {
 
@@ -173,10 +169,10 @@ public final class Business
 
   /**
    * An interface which proposes to serialize a business object as an input stream.
-   * 
+   *
    * @since 2009.08.31
    */
-  public static interface UriStreamSerializer<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception>
+  public interface UriStreamSerializer<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception>
       extends Business.UriStreamParser<BusinessObjectType, UriType, ParameterType, ExceptionType>
   {
 
@@ -188,15 +184,15 @@ public final class Business
   /**
    * @since 2009.08.31
    */
-  public static interface UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception>
-      extends Business.UriStreamParser<BusinessObjectType, UriType, ParameterType, ExceptionType>,
-      Business.UriStreamSerializer<BusinessObjectType, UriType, ParameterType, ExceptionType>
+  public interface UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception>
+      extends Business.UriStreamParser<BusinessObjectType, UriType, ParameterType, ExceptionType>, Business.UriStreamSerializer<BusinessObjectType, UriType, ParameterType, ExceptionType>
   {
+
   }
 
   /**
    * Serializes and parses the underlying business object via the native Java mechanism.
-   * 
+   *
    * @since 2009.08.31
    */
   public static abstract class ObjectUriStreamSerializer<BusinessObjectType extends Serializable, UriType, ParameterType>
@@ -205,13 +201,12 @@ public final class Business
 
     /**
      * A hook for creating an {@link ObjectInputStream} when attempting to deserialize the underlying object.
-     * 
+     * <p/>
      * <p>
      * This implementation just returns {@code new ObjectInputStream(inputStream)}.
      * </p>
-     * 
-     * @param inputStream
-     *          the stream which holds the object representation
+     *
+     * @param inputStream the stream which holds the object representation
      * @return a valid object input stream, which will be used when deserializing the object
      * @throws StreamCorruptedException
      * @throws IOException
@@ -224,13 +219,12 @@ public final class Business
 
     /**
      * A hook for creating an {@link ObjectOutputStream} when attempting to serialize the underlying object.
-     * 
+     * <p/>
      * <p>
      * This implementation just returns {@code new ObjectOutputStream(outputStream)}.
      * </p>
-     * 
-     * @param outputStream
-     *          the stream which will hold the object representation
+     *
+     * @param outputStream the stream which will hold the object representation
      * @return a valid object object stream, which will be used when serializing the object
      * @throws IOException
      */
@@ -334,20 +328,18 @@ public final class Business
 
   /**
    * Is supposed to retrieve the input stream and its underlying object time stamp remotely.
-   * 
+   *
    * @since 2009.08.31
    */
-  public static interface UriInputStreamer<UriType, ExceptionType extends Exception>
+  public interface UriInputStreamer<UriType, ExceptionType extends Exception>
   {
 
     /**
      * Is responsible for returning the date and input stream related to the the provided URI.
-     * 
-     * @param uri
-     *          the URI for which the data are asked for
+     *
+     * @param uri the URI for which the data are asked for
      * @return a wrapper which contains the last modification date and the data {@link InputStream}
-     * @throws ExceptionType
-     *           if a problem occurred while accessing to the data
+     * @throws ExceptionType if a problem occurred while accessing to the data
      */
     Business.InputAtom getInputStream(UriType uri)
         throws ExceptionType;
@@ -356,30 +348,27 @@ public final class Business
 
   /**
    * Is able to read an input stream corresponding to a locally cached business object, from a URI, and indicate its last update time stamp.
-   * 
+   *
    * @since 2009.08.31
    */
-  public static interface InputStreamer<UriType, ExceptionType extends Throwable>
+  public interface InputStreamer<UriType, ExceptionType extends Throwable>
   {
 
     /**
      * Should return an input stream related to the provided URI.
-     * 
-     * @param uri
-     *          an URI which identifies the resource; it is not allowed to be {@code null}
+     *
+     * @param uri an URI which identifies the resource; it is not allowed to be {@code null}
      * @return a wrapper of the resulting input stream, which may be {@code null}; the {@link Business.InputAtom#inputStream} and
-     *         {@link Business.InputAtom#context} are allowed to be null
-     * @throws ExceptionType
-     *           whenever a problem occurred while processing
+     * {@link Business.InputAtom#context} are allowed to be null
+     * @throws ExceptionType whenever a problem occurred while processing
      */
     Business.InputAtom readInputStream(UriType uri)
         throws ExceptionType;
 
     /**
      * Should return the last modification date of the input stream related to the provided URI.
-     * 
-     * @param uri
-     *          an URI which identifies the resource; it is not allowed to be {@code null}
+     *
+     * @param uri an URI which identifies the resource; it is not allowed to be {@code null}
      * @return the last modification date of the related input stream, or {@code null} if there is no such input stream
      */
     Date getLastUpdate(UriType uri);
@@ -387,33 +376,28 @@ public final class Business
   }
 
   /**
-   * 
    * Is able to write the input stream corresponding to a local business object, attached to a URI.
-   * 
+   *
    * @since 2009.08.31
    */
-  public static interface OutputStreamer<UriType, ExceptionType extends Throwable>
+  public interface OutputStreamer<UriType, ExceptionType extends Throwable>
   {
 
     /**
      * Is responsible for writing the provided data.
-     * 
+     * <p/>
      * <p>
      * The {@code returnStream} parameter enables to tune whether the implementation is supposed to return the provided input stream.
      * </p>
-     * 
-     * @param uri
-     *          the URI the data belongs to
-     * @param inputAtom
-     *          the wrapper that contains the data to be persisted the {@link Business.InputAtom#inputStream} is allowed to be null: in that case, a
-     *          null-like object must be persisted
-     * @param returnStream
-     *          if set {@code true}, a valid {@link InputStream} corresponding to the provided {@link Business.InputAtom#inputStream} must be returned
-     *          ; if set to {@code false}, {@code null} must be returned
+     *
+     * @param uri          the URI the data belongs to
+     * @param inputAtom    the wrapper that contains the data to be persisted the {@link Business.InputAtom#inputStream} is allowed to be null: in that case, a
+     *                     null-like object must be persisted
+     * @param returnStream if set {@code true}, a valid {@link InputStream} corresponding to the provided {@link Business.InputAtom#inputStream} must be returned
+     *                     ; if set to {@code false}, {@code null} must be returned
      * @return a valid input stream corresponding to the persisted data; it is not allowed to be {@code null} when the {@code returnStream} parameter
-     *         is {@code true}. Otherwise, {@code null} must be returned
-     * @throws Exception
-     *           if any problem occurs while persisting the data
+     * is {@code true}. Otherwise, {@code null} must be returned
+     * @throws Exception if any problem occurs while persisting the data
      */
     InputStream writeInputStream(UriType uri, Business.InputAtom inputAtom, boolean returnStream)
         throws ExceptionType;
@@ -421,20 +405,17 @@ public final class Business
   }
 
   /**
-   * 
    * @since 2009.08.31
    */
-  public static interface IOStreamer<UriType, ExceptionType extends Throwable>
+  public interface IOStreamer<UriType, ExceptionType extends Throwable>
       extends Business.InputStreamer<UriType, ExceptionType>, Business.OutputStreamer<UriType, ExceptionType>
   {
 
     /**
      * Is responsible for removing any data related to the provided URI. A further attempt to access to this same URI should be a failure.
-     * 
-     * @param uri
-     *          the URI corresponding to the data to erase
-     * @throws ExceptionType
-     *           if a problem occurred while removing the data
+     *
+     * @param uri the URI corresponding to the data to erase
+     * @throws ExceptionType if a problem occurred while removing the data
      */
     void remove(UriType uri)
         throws ExceptionType;
@@ -444,9 +425,8 @@ public final class Business
   /**
    * @since 2009.08.31
    */
-  public static interface Cacheable<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
-      extends Business.UriStreamParser<BusinessObjectType, UriType, ParameterType, ParseExceptionType>, Business.IOStreamer<UriType, StreamerExceptionType>,
-      Business.UriInputStreamer<UriType, InputExceptionType>
+  public interface Cacheable<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
+      extends Business.UriStreamParser<BusinessObjectType, UriType, ParameterType, ParseExceptionType>, Business.IOStreamer<UriType, StreamerExceptionType>, Business.UriInputStreamer<UriType, InputExceptionType>
   {
 
   }
@@ -492,10 +472,10 @@ public final class Business
 
   /**
    * Is supposed to retrieve the input stream and its underlying object time stamp remotely.
-   * 
+   *
    * @since 2009.08.31
    */
-  public static interface NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception, NullExceptionType extends Exception>
+  public interface NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception, NullExceptionType extends Exception>
       extends Business.UriInputStreamer<UriType, ExceptionType>
   {
 
@@ -506,12 +486,13 @@ public final class Business
 
   /**
    * Indicates that no exception can be triggered by the {@link Business.InputStreamer} interface.
-   * 
+   *
    * @since 2009.12.29
    */
   public final static class NoUriInputStreamerException
       extends Exception
   {
+
     private static final long serialVersionUID = 5759991468469326796L;
   }
 
@@ -520,9 +501,7 @@ public final class Business
    */
   public static abstract class ObjectCached<BusinessObjectType extends Serializable, ParameterType, NullExceptionType extends Exception>
       extends Business.ObjectUriStreamSerializer<BusinessObjectType, String, ParameterType>
-      implements
-      Business.Cacheable<BusinessObjectType, String, ParameterType, Business.BusinessException, Persistence.PersistenceException, NullExceptionType>,
-      Business.NullableUriInputStreamer<BusinessObjectType, String, ParameterType, NullExceptionType, NullExceptionType>
+      implements Business.Cacheable<BusinessObjectType, String, ParameterType, Business.BusinessException, Persistence.PersistenceException, NullExceptionType>, Business.NullableUriInputStreamer<BusinessObjectType, String, ParameterType, NullExceptionType, NullExceptionType>
   {
 
     private final Business.IOStreamer<String, Persistence.PersistenceException> ioStreamer;

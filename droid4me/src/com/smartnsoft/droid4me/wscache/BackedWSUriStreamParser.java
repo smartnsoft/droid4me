@@ -40,7 +40,8 @@ public final class BackedWSUriStreamParser
 
     public final Values.BackedCachedValue<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> backed;
 
-    public BackedUriStreamedValue(IOStreamer<String, StreamerExceptionType> ioStreamer, WebServiceClient webServiceClient)
+    public BackedUriStreamedValue(IOStreamer<String, StreamerExceptionType> ioStreamer,
+        WebServiceClient webServiceClient)
     {
       super(ioStreamer, webServiceClient);
       final Cacher<BusinessObjectType, com.smartnsoft.droid4me.ws.WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, CallException> cacher = new Cacher<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>(this);

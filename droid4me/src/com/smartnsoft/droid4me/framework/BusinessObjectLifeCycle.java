@@ -22,7 +22,7 @@ import com.smartnsoft.droid4me.LifeCycle;
 
 /**
  * An interface which is bound to a business object.
- * 
+ *
  * @author Édouard Mercier
  * @since 2008.06.11
  */

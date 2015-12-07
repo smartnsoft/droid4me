@@ -21,12 +21,10 @@ import android.app.Activity;
 
 /**
  * All {@link Activity activities} of the framework must at least implement this interface.
- * 
- * @param <AggregateClass>
- *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
- * 
- * @see Droid4mizer
+ *
+ * @param <AggregateClass> the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
  * @author Édouard Mercier
+ * @see Droid4mizer
  * @since 2012.04.04
  */
 public interface SmartableActivity<AggregateClass>

@@ -33,7 +33,7 @@ import com.smartnsoft.droid4me.LifeCycle;
  * <li>a {@link android.widget.GridView grid view} and its {@link android.widget.ListAdapter adapter}.
  * <li>
  * </ul>
- * 
+ *
  * @author Édouard Mercier
  * @since 2008.05.13
  */
@@ -43,11 +43,11 @@ public abstract class DetailsProvider
   /**
    * Introduced in order to define the contract between a {@link android.widget.ListView list view} and its {@link android.widget.ListAdapter adapter}
    * .
-   * 
+   *
    * @author Edouard Mercier
    * @since 2008.05.13
    */
-  public static interface ForListHandler<BusinessObjectClass>
+  public interface ForListHandler<BusinessObjectClass>
   {
 
     /**
@@ -57,7 +57,7 @@ public abstract class DetailsProvider
 
     /**
      * This is specific to the smart list.
-     * 
+     *
      * @return the list of business objects handled; a {@code null} is authorized and means an empty list
      */
     List<? extends BusinessObjectClass> retrieveBusinessObjectsList()
@@ -80,7 +80,7 @@ public abstract class DetailsProvider
 
   }
 
-  public static interface ForListView<BusinessObjectClass, ViewClass>
+  public interface ForListView<BusinessObjectClass, ViewClass>
   {
 
     /**
@@ -96,10 +96,8 @@ public abstract class DetailsProvider
     int getViewType(BusinessObjectClass businessObject, int position);
 
     /**
-     * @param parent
-     *          the parent view which is going to host the newly created view
-     * @param businessObject
-     *          the business object the created view will be initially attached to
+     * @param parent         the parent view which is going to host the newly created view
+     * @param businessObject the business object the created view will be initially attached to
      * @return a new valid view
      */
     ViewClass getNewView(ViewGroup parent, BusinessObjectClass businessObject);
@@ -108,9 +106,10 @@ public abstract class DetailsProvider
 
   }
 
-  public static interface ForList<BusinessObjectClass, ViewClass>
+  public interface ForList<BusinessObjectClass, ViewClass>
       extends DetailsProvider.ForListHandler<BusinessObjectClass>, DetailsProvider.ForListView<BusinessObjectClass, ViewClass>
   {
+
   }
 
 }

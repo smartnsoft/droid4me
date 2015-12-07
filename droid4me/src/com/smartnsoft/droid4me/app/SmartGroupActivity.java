@@ -48,10 +48,8 @@ import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 
 /**
  * A basis class for an activity that contains other activities.
- * 
- * @param <AggregateClass>
- *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
- * 
+ *
+ * @param <AggregateClass> the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
  * @author Édouard Mercier
  * @since 2010.02.24
  */
@@ -62,9 +60,10 @@ public abstract class SmartGroupActivity<AggregateClass>
                                                  * ,ViewTreeObserver . OnTouchModeChangeListener , OnFocusChangeListener
                                                  */
 {
+
   /**
    * This is taken from the Android API Demos source code!
-   * 
+   * <p/>
    * An animation that rotates the view on the Y axis between two specified angles. This animation also adds a translation on the Z axis (depth) to
    * improve the effect.
    */
@@ -93,21 +92,16 @@ public abstract class SmartGroupActivity<AggregateClass>
      * is performed around a center point on the 2D space, defined by a pair of X and Y coordinates, called centerX and centerY. When the animation
      * starts, a translation on the Z axis (depth) is performed. The length of the translation can be specified, as well as whether the translation
      * should be reversed in time.
-     * 
-     * @param fromDegrees
-     *          the start angle of the 3D rotation
-     * @param toDegrees
-     *          the end angle of the 3D rotation
-     * @param centerX
-     *          the X center of the 3D rotation
-     * @param centerY
-     *          the Y center of the 3D rotation
-     * @param depthZ
-     *          the Z zoom effect factor
-     * @param reverse
-     *          true if the translation should be reversed, false otherwise
+     *
+     * @param fromDegrees the start angle of the 3D rotation
+     * @param toDegrees   the end angle of the 3D rotation
+     * @param centerX     the X center of the 3D rotation
+     * @param centerY     the Y center of the 3D rotation
+     * @param depthZ      the Z zoom effect factor
+     * @param reverse     true if the translation should be reversed, false otherwise
      */
-    public Rotate3dAnimation(float fromDegrees, float toDegrees, float centerX, float centerY, boolean isVertical, float depthZ, boolean reverse)
+    public Rotate3dAnimation(float fromDegrees, float toDegrees, float centerX, float centerY, boolean isVertical,
+        float depthZ, boolean reverse)
     {
       mFromDegrees = fromDegrees;
       mToDegrees = toDegrees;
@@ -191,8 +185,7 @@ public abstract class SmartGroupActivity<AggregateClass>
 
       // unhandled key ups change focus to tab indicator for embedded activities
       // when there is nothing that will take focus from default focus searching
-      if (actuallyDispathKeyEvent == true && !handled && (event.getAction() == KeyEvent.ACTION_DOWN) && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) && (contentView.hasFocus()) && (contentView.findFocus().focusSearch(
-          View.FOCUS_UP) == null))
+      if (actuallyDispathKeyEvent == true && !handled && (event.getAction() == KeyEvent.ACTION_DOWN) && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) && (contentView.hasFocus()) && (contentView.findFocus().focusSearch(View.FOCUS_UP) == null))
       {
         if (headerView != null)
         {
@@ -238,7 +231,7 @@ public abstract class SmartGroupActivity<AggregateClass>
   /**
    * Gives access to the {@link ActivityGroup} content view, which contains a {@link #getHeaderView() header} and a {@link #getFooterView() footer}
    * view.
-   * 
+   *
    * @return the root view of the activity
    */
   protected final ViewGroup getWrapperView()
@@ -248,11 +241,11 @@ public abstract class SmartGroupActivity<AggregateClass>
 
   /**
    * Is responsible for providing the header view of the {@link ActivityGroup}, if any.
-   * 
+   * <p/>
    * <p>
    * This method will be invoked once during its content view creation.
    * </p>
-   * 
+   *
    * @return the top view ; can be {@code null}, which is the default implementation
    */
   protected View getHeaderView()
@@ -262,11 +255,11 @@ public abstract class SmartGroupActivity<AggregateClass>
 
   /**
    * Is responsible for providing the footer view of the {@link ActivityGroup}, if any.
-   * 
+   * <p/>
    * <p>
    * This method will be invoked once during its content view creation.
    * </p>
-   * 
+   *
    * @return the bottom view ; can be {@code null}, which is the default implementation
    */
   protected View getFooterView()
@@ -673,7 +666,8 @@ public abstract class SmartGroupActivity<AggregateClass>
     return droid4mizer.isAlive();
   }
 
-  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
+  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver,
+      boolean immediately)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);
   }
@@ -701,7 +695,7 @@ public abstract class SmartGroupActivity<AggregateClass>
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
-   * 
+   *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()

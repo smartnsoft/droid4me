@@ -35,7 +35,7 @@ import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
 
 /**
  * Gathers in one place the download instructions contracts used by {@link BitmapDownloader}.
- * 
+ *
  * @author Édouard Mercier
  * @since 2011.07.03
  */
@@ -54,9 +54,8 @@ public class DownloadInstructions
 
     /**
      * Creates a wrapper around the provided actual Android bitmap.
-     * 
-     * @param bitmap
-     *          the bitmap to be wrapped
+     *
+     * @param bitmap the bitmap to be wrapped
      */
     public BitmapableBitmap(Bitmap bitmap)
     {
@@ -109,9 +108,8 @@ public class DownloadInstructions
 
     /**
      * Creates a wrapper around the provided actual Android view.
-     * 
-     * @param view
-     *          the widget to be wrapped
+     *
+     * @param view the widget to be wrapped
      */
     public ViewableView(View view)
     {
@@ -185,9 +183,8 @@ public class DownloadInstructions
 
     /**
      * Creates a wrapper around the provided actual Android handler.
-     * 
-     * @param handler
-     *          the handler to be wrapped
+     *
+     * @param handler the handler to be wrapped
      */
     public HandlerableHander(Handler handler)
     {
@@ -211,7 +208,7 @@ public class DownloadInstructions
 
   /**
    * Enables the {@link CoreBitmapDownloader bitmap downloader} to know on how to handle a command.
-   * 
+   *
    * @since 2009.03.04
    */
   public static abstract class Instructions
@@ -226,9 +223,11 @@ public class DownloadInstructions
 
     protected abstract void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
 
-    protected abstract void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+    protected abstract void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid,
+        Object imageSpecs);
 
-    protected abstract boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+    protected abstract boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid,
+        Object imageSpecs);
 
     protected abstract void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
 
@@ -253,19 +252,22 @@ public class DownloadInstructions
     }
 
     @Override
-    public final void onBindTemporaryBitmap(ViewableView view, BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
+    public final void onBindTemporaryBitmap(ViewableView view, BitmapableBitmap bitmap, String bitmapUid,
+        Object imageSpecs)
     {
       onBindTemporaryBitmap(view != null ? view.getView() : null, bitmap.getBitmap(), bitmapUid, imageSpecs);
     }
 
     @Override
-    public final void onBitmapReady(boolean allright, ViewableView view, BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
+    public final void onBitmapReady(boolean allright, ViewableView view, BitmapableBitmap bitmap, String bitmapUid,
+        Object imageSpecs)
     {
       onBitmapReady(allright, view != null ? view.getView() : null, bitmap != null ? bitmap.getBitmap() : null, bitmapUid, imageSpecs);
     }
 
     @Override
-    public final boolean onBindBitmap(boolean downloaded, ViewableView view, BitmapableBitmap bitmap, String bitmapUid, Object imageSpecs)
+    public final boolean onBindBitmap(boolean downloaded, ViewableView view, BitmapableBitmap bitmap, String bitmapUid,
+        Object imageSpecs)
     {
       return onBindBitmap(downloaded, view != null ? view.getView() : null, bitmap != null ? bitmap.getBitmap() : null, bitmapUid, imageSpecs);
     }
@@ -288,7 +290,8 @@ public class DownloadInstructions
     /**
      * @return {@code null}, which means that the underlying {@link BitmapableBitmap} cannot be retrieved from the persistence
      */
-    public InputStream getInputStream(String bitmapUid, Object imageSpecs, String url, InputStreamDownloadInstructor instructor)
+    public InputStream getInputStream(String bitmapUid, Object imageSpecs, String url,
+        InputStreamDownloadInstructor instructor)
         throws IOException
     {
       return null;
@@ -296,7 +299,7 @@ public class DownloadInstructions
 
     /**
      * The method does not use the provided {@link inputStream}, and just returns it.
-     * 
+     *
      * @return the provided {@link InputStream}, which means that the underlying {@link BitmapableBitmap} is not persisted
      */
     public InputStream onInputStreamDownloaded(String bitmapUid, Object imageSpecs, String url, InputStream inputStream)
@@ -309,7 +312,7 @@ public class DownloadInstructions
   /**
    * An implementation of the {@link Instructions}, which returns the <code>bitmapUid</code> as an URL, and which does not present any temporary nor
    * local bitmap.
-   * 
+   * <p/>
    * <p>
    * Caution: this implementation supposes that the provided {@View view} is actually an {@ImageView} in the
    * {@link DownloadInstructions.AbstractInstructions#onBindBitmap(boolean, View, Bitmap, String, Object)} method.
@@ -360,20 +363,20 @@ public class DownloadInstructions
 
     /**
      * Is responsible for turning the provided input stream into a bitmap representation.
-     * 
+     * <p/>
      * <p>
      * The method measures the time taken for the conversion, and logs that duration. The technical part of the method is delegated to the
      * {@link #convertInputStreamToBitmap(InputStream, String, Object, String)} method.
      * </p>
-     * 
-     * @param inputStream
-     *          the implementation should not close the input stream, because the caller will {@link InputStream#close()} it (no problem if it is
-     *          closed, but this will impact the performance)
+     *
+     * @param inputStream the implementation should not close the input stream, because the caller will {@link InputStream#close()} it (no problem if it is
+     *                    closed, but this will impact the performance)
      * @return by default, the returned wrapped {@link Bitmap} will have the device density
      * @see #convert(InputStream, String, Object, String)
      */
     @Override
-    public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
+    public DownloadInstructions.BitmapableBitmap convert(InputStream inputStream, String bitmapUid, Object imageSpecs,
+        String url)
     {
       final long start = System.currentTimeMillis();
       final Bitmap theBitmap = convertInputStreamToBitmap(inputStream, bitmapUid, imageSpecs, url);
@@ -412,17 +415,17 @@ public class DownloadInstructions
 
     /**
      * Actually converts the given {@link InputStream} into an Android {@link Bitmap}.
-     * 
+     * <p/>
      * <p>
      * The hereby implementation does not perform any scaling.
      * </p>
-     * 
-     * @param inputStream
-     *          the representation of the {@link Bitmap} to be decoded
+     *
+     * @param inputStream the representation of the {@link Bitmap} to be decoded
      * @return the decoded {@link Bitmap} if the conversion could be performed properly ; {@code null} otherwise
      * @see #convert(InputStream, String, Object, String)
      */
-    protected Bitmap convertInputStreamToBitmap(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
+    protected Bitmap convertInputStreamToBitmap(InputStream inputStream, String bitmapUid, Object imageSpecs,
+        String url)
     {
       final BitmapFactory.Options options = new BitmapFactory.Options();
       options.inScaled = false;

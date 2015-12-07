@@ -24,12 +24,11 @@ import android.widget.FrameLayout;
 
 /**
  * An extension of its parent {@link View} class, which offers the {@link SmartViewExtension} features.
- * 
+ *
+ * @author Édouard Mercier, Willy Noel
  * @see SmartRelativeLayout
  * @see SmartLinearLayout
  * @see SmartImageView
- * 
- * @author Édouard Mercier, Willy Noel
  * @since 2011.03.11
  */
 public class SmartFrameLayout

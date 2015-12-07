@@ -19,7 +19,7 @@ package com.smartnsoft.droid4me.download;
 
 /**
  * Gathers in one place all contracts related to the {@link ImageDownloader}.
- * 
+ *
  * @author Édouard Mercier
  * @since 2011.09.03
  */
@@ -35,12 +35,12 @@ public final class DownloadContracts
 
   /**
    * An abstraction of a {@link android.graphics.Bitmap} which makes possible the writing of unitary tests.
-   * 
+   * <p/>
    * <p>
    * Any implementing class is supposed to wrap a bitmap, i.e. the bytes that enable to create it.
    * </p>
    */
-  public static interface Bitmapable
+  public interface Bitmapable
   {
 
     /**
@@ -57,12 +57,12 @@ public final class DownloadContracts
 
   /**
    * An abstraction of a {@link android.view.View} which makes possible the writing of unitary tests.
-   * 
+   * <p/>
    * <p>
    * Any implementing class is supposed to wrap a view, i.e. a graphical widget.
    * </p>
    */
-  public static interface Viewable
+  public interface Viewable
   {
 
     /**
@@ -72,14 +72,14 @@ public final class DownloadContracts
 
     /**
      * Sets the tag object associated to the underlying view.
-     * 
+     *
      * @param tag
      */
     void setTag(Object tag);
 
     /**
      * The identifier returned here is just use for logging purposes.
-     * 
+     *
      * @return the unique identifier of the underlying view: two physical different views should not have the same identifier
      */
     int getId();
@@ -88,19 +88,18 @@ public final class DownloadContracts
 
   /**
    * An abstraction of a {@link android.os.Handle} which makes possible the writing of unitary tests.
-   * 
+   * <p/>
    * <p>
    * Any implementing class is supposed run a command in the User Interface thread.
    * </p>
    */
-  public static interface Handlerable
+  public interface Handlerable
   {
 
     /**
      * Is supposed to run the given command in the UI thread.
-     * 
-     * @param runnnable
-     *          the command that should be executed
+     *
+     * @param runnnable the command that should be executed
      * @return {@code true} if and only if the execution in the UI thread has actually successfuly started
      */
     boolean post(Runnable runnnable);

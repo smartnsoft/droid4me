@@ -37,14 +37,16 @@ import android.util.Log;
 import android.view.WindowManager;
 
 import com.smartnsoft.droid4me.app.ActivityController.ExceptionHandler;
+import com.smartnsoft.droid4me.app.ExceptionHandlers.AbstractExceptionHandler;
+import com.smartnsoft.droid4me.app.ExceptionHandlers.DefaultExceptionHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * An abstract to be implemented when using the framework, because it initializes some of the components, and eases the development.
- * 
+ * <p/>
  * If you use your own implementation, do not forget to declare it in the {@code AndroidManifest.xml}.
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.08.21
  */
@@ -78,27 +80,19 @@ public abstract class SmartApplication
     public String retrievingLogProgressMessage;
 
     /**
-     * @param dialogBoxErrorTitle
-     *          the title that will be used when the framework displays an error dialog box
-     * @param businessObjectAvailabilityProblemHint
-     *          the body of the error dialog box when the business objects are not available on an {@link Activity}
-     * @param serviceProblemHint
-     *          the body of the error dialog box when a service is not available on an {@link Activity}
-     * @param connectivityProblemHint
-     *          the body of the error dialog box a connectivity issue occurs
-     * @param connectivityProblemRetryHint
-     *          the body of the error dialog box a connectivity issue occurs, and that a "Retry" button is displayed
-     * @param otherProblemHint
-     *          the "Retry" button label of the dialog box when a connectivity issue occurs
-     * @param applicationName
-     *          the name of the application, used when logging an unexpected problem
-     * @param reportButtonLabel
-     *          the "Report" button label displayed in the dialog box when an unexpected problem occurs
-     * @param retrievingLogProgressMessage
-     *          the message of the toast popped up when preparing the unexpected problem log e-mail
+     * @param dialogBoxErrorTitle                   the title that will be used when the framework displays an error dialog box
+     * @param businessObjectAvailabilityProblemHint the body of the error dialog box when the business objects are not available on an {@link Activity}
+     * @param serviceProblemHint                    the body of the error dialog box when a service is not available on an {@link Activity}
+     * @param connectivityProblemHint               the body of the error dialog box a connectivity issue occurs
+     * @param connectivityProblemRetryHint          the body of the error dialog box a connectivity issue occurs, and that a "Retry" button is displayed
+     * @param otherProblemHint                      the "Retry" button label of the dialog box when a connectivity issue occurs
+     * @param applicationName                       the name of the application, used when logging an unexpected problem
+     * @param reportButtonLabel                     the "Report" button label displayed in the dialog box when an unexpected problem occurs
+     * @param retrievingLogProgressMessage          the message of the toast popped up when preparing the unexpected problem log e-mail
      */
-    public I18N(CharSequence dialogBoxErrorTitle, CharSequence businessObjectAvailabilityProblemHint, CharSequence serviceProblemHint,
-        CharSequence connectivityProblemHint, CharSequence connectivityProblemRetryHint, CharSequence otherProblemHint, String applicationName,
+    public I18N(CharSequence dialogBoxErrorTitle, CharSequence businessObjectAvailabilityProblemHint,
+        CharSequence serviceProblemHint, CharSequence connectivityProblemHint,
+        CharSequence connectivityProblemRetryHint, CharSequence otherProblemHint, String applicationName,
         CharSequence reportButtonLabel, String retrievingLogProgressMessage)
     {
       this.dialogBoxErrorTitle = dialogBoxErrorTitle;
@@ -118,7 +112,7 @@ public abstract class SmartApplication
 
   /**
    * Enables to know whether the {@link #onCreateCustom()} method has been invoked.
-   * 
+   *
    * @return {@code true} if and only if the {@link #onCreateCustom()} method has been invoked and its executio is over
    */
   public static boolean isOnCreatedDone()
@@ -142,13 +136,13 @@ public abstract class SmartApplication
   private boolean onCreateInvoked;
 
   /**
-   * If the application uses an {@link SmartApplication.DefaultExceptionHandler} as an {@link ActivityController.ExceptionHandler}, when a managed
+   * If the application uses an {@link DefaultExceptionHandler} as an {@link ActivityController.ExceptionHandler}, when a managed
    * exception is detected, and is not handled, a dialog box is submitted to the end-user, in order to propose to send the bug cause by inspecting the
    * Android {@code logcat}. In that case, do not forget to declare the {@code android.permission.READ_LOGS} permission in the
    * {@code AndroidManifest.xml}.
-   * 
+   *
    * @return the e-mail address that will be used when submitting an error log message ; if it returns {@code null}, the application will not propose
-   *         to send the bug cause
+   * to send the bug cause
    */
   protected abstract String getLogReportRecipient();
 
@@ -156,7 +150,7 @@ public abstract class SmartApplication
    * <p>
    * Caution: this method will return {@code null} as long as the parent {@link Application#onCreate()} has not been invoked.
    * </p>
-   * 
+   *
    * @return the shared preferences of the application
    */
   protected final SharedPreferences getPreferences()
@@ -174,11 +168,11 @@ public abstract class SmartApplication
 
   /**
    * A callback method which enables to indicate whether the process newly created should use the default {@link SmartApplication} workflow.
-   * 
+   * <p/>
    * <p>
    * It is useful when having multiple processes for the same application, and that some of the processes should not use the framework.
    * </p>
-   * 
+   *
    * @return {@code true} if and only if you want the framework to be ignored for the process. Returns {@code false} by default
    * @see #onCreateCustomSilent()
    */
@@ -191,14 +185,14 @@ public abstract class SmartApplication
    * This callback will be invoked by the application instance, in order to get a reference on the application
    * {@link ActivityController.SystemServiceProvider}: this method is responsible for creating an implementation of this component interface. Override
    * this method, in order to override the system services which are provided by default by an {@link Activity}.
-   * 
+   * <p/>
    * <p>
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
    * {@link Application#onCreate()} method execution.
    * </p>
-   * 
+   *
    * @return an instance which enables to override or provide additional system services. If {@code null}, the {@link Activity} default system
-   *         services will be returned
+   * services will be returned
    * @see ActivityController#registerSystemServiceProvider(ActivityController.SystemServiceProvider)
    */
   protected ActivityController.SystemServiceProvider getSystemServiceProvider()
@@ -210,14 +204,14 @@ public abstract class SmartApplication
    * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Redirector}:
    * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the redirection
    * mechanism.
-   * 
+   * <p/>
    * <p>
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
    * {@link Application#onCreate()} method execution.
    * </p>
-   * 
+   *
    * @return an instance which indicates how to redirect {@link Activity activities} if necessary. If {@code null}, this means that no redirection is
-   *         handled. Returns {@code null} by default
+   * handled. Returns {@code null} by default
    * @see ActivityController#registerRedirector(ActivityController.Redirector)
    */
   protected ActivityController.Redirector getActivityRedirector()
@@ -229,14 +223,14 @@ public abstract class SmartApplication
    * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Interceptor}:
    * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the interception
    * mechanism.
-   * 
+   * <p/>
    * <p>
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
    * {@link Application#onCreate()} method execution.
    * </p>
-   * 
+   *
    * @return an instance which will be invoked on every {@link Activity} life-cycle event. IF {@code null}, this means that no interception is
-   *         handled. Returns {@code null} by default
+   * handled. Returns {@code null} by default
    * @see ActivityController#registerInterceptor(ActivityController.Interceptor)
    */
   protected ActivityController.Interceptor getInterceptor()
@@ -248,15 +242,15 @@ public abstract class SmartApplication
    * This callback will be invoked by the application instance, in order to get a reference on the application
    * {@link ActivityController.ExceptionHandler}: this method is responsible for creating an implementation of this component interface. Override this
    * method, in order to handle more specifically some application-specific exceptions.
-   * 
+   * <p/>
    * <p>
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which should not be the case), during the
    * {@link Application#onCreate()} method execution.
    * </p>
-   * 
+   *
    * @return an instance which will be invoked when an exception occurs during the application, provided the exception is handled by the framework ;
-   *         may be {@code null}, if no {@link ActivityController.ExceptionHandler} should be used by the application. Returns a new instance of
-   *         {@link SmartApplication.ExceptionHandler} by default
+   * may be {@code null}, if no {@link ActivityController.ExceptionHandler} should be used by the application. Returns a new instance of
+   * {@link ExceptionHandler} by default
    * @see ActivityController#registerExceptionHandler(ExceptionHandler)
    */
   protected ActivityController.ExceptionHandler getExceptionHandler()
@@ -265,12 +259,12 @@ public abstract class SmartApplication
   }
 
   /**
-   * This method will be invoked by the {@link #getExceptionHandler()} method when building an {@link ActivityController.AbstractExceptionHandler}
+   * This method will be invoked by the {@link #getExceptionHandler()} method when building an {@link AbstractExceptionHandler}
    * instance. This internationalization instance will be used to populate default dialog boxes texts popped-up by this default
    * {@link ActivityController.ExceptionHandler}. Hence, the method will be invoked at the application start-up.
-   * 
+   *
    * @return an instance which contains the internationalized text strings for some built-in error {@link Dialog dialog boxes}. You need to define
-   *         that method.
+   * that method.
    */
   protected abstract SmartApplication.I18N getI18N();
 
@@ -285,16 +279,16 @@ public abstract class SmartApplication
    * <li>register an internal default {@link Thread.UncaughtExceptionHandler} for the UI and for the background threads,</li>
    * <li>logs how much time the {@link #onCreate()} method execution took.</li>
    * </ol>
-   * 
+   * <p/>
    * <p>
    * Note: if the method has already been invoked once, the second time (because of a concurrent access), it will do nothing but output an error log.
    * This is the reason why the method has been declared as synchronized.
    * </p>
-   *
+   * <p/>
    * <p>
    * This method normally does not need to be override, if needed override rather the {@link #onCreateCustom() method}
    * </p>
-   * 
+   *
    * @see #getLogLevel()
    * @see #getExceptionHandler()
    * @see #getActivityRedirector()
@@ -406,7 +400,7 @@ public abstract class SmartApplication
    * This is the place where to register other {@link UncaughtExceptionHandler default exception handlers} like <a
    * href="https://github.com/ACRA/acra">ACRA</a>. The default implementation does nothing, and if overriden, this method should not invoke its
    * {@code super} method.
-   * 
+   * <p/>
    * <p>
    * It is ensured that the framework default exception handlers will be set-up after this method, and they will fallback to the already registered
    * default exception handlers.
@@ -418,11 +412,11 @@ public abstract class SmartApplication
 
   /**
    * This method will be invoked if and only if the {@link #shouldBeSilent()} method has returned {@code true}.
-   * 
+   * <p/>
    * <p>
    * This enables to execute some code, even if the application runs in silent mode.
    * </p>
-   * 
+   *
    * @see #shouldBeSilent()
    */
   protected void onCreateCustomSilent()
@@ -462,12 +456,12 @@ public abstract class SmartApplication
   /**
    * This method will be invoked at the end of the {@link #onCreate()} method, once the framework initialization is over. You can override this
    * method, which does nothing by default, in order to initialize your application specific variables, invoke some services.
-   * 
+   * <p/>
    * <p>
    * Keep in mind that this method should complete very quickly, in order to prevent from hanging the GUI thread, and thus causing a bad end-user
    * experience, and a potential ANR.
    * </p>
-   * 
+   * <p/>
    * <p>
    * The method does nothing, by default.
    * </p>
@@ -478,7 +472,7 @@ public abstract class SmartApplication
 
   /**
    * This method will be invoked just once during the {@link Application#onCreate()} method, in order to set the {@link LoggerFactory#logLevel}.
-   * 
+   *
    * @return the log level trigger of the application; defaults to {@link Log#WARN}
    * @see LoggerFactory#logLevel
    */

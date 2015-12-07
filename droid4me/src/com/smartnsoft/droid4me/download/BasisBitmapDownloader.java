@@ -39,16 +39,16 @@ import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
 
 /**
  * An implementation of the {@link CoreBitmapDownloader} class, which is independent from the Android platform.
- * 
+ * <p/>
  * <p>
  * This implementation relies on two internal threads pools, which are shared among all {@link CoreBitmapDownloader} instances. The tunable parameters
  * are:
  * <ul>
- * <li>{@link CoreBitmapDownloader#setPreThreadPoolSize()},</li>
- * <li>{@link CoreBitmapDownloader#setDownloadThreadPoolSize()}.</li>
+ * <li>{@link #setPreThreadPoolSize(int)},</li>
+ * <li>{@link #setDownloadThreadPoolSize(int)}.</li>
  * </ul>
  * </p>
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.02.19
  */
@@ -58,7 +58,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   /**
    * Contains extra information about a {@link BasisBitmapDownloader} instance internal state.
-   * 
+   *
    * @since 2013.12.18
    */
   public static class BasisAnalyticsData
@@ -75,8 +75,9 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     public final int inProgressDownloadsSize;
 
-    protected BasisAnalyticsData(int bitmapsCount, int cleanUpsCount, int outOfMemoryOccurences, int commandsCount, int prioritiesPreStackSize,
-        int prioritiesStackSize, int prioritiesDownloadStackSize, int inProgressDownloadsSize)
+    protected BasisAnalyticsData(int bitmapsCount, int cleanUpsCount, int outOfMemoryOccurences, int commandsCount,
+        int prioritiesPreStackSize, int prioritiesStackSize, int prioritiesDownloadStackSize,
+        int inProgressDownloadsSize)
     {
       super(bitmapsCount, cleanUpsCount, outOfMemoryOccurences);
       this.commandsCount = commandsCount;
@@ -89,9 +90,9 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   }
 
   /**
-   * Indicates to the command how it should handle the {@link BasisCommand#executeEnd()} method.
+   * Indicates to the command how it should handle the {@link BasisBitmapDownloader.BasisCommand#executeEnd()} method.
    */
-  private static enum NextResult
+  private enum NextResult
   {
     /**
      * The next workflow execution has failed being registered.
@@ -196,7 +197,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     /**
      * Should always be used when the command needs to go to the next workflow by executing it in the GUI thread.
-     * 
+     *
      * @return {@code true} if the command could be properly posted
      */
     protected final NextResult executeNextThroughHandler()
@@ -287,11 +288,11 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   }
 
   /**
-   * Indicates to the {@link PreCommand} what it should do eventually.
-   * 
+   * Indicates to the {@link BasisBitmapDownloader.PreCommand} what it should do eventually.
+   *
    * @since 2011.09.02
    */
-  private static enum FinalState
+  private enum FinalState
   {
     /**
      * The bitmap is taken from the local resources, and the command is over.
@@ -342,8 +343,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     {
       if (IS_DEBUG_TRACE && log.isDebugEnabled())
       {
-        log.debug(logCommandId() + "Starting to handle in thread '" + Thread.currentThread().getName() + "' the pre-command for the bitmap with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-            : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
+        log.debug(logCommandId() + "Starting to handle in thread '" + Thread.currentThread().getName() + "' the pre-command for the bitmap with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
       }
       // The command is removed from the priority stack
       if (view != null)
@@ -357,8 +357,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         if (IS_DEBUG_TRACE && log.isDebugEnabled())
         {
-          log.debug(logCommandId() + "Some local availability has been detected for the bitmap with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-              : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
+          log.debug(logCommandId() + "Some local availability has been detected for the bitmap with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
         }
         return;
       }
@@ -371,8 +370,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         if (IS_DEBUG_TRACE && log.isDebugEnabled())
         {
-          log.debug(logCommandId() + "Some caching availability has been detected for the bitmap with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-              : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
+          log.debug(logCommandId() + "Some caching availability has been detected for the bitmap with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
         }
         return;
       }
@@ -449,8 +447,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug(logCommandId() + "Bound the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? ""
-                : (" and with specs '" + imageSpecs.toString() + "'")));
+            log.debug(logCommandId() + "Bound the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
           }
           usedBitmap.forgetBitmap();
           usedBitmap.rememberBinding(view);
@@ -650,8 +647,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         {
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug(logCommandId() + "Because another command has been stacked for the same view in the meantime, aborting the command corresponding to the view with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-                : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
+            log.debug(logCommandId() + "Because another command has been stacked for the same view in the meantime, aborting the command corresponding to the view with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
           }
           instructions.onOver(true, view, bitmapUid, imageSpecs);
           return;
@@ -662,8 +658,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         {
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug(logCommandId() + "Removing an already stacked download command corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? ""
-                : (" and with specs '" + imageSpecs.toString() + "'")));
+            log.debug(logCommandId() + "Removing an already stacked download command corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
           }
           if (BasisBitmapDownloader.DOWNLOAD_THREAD_POOL.remove(alreadyStackedCommand) == false)
           {
@@ -719,8 +714,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
      */
     private long downloadStartTimestamp = -1;
 
-    public DownloadBitmapCommand(int id, ViewClass view, String url, String bitmapUid, Object imageSpecs, HandlerClass handler,
-        BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
+    public DownloadBitmapCommand(int id, ViewClass view, String url, String bitmapUid, Object imageSpecs,
+        HandlerClass handler, BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
     {
       super(id, view, bitmapUid, imageSpecs, handler, instructions);
       this.url = url;
@@ -731,8 +726,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     {
       if (IS_DEBUG_TRACE && log.isDebugEnabled())
       {
-        log.debug(logCommandId() + "Starting to handle in thread '" + Thread.currentThread().getName() + "' the download command for the bitmap with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-            : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
+        log.debug(logCommandId() + "Starting to handle in thread '" + Thread.currentThread().getName() + "' the download command for the bitmap with uid '" + bitmapUid + "'" + (view != null ? " corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
       }
       // The command is removed from the priority stack
       if (view != null)
@@ -757,8 +751,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           downloadingBitmap.referencesCount++;
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug(logCommandId() + "Waiting for the bitmap corresponding to the URL '" + url + "' to be downloaded" + (view != null ? " regarding the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-                : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
+            log.debug(logCommandId() + "Waiting for the bitmap corresponding to the URL '" + url + "' to be downloaded" + (view != null ? " regarding the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") : "") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
           }
           synchronized (downloadingBitmap)
           {
@@ -792,9 +785,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
               // We want to make sure that the process resumes if a problem occurred during the retrieval of the bitmap
               if (log.isWarnEnabled())
               {
-                log.warn(
-                    logCommandId() + "An unattended problem occured while retrieving the bitmap with uid '" + bitmapUid + "' corresponding to the URL '" + url + "'",
-                    throwable);
+                log.warn(logCommandId() + "An unattended problem occured while retrieving the bitmap with uid '" + bitmapUid + "' corresponding to the URL '" + url + "'", throwable);
               }
             }
             bitmap = retrievedBitmap;
@@ -876,8 +867,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           }
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug(logCommandId() + "Bound the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? ""
-                : (" and with specs '" + imageSpecs.toString() + "'")));
+            log.debug(logCommandId() + "Bound the bitmap with uid '" + bitmapUid + "' to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
           }
           usedBitmap.forgetBitmap();
           usedBitmap.rememberBinding(view);
@@ -892,8 +882,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           prioritiesStack.remove(view);
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug(logCommandId() + "Removed from the priority stack the view" + (view != null ? " " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-                : ""));
+            log.debug(logCommandId() + "Removed from the priority stack the view" + (view != null ? " " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") : ""));
           }
           dump();
         }
@@ -913,8 +902,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         if (IS_DEBUG_TRACE && log.isDebugEnabled())
         {
-          log.debug(logCommandId() + "The bitmap corresponding to the URL '" + url + "' will not be bound to its view" + (view != null ? " " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-              : "") + ", because its related view has been requested again in the meantime");
+          log.debug(logCommandId() + "The bitmap corresponding to the URL '" + url + "' will not be bound to its view" + (view != null ? " " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") : "") + ", because its related view has been requested again in the meantime");
         }
         instructions.onOver(true, view, bitmapUid, imageSpecs);
         return false;
@@ -992,7 +980,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     /**
      * Is responsible for getting the bitmap, either from the local persisted cache, and if not available from Internet.
-     * 
+     *
      * @return {@code null}, in particular, if the underlying bitmap URL is null or empty
      */
     private final BitmapClass retrieveBitmap()
@@ -1064,9 +1052,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     /**
      * This method assumes that the provided <code>inputStream</code> is not {@code null}.
-     * 
-     * @param inputStream
-     *          an input stream corresponding to a bitmap
+     *
+     * @param inputStream an input stream corresponding to a bitmap
      * @return {@code null} if the input stream could not be properly converted ; a valid bitmap otherwise
      */
     protected BitmapClass fromInputStreamToBitmap(InputStream inputStream)
@@ -1097,8 +1084,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     /**
      * @return {@code null}, in particular, when either if the URL is null or empty
-     * @throws IOException
-     *           if an IO problem occurred while retrieving the bitmap stream
+     * @throws IOException if an IO problem occurred while retrieving the bitmap stream
      */
     private final InputStream fetchInputStream()
         throws IOException
@@ -1116,9 +1102,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
           {
             if (log.isWarnEnabled())
             {
-              log.warn(
-                  logCommandId() + "Could not get the provided input stream for the bitmap with uid '" + bitmapUid + "' relative to the URL '" + url + "'",
-                  exception);
+              log.warn(logCommandId() + "Could not get the provided input stream for the bitmap with uid '" + bitmapUid + "' relative to the URL '" + url + "'", exception);
             }
             // In that case, we consider that the input stream custom download was a failure
             throw exception;
@@ -1164,11 +1148,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
     /**
      * Is responsible for actually downloading the input stream corresponding to the bitmap.
-     * 
+     *
      * @return the input stream corresponding to the bitmap ; should not return {@code null} but throw an exception instead when the input stream
-     *         cannot be downloaded in case of download attempt error, and {@code null} if no Internet connectivity is available
-     * @throws IOException
-     *           if a problem occurred during the download
+     * cannot be downloaded in case of download attempt error, and {@code null} if no Internet connectivity is available
+     * @throws IOException if a problem occurred during the download
      */
     private InputStream downloadInputStream()
         throws IOException
@@ -1226,7 +1209,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   /**
    * The default number of authorized threads available in the "pre" threads pool.
-   * 
+   *
    * @see #setPreThreadPoolSize(int)
    */
   public final static int PRE_THREAD_POOL_DEFAULT_SIZE = 3;
@@ -1243,7 +1226,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   /**
    * The default number of authorized threads available in the "download" threads pool.
-   * 
+   *
    * @see #setDownloadThreadPoolSize(int)
    */
   public final static int DOWNLOAD_THREAD_POOL_DEFAULT_SIZE = 4;
@@ -1322,12 +1305,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   /**
    * Enables to tune how many threads at most will be available in the "pre" threads pool.
-   * 
-   * @param poolSize
-   *          the maximum of threads will created for handling incoming commands ; defaults to {@link #PRE_THREAD_POOL_DEFAULT_SIZE}
-   * @throws IllegalStateException
-   *           if the this method is invoked while the threads pool has already been created, because the Android {@link ThreadPoolExecutor}
-   *           implementation does not support properly changing this parameter dynamically
+   *
+   * @param poolSize the maximum of threads will created for handling incoming commands ; defaults to {@link #PRE_THREAD_POOL_DEFAULT_SIZE}
+   * @throws IllegalStateException if the this method is invoked while the threads pool has already been created, because the Android {@link ThreadPoolExecutor}
+   *                               implementation does not support properly changing this parameter dynamically
    */
   public static void setPreThreadPoolSize(int poolSize)
   {
@@ -1340,12 +1321,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   /**
    * Enables to tune how many threads at most will be available in the "download" threads pool.
-   * 
-   * @param poolSize
-   *          the maximum of threads will created for handling incoming commands ; defaults to {@link #DOWNLOAD_THREAD_POOL_DEFAULT_SIZE}
-   * @throws IllegalStateException
-   *           if the this method is invoked while the threads pool has already been created, because the Android {@link ThreadPoolExecutor}
-   *           implementation does not support properly changing this parameter dynamically
+   *
+   * @param poolSize the maximum of threads will created for handling incoming commands ; defaults to {@link #DOWNLOAD_THREAD_POOL_DEFAULT_SIZE}
+   * @throws IllegalStateException if the this method is invoked while the threads pool has already been created, because the Android {@link ThreadPoolExecutor}
+   *                               implementation does not support properly changing this parameter dynamically
    */
   public static void setDownloadThreadPoolSize(int poolSize)
   {
@@ -1392,8 +1371,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
   }
 
-  public BasisBitmapDownloader(int instanceIndex, String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes, boolean useReferences,
-      boolean recycleMap)
+  public BasisBitmapDownloader(int instanceIndex, String name, long maxMemoryInBytes,
+      long lowLevelMemoryWaterMarkInBytes, boolean useReferences, boolean recycleMap)
   {
     super(instanceIndex, name, maxMemoryInBytes, lowLevelMemoryWaterMarkInBytes, useReferences, recycleMap);
     prioritiesStack = new Hashtable<ViewClass, Integer>();// Collections.synchronizedMap(new IdentityHashMap<ViewClass, Integer>());
@@ -1409,8 +1388,9 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   /**
    * Used for the unitary tests, in order to retrieve and control the internal state of the instance.
    */
-  public final void getStacks(AtomicInteger prioritiesPreStack, AtomicInteger prioritiesStack, AtomicInteger prioritiesDownloadStack,
-      AtomicInteger inProgressDownloads, AtomicInteger asynchronousDownloadCommands)
+  public final void getStacks(AtomicInteger prioritiesPreStack, AtomicInteger prioritiesStack,
+      AtomicInteger prioritiesDownloadStack, AtomicInteger inProgressDownloads,
+      AtomicInteger asynchronousDownloadCommands)
   {
     prioritiesPreStack.set(this.prioritiesPreStack.size());
     prioritiesStack.set(this.prioritiesStack.size());
@@ -1428,8 +1408,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   {
     if (IS_DEBUG_TRACE && log.isInfoEnabled())
     {
-      log.info("Starting asynchronously a command for the bitmap with uid '" + bitmapUid + "' and " + (view != null ? ("view (id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-          : "with no view") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
+      log.info("Starting asynchronously a command for the bitmap with uid '" + bitmapUid + "' and " + (view != null ? ("view (id='" + view.getId() + "',hash=" + view.hashCode() + ")") : "with no view") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
     }
     if (isEnabled() == false)
     {
@@ -1446,15 +1425,13 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       {
         if (IS_DEBUG_TRACE && log.isDebugEnabled())
         {
-          log.debug("Removed an already stacked command corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (alreadyStackedCommand.imageSpecs == null ? ""
-              : (" and with specs '" + alreadyStackedCommand.imageSpecs.toString() + "'")));
+          log.debug("Removed an already stacked command corresponding to the view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (alreadyStackedCommand.imageSpecs == null ? "" : (" and with specs '" + alreadyStackedCommand.imageSpecs.toString() + "'")));
         }
         if (BasisBitmapDownloader.PRE_THREAD_POOL.remove(alreadyStackedCommand) == false)
         {
           if (IS_DEBUG_TRACE && log.isDebugEnabled())
           {
-            log.debug("The pre-command relative to view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (alreadyStackedCommand.imageSpecs == null ? ""
-                : (" and with specs '" + alreadyStackedCommand.imageSpecs.toString() + "'")) + " could not be removed, because its execution has already started!");
+            log.debug("The pre-command relative to view " + ("(id='" + view.getId() + "',hash=" + view.hashCode() + ")") + (alreadyStackedCommand.imageSpecs == null ? "" : (" and with specs '" + alreadyStackedCommand.imageSpecs.toString() + "'")) + " could not be removed, because its execution has already started!");
           }
         }
         else
@@ -1474,8 +1451,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     BasisBitmapDownloader.PRE_THREAD_POOL.execute(command);
     if (IS_DEBUG_TRACE && log.isInfoEnabled())
     {
-      log.info("Pre-command with id " + command.id + " registered regarding the bitmap with uid '" + bitmapUid + "' and " + (view != null ? ("view (id='" + view.getId() + "',hash=" + view.hashCode() + ")")
-          : "with no view") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
+      log.info("Pre-command with id " + command.id + " registered regarding the bitmap with uid '" + bitmapUid + "' and " + (view != null ? ("view (id='" + view.getId() + "',hash=" + view.hashCode() + ")") : "with no view") + (imageSpecs == null ? "" : (" and with specs '" + imageSpecs.toString() + "'")));
     }
   }
 
@@ -1483,7 +1459,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
    * {@inheritDoc}
    */
   @Override
-  public final void get(boolean isPreBlocking, boolean isDownloadBlocking, ViewClass view, String bitmapUid, Object imageSpecs, HandlerClass handler,
+  public final void get(boolean isPreBlocking, boolean isDownloadBlocking, ViewClass view, String bitmapUid,
+      Object imageSpecs, HandlerClass handler,
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
   {
     if (isEnabled() == false)
@@ -1530,7 +1507,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     dump();
   }
 
-  protected DownloadBitmapCommand computeDownloadBitmapCommand(int id, ViewClass view, String url, String bitmapUid, Object imageSpecs, HandlerClass handler,
+  protected DownloadBitmapCommand computeDownloadBitmapCommand(int id, ViewClass view, String url, String bitmapUid,
+      Object imageSpecs, HandlerClass handler,
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions)
   {
     return new DownloadBitmapCommand(id, view, url, bitmapUid, imageSpecs, handler, instructions);

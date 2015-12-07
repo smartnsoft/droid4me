@@ -26,9 +26,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Scanner;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
@@ -38,21 +35,24 @@ import android.util.TypedValue;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * An interface responsible for loading configuration parameters.
- * 
+ *
  * @author Édouard Mercier
  * @since 2012.04.09
  */
 public interface ConfigurationLoader
 {
 
-  public final static Logger log = LoggerFactory.getInstance(ConfigurationLoader.class);
+  Logger log = LoggerFactory.getInstance(ConfigurationLoader.class);
 
   /**
    * The exception used when something wrong happens with this configuration Java package component.
    */
-  public static final class ConfigurationLoaderException
+  final class ConfigurationLoaderException
       extends RuntimeException
   {
 
@@ -73,13 +73,13 @@ public interface ConfigurationLoader
   /**
    * A factory component, which enables to load configuration parameters.
    */
-  public static class ConfigurationFactory
+  class ConfigurationFactory
   {
 
     /**
      * Indicates from where a configuration should be loaded.
      */
-    public static enum ConfigurationLocation
+    public enum ConfigurationLocation
     {
       /**
        * The configuration will be loaded from a file located in the {@code assets} application directory, embedded in the {@code .apk} installation
@@ -101,7 +101,7 @@ public interface ConfigurationLoader
     /**
      * Indicates in what format a configuration is expressed.
      */
-    public static enum ConfigurationFormat
+    public enum ConfigurationFormat
     {
       /**
        * The configuration is expressed in the {@link Properties} Java format.
@@ -122,12 +122,10 @@ public interface ConfigurationLoader
     /**
      * This method should be invoked before the {@link ConfigurationFactory#setBean(ConfigurationType, String, Class)} method be invoked, hence very
      * early at the application start-up (typically during the {@link Application#onCreate() method}.
-     * 
-     * @param applicationContext
-     *          the Android application context, usually retrieved from a {@link Activity#getApplicationContext()} or from
-     *          {@link Application#getApplicationContext()}, which will be used to load the configuration parameters from the {@code assets} Android
-     *          installation package {@code .apk}, or from the internal storage
-     * 
+     *
+     * @param applicationContext the Android application context, usually retrieved from a {@link Activity#getApplicationContext()} or from
+     *                           {@link Application#getApplicationContext()}, which will be used to load the configuration parameters from the {@code assets} Android
+     *                           installation package {@code .apk}, or from the internal storage
      * @see #setBean(ConfigurationType, String, Class)
      * @see #initialize(Context)
      */
@@ -138,7 +136,7 @@ public interface ConfigurationLoader
 
     /**
      * @return the application context which has been provided to the {@link #initialize(Context)} method (returns {@code} if this method has not been
-     *         invoked)
+     * invoked)
      * @see #initialize(Context)
      */
     public static Context getApplicationContext()
@@ -210,27 +208,23 @@ public interface ConfigurationLoader
 
     /**
      * Loads a Java bean.
-     * 
+     * <p/>
      * <p>
      * The method implementation is responsible for creating the right {@link ConfigurationLoader}, and then invoke its
      * {@link ConfigurationLoader#load(Class)} method.
      * </p>
-     * 
-     * @param configurationType
-     *          the kind of configuration which indicates where and how the bean will be fulfilled
-     * @param value
-     *          will be passed to the internally created {@link ConfigurationLoader}
-     * @param theClass
-     *          the fully-qualified-name of the class of the bean which should be created. This class should expose a {@code public} no-argument
-     *          constructor
+     *
+     * @param configurationType the kind of configuration which indicates where and how the bean will be fulfilled
+     * @param value             will be passed to the internally created {@link ConfigurationLoader}
+     * @param theClass          the fully-qualified-name of the class of the bean which should be created. This class should expose a {@code public} no-argument
+     *                          constructor
      * @return a valid bean (cannot be {@code null})
-     * @throws ConfigurationLoader.ConfigurationLoaderException
-     *           if something went wrong during the method execution
+     * @throws ConfigurationLoader.ConfigurationLoaderException if something went wrong during the method execution
      * @see #initialize(Context)
      * @see #getInstance(ConfigurationType, String)
      */
-    public static <T> T load(ConfigurationFactory.ConfigurationLocation configurationLocation, ConfigurationFactory.ConfigurationFormat configurationFormat,
-        String value, Class<T> theClass)
+    public static <T> T load(ConfigurationFactory.ConfigurationLocation configurationLocation,
+        ConfigurationFactory.ConfigurationFormat configurationFormat, String value, Class<T> theClass)
         throws ConfigurationLoader.ConfigurationLoaderException
     {
       final ConfigurationLoader configurationLoader = ConfigurationFactory.getInstance(configurationLocation, configurationFormat, value);
@@ -242,26 +236,23 @@ public interface ConfigurationLoader
   /**
    * A basis class which is able to create and fulfill a bean from a {@link Properties} object, and which will be used by the
    * {@link ConfigurationLoader} derived classes, in order to parse the bean.
-   * 
+   *
    * @since 2013.10.19
    */
-  public static abstract class ConfigurationParser<InputClass>
+  abstract class ConfigurationParser<InputClass>
   {
 
     /**
      * Is responsible for creating a bean, and then fulfilling its fields.
-     * 
+     * <p/>
      * <p>
      * The method is supposed to skip fields available in the {@code input}, but which cannot be mapped properly to any of the created bean fields.
      * </p>
-     * 
-     * @param theClass
-     *          the class the bean to be created belongs to
-     * @param input
-     *          the source which holds the bean state, and which will be parsed
+     *
+     * @param theClass the class the bean to be created belongs to
+     * @param input    the source which holds the bean state, and which will be parsed
      * @return a valid and fulfilled bean
-     * @throws ConfigurationLoader.ConfigurationLoaderException
-     *           if an error occurred during the method
+     * @throws ConfigurationLoader.ConfigurationLoaderException if an error occurred during the method
      * @see #setBean(Class, InputStream, Object)
      */
     public abstract <T> T getBean(Class<T> theClass, InputClass input)
@@ -270,14 +261,11 @@ public interface ConfigurationLoader
     /**
      * Does the same job as the {@link #getBean(Class, InputStream)} method, except that the bean is provided. the class the bean to be created
      * belongs to
-     * 
-     * @param input
-     *          the source which holds the bean state, and which will be parsed
-     * @param bean
-     *          the bean that should be updated
+     *
+     * @param input the source which holds the bean state, and which will be parsed
+     * @param bean  the bean that should be updated
      * @return the provided fulfilled bean
-     * @throws ConfigurationLoader.ConfigurationLoaderException
-     *           if an error occurred during the method
+     * @throws ConfigurationLoader.ConfigurationLoaderException if an error occurred during the method
      * @see #getBean(Class, InputStream)
      */
     public abstract <T> T setBean(Class<T> theClass, InputClass input, T bean)
@@ -285,12 +273,10 @@ public interface ConfigurationLoader
 
     /**
      * Creates a bean via introspection
-     * 
-     * @param theClass
-     *          the class the bean to be created belongs to
+     *
+     * @param theClass the class the bean to be created belongs to
      * @return a valid bean, but whose fields have not been fulfilled yet
-     * @throws ConfigurationLoader.ConfigurationLoaderException
-     *           if the bean could not be instantiated
+     * @throws ConfigurationLoader.ConfigurationLoaderException if the bean could not be instantiated
      */
     protected final <T> T createBean(Class<T> theClass)
         throws ConfigurationLoader.ConfigurationLoaderException
@@ -309,21 +295,17 @@ public interface ConfigurationLoader
 
     /**
      * Sets a value to one of the bean field.
-     * 
+     * <p/>
      * <p>
      * If the mapping was successful, the bean field will have been updated. If an error occurs during this treatment, an error log is issued, and the
      * provided value is simply ignored.
      * </p>
-     * 
-     * @param theClass
-     *          the class the bean to be created belongs to
-     * @param bean
-     *          the bean the update will apply on
-     * @param fieldName
-     *          the name of the bean class field to be updated
-     * @param rawFieldValue
-     *          the string representation of the new field value. The only supported types are: {@link java.lang.int}, {@link java.lang.boolean},
-     *          {@link java.lang.float}, {@link java.lang.double} and {@link java.lang.String}
+     *
+     * @param theClass      the class the bean to be created belongs to
+     * @param bean          the bean the update will apply on
+     * @param fieldName     the name of the bean class field to be updated
+     * @param rawFieldValue the string representation of the new field value. The only supported types are: {@link java.lang.int}, {@link java.lang.boolean},
+     *                      {@link java.lang.float}, {@link java.lang.double} and {@link java.lang.String}
      */
     protected final void setField(Class<?> theClass, Object bean, String fieldName, String rawFieldValue)
     {
@@ -381,9 +363,7 @@ public interface ConfigurationLoader
         // It is very likely a "NumberFormatException" has occurred
         if (log.isErrorEnabled())
         {
-          log.error(
-              "Could set the '" + fieldName + "' field on the '" + theClass.getName() + "' class with value '" + rawFieldValue + "', because it could not be parsed to its expected type properly: ignoring this entry",
-              exception);
+          log.error("Could set the '" + fieldName + "' field on the '" + theClass.getName() + "' class with value '" + rawFieldValue + "', because it could not be parsed to its expected type properly: ignoring this entry", exception);
         }
         return;
       }
@@ -397,9 +377,7 @@ public interface ConfigurationLoader
       {
         if (log.isErrorEnabled())
         {
-          log.error(
-              "Cannot set the '" + fieldName + "' field on the '" + theClass.getName() + "' class with value '" + rawFieldValue + "': ignoring this entry",
-              exception);
+          log.error("Cannot set the '" + fieldName + "' field on the '" + theClass.getName() + "' class with value '" + rawFieldValue + "': ignoring this entry", exception);
         }
       }
     }
@@ -408,10 +386,10 @@ public interface ConfigurationLoader
 
   /**
    * A helper class which is able to create and fulfill a bean from a {@link Properties} object.
-   * 
+   *
    * @since 2013.10.19
    */
-  public final static class PropertiesParser
+  final class PropertiesParser
       extends ConfigurationParser<InputStream>
   {
 
@@ -449,10 +427,10 @@ public interface ConfigurationLoader
 
   /**
    * A helper class which is able to create and fulfill a bean from a JSON string.
-   * 
+   *
    * @since 2013.10.19
    */
-  public final static class JsonParser
+  final class JsonParser
       extends ConfigurationParser<InputStream>
   {
 
@@ -479,8 +457,7 @@ public interface ConfigurationLoader
       {
         throw new ConfigurationLoader.ConfigurationLoaderException(exception);
       }
-      @SuppressWarnings("unchecked")
-      final Iterator<String> iterator = jsonObject.keys();
+      @SuppressWarnings("unchecked") final Iterator<String> iterator = jsonObject.keys();
       while (iterator.hasNext())
       {
         final String fieldName = iterator.next();
@@ -501,10 +478,10 @@ public interface ConfigurationLoader
 
   /**
    * A helper class which is able to create and fulfill a bean from the Android {@link Resources resources}.
-   * 
+   *
    * @since 2014.06.20
    */
-  public final static class ResourcesParser
+  final class ResourcesParser
       extends ConfigurationParser<Context>
   {
 
@@ -592,18 +569,15 @@ public interface ConfigurationLoader
 
   /**
    * Does the same thing as the {@link #getBean(Class, InputStream)} method, except that the POJO bean is provided.
-   * 
+   * <p/>
    * <p>
    * This method is especially useful, when a pre-defined configuration should be overwritten.
    * </p>
-   * 
-   * @param theClass
-   *          the type of the POJO which should hold the configuration
-   * @param bean
-   *          an already instantiated bean, which will be updated
+   *
+   * @param theClass the type of the POJO which should hold the configuration
+   * @param bean     an already instantiated bean, which will be updated
    * @return a valid POJO which holds the loaded configuration parameters
-   * @throws ConfigurationLoader.ConfigurationLoaderException
-   *           if something unrecoverable went wrong during the processing
+   * @throws ConfigurationLoader.ConfigurationLoaderException if something unrecoverable went wrong during the processing
    * @see #getBean(Class, InputStream)
    */
   <T> T setBean(Class<T> theClass, T bean)
@@ -611,12 +585,10 @@ public interface ConfigurationLoader
 
   /**
    * Responsible for loading and returning a Plain Old Java Object (POJO) of the given class.
-   * 
-   * @param theClass
-   *          the type of the POJO which should hold the configuration
+   *
+   * @param theClass the type of the POJO which should hold the configuration
    * @return a valid POJO which holds the loaded configuration parameters
-   * @throws ConfigurationLoader.ConfigurationLoaderException
-   *           if something unrecoverable went wrong during the processing
+   * @throws ConfigurationLoader.ConfigurationLoaderException if something unrecoverable went wrong during the processing
    * @see #setBean(Class, Object)
    */
   <T> T getBean(Class<T> theClass)

@@ -21,24 +21,24 @@ package com.smartnsoft.droid4me.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.GestureDetector.OnGestureListener;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import com.smartnsoft.droid4me.framework.DetailsProvider.ForList;
 
 /**
  * A simple (not expandable) smart list view.
- * 
+ *
  * @author Édouard Mercier
  * @since 2008.11.14
  */
@@ -119,7 +119,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
       return false;
     }
 
-  };
+  }
 
   private final ListView listView;
 

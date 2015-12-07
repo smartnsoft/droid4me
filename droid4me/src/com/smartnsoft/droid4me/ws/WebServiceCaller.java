@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -53,12 +56,9 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.json.JSONException;
 
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
-
 /**
  * A basis class for making web service calls easier.
- * 
+ * <p/>
  * <p>
  * When invoking an HTTP method, the caller goes through the following workflow:
  * <ol>
@@ -72,7 +72,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * {@link #onStatusCodeNotOk(String, WebServiceClient.CallType, HttpEntity, HttpResponse, int, int)} method will be invoked.</li>
  * </ol>
  * </p>
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.03.26
  */
@@ -84,17 +84,18 @@ public abstract class WebServiceCaller
    * An empty interface which states that the underlying {@link HttpClient} instance should be reused for all HTTP requests, instead of creating a new
    * one each time.
    */
-  public static interface ReuseHttpClient
+  public interface ReuseHttpClient
   {
+
   }
 
   /**
    * Overrides the default {@link DefaultHttpClient} by disabling the cookies storing.
-   * 
+   * <p/>
    * <p>
    * The code is inspired from http://code.google.com/p/zxing/source/browse/trunk/android/src/com/google/zxing/client/android/AndroidHttpClient.java.
    * </p>
-   * 
+   *
    * @since 2011.09.16
    */
   protected static class SensibleHttpClient
@@ -135,7 +136,7 @@ public abstract class WebServiceCaller
    * <p>
    * Do not set this flag to {@code true} under the production mode!
    * </p>
-   * 
+   *
    * @see WebServiceCaller#BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES
    */
   public static boolean ARE_DEBUG_LOG_ENABLED = false;
@@ -159,7 +160,7 @@ public abstract class WebServiceCaller
 
   /**
    * This method will be invoked when the instance reads a web service result body.
-   * 
+   *
    * @return the charset to use for decoding the web service requests content
    * @see #getString(InputStream)
    * @see #getString(InputStream, String)
@@ -191,7 +192,7 @@ public abstract class WebServiceCaller
   /**
    * Equivalent to calling {@link #getInputStream(String, WebServiceClient.CallType, HttpEntity)} with {@code callType} parameter set to
    * {@code WebServiceCaller.CallType.Get} and {@code body} parameter set to {@code null}.
-   * 
+   *
    * @see #getInputStream(String, WebServiceClient.CallType, HttpEntity)
    * @see #getInputStream(String, HttpRequestBase)
    */
@@ -203,26 +204,22 @@ public abstract class WebServiceCaller
 
   /**
    * Performs an HTTP request corresponding to the provided parameters.
-   * 
+   * <p/>
    * <p>
    * Caution: it is the responsibility of the caller to release (for instance, by invoking eventually the {@link InputStream#close()} method) the
    * returned {@link InputStream}! Otherwise, the underlying {@link #httpClient} connection (taken from its pool), may hang at next call! Note that if
    * an exception is raised, the hereby code will release the content by default.
    * </p>
-   * 
-   * @param uri
-   *          the URI being requested
-   * @param callType
-   *          the HTTP method
-   * @param body
-   *          if the HTTP method is set to {@link WebServiceCaller.CallType#Post} or {@link WebServiceCaller.CallType#Put}, this is the body of the
-   *          request
+   *
+   * @param uri      the URI being requested
+   * @param callType the HTTP method
+   * @param body     if the HTTP method is set to {@link WebServiceCaller.CallType#Post} or {@link WebServiceCaller.CallType#Put}, this is the body of the
+   *                 request
    * @return the input stream of the HTTP method call; cannot be {@code null}
-   * @throws WebServiceCaller.CallException
-   *           if the status code of the HTTP response does not belong to the [{@link HttpStatus.SC_OK}, {@link HttpStatus.SC_MULTI_STATUS}] range.
-   *           Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
-   *           {@link #isConnected()} method returns {@code false}, no request will be attempted and a {@link WebServiceCaller.CallException}
-   *           exception will be thrown (embedding a {@link UnknownHostException} exception).
+   * @throws WebServiceCaller.CallException if the status code of the HTTP response does not belong to the [{@link HttpStatus.SC_OK}, {@link HttpStatus.SC_MULTI_STATUS}] range.
+   *                                        Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
+   *                                        {@link #isConnected()} method returns {@code false}, no request will be attempted and a {@link WebServiceCaller.CallException}
+   *                                        exception will be thrown (embedding a {@link UnknownHostException} exception).
    * @see #getInputStream(String)
    * @see #getInputStream(String, HttpRequestBase)
    */
@@ -246,20 +243,16 @@ public abstract class WebServiceCaller
   }
 
   /**
-   * 
    * Performs an HTTP request corresponding to the provided parameters.
-   * 
+   * <p/>
    * <p>
    * Caution: read the {@link #getInputStream(String, WebServiceClient.CallType, HttpEntity)} documentation.
    * </p>
-   * 
-   * @param uri
-   *          the URI being requested
-   * @param request
-   *          the HTTP request which should be executed
+   *
+   * @param uri     the URI being requested
+   * @param request the HTTP request which should be executed
    * @return
-   * @throws WebServiceCaller.CallException
-   *           read the {@link #getInputStream(String, WebServiceClient.CallType, HttpEntity)} documentation
+   * @throws WebServiceCaller.CallException read the {@link #getInputStream(String, WebServiceClient.CallType, HttpEntity)} documentation
    */
   public final InputStream getInputStream(String uri, HttpRequestBase request)
       throws WebServiceCaller.CallException
@@ -282,7 +275,7 @@ public abstract class WebServiceCaller
 
   /**
    * Equivalent to {@code WebServiceCaller.getString(inputStream, getContentEncoding())}.
-   * 
+   *
    * @see #getString(InputStream, String)
    * @see #getJson(InputStream)
    */
@@ -294,14 +287,11 @@ public abstract class WebServiceCaller
 
   /**
    * Turns the provided {@link InputStream} into a {@link String}, using the provided encoding.
-   * 
-   * @param inputStream
-   *          the input stream to convert ; not that it will have been {@link InputStream#close() closed}
-   * @param encoding
-   *          the encoding to use
+   *
+   * @param inputStream the input stream to convert ; not that it will have been {@link InputStream#close() closed}
+   * @param encoding    the encoding to use
    * @return the string resulting from the provided input stream
-   * @throws IOException
-   *           if an error happened during the conversion
+   * @throws IOException if an error happened during the conversion
    * @see #getString(InputStream)
    * @see #getJson(InputStream, String)
    */
@@ -324,9 +314,8 @@ public abstract class WebServiceCaller
 
   /**
    * Equivalent to {@code WebServiceCaller.getJson(inputStream, getContentEncoding())}.
-   * 
+   *
    * @throws JSONException
-   * 
    * @see #getJson(InputStream, String)
    * @see #getString(InputStream, String)
    */
@@ -338,7 +327,7 @@ public abstract class WebServiceCaller
 
   /**
    * Invokes the {@link #getString(InputStream, String)} method, but just turn the potential {@link IOException} into a {@link JSONException}.
-   * 
+   *
    * @see #getString(InputStream)
    * @see #getJson(InputStream)
    */
@@ -357,25 +346,19 @@ public abstract class WebServiceCaller
 
   /**
    * Invoked when the result of the HTTP request is not <code>20X</code>. The default implementation logs the problem and throws an exception.
-   * 
-   * @param uri
-   *          the URI of the HTTP call
-   * @param callType
-   *          the type of the HTTP method
-   * @param body
-   *          the body of the HTTP method when its a {@link WebServiceCaller.CallType#Post} or a {@link WebServiceCaller.CallType#Put} ; {@code null}
-   *          otherwise
-   * @param response
-   *          the HTTP response
-   * @param statusCode
-   *          the status code of the response, which is not <code>20X</code>
-   * @param attemptsCount
-   *          the number of attempts that have been run for this HTTP method. Starts at <code>1</code>
+   *
+   * @param uri           the URI of the HTTP call
+   * @param callType      the type of the HTTP method
+   * @param body          the body of the HTTP method when its a {@link WebServiceCaller.CallType#Post} or a {@link WebServiceCaller.CallType#Put} ; {@code null}
+   *                      otherwise
+   * @param response      the HTTP response
+   * @param statusCode    the status code of the response, which is not <code>20X</code>
+   * @param attemptsCount the number of attempts that have been run for this HTTP method. Starts at <code>1</code>
    * @return {@code true} if you want the request to be re-run if it has failed
-   * @throws WebServiceCaller.CallException
-   *           if you want the call to be considered as not OK
+   * @throws WebServiceCaller.CallException if you want the call to be considered as not OK
    */
-  protected boolean onStatusCodeNotOk(String uri, WebServiceCaller.CallType callType, HttpEntity body, HttpResponse response, int statusCode, int attemptsCount)
+  protected boolean onStatusCodeNotOk(String uri, WebServiceCaller.CallType callType, HttpEntity body,
+      HttpResponse response, int statusCode, int attemptsCount)
       throws WebServiceCaller.CallException
   {
     final String message = "The result code of the call to the web method '" + uri + "' is not OK (not 20X). Status: " + response.getStatusLine();
@@ -406,37 +389,30 @@ public abstract class WebServiceCaller
 
   /**
    * This is the perfect place for customizing the HTTP request that is bound to be run.
-   * 
-   * @param httpClient
-   *          the Apache HTTP client that will run the HTTP request
-   * @param request
-   *          the HTTP request
-   * @param callType
-   *          the type of the HTTP method
-   * @throws WebServiceCaller.CallException
-   *           in case the HTTP request cannot be eventually invoked properly
+   *
+   * @param httpClient the Apache HTTP client that will run the HTTP request
+   * @param request    the HTTP request
+   * @param callType   the type of the HTTP method
+   * @throws WebServiceCaller.CallException in case the HTTP request cannot be eventually invoked properly
    */
-  protected void onBeforeHttpRequestExecution(HttpClient httpClient, HttpRequestBase request, WebServiceClient.CallType callType)
+  protected void onBeforeHttpRequestExecution(HttpClient httpClient, HttpRequestBase request,
+      WebServiceClient.CallType callType)
       throws WebServiceCaller.CallException
   {
   }
 
   /**
    * Invoked on every call, in order to extract the input stream from the response.
-   * 
+   * <p/>
    * <p>
    * If the content type is gzipped, this is the ideal place for unzipping it.
    * </p>
-   * 
-   * @param uri
-   *          the web call initial URI
-   * @param callType
-   *          the kind of request
-   * @param response
-   *          the HTTP response
+   *
+   * @param uri      the web call initial URI
+   * @param callType the kind of request
+   * @param response the HTTP response
    * @return the (decoded) input stream of the response
-   * @throws IOException
-   *           if some exception occurred while extracting the content of the response
+   * @throws IOException if some exception occurred while extracting the content of the response
    */
   protected InputStream getContent(String uri, WebServiceCaller.CallType callType, HttpResponse response)
       throws IOException
@@ -446,8 +422,7 @@ public abstract class WebServiceCaller
     if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
     {
       final InputStream debugContent;
-      final int length = (int) (entity.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? entity.getContentLength()
-          : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
+      final int length = (int) (entity.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? entity.getContentLength() : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
 
       if (content.markSupported() == true)
       {
@@ -540,33 +515,29 @@ public abstract class WebServiceCaller
   /**
    * Just invokes {@code #encodeUri(String, String, Map, boolean, String)}, with {@code #getUrlEncoding()} as last parameter.
    */
-  public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters, boolean alreadyContainsQuestionMark)
+  public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters,
+      boolean alreadyContainsQuestionMark)
   {
     return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, alreadyContainsQuestionMark, getUrlEncoding());
   }
 
   /**
    * Computes a URI from its path elements.
-   * 
-   * @param methodUriPrefix
-   *          the URI prefix
-   * @param methodUriSuffix
-   *          the URI suffix ; a {@code /} separator will be appended after the {@code methodUriPrefix} parameter, if not {@code null}. May be
-   *          {@code null}
-   * @param uriParameters
-   *          a dictionary with {@link String} keys and {@link String} values, which holds the URI query parameters ; may be {@code null}. If a value
-   *          is {@code null}, an error log will be issued. If a value is the empty string ({@code ""}), the dictionary key will be used as the
-   *          name+value URI parameter ; this is especially useful when the parameter value should not be encoded
-   * @param indicates
-   *          whether the provided {@code methodUriPrefix} or the {@code methodUriSuffix} parameters already contain a question mark {@code ?}, so
-   *          that, when computing the URI with the additional {@code uriParameters}, it is not appended again. This is especially useful when
-   *          building an URI from a basis URI, which already contains a {@code ?} for declaring URI parameters
-   * @param urlEnconding
-   *          the encoding used for writing the URI query parameters values
+   *
+   * @param methodUriPrefix the URI prefix
+   * @param methodUriSuffix the URI suffix ; a {@code /} separator will be appended after the {@code methodUriPrefix} parameter, if not {@code null}. May be
+   *                        {@code null}
+   * @param uriParameters   a dictionary with {@link String} keys and {@link String} values, which holds the URI query parameters ; may be {@code null}. If a value
+   *                        is {@code null}, an error log will be issued. If a value is the empty string ({@code ""}), the dictionary key will be used as the
+   *                        name+value URI parameter ; this is especially useful when the parameter value should not be encoded
+   * @param indicates       whether the provided {@code methodUriPrefix} or the {@code methodUriSuffix} parameters already contain a question mark {@code ?}, so
+   *                        that, when computing the URI with the additional {@code uriParameters}, it is not appended again. This is especially useful when
+   *                        building an URI from a basis URI, which already contains a {@code ?} for declaring URI parameters
+   * @param urlEnconding    the encoding used for writing the URI query parameters values
    * @return a valid URI that may be used for running an HTTP request, for instance
    */
-  public static String encodeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters, boolean alreadyContainsQuestionMark,
-      String urlEnconding)
+  public static String encodeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters,
+      boolean alreadyContainsQuestionMark, String urlEnconding)
   {
     final StringBuffer buffer = new StringBuffer(methodUriPrefix);
     if (methodUriSuffix != null && methodUriSuffix.length() > 0)
@@ -625,15 +596,14 @@ public abstract class WebServiceCaller
   /**
    * Is responsible for returning an HTTP client instance, used for actually running the HTTP requests. The method implementation relies on the
    * {@link #computeHttpClient()} method, if no {@link HttpClient} is currently created.
-   * 
+   * <p/>
    * <p>
    * The current implementation returns a {@link SensibleHttpClient} instance, which is thread-safe, in case the extending class implements the
    * {@link WebServiceCaller.ReuseHttpClient} interface.
    * </p>
-   * 
+   *
    * @return a valid HTTP client
-   * @throws WebServiceCaller.CallException
-   *           is the invocation of the {@link #computeHttpClient()} threw an exception
+   * @throws WebServiceCaller.CallException is the invocation of the {@link #computeHttpClient()} threw an exception
    * @see #computeHttpClient()
    * @see #resetHttpClient()
    */
@@ -671,11 +641,11 @@ public abstract class WebServiceCaller
   /**
    * Forces the internal {@link HttpClient} to be renewed the next time the {@link #getHttpClient()} method will be invoked, i.e. the next time an
    * HTTP method will be executed a new {@link HttpClient} instance will be created. This will not affect any pending HTTP method execution.
-   * 
+   * <p/>
    * <p>
    * It is up to the caller to previously {@link ClientConnectionManager#shutdown()} the connection manager if necessary.
    * </p>
-   * 
+   *
    * @see #getHttpClient()
    */
   public synchronized final void resetHttpClient()
@@ -691,11 +661,11 @@ public abstract class WebServiceCaller
    * This method will be invoked by the {@link #getHttpClient()} method, when it needs to use a new {@link HttpClient}. The method should be
    * overridden, when the {@link HttpClient} to use should be customized; a typical case is when the connection time-outs, the HTTP {@code User-Agent}
    * parameters need to fine-tuned.
-   * 
+   * <p/>
    * <p>
    * In the case the class implements {@link WebServiceCaller.ReuseHttpClient} interface, this method will be invoked only once.
    * </p>
-   * 
+   *
    * @return an HTTP client that will be used for running HTTP requests
    */
   protected HttpClient computeHttpClient()
@@ -720,7 +690,8 @@ public abstract class WebServiceCaller
     }
   }
 
-  private HttpResponse performHttpRequest(String uri, HttpRequestBase request, AtomicReference<WebServiceCaller.CallType> callTypeHolder, int attemptsCount)
+  private HttpResponse performHttpRequest(String uri, HttpRequestBase request,
+      AtomicReference<WebServiceCaller.CallType> callTypeHolder, int attemptsCount)
       throws UnsupportedEncodingException, IOException, ClientProtocolException, WebServiceCaller.CallException
   {
     if (uri == null)
@@ -826,8 +797,7 @@ public abstract class WebServiceCaller
     }
     if (log.isDebugEnabled())
     {
-      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + statusCode + (responseHeadersSb.length() <= 0 ? ""
-          : " with the HTTP headers:" + responseHeadersSb.toString()));
+      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + statusCode + (responseHeadersSb.length() <= 0 ? "" : " with the HTTP headers:" + responseHeadersSb.toString()));
     }
 
     if (!(statusCode >= HttpStatus.SC_OK && statusCode <= HttpStatus.SC_MULTI_STATUS))

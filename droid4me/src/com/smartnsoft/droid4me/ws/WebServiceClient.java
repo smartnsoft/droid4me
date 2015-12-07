@@ -26,7 +26,7 @@ import org.apache.http.HttpEntity;
 
 /**
  * A minimalist contract when creating a web service client.
- * 
+ *
  * @author Édouard Mercier
  * @since 2011.08.17
  */
@@ -36,7 +36,7 @@ public interface WebServiceClient
   /**
    * An HTTP method type.
    */
-  public static enum Verb
+  enum Verb
   {
     Get, Post, Put, Delete;
   }
@@ -44,16 +44,15 @@ public interface WebServiceClient
   /**
    * Defines the way the HTTP method is run, and enables to link a call code with it.
    */
-  public final static class CallType
+  final class CallType
   {
 
     /**
      * Turns a string into a {@link CallType}.
-     * 
-     * @param string
-     *          may be {@code null} ; the recognized values (case insensitive) are: {@code GET}, {@code POST}, {@code PUT} and {@code DELETE}
+     *
+     * @param string may be {@code null} ; the recognized values (case insensitive) are: {@code GET}, {@code POST}, {@code PUT} and {@code DELETE}
      * @return {@code null} if the string could not be properly parsed and identified ; otherwise, a value among {@code #Get}, {@code #Post},
-     *         {@code #Put}, {@code #Delete}
+     * {@code #Put}, {@code #Delete}
      */
     public static CallType fromString(String string)
     {
@@ -120,7 +119,7 @@ public interface WebServiceClient
   /**
    * The exception that will be thrown if any problem occurs during a web service call.
    */
-  public static class CallException
+  class CallException
       extends Exception
   {
 
@@ -175,9 +174,8 @@ public interface WebServiceClient
 
     /**
      * Indicates whether the cause of the provided exception is due to a connectivity problem.
-     * 
-     * @param throwable
-     *          the exception to test
+     *
+     * @param throwable the exception to test
      * @return {@code true} if the {@link Throwable} was triggered because of a connectivity problem with Internet
      */
     public static boolean isConnectivityProblem(Throwable throwable)
@@ -200,10 +198,10 @@ public interface WebServiceClient
 
   /**
    * Indicates the type of HTTP request and the underlying HTTP.
-   * 
+   *
    * @since 2009.11.10
    */
-  public final static class HttpCallTypeAndBody
+  final class HttpCallTypeAndBody
   {
 
     /**
@@ -223,9 +221,8 @@ public interface WebServiceClient
 
     /**
      * This will create a {@link Verb#Get} HTTP request method.
-     * 
-     * @param url
-     *          the URL to use when performing the HTTP request
+     *
+     * @param url the URL to use when performing the HTTP request
      */
     public HttpCallTypeAndBody(String url)
     {
@@ -233,12 +230,9 @@ public interface WebServiceClient
     }
 
     /**
-     * @param url
-     *          the URL to use when performing the HTTP request
-     * @param callType
-     *          the HTTP request method
-     * @param body
-     *          the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
+     * @param url      the URL to use when performing the HTTP request
+     * @param callType the HTTP request method
+     * @param body     the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
      */
     public HttpCallTypeAndBody(String url, CallType callType, HttpEntity body)
     {
@@ -257,33 +251,26 @@ public interface WebServiceClient
 
   /**
    * Is responsible for converting the given URI parameters into a stringified URI.
-   * 
-   * @param methodUriPrefix
-   *          the prefix of the URI
-   * @param methodUriSuffix
-   *          the suffix of the URI, not containing the query parameters. A <code>/</code> will split the methodUriPrefix and methodUriSuffix
-   *          parameters in the final URI
-   * @param uriParameters
-   *          a map of key/values that will be used as query parameters in the final URI
+   *
+   * @param methodUriPrefix the prefix of the URI
+   * @param methodUriSuffix the suffix of the URI, not containing the query parameters. A <code>/</code> will split the methodUriPrefix and methodUriSuffix
+   *                        parameters in the final URI
+   * @param uriParameters   a map of key/values that will be used as query parameters in the final URI
    * @return a properly encoded URI
    */
-  public String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters);
+  String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters);
 
   /**
    * Is responsible to actually run the relevant HTTP method.
-   * 
-   * @param uri
-   *          the URI against which the HTTP request should be run
-   * @param callType
-   *          the type of HTTP method
-   * @param body
-   *          the body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
-   *          {@code null} otherwise
+   *
+   * @param uri      the URI against which the HTTP request should be run
+   * @param callType the type of HTTP method
+   * @param body     the body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
+   *                 {@code null} otherwise
    * @return the input stream resulting to the HTTP request, which is taken from the response
-   * @throws WebServiceClient.CallException
-   *           in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
+   * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  public InputStream getInputStream(String uri, WebServiceClient.CallType callType, HttpEntity body)
+  InputStream getInputStream(String uri, WebServiceClient.CallType callType, HttpEntity body)
       throws WebServiceClient.CallException;
 
 }

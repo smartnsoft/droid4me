@@ -24,7 +24,7 @@ import com.smartnsoft.droid4me.framework.ForBusinessObjectImplementation;
 /**
  * An activity which handles the persistence properly, which proposes a framework regarding the custom action, and which provides a framework
  * regarding the activity life cycle.
- * 
+ *
  * @author Édouard Mercier
  * @since 2008.04.13
  */

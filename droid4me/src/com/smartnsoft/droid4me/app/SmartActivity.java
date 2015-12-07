@@ -31,10 +31,8 @@ import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 
 /**
  * The basis class for all activities available in the framework.
- * 
- * @param <AggregateClass>
- *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
- * 
+ *
+ * @param <AggregateClass> the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
  * @author Édouard Mercier
  * @since 2008.04.11
  */
@@ -281,7 +279,8 @@ public abstract class SmartActivity<AggregateClass>
     return droid4mizer.isAlive();
   }
 
-  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately)
+  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, final Runnable onOver,
+      boolean immediately)
   {
     refreshBusinessObjectsAndDisplayInternal(retrieveBusinessObjects, onOver, immediately, false);
   }
@@ -305,7 +304,7 @@ public abstract class SmartActivity<AggregateClass>
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
-   * 
+   *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()
@@ -313,8 +312,8 @@ public abstract class SmartActivity<AggregateClass>
     refreshBusinessObjectsAndDisplay(true, null, false);
   }
 
-  void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver, boolean immediately,
-      final boolean businessObjectCountAndSortingUnchanged)
+  void refreshBusinessObjectsAndDisplayInternal(final boolean retrieveBusinessObjects, final Runnable onOver,
+      boolean immediately, final boolean businessObjectCountAndSortingUnchanged)
   {
     droid4mizer.refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, onOver, immediately);
   }

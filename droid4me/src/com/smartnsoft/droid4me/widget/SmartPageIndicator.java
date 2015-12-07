@@ -7,9 +7,9 @@ import android.widget.LinearLayout;
 
 /**
  * A page view component.
- * 
- * @since 2011.01.10
+ *
  * @author Édouard Mercier
+ * @since 2011.01.10
  */
 public class SmartPageIndicator
     extends LinearLayout
@@ -29,13 +29,10 @@ public class SmartPageIndicator
 
   /**
    * Indicates how many panes the pager is made of, and the way the pager dots should look like.
-   * 
-   * @param count
-   *          the number of pages
-   * @param dotImageResourceId
-   *          the drawable resources which should be used to draw the dots ; it is important that this drawable has selected and un-selected stats
-   * @param dotSpacing
-   *          the spacing between two dots
+   *
+   * @param count              the number of pages
+   * @param dotImageResourceId the drawable resources which should be used to draw the dots ; it is important that this drawable has selected and un-selected stats
+   * @param dotSpacing         the spacing between two dots
    */
   public void setPagesCount(int count, int dotImageResourceId, int dotSpacing)
   {

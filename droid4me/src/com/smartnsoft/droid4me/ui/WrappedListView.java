@@ -42,7 +42,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * In order to propose a list which automates many things regarding its underlying business objects.
- * 
+ *
  * @author Édouard Mercier
  * @since 2008.05.19
  */
@@ -55,7 +55,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
    */
   public final static String LIST_VIEW_POSITION = "listViewPosition";
 
-  public static interface OnEventObjectListener<BusinessObjectClass>
+  public interface OnEventObjectListener<BusinessObjectClass>
   {
 
     void onSelectedObject(View view, BusinessObjectClass selectedObject, int position);
@@ -77,7 +77,8 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
     private Filter filter;
 
-    public SmartAdapter(WrappedListView<BusinessObjectClass, ListViewClass, ViewClass> smartListView, ForList<BusinessObjectClass, ViewClass> forListProvider)
+    public SmartAdapter(WrappedListView<BusinessObjectClass, ListViewClass, ViewClass> smartListView,
+        ForList<BusinessObjectClass, ViewClass> forListProvider)
     {
       this.smartListView = smartListView;
       this.forListProvider = forListProvider;
@@ -280,9 +281,8 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   /**
    * Is responsible for creating the {@link ListViewClass} widget.
-   * 
-   * @param activity
-   *          the activity creating the list view
+   *
+   * @param activity the activity creating the list view
    * @return a valid list view widget
    */
   protected abstract ListViewClass computeListView(Activity activity);
@@ -298,23 +298,18 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   /**
    * Adds a view to the underlying list view, on its top, or on its bottom.
-   * 
-   * @param onTop
-   *          if {@code true}, the view is added to the header ; otherwise to the footer
-   * @param fixed
-   *          whether the view will scroll or not
-   * @param view
-   *          the view to add
+   *
+   * @param onTop if {@code true}, the view is added to the header ; otherwise to the footer
+   * @param fixed whether the view will scroll or not
+   * @param view  the view to add
    */
   public abstract void addHeaderFooterView(boolean onTop, boolean fixed, View view);
 
   /**
    * Adds a view to the underlying list view, or its left or on its right.
-   * 
-   * @param onLeft
-   *          if {@code true}, the view is added to left of the view ; otherwise to the right
-   * @param view
-   *          the view to add
+   *
+   * @param onLeft if {@code true}, the view is added to left of the view ; otherwise to the right
+   * @param view   the view to add
    */
   public abstract void addLeftRightView(boolean onLeft, View view);
 
@@ -349,14 +344,13 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   /**
    * Is responsible for creating the {@link ViewGroup wrapper widget} which will hold the underlying {@link ListView}.
-   * 
+   * <p/>
    * <p>
    * This method is responsible for creating the {@link #wrapperLayout} and {@link #listWrapperLayout} widget objects, and for adding the
    * {@link #getListView()} to the created {@link #getListWrapperLayout()}.
    * </p>
-   * 
-   * @param context
-   *          the Android context
+   *
+   * @param context the Android context
    * @return the created wrapper widget
    */
   public ViewGroup createWrapperLayout(Context context)

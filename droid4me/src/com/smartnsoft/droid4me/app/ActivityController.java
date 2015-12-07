@@ -26,10 +26,7 @@ import java.lang.annotation.Target;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-
 import javax.net.ssl.SSLException;
-
-import org.apache.http.NoHttpResponseException;
 
 import android.app.Activity;
 import android.content.Context;
@@ -47,17 +44,19 @@ import com.smartnsoft.droid4me.LifeCycle.BusinessObjectUnavailableException;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
+import org.apache.http.NoHttpResponseException;
+
 /**
  * Is responsible for intercepting an activity starting and redirect it to a prerequisite one if necessary, and for handling globally exceptions.
- * 
+ * <p/>
  * <p>
  * Everything described here which involves the {@link Activity activities}, is applicable provided the activity is a {@link Smartable}.
  * </p>
- * 
+ * <p/>
  * <p>
  * It is also a container for multiple interfaces relative to its architecture.
  * </p>
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.04.28
  */
@@ -66,17 +65,17 @@ public class ActivityController
 
   /**
    * An interface which is requested when a new {@link Activity} is bound to be {@link Context#startActivity(Intent) started}.
-   * 
+   * <p/>
    * <p>
    * The redirector acts as a controller over the activities starting phase: if an activity should be started before another one is really
    * {@link Activity#onResume() active}, this is the right place to handle this at runtime.
    * </p>
-   * 
+   * <p/>
    * <p>
    * This component is especially useful when ones need to make sure that an {@link Activity} has actually been submitted to the end-user before
    * resuming a workflow. The common cases are the traditional application splash screen, or a signin/signup process.
    * </p>
-   * 
+   *
    * @see ActivityController#registerRedirector(Redirector)
    */
   public interface Redirector
@@ -87,15 +86,14 @@ public class ActivityController
      * started instead of the provided one, which is supposed to have just {@link Activity#onCreate(Bundle) started}, or when the
      * {@link Activity#onNewIntent()} method is invoked. However, the method will be not been invoked when those methods are invoked due to a
      * {@link Activity#onConfigurationChanged(android.content.res.Configuration) configuration change}.
-     * 
+     * <p/>
      * <p>
      * Caution: if an exception is thrown during the method execution, the application will crash!
      * </p>
-     * 
-     * @param activity
-     *          the activity which is bound to be displayed
+     *
+     * @param activity the activity which is bound to be displayed
      * @return {@code null} if and only if nothing is to be done, i.e. no activity should be started instead. Otherwise, the given intent will be
-     *         executed: in that case, the provided activity {@Activity#finish finishes}
+     * executed: in that case, the provided activity {@Activity#finish finishes}
      * @see ActivityController#needsRedirection(Activity)
      */
     Intent getRedirection(Activity activity);
@@ -105,28 +103,29 @@ public class ActivityController
   /**
    * An empty interface which should be used as a marker on an {@link Activity}, which does not want to be requested by the
    * {@link ActivityController.Redirector}.
-   * 
+   * <p/>
    * <p>
    * When an {@link Activity} implements this interface, the {@link ActivityController.Redirector#getRedirection(Activity)} method will not be
    * invoked.
    * </p>
-   * 
-   * @since 2012.04.11
+   *
    * @see ActivityController#needsRedirection(Activity)
    * @see ActivityController.EscapeToRedirectorAnnotation
+   * @since 2012.04.11
    * @deprecated now use the {@link ActivityController.EscapeToRedirectorAnnotation} annotation instead
    */
   @Deprecated
   public interface EscapeToRedirector
   {
+
   }
 
   /**
    * An annotation which offers the same effect as the {@link ActivityController.EscapeToRedirector} interface.
-   * 
-   * @since 2014.04.26
+   *
    * @see ActivityController#needsRedirection(Activity)
    * @see ActivityController.EscapeToRedirector
+   * @since 2014.04.26
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
@@ -138,7 +137,7 @@ public class ActivityController
   /**
    * An interface responsible for providing Android system services, given their name. It enables to override in one place all the {@code Activity}
    * system services.
-   * 
+   *
    * @since 2012.02.12
    */
   public interface SystemServiceProvider
@@ -146,13 +145,10 @@ public class ActivityController
 
     /**
      * Returns the handle to a system-level service by name. The class of the returned object varies by the requested name.
-     * 
-     * @param activity
-     *          the {@link Activity} asking for the service
-     * @param name
-     *          the name of the desired service
-     * @param defaultService
-     *          the provided {@code activity} default system service (retrieved by invoking the {@link Activity#getSystemService(String)} method)
+     *
+     * @param activity       the {@link Activity} asking for the service
+     * @param name           the name of the desired service
+     * @param defaultService the provided {@code activity} default system service (retrieved by invoking the {@link Activity#getSystemService(String)} method)
      * @return the desired service, or {@code null} if no service corresponding to the provided {@code name} is available nor exists
      * @see {@link Activity#getSystemService(String)}
      */
@@ -162,12 +158,12 @@ public class ActivityController
 
   /**
    * An interface which is queried during the various life cycle events of a {@link LifeCycle}.
-   * 
+   * <p/>
    * <p>
    * An interceptor is the ideal place for centralizing in one place many of the {@link Activity}/{@link android.app.Fragment} entity life cycle
    * events.
    * </p>
-   * 
+   *
    * @see ActivityController#registerInterceptor(Interceptor)
    */
   public interface Interceptor
@@ -181,7 +177,7 @@ public class ActivityController
       /**
        * Called during the {@link Activity#onCreate()} / {@link android.app.Fragment#onCreate()} method, before the Android built-in super method
        * {@link Activity#onCreate} method is invoked.
-       * 
+       * <p/>
        * <p>
        * This is an ideal place where to {@link Window#requestFeature() request for window features}.
        * </p>
@@ -261,22 +257,18 @@ public class ActivityController
     /**
      * Invoked every time a new event occurs on the provided {@code activity}/{@code component}. For instance, this is an ideal for logging
      * application usage analytics.
-     * 
+     * <p/>
      * <p>
      * The framework ensures that this method will be invoked from the UI thread, hence the method implementation should last a very short time!
      * <p>
-     * 
+     * <p/>
      * <p>
      * Caution: if an exception is thrown during the method execution, the application will crash!
      * </p>
-     * 
-     * @param activity
-     *          the activity on which a life cycle event occurs ; cannot be {@code null}
-     * @param component
-     *          the component on which the life cycle event occurs ; may be {@code null}
-     * @param event
-     *          the event that has just happened
-     * 
+     *
+     * @param activity  the activity on which a life cycle event occurs ; cannot be {@code null}
+     * @param component the component on which the life cycle event occurs ; may be {@code null}
+     * @param event     the event that has just happened
      * @see ActivityController#onLifeCycleEvent()
      */
     void onLifeCycleEvent(Activity activity, Object component, ActivityController.Interceptor.InterceptorEvent event);
@@ -286,12 +278,12 @@ public class ActivityController
   /**
    * Defines and splits the handling of various exceptions in a single place. This handler will be invoked once it has been
    * {@link ActivityController#registerExceptionHandler(ExceptionHandler) registered}.
-   * 
+   * <p/>
    * <p>
    * The exception handler will be invoked at runtime when an exception is thrown and is not handled. You do not need to log the exception, because
    * the {@link ActivityController} already takes care of logging it, before invoking the current interface methods.
    * </p>
-   * 
+   *
    * @see ActivityController#registerExceptionHandler(ExceptionHandler)
    */
   public interface ExceptionHandler
@@ -299,84 +291,74 @@ public class ActivityController
 
     /**
      * Is invoked whenever the {@link LifeCycle#onRetrieveBusinessObjects()} throws an exception.
-     * 
+     * <p/>
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
-     * 
-     * @param activity
-     *          the activity that issued the exception, and which is ensured not to be {@link Activity#finish() finishing} ; cannot be {@code null}
-     * @param component
-     *          the component that issued the exception ; may be {@code null}
-     * @param exception
-     *          the exception that has been thrown
+     *
+     * @param activity  the activity that issued the exception, and which is ensured not to be {@link Activity#finish() finishing} ; cannot be {@code null}
+     * @param component the component that issued the exception ; may be {@code null}
+     * @param exception the exception that has been thrown
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
-     *         for a further exception handler anymore
+     * for a further exception handler anymore
      */
-    boolean onBusinessObjectAvailableException(Activity activity, Object component, BusinessObjectUnavailableException exception);
+    boolean onBusinessObjectAvailableException(Activity activity, Object component,
+        BusinessObjectUnavailableException exception);
 
     /**
      * Is invoked whenever an activity implementing {@link LifeCycle} throws an unexpected exception outside from the
      * {@link LifeCycle#onRetrieveBusinessObjects()} method.
-     * 
+     * <p/>
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
      * </p>
-     * 
+     * <p/>
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
-     * 
-     * @param activity
-     *          the activity that issued the exception ; cannot be {@code null}
-     * @param component
-     *          the component that issued the exception ; may be {@code null}
-     * @param throwable
-     *          the exception that has been triggered
+     *
+     * @param activity  the activity that issued the exception ; cannot be {@code null}
+     * @param component the component that issued the exception ; may be {@code null}
+     * @param throwable the exception that has been triggered
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
-     *         for a further exception handler anymore
+     * for a further exception handler anymore
      */
     boolean onActivityException(Activity activity, Object component, Throwable throwable);
 
     /**
      * Is invoked whenever a handled exception is thrown with a non-{@link Activity} / {@link android.app.Fragment} {@link Context context}.
-     * 
+     * <p/>
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
      * </p>
-     * 
+     * <p/>
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
-     * 
-     * @param isRecoverable
-     *          indicates whether the application is about to crash when the exception has been triggered
-     * @param context
-     *          the context that issued the exception
-     * @param throwable
-     *          the exception that has been triggered
+     *
+     * @param isRecoverable indicates whether the application is about to crash when the exception has been triggered
+     * @param context       the context that issued the exception
+     * @param throwable     the exception that has been triggered
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
-     *         for a further exception handler anymore
+     * for a further exception handler anymore
      */
     boolean onContextException(boolean isRecoverable, Context context, Throwable throwable);
 
     /**
      * Is invoked whenever a handled exception is thrown outside from an available {@link Context context}.
-     * 
+     * <p/>
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
      * </p>
-     * 
+     * <p/>
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
-     * 
-     * @param isRecoverable
-     *          indicates whether the application is about to crash when the exception has been triggered
-     * @param throwable
-     *          the exception that has been triggered
+     *
+     * @param isRecoverable indicates whether the application is about to crash when the exception has been triggered
+     * @param throwable     the exception that has been triggered
      * @return {@code true} if the handler has actually handled the exception: this indicates to the framework that it does not need to investigate
-     *         for a further exception handler anymore
+     * for a further exception handler anymore
      */
     boolean onException(boolean isRecoverable, Throwable throwable);
 
@@ -384,9 +366,8 @@ public class ActivityController
 
   /**
    * Responsible for analyzing issues resulting from {@link Throwable} entities.
-   * 
+   *
    * @since 2013.12.23
-   * 
    */
   public static abstract class IssueAnalyzer
   {
@@ -463,11 +444,9 @@ public class ActivityController
 
     /**
      * Attempts to find a specific exception in the provided exception by iterating over the causes, starting with the provided exception itself.
-     * 
-     * @param throwable
-     *          the exception to be inspected
-     * @param exceptionClass
-     *          a list of exception classes to look after
+     *
+     * @param throwable      the exception to be inspected
+     * @param exceptionClass a list of exception classes to look after
      * @return {@code null} if and only one of the provided exception classes has not been detected ; the matching cause otherwise
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -508,21 +487,18 @@ public class ActivityController
     }
 
     /**
-     * @param throwable
-     *          the exception to investigate
+     * @param throwable the exception to investigate
      * @return {@code true} if and only if the exception results from a connectivity issue by inspecting its causes tree
      */
     public static boolean isAConnectivityProblem(Throwable throwable)
     {
-      return ActivityController.IssueAnalyzer.searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class,
-          InterruptedIOException.class, NoHttpResponseException.class, SSLException.class) != null;
+      return ActivityController.IssueAnalyzer.searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class, NoHttpResponseException.class, SSLException.class) != null;
     }
 
     /**
-     * @param throwable
-     *          the exception to investigate
+     * @param throwable the exception to investigate
      * @return {@code true} if and only if the exception results from a memory saturation issue (i.e. a {@link OutOfMemoryError} exception) by
-     *         inspecting its causes tree
+     * inspecting its causes tree
      */
     public static boolean isAMemoryProblem(Throwable throwable)
     {
@@ -532,8 +508,7 @@ public class ActivityController
     protected final Context context;
 
     /**
-     * @param context
-     *          should be an application {@link Context}
+     * @param context should be an application {@link Context}
      */
     public IssueAnalyzer(Context context)
     {
@@ -542,9 +517,8 @@ public class ActivityController
 
     /**
      * Is responsible for analyzing the provided exception, and indicates whether it has been handled.
-     * 
-     * @param throwable
-     *          the issue to analyze
+     *
+     * @param throwable the issue to analyze
      * @return {@code true} if and only if the issue has actually been handled by the implementation
      */
     public abstract boolean handleIssue(Throwable throwable);
@@ -556,7 +530,7 @@ public class ActivityController
   /**
    * When a new activity is {@link Context#startActivity(Intent) started} because of a redirection, the newly started activity will receive the
    * initial activity {@link Intent} through this {@link Parcelable} key.
-   * 
+   *
    * @see #needsRedirection(Activity)
    * @see #registerInterceptor(ActivityController. Interceptor)
    */
@@ -603,11 +577,10 @@ public class ActivityController
 
   /**
    * Attempts to decode from the provided {@code activity} the original {@code Intent} that was
-   * 
-   * @param activity
-   *          the Activity whose Intent will be analyzed
+   *
+   * @param activity the Activity whose Intent will be analyzed
    * @return an Intent that may be {@link Activity#startActivity(Intent) started} if the provided {@code activity} actually contains a reference to
-   *         another {@link Activity} ; {@code null} otherwise
+   * another {@link Activity} ; {@code null} otherwise
    * @see ActivityController#CALLING_INTENT
    * @see #needsRedirection(Activity)
    * @see #registerInterceptor(ActivityController. Interceptor)
@@ -619,10 +592,9 @@ public class ActivityController
 
   /**
    * Remembers the system service provider that will be used by the framework, for overriding the {@link Activity#getSystemService(String)} method.
-   * 
-   * @param systemServiceProvider
-   *          the system service provider which will be invoked at runtime, when an {@link Activity} asks for a service ; if {@code null}, the
-   *          {@link Activity} default service will be used
+   *
+   * @param systemServiceProvider the system service provider which will be invoked at runtime, when an {@link Activity} asks for a service ; if {@code null}, the
+   *                              {@link Activity} default service will be used
    */
   public void registerSystemServiceProvider(ActivityController.SystemServiceProvider systemServiceProvider)
   {
@@ -632,10 +604,9 @@ public class ActivityController
   /**
    * Remembers the activity redirector that will be used by the framework, before {@link Context#startActivity(Intent) starting} a new
    * {@link Activity}.
-   * 
-   * @param redirector
-   *          the redirector that will be requested at runtime, when a new activity is being started; if {@code null}, no redirection mechanism will
-   *          be set up
+   *
+   * @param redirector the redirector that will be requested at runtime, when a new activity is being started; if {@code null}, no redirection mechanism will
+   *                   be set up
    */
   public void registerRedirector(ActivityController.Redirector redirector)
   {
@@ -645,9 +616,8 @@ public class ActivityController
   /**
    * Remembers the activity interceptor that will be used by the framework, on every {@link ActivityController.Interceptor.InterceptorEvent event}
    * during the underlying {@link Activity} life cycle.
-   * 
-   * @param interceptor
-   *          the interceptor that will be invoked at runtime, on every event; if {@code null}, no interception mechanism will be used
+   *
+   * @param interceptor the interceptor that will be invoked at runtime, on every event; if {@code null}, no interception mechanism will be used
    */
   public void registerInterceptor(ActivityController.Interceptor interceptor)
   {
@@ -656,13 +626,10 @@ public class ActivityController
 
   /**
    * Is responsible for returning a system service, just like the {@link Context#getSystemService(String)} method does.
-   * 
-   * @param activity
-   *          the activity asking for a system service
-   * @param name
-   *          the name of the desired service
-   * @param defaultService
-   *          the {@code activity} default service
+   *
+   * @param activity       the activity asking for a system service
+   * @param name           the name of the desired service
+   * @param defaultService the {@code activity} default service
    * @return the service or {@code null} if the name does not exist
    * @see #registerSystemServiceProvider(ActivityController.SystemServiceProvider)
    */
@@ -677,7 +644,7 @@ public class ActivityController
 
   /**
    * Gives access to the currently registered {@link ActivityController.ExceptionHandler}.
-   * 
+   *
    * @return the currently registered exception handler ; may be {@code null}, which is the default status
    * @see #registerExceptionHandler(ActivityController.ExceptionHandler)
    */
@@ -688,9 +655,8 @@ public class ActivityController
 
   /**
    * Remembers the exception handler that will be used by the framework.
-   * 
-   * @param exceptionHandler
-   *          the handler that will be invoked in case of exception; if {@code null}, no exception handler will be used
+   *
+   * @param exceptionHandler the handler that will be invoked in case of exception; if {@code null}, no exception handler will be used
    * @see #getExceptionHandler()
    */
   public synchronized void registerExceptionHandler(ActivityController.ExceptionHandler exceptionHandler)
@@ -700,19 +666,17 @@ public class ActivityController
 
   /**
    * Is invoked by the framework every time a life cycle event occurs for the provided activity. You should not invoke that method yourself!
-   * 
+   * <p/>
    * <p>
    * Note that the method is synchronized, which means that the previous call will block the next one, if no thread is spawn.
    * </p>
-   * 
-   * @param activity
-   *          the activity which is involved with the event : cannot be {@code null}
-   * @param component
-   *          the component the event occurs on ; may be {code null}
-   * @param event
-   *          the event that has just happened for that activity
+   *
+   * @param activity  the activity which is involved with the event : cannot be {@code null}
+   * @param component the component the event occurs on ; may be {code null}
+   * @param event     the event that has just happened for that activity
    */
-  public synchronized void onLifeCycleEvent(Activity activity, Object component, ActivityController.Interceptor.InterceptorEvent event)
+  public synchronized void onLifeCycleEvent(Activity activity, Object component,
+      ActivityController.Interceptor.InterceptorEvent event)
   {
     if (interceptor == null)
     {
@@ -723,37 +687,33 @@ public class ActivityController
 
   /**
    * Dispatches the exception to the {@link ActivityController.ExceptionHandler}, and invokes the right method depending on its nature.
-   * 
+   * <p/>
    * <p>
    * The framework is responsible for invoking that method every time an unhandled exception is thrown. If no
    * {@link ActivityController#registerExceptionHandler(ExceptionHandler) exception handler is registered}, the exception will be only logged, and the
    * method will return {@code false}.
    * </p>
-   * 
+   * <p/>
    * <p>
    * Note that this method is {@code synchronized}, which prevents it from being invoking while it is already being executed, and which involves that
    * only one {@link Throwable} may be handled at the same time.
    * </p>
-   * 
-   * @param isRecoverable
-   *          indicates whether the application is about to crash when the exception has been triggered
-   * @param context
-   *          the context that originated the exception ; may be {@code null}
-   * @param component
-   *          when not {@code null}, this will be the {@link android.app.Fragment} the exception has been thrown from
-   * @param throwable
-   *          the reported exception
+   *
+   * @param isRecoverable indicates whether the application is about to crash when the exception has been triggered
+   * @param context       the context that originated the exception ; may be {@code null}
+   * @param component     when not {@code null}, this will be the {@link android.app.Fragment} the exception has been thrown from
+   * @param throwable     the reported exception
    * @return {@code true} if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception handled
-   *         has been set}, returns {@code false}
+   * has been set}, returns {@code false}
    */
-  public synchronized boolean handleException(boolean isRecoverable, Context context, Object component, Throwable throwable)
+  public synchronized boolean handleException(boolean isRecoverable, Context context, Object component,
+      Throwable throwable)
   {
     if (exceptionHandler == null)
     {
       if (log.isWarnEnabled())
       {
-        log.warn("Detected an exception which will not be handled during the processing of the context with name '" + (context == null ? "null"
-            : context.getClass().getName()) + "'", throwable);
+        log.warn("Detected an exception which will not be handled during the processing of the context with name '" + (context == null ? "null" : context.getClass().getName()) + "'", throwable);
       }
       return false;
     }
@@ -774,9 +734,7 @@ public class ActivityController
         final BusinessObjectUnavailableException exception = (BusinessObjectUnavailableException) throwable;
         if (log.isWarnEnabled())
         {
-          log.warn(
-              "Caught an exception during the retrieval of the business objects from the activity from class with name '" + activity.getClass().getName() + "'",
-              exception);
+          log.warn("Caught an exception during the retrieval of the business objects from the activity from class with name '" + activity.getClass().getName() + "'", exception);
         }
         // We do nothing if the activity is dying
         if (activity != null && activity.isFinishing() == true)
@@ -789,8 +747,7 @@ public class ActivityController
       {
         if (log.isWarnEnabled())
         {
-          log.warn("Caught an exception during the processing of " + (context == null ? "a null Context"
-              : "the Context from class with name '" + context.getClass().getName()) + "'", throwable);
+          log.warn("Caught an exception during the processing of " + (context == null ? "a null Context" : "the Context from class with name '" + context.getClass().getName()) + "'", throwable);
         }
         // For this special case, we ignore the case when the activity is dying
         if (activity != null)
@@ -812,8 +769,7 @@ public class ActivityController
       // Just to make sure that handled exceptions do not trigger un-handled exceptions on their turn ;(
       if (log.isErrorEnabled())
       {
-        log.error("An error occurred while attempting to handle an exception coming from " + (context == null ? "a null Context"
-            : "the Context from class with name '" + context.getClass().getName()) + "'", otherThrowable);
+        log.error("An error occurred while attempting to handle an exception coming from " + (context == null ? "a null Context" : "the Context from class with name '" + context.getClass().getName()) + "'", otherThrowable);
       }
       return false;
     }
@@ -823,20 +779,19 @@ public class ActivityController
    * Indicates whether a redirection is required before letting the activity continue its life cycle. It launches the redirected {@link Activity} if a
    * redirection is need, and provide to its {@link Intent} the initial activity {@link Intent} trough the extra {@link Parcelable}
    * {@link ActivityController#CALLING_INTENT} key.
-   * 
+   * <p/>
    * <p>
    * If the provided {@code activity} implements the {@link ActivityController.EscapeToRedirector} interface or exposes the
    * {@link ActivityController.EscapeToRedirectorAnnotation} annotation, the method returns {@code false}.
    * </p>
-   * 
+   * <p/>
    * <p>
    * Note that this method does not need to be marked as {@code synchronized}, because it is supposed to be invoked systematically from the UI thread.
    * </p>
-   * 
-   * @param activity
-   *          the activity which is being proved against the {@link ActivityController.Redirector}
+   *
+   * @param activity the activity which is being proved against the {@link ActivityController.Redirector}
    * @return {@code true} if and only if the given activity should be paused (or ended) and if another activity should be launched instead through the
-   *         {@link Activity#startActivity(Intent)} method
+   * {@link Activity#startActivity(Intent)} method
    * @see ActivityController#extractCallingIntent(Activity)
    * @see ActivityController.Redirector#getRedirection(Activity)
    * @see ActivityController.EscapeToRedirector

@@ -40,7 +40,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * Enables to store persistently on the internal/external device "hard-drive" some contents.
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.03.26
  */
@@ -50,17 +50,18 @@ public abstract class Persistence
 
   /**
    * Defines a basis policy/strategy interface used when {@link Persistence#cleanUp() cleaning up} the persistence instance.
-   * 
+   *
    * @see Persistence#cleanUp()
    * @since 2012.03.13
    */
-  public static interface CleanUpPolicy
+  public interface CleanUpPolicy
   {
+
   }
 
   /**
    * The exception thrown when an error occurs during a persistence operation.
-   * 
+   * <p/>
    * <p>
    * For the time being, only the classes in the current package can create such exception.
    * </p>
@@ -131,7 +132,7 @@ public abstract class Persistence
 
     /**
      * Indicates that the underlying URI has been accessed once again.
-     * 
+     *
      * @return how many time the URI has been accessing, including the current call
      * @see #getAccessCount()
      */
@@ -250,7 +251,7 @@ public abstract class Persistence
 
   /**
    * The directory paths of the instances.
-   * 
+   * <p/>
    * <p>
    * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
    * </p>
@@ -269,7 +270,7 @@ public abstract class Persistence
 
   /**
    * The maximum size, expressed in bytes, of the data associated to an URI.
-   * 
+   * <p/>
    * <p>
    * Think of tuning this parameter in case the application stores large data.
    * </p>
@@ -298,7 +299,7 @@ public abstract class Persistence
 
   /**
    * Indicates how the persisted URI are being accessed.
-   * 
+   * <p/>
    * <p>
    * All implementations are not required to update this field, it is just here to help.
    * </p>
@@ -307,7 +308,7 @@ public abstract class Persistence
 
   /**
    * Holds all the URIs which are currently being persisted.
-   * 
+   * <p/>
    * <p>
    * All implementations are not required to update this field, it is just here to help.
    * </p>
@@ -315,11 +316,11 @@ public abstract class Persistence
   protected final Set<String> beingProcessed = new HashSet<String>();
 
   /**
-   * @param outputStream
-   *          it is closed by this method
+   * @param outputStream it is closed by this method
    */
   // TODO: simplify all this!
-  public static InputStream storeInputStream(OutputStream outputStream, InputStream inputStream, boolean closeInput, String logMessageSuffix)
+  public static InputStream storeInputStream(OutputStream outputStream, InputStream inputStream, boolean closeInput,
+      String logMessageSuffix)
   {
     final InputStream actualInputStream;
     final BufferedInputStream bufferedInputStream;
@@ -426,17 +427,16 @@ public abstract class Persistence
   /**
    * Enables to access the various persistence instances. The number of instantiated occurrences is defined by the {@link Persistence#INSTANCES_COUNT}
    * variable, which must have been set beforehand.
-   * 
+   * <p/>
    * <p>
    * This will cause the {@link Persistence#initialize()} method to be invoked for every instance.
    * </p>
-   * 
+   * <p/>
    * <p>
    * Note that the instantiation is lazy.
    * </p>
-   * 
-   * @throws Persistence.PersistenceException
-   *           in case a problem occurred while initializing the persistence
+   *
+   * @throws Persistence.PersistenceException in case a problem occurred while initializing the persistence
    */
   // We accept the "out-of-order writes" case
   @SuppressWarnings("unchecked")
@@ -483,16 +483,14 @@ public abstract class Persistence
 
   /**
    * The unique constructor.
-   * 
+   * <p/>
    * <p>
    * The {@link #initialize()} method does not need to be explicitly invoked before using the instance, as long as the {@code XXXInstance} methods are
    * not invoked, because the other methods will invoke it.
    * </p>
-   * 
-   * @param storageDirectoryPath
-   *          the location where the persistence should be performed
-   * @param instanceIndex
-   *          the ordinal of the instance which is bound to be created. Starts with {@code 0}
+   *
+   * @param storageDirectoryPath the location where the persistence should be performed
+   * @param instanceIndex        the ordinal of the instance which is bound to be created. Starts with {@code 0}
    * @see #initialize()
    */
   protected Persistence(String storageDirectoryPath, int instanceIndex)
@@ -503,9 +501,8 @@ public abstract class Persistence
 
   /**
    * Indicates whether the underlying back-end storage is available.
-   * 
-   * @param storageBackendAvailable
-   *          {@code true} if and only if the back-end storage is available
+   *
+   * @param storageBackendAvailable {@code true} if and only if the back-end storage is available
    */
   protected final void setStorageBackendAvailable(boolean storageBackendAvailable)
   {
@@ -514,7 +511,7 @@ public abstract class Persistence
 
   /**
    * Indicates whether the current instance has already been initialized.
-   * 
+   *
    * @return {@code true} if and only if the current instance is currently initialized
    * @see #initializeInstance()
    */
@@ -533,13 +530,12 @@ public abstract class Persistence
 
   /**
    * Initializes the persistence instance. If the instance is already {@link #isInitialized() initialized}, the method does nothing.
-   * 
+   * <p/>
    * <p>
    * It will be lazily invoked when the object is used for the first time when using the {@link #getInstance(int)} method.
    * </p>
-   * 
-   * @throws Persistence.PersistenceException
-   *           if something went wrong during the initialization
+   *
+   * @throws Persistence.PersistenceException if something went wrong during the initialization
    */
   public final synchronized void initialize()
       throws Persistence.PersistenceException
@@ -554,13 +550,12 @@ public abstract class Persistence
 
   /**
    * Is responsible for performing the {@link #initialize()} method job.
-   * 
+   * <p/>
    * <p>
    * The implementation must set the {@link #storageBackendAvailable} flag accordingly.
    * </p>
-   * 
-   * @throws Persistence.PersistenceException
-   *           if something went wrong during the initialization
+   *
+   * @throws Persistence.PersistenceException if something went wrong during the initialization
    * @see #isInitialized
    */
   protected abstract void initializeInstance()
@@ -568,14 +563,13 @@ public abstract class Persistence
 
   /**
    * Enables to access all the stored URIs. Each persistent entry is represented by a a local URI, and this method returns all of them.
-   * 
+   * <p/>
    * <p>
    * Note that the ordering of the returned list is not guaranteed to be stable.
    * </p>
-   * 
+   *
    * @return the list of the stored URIs stored in the persistence instance
-   * @throws Persistence.PersistenceException
-   *           in case an error occurred while computing the URIs or if the storage back-end is not available
+   * @throws Persistence.PersistenceException in case an error occurred while computing the URIs or if the storage back-end is not available
    * @see #getUrisInstance()
    */
   public final List<String> getUris()
@@ -587,10 +581,9 @@ public abstract class Persistence
 
   /**
    * Is responsible for performing the {@link #getUris()} method job.
-   * 
+   *
    * @return the list of the stored URIs stored in the persistence instance
-   * @throws Persistence.PersistenceException
-   *           in case an error occurred while computing the URIs
+   * @throws Persistence.PersistenceException in case an error occurred while computing the URIs
    * @see #getUris()
    */
   protected abstract List<String> getUrisInstance()
@@ -598,10 +591,9 @@ public abstract class Persistence
 
   /**
    * Indicates the latest update timestamp corresponding to an URI persistent entry.
-   * 
+   *
    * @return the date when the underlying persistent entry has been updated ; {@code null} if no persistent entry exists for the provided URI
-   * @throws Persistence.PersistenceException
-   *           in case an error occurred while processing the request or if the storage back-end is not available
+   * @throws Persistence.PersistenceException in case an error occurred while processing the request or if the storage back-end is not available
    * @see #getLastUpdateInstance()
    */
   @Override
@@ -614,10 +606,9 @@ public abstract class Persistence
 
   /**
    * Is responsible for performing the {@link #getLastUpdate()} method job.
-   * 
+   *
    * @return the date when the underlying persistent entry has been updated ; {@code null} if no persistent entry exists for the provided URI
-   * @throws Persistence.PersistenceException
-   *           in case an error occurred while processing the request
+   * @throws Persistence.PersistenceException in case an error occurred while processing the request
    * @see #getLastUpdate()
    */
   protected abstract Date getLastUpdateInstance(String uri)
@@ -625,12 +616,10 @@ public abstract class Persistence
 
   /**
    * Is responsible for extracting an input stream from the persistence related to the provided URI.
-   * 
-   * @param uri
-   *          the URI which identifies the stream to extract
+   *
+   * @param uri the URI which identifies the stream to extract
    * @return {@code null} if and only if there is no data associated to the given URI; otherwise, its related wrapped input stream is returned
-   * @throws Persistence.PersistenceException
-   *           in case an error occurred while extracting the input stream or if the storage back-end is not available
+   * @throws Persistence.PersistenceException in case an error occurred while extracting the input stream or if the storage back-end is not available
    * @see #readInputStreamInstance()
    * @see #readInputStream()
    */
@@ -643,18 +632,15 @@ public abstract class Persistence
 
   /**
    * Is responsible for writing persistently the stream related to the given URI.
-   * 
+   * <p/>
    * <p>
    * Beware: the {@link Business.InputAtom#inputStream} of the provided parameter is consumed by the method!
    * </p>
-   * 
-   * @param uri
-   *          the URI which identifies the stream to persist
-   * @param inputAtom
-   *          the wrapper which contains the stream to write
+   *
+   * @param uri       the URI which identifies the stream to persist
+   * @param inputAtom the wrapper which contains the stream to write
    * @return a new stream wrapper, which is operational, and in particular not {@null}
-   * @throws Persistence.PersistenceException
-   *           if a problem occurred while persisting the data or if the storage back-end is not available
+   * @throws Persistence.PersistenceException if a problem occurred while persisting the data or if the storage back-end is not available
    * @see #flushInputStreamInstance()
    */
   public final Business.InputAtom flushInputStream(String uri, Business.InputAtom inputAtom)
@@ -666,22 +652,18 @@ public abstract class Persistence
 
   /**
    * Is responsible for performing the {@link #flushInputStream()} method job.
-   * 
-   * @param uri
-   *          the URI which identifies the stream to persist
-   * @param inputAtom
-   *          the wrapper which contains the stream to write
+   *
+   * @param uri       the URI which identifies the stream to persist
+   * @param inputAtom the wrapper which contains the stream to write
    * @return a new stream wrapper, which is operational
-   * @throws Persistence.PersistenceException
-   *           if a problem occurred while persisting the data
+   * @throws Persistence.PersistenceException if a problem occurred while persisting the data
    * @see #flushInputStream()
    */
   protected abstract Business.InputAtom flushInputStreamInstance(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException;
 
   /**
-   * @throws Persistence.PersistenceException
-   *           if a problem occurred while reading the data or if the storage back-end is not available
+   * @throws Persistence.PersistenceException if a problem occurred while reading the data or if the storage back-end is not available
    * @see #readInputStreamInstance()
    */
   @Override
@@ -694,19 +676,16 @@ public abstract class Persistence
 
   /**
    * Is responsible for performing the {@link #readInputStream()} method job.
-   * 
-   * @param uri
-   *          the URI which identifies the stream to persist
-   * @throws Persistence.PersistenceException
-   *           if a problem occurred while reading the data
+   *
+   * @param uri the URI which identifies the stream to persist
+   * @throws Persistence.PersistenceException if a problem occurred while reading the data
    * @see #readInputStream()
    */
   protected abstract Business.InputAtom readInputStreamInstance(String uri)
       throws Persistence.PersistenceException;
 
   /**
-   * @throws Persistence.PersistenceException
-   *           if a problem occurred while writing the data or if the storage back-end is not available
+   * @throws Persistence.PersistenceException if a problem occurred while writing the data or if the storage back-end is not available
    * @see #writeInputStreamInstance()
    */
   @Override
@@ -719,26 +698,22 @@ public abstract class Persistence
 
   /**
    * Is responsible for performing the {@link #writeInputStream()} method job.
-   * 
-   * @param uri
-   *          the URI which identifies the stream to persist
-   * @param inputAtom
-   *          the binary form of the data to store for the provided URI
-   * @param returnStream
-   *          if set {@code true}, a valid {@link InputStream} corresponding to the provided {@link Business.InputAtom#inputStream} must be returned ;
-   *          if set to {@code false}, {@code null} must be returned
+   *
+   * @param uri          the URI which identifies the stream to persist
+   * @param inputAtom    the binary form of the data to store for the provided URI
+   * @param returnStream if set {@code true}, a valid {@link InputStream} corresponding to the provided {@link Business.InputAtom#inputStream} must be returned ;
+   *                     if set to {@code false}, {@code null} must be returned
    * @return {@code null} if {@code returnStream} is set to {@code false} ; if {@code returnStream} is set to {@code true}, an input stream which
-   *         holds the same data as the provided {@code inputAtom} {@link Business.InputAtom#inputStream}
-   * @throws Persistence.PersistenceException
-   *           if a problem occurred while writing the data
+   * holds the same data as the provided {@code inputAtom} {@link Business.InputAtom#inputStream}
+   * @throws Persistence.PersistenceException if a problem occurred while writing the data
    * @see #writeInputStream()
    */
-  protected abstract InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom, boolean returnStream)
+  protected abstract InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom,
+      boolean returnStream)
       throws Persistence.PersistenceException;
 
   /**
-   * @throws Persistence.PersistenceException
-   *           if a problem occurred while erasing the data or if the storage back-end is not available
+   * @throws Persistence.PersistenceException if a problem occurred while erasing the data or if the storage back-end is not available
    * @see #removeInstance()
    */
   @Override
@@ -751,11 +726,9 @@ public abstract class Persistence
 
   /**
    * Is responsible for performing the {@link #remove()} method job.
-   * 
-   * @param uri
-   *          the URI which identifies the stream to delete
-   * @throws Persistence.PersistenceException
-   *           if a problem occurred while erasing the data
+   *
+   * @param uri the URI which identifies the stream to delete
+   * @throws Persistence.PersistenceException if a problem occurred while erasing the data
    * @see #remove()
    */
   protected abstract void removeInstance(String uri)
@@ -763,42 +736,40 @@ public abstract class Persistence
 
   /**
    * Enables to define the way the persistence cache clean up is performed.
-   * 
+   * <p/>
    * <p>
    * This method is supposed to be invoked by the {@link #cleanUpInstance()} method, when it attempts to determine the
    * {@link Persistence.CleanUpPolicy} to use.
    * </p>
-   * 
+   *
    * @return a clean-up policy ; may be {@code null}, and in that case, the {@link #computePolicyAndCleanUpInstance()} should not run the
-   *         {@link #cleanUpInstance(CleanUpPolicy)} method
+   * {@link #cleanUpInstance(CleanUpPolicy)} method
    */
   protected abstract <CleanUpPolicyClass extends Persistence.CleanUpPolicy> CleanUpPolicyClass computeCleanUpPolicy();
 
   /**
    * Cleans-up the persistence.
-   * 
+   * <p/>
    * <p>
    * This will remove persistent entries depending on the provided {@code cleanUpPolicy}.
    * </p>
-   * 
-   * @param cleanUpPolicy
-   *          the policy to use for cleaning up the instance
-   * @throws if
-   *           any problem occurs while cleaning up the instance
+   *
+   * @param cleanUpPolicy the policy to use for cleaning up the instance
+   * @throws if any problem occurs while cleaning up the instance
    * @see #cleanUp()
    */
-  protected abstract <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(CleanUpPolicyClass cleanUpPolicy)
+  protected abstract <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(
+      CleanUpPolicyClass cleanUpPolicy)
       throws Persistence.PersistenceException;
 
   /**
    * Empties the persistence.
-   * 
+   * <p/>
    * <p>
    * Once called, the persistence storage will be emptied, but the instance can keep on being used as is.
    * </p>
-   * 
-   * @throws if
-   *           any problem occurs while emptying the persistence
+   *
+   * @throws if any problem occurs while emptying the persistence
    * @see #clear()
    */
   protected abstract void clearInstance()
@@ -806,13 +777,12 @@ public abstract class Persistence
 
   /**
    * Closes the persistence.
-   * 
+   * <p/>
    * <p>
    * Once called, the persistence will need to be {@link #initialize() initialized again}, before being used.
    * </p>
-   * 
-   * @throws if
-   *           any problem occurs while closing the persistence
+   *
+   * @throws if any problem occurs while closing the persistence
    * @see #close()
    */
   protected abstract void closeInstance()
@@ -822,14 +792,13 @@ public abstract class Persistence
    * Cleans up the cache related to the current instance. This will remove persistent entries depending on the computed
    * {@link #computeCleanUpPolicy()} : if this policy is {@code null}, nothing is done. The method will invoke the
    * {@link #computePolicyAndCleanUpInstance()} method.
-   * 
+   * <p/>
    * <p>
    * During this operation, the instance should not be accessed, and the implementation is not responsible for ensuring that: it is up to the caller
    * to make sure that no other instance method is being invoked during its execution!
    * </p>
-   * 
-   * @throws if
-   *           any problem occurs while cleaning up the instance
+   *
+   * @throws if any problem occurs while cleaning up the instance
    * @see #cleanUpInstance()
    * @see #clear()
    * @see #close()
@@ -858,9 +827,8 @@ public abstract class Persistence
   /**
    * Is responsible for invoking the {@link #computeCleanUpPolicy()} and then, if the returned value not {@code null}, invoke the
    * {@link #cleanUpInstance(CleanUpPolicy)} method.
-   * 
-   * @throws Persistence.PersistenceException
-   *           if something goes wrong during the {@link #cleanUpInstance(CleanUpPolicy)} method execution
+   *
+   * @throws Persistence.PersistenceException if something goes wrong during the {@link #cleanUpInstance(CleanUpPolicy)} method execution
    */
   protected abstract void computePolicyAndCleanUpInstance()
       throws Persistence.PersistenceException;
@@ -868,13 +836,12 @@ public abstract class Persistence
   /**
    * Totally clears the cache related to the current instance. This will delete all the entries. The method will invoke the {@link #clearInstance()}
    * method.
-   * 
+   * <p/>
    * <p>
    * Once cleared, the current instance can be used as is.
    * </p>
-   * 
-   * @throws if
-   *           any problem occurs while clearing the persistence
+   *
+   * @throws if any problem occurs while clearing the persistence
    * @see #clearInstance()
    * @see #close()
    * @see #clearAll()
@@ -897,11 +864,11 @@ public abstract class Persistence
 
   /**
    * Closes the current instance. The method will invoke the {@link #closeInstance()} method.
-   * 
+   * <p/>
    * <p>
    * Once closed, the current instance cannot be used until an explicit {@link #initialize()} call is performed.
    * </p>
-   * 
+   *
    * @see #closeInstance()
    * @see #clear()
    * @see #closeAll()

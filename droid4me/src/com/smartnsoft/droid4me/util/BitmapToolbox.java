@@ -34,7 +34,7 @@ import android.widget.ImageView.ScaleType;
 
 /**
  * A toolbox of {@link Bitmap} functions, that handle bitmap transformations.
- * 
+ *
  * @author Édouard Mercier
  * @since 2010.02.27
  */
@@ -59,15 +59,13 @@ public final class BitmapToolbox
 
   /**
    * Flips the provided bitmap horizontally or vertically.
-   * 
+   * <p/>
    * <p>
    * Warning, the original bitmap is recycled and cannot be used after this call!
    * </p>
-   * 
-   * @param bitmap
-   *          the bitmap to flip
-   * @param horizontal
-   *          indicates the flip direction
+   *
+   * @param bitmap     the bitmap to flip
+   * @param horizontal indicates the flip direction
    * @return the transformed bitmap
    */
   public static Bitmap flipBitmap(Bitmap bitmap, boolean horizontal)
@@ -82,20 +80,15 @@ public final class BitmapToolbox
 
   /**
    * Merges a little bitmap to a larger one.
-   * 
+   * <p/>
    * <p>
    * Warning, the original bitmaps are recycled and cannot be used after this call!
    * </p>
-   * 
-   * @param bigBitmap
-   *          this object is {@link Bitmap#recycle() recycled} once the method has returned
-   * @param littleBitmap
-   *          this object is {@link Bitmap#recycle() recycled} once the method has returned
-   * @param left
-   *          the left of the top-left corner position on the big bitmap where to place the little bitmap
-   * @param left
-   *          the top of the top-left corner position on the big bitmap where to place the little bitmap
-   * 
+   *
+   * @param bigBitmap    this object is {@link Bitmap#recycle() recycled} once the method has returned
+   * @param littleBitmap this object is {@link Bitmap#recycle() recycled} once the method has returned
+   * @param left         the left of the top-left corner position on the big bitmap where to place the little bitmap
+   * @param left         the top of the top-left corner position on the big bitmap where to place the little bitmap
    * @return a bitmap which is a merge of the two bitmaps
    */
   public static Bitmap mergeBitmaps(Bitmap bigBitmap, Bitmap littleBitmap, int left, int top)
@@ -115,24 +108,20 @@ public final class BitmapToolbox
 
   /**
    * Computes a new bitmap with a reflect at the bottom.
-   * 
+   * <p/>
    * <p>
    * Warning, the original bitmap is recycled and cannot be used after this call!
    * </p>
-   * 
-   * @param bitmap
-   *          the bitmap used for the reflection
-   * @param reflectionRatio
-   *          the percentage of the input bitmap height (between 0 and 1) which indicates the height of the reflect
-   * @param reflectionGap
-   *          the number of pixels that should separate the bitmap and its reflect
-   * @param startGradientColor
-   *          the color (with an alpha properly set), which is used to start the reflection gradient
-   * @param endGradientColor
-   *          the color (with an alpha properly set), which is used to end the reflection gradient; a typical value is <code>0x00ffffff</code>
+   *
+   * @param bitmap             the bitmap used for the reflection
+   * @param reflectionRatio    the percentage of the input bitmap height (between 0 and 1) which indicates the height of the reflect
+   * @param reflectionGap      the number of pixels that should separate the bitmap and its reflect
+   * @param startGradientColor the color (with an alpha properly set), which is used to start the reflection gradient
+   * @param endGradientColor   the color (with an alpha properly set), which is used to end the reflection gradient; a typical value is <code>0x00ffffff</code>
    * @return a new bitmap, which contains the reflect
    */
-  public static Bitmap computeReflectedBitmap(Bitmap bitmap, float reflectionRatio, int reflectionGap, int startGradientColor, int endGradientColor)
+  public static Bitmap computeReflectedBitmap(Bitmap bitmap, float reflectionRatio, int reflectionGap,
+      int startGradientColor, int endGradientColor)
   {
     final int width = bitmap.getWidth();
     final int height = bitmap.getHeight();
@@ -143,8 +132,7 @@ public final class BitmapToolbox
 
     // Create a Bitmap with the flip matrix applied to it.
     // We only want the bottom half of the image
-    final Bitmap reflectionBitmap = Bitmap.createBitmap(bitmap, 0, height - (int) (height * reflectionRatio), width, (int) (height * reflectionRatio), matrix,
-        false);
+    final Bitmap reflectionBitmap = Bitmap.createBitmap(bitmap, 0, height - (int) (height * reflectionRatio), width, (int) (height * reflectionRatio), matrix, false);
 
     // Create a new bitmap with same width but taller to fit reflection
     final Bitmap bitmapWithReflection = Bitmap.createBitmap(width, height + (int) (height * reflectionRatio), Config.ARGB_8888);
@@ -177,18 +165,15 @@ public final class BitmapToolbox
 
   /**
    * Resizes a bitmap so that it is filled with transparency in order to match the expected dimension. No scaling is performed.
-   * 
+   * <p/>
    * <p>
    * Warning, the original bitmap is recycled and cannot be used after this call; furthermore, it is supposed that the provided image is smaller in
    * both dimension that the provided dimensions!
    * </p>
-   * 
-   * @param bitmap
-   *          the bitmap to enlarge
-   * @param width
-   *          the new width of the image, which much be greater or equal than the provided bitmap width
-   * @param height
-   *          the new height of the image, which much be greater or equal than the provided bitmap height
+   *
+   * @param bitmap the bitmap to enlarge
+   * @param width  the new width of the image, which much be greater or equal than the provided bitmap width
+   * @param height the new height of the image, which much be greater or equal than the provided bitmap height
    * @return the resized image
    */
   public static Bitmap enlarge(Bitmap bitmap, int width, int height)
@@ -207,23 +192,18 @@ public final class BitmapToolbox
   /**
    * Generates a translucent bitmap with the provided dimensions, and draws inside (centered) the provided bitmap, while respecting its original
    * ratio.
-   * 
-   * @param bitmap
-   *          the bitmap to draw
-   * @param scaleType
-   *          if set to {@code ScaleType#FIT_CENTER} and the provided bitmap both dimensions are smaller than the target frame, then the provided
-   *          bitmap is scaled so as to fill as much as possible the frame
-   * @param width
-   *          the target frame width
-   * @param height
-   *          the target frame height
-   * @param config
-   *          the newly created bitmap configuration
-   * @param recycle
-   *          if set to {@code true}, the provided bitmap is {@link Bitmap#recycle() recycled}
+   *
+   * @param bitmap    the bitmap to draw
+   * @param scaleType if set to {@code ScaleType#FIT_CENTER} and the provided bitmap both dimensions are smaller than the target frame, then the provided
+   *                  bitmap is scaled so as to fill as much as possible the frame
+   * @param width     the target frame width
+   * @param height    the target frame height
+   * @param config    the newly created bitmap configuration
+   * @param recycle   if set to {@code true}, the provided bitmap is {@link Bitmap#recycle() recycled}
    * @return a bitmap with the provided dimensions
    */
-  public static Bitmap scale(Bitmap bitmap, ScaleType scaleType, int width, int height, Bitmap.Config config, boolean recycle)
+  public static Bitmap scale(Bitmap bitmap, ScaleType scaleType, int width, int height, Bitmap.Config config,
+      boolean recycle)
   {
     // Create a new bitmap with the final size
     final Bitmap resizedBitmap = Bitmap.createBitmap(width, height, config);

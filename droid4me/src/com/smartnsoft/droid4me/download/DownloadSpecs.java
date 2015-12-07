@@ -18,7 +18,7 @@ package com.smartnsoft.droid4me.download;
 
 /**
  * Gathers in one place some commonly used specifications used by the {@link BitmapDownloader}.
- * 
+ *
  * @author Édouard Mercier
  * @since 2011.07.03
  */
@@ -109,18 +109,18 @@ public class DownloadSpecs
   public static class SizedImageSpecs
       extends TemporaryImageSpecs
   {
-  
+
     public final int width;
-  
+
     public final int height;
-  
+
     public SizedImageSpecs(int imageResourceId, int width, int height)
     {
       super(imageResourceId);
       this.width = width;
       this.height = height;
     }
-  
+
   }
 
   /**

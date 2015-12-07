@@ -26,13 +26,12 @@ import android.graphics.drawable.Drawable;
 
 /**
  * A very basic bitmap drawable which displays the image just like it is. It is translucent.
- * 
+ * <p/>
  * Inspired from the Shelves application at
  * http://shelves.googlecode.com/svn/trunk/Shelves/src/org/curiouscreature/android/shelves/drawable/FastBitmapDrawable.java.
- * 
+ *
  * @author Édouard Mercier
  * @since 2010.02.24
- * 
  */
 public final class BasicBitmapDrawable
     extends Drawable

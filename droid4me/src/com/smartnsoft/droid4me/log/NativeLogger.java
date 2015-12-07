@@ -22,13 +22,13 @@ import android.util.Log;
 
 /**
  * An implementation which uses the Java standard output and error streams.
- * 
+ * <p/>
  * <p>
  * This implementation can be used when the code integrating the library needs to run on an environment with no Android runtime available.
  * </p>
- * 
- * @see LoggerFactory
+ *
  * @author Édouard Mercier
+ * @see LoggerFactory
  * @since 2007.12.23
  */
 public class NativeLogger

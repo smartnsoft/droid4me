@@ -22,7 +22,7 @@ import com.smartnsoft.droid4me.LifeCycle;
 
 /**
  * A basic implementation.
- * 
+ *
  * @author Édouard Mercier
  * @since 2008.08.11
  */

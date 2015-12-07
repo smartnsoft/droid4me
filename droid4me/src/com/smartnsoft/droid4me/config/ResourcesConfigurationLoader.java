@@ -21,7 +21,7 @@ import android.content.Context;
 
 /**
  * A basis class which reads the configuration from a the {@code res} sub-directories.
- * 
+ *
  * @author Jocelyn Girard, Édouard Mercier
  * @since 2014.06.20
  */

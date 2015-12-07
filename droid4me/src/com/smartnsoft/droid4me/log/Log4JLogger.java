@@ -21,15 +21,15 @@ import org.apache.log4j.Level;
 
 /**
  * The logger implementation for Log4J, which works with the "android-logging-log4j" library.
- * 
+ * <p/>
  * <p>
  * When using this implementation (see {@link LoggerFactory.LoggerConfigurator}), the classpath should have {@code log4j.jar} and {@link android
  * -logging-log4j.jar} libraries.
  * </p>
- * 
+ *
  * @author Édouard Mercier
- * @since 2013.04.18
  * @see LoggerFactory
+ * @since 2013.04.18
  */
 public class Log4JLogger
     implements Logger

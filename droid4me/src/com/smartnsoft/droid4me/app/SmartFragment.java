@@ -15,13 +15,12 @@ import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 
 /**
  * A basis classes for designing a {@link Fragment} compatible with the framework, i.e. droid4me-ready.
- * 
+ * <p/>
  * <p>
  * Warning: this class is only available for applications running under Android v3+, i.e. release 11+!
  * </p>
- * 
- * @param <AggregateClass>
- *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ *
+ * @param <AggregateClass> the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
  * @author Jocelyn Girard, Édouard Mercier
  * @since 2011.12.08
  */
@@ -252,7 +251,7 @@ public abstract class SmartFragment<AggregrateClass>
 
   /**
    * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
-   * 
+   *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
   public final void refreshBusinessObjectsAndDisplay()
@@ -267,10 +266,9 @@ public abstract class SmartFragment<AggregrateClass>
   /**
    * Does the same thing as the {@link #getActivity()}, except that it throws an exception if the fragment has been detached, instead of returning
    * {@code null}
-   * 
+   *
    * @return a never-null activity, which is the hosting activity
-   * @throws IllegalStateException
-   *           if the fragment activity is currently null
+   * @throws IllegalStateException if the fragment activity is currently null
    * @deprecated do not use that method anymore!
    */
   @Deprecated

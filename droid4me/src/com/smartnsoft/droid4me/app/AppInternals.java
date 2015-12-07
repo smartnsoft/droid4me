@@ -45,7 +45,7 @@ import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
 
 /**
  * Gathers some internal interfaces and helpers for the types belonging to its Java package.
- * 
+ *
  * @author Édouard Mercier
  * @since 2010.01.05
  */
@@ -54,7 +54,7 @@ final class AppInternals
 
   /**
    * Defines several contracts for each {@link Activity activity}/{@link android.app.Fragment} entity of the framework.
-   * 
+   *
    * @since 2010.01.05
    */
   interface LifeCycleInternals
@@ -62,12 +62,12 @@ final class AppInternals
 
     /**
      * Indicates whether nothing went wrong during the implementing entity, or if a {@link #isBeingRedirected() redirection} is being processed.
-     * 
+     * <p/>
      * <p>
      * Thanks to the {@link ActivityController.Redirector redirection controller}, it is possible to re-route any {@link Smartable} {@link Activity}
      * when it starts, if some other {@code Activity} needs to be executed beforehand.
      * </p>
-     * 
+     *
      * @return {@code true} if and only if the implementing {@link Activity}/@{link android.app.Fragment} entity should resume its execution
      */
     boolean shouldKeepOn();
@@ -76,12 +76,9 @@ final class AppInternals
 
   /**
    * There for gathering all instance variables, and in order to make copy and paste smarter.
-   * 
-   * @param <AggregateClass>
-   *          the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
-   * @param <ComponentClass>
-   *          the instance the container has been created for
-   * 
+   *
+   * @param <AggregateClass> the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+   * @param <ComponentClass> the instance the container has been created for
    * @since 2009.02.16
    */
   final static class StateContainer<AggregateClass, ComponentClass>
@@ -110,12 +107,13 @@ final class AppInternals
     /**
      * Just here to mark the generated {@link BroadcastReceiver} which are supposed to use the native Android broadcast mechanism, and not the
      * {@link LocalBroadcastManager}.
-     * 
+     *
      * @since 2013.04.22
      */
     private static abstract class NativeBroadcastReceiver
         extends BroadcastReceiver
     {
+
     }
 
     private static final Logger log = LoggerFactory.getInstance(StateContainer.class);
@@ -185,11 +183,9 @@ final class AppInternals
 
     /**
      * Should only be created by classes in the same package.
-     * 
-     * @param activity
-     *          the activity this container has been created for
-     * @param component
-     *          the component this container has been created for
+     *
+     * @param activity  the activity this container has been created for
+     * @param component the component this container has been created for
      */
     StateContainer(Activity activity, ComponentClass component)
     {
@@ -250,7 +246,7 @@ final class AppInternals
 
     /**
      * @return {@code true} if and only of the underlying entity is {@link #isAlive()} and the {@link #activity hosting Activity} is still not
-     *         {@link Activity#isFinishing()}
+     * {@link Activity#isFinishing()}
      * @see #isAlive
      */
     final boolean isAliveAsWellAsHostingActivity()
@@ -615,7 +611,7 @@ final class AppInternals
 
     /**
      * Invoked when the underlying activity/fragment enters the {@link Activity#onDestroy()} method.
-     * 
+     * <p/>
      * <p>
      * The method marks the entity as {@link #isAlive no more alive}, unregisters the previously registered {@link AppPublics.BroadcastListener
      * broadcast listeners}, and eventually interrupts all pending {@link #futures}.
@@ -681,7 +677,8 @@ final class AppInternals
       return stopHandling == false && beingRedirected == false;
     }
 
-    synchronized boolean shouldDelayRefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
+    synchronized boolean shouldDelayRefreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver,
+        boolean immediately)
     {
       // If the entity or the hosting Activity is finishing, we give up
       if (isAliveAsWellAsHostingActivity() == false)
@@ -715,17 +712,14 @@ final class AppInternals
 
     /**
      * Is responsible for executing the given runnable in background via the {@link AppInternals#THREAD_POOL internal threads pool}.
-     * 
+     * <p/>
      * <p>
      * The command will be remembered, so as to be able to abort/cancel/remove it when the underlying activity/fragment is destroyed.
      * </p>
-     * 
-     * @param activity
-     *          the activity which is responsible for running the command
-     * @param component
-     *          the component which is responsible for running the command ; may be {@code null}
-     * @param runnable
-     *          the command to execute
+     *
+     * @param activity  the activity which is responsible for running the command
+     * @param component the component which is responsible for running the command ; may be {@code null}
+     * @param runnable  the command to execute
      */
     void execute(Activity activity, Object component, Runnable runnable)
     {
@@ -766,17 +760,17 @@ final class AppInternals
 
   /**
    * This threads pool is used internally, in order to prevent from new thread creation, for an optimization purpose.
-   * 
+   * <p/>
    * <ul>
    * <li>This pool can contain an unlimited number of threads;</li>
    * <li>exceptions thrown by the {@link Runnable} are handled by the
    * {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler}.</li>
    * </ul>
-   * 
+   * <p/>
    * <p>
    * This pool will be used by the framework, instead of creating new threads.
    * </p>
-   * 
+   *
    * @see SmartCommands#LOW_PRIORITY_THREAD_POOL
    */
   final static SmartCommands.SmartThreadPoolExecutor THREAD_POOL = new SmartCommands.SmartThreadPoolExecutor(0, Integer.MAX_VALUE, 60l, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadFactory()

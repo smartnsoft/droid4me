@@ -35,7 +35,7 @@ import com.smartnsoft.droid4me.bo.Business.InputAtom;
 
 /**
  * Enables to store on the internal/external device "hard-drive" and cache in memory some contents.
- * 
+ *
  * @author Édouard Mercier
  * @since 2009.03.26
  */
@@ -360,7 +360,8 @@ public final class FilePersistence
    * This implementation does nothing.
    */
   @Override
-  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(CleanUpPolicyClass cleanUpPolicy)
+  protected <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(
+      CleanUpPolicyClass cleanUpPolicy)
       throws PersistenceException
   {
   }

@@ -25,7 +25,7 @@ import android.content.Context;
 
 /**
  * A basis class which reads the configuration from a file located in the Android application internal storage.
- * 
+ *
  * @author Édouard Mercier
  * @since 2013.10.19
  */
@@ -39,7 +39,8 @@ public class InternalStorageConfigurationLoader
 
   private final ConfigurationParser<InputStream> configurationParser;
 
-  public InternalStorageConfigurationLoader(Context context, String fileName, ConfigurationParser<InputStream> configurationParser)
+  public InternalStorageConfigurationLoader(Context context, String fileName,
+      ConfigurationParser<InputStream> configurationParser)
   {
     this.context = context;
     this.fileName = fileName;
