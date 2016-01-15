@@ -52,7 +52,6 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  */
 public abstract class SmartApplication
     extends Application
-
 {
 
   /**
