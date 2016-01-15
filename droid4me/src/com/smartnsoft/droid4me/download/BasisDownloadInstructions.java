@@ -19,7 +19,6 @@ package com.smartnsoft.droid4me.download;
 import java.io.IOException;
 import java.io.InputStream;
 
-import android.graphics.Bitmap;
 import android.view.View;
 
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
@@ -54,8 +53,8 @@ public class BasisDownloadInstructions
      *
      * @param view the View the command should be executed against: cannot be {@code null}
      * @return {@code true} if and only the bitmap should be taken locally, instead of running into the downloading process: in that case, the
-     * {@link Instructions#onBindLocalBitmap(View, String, Object)} will be invoked
-     * @see #onBindLocalBitmap(Viewable, String, Object)
+     * {@link Instructions#onBindLocalBitmap(Viewable, Bitmapable, String, Object)} will be invoked
+     * @see #onBindLocalBitmap(Viewable, Bitmapable, String, Object)
      */
     BitmapClass hasLocalBitmap(ViewClass view, String bitmapUid, Object imageSpecs);
 
@@ -66,8 +65,8 @@ public class BasisDownloadInstructions
      * It is ensured that this method will be run from the UI thread.
      * </p>
      *
-     * @param bitmap the bitmap which has previously returned from the {@link #hasTemporaryBitmap(String, Object)} method, if not {@code null}
-     * @see #hasLocalBitmap(String, Object)
+     * @param bitmap the bitmap which has previously returned from the {@link #hasTemporaryBitmap(Viewable, String, Object)} method, if not {@code null}
+     * @see #hasLocalBitmap(Viewable, String, Object)
      */
     void onBindLocalBitmap(ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs);
 
@@ -107,7 +106,7 @@ public class BasisDownloadInstructions
      *
      * @param view the View the command should be executed against: cannot be {@code null}
      * @return a non-{@code null} bitmap if and only if a temporary bitmap should be used for the underlying view: in that case, the
-     * {@link Instructions#onBindTemporaryBitmap(View, String, Object)} will be invoked with this provided returned valued
+     * {@link Instructions#onBindTemporaryBitmap(Viewable, Bitmapable, String, Object)} will be invoked with this provided returned valued
      * @see #onBindTemporaryBitmap(Viewable, Bitmapable, String, Object)
      */
     BitmapClass hasTemporaryBitmap(ViewClass view, String bitmapUid, Object imageSpecs);
@@ -123,8 +122,8 @@ public class BasisDownloadInstructions
      * It is ensured that this method will be run from the UI thread.
      * </p>
      *
-     * @param bitmap the bitmap which has previously returned from the {@link #hasTemporaryBitmap(String, Object)} method, if not {@code null}
-     * @see #hasTemporaryBitmap(String, Object)
+     * @param bitmap the bitmap which has previously returned from the {@link #hasTemporaryBitmap(Viewable, String, Object)} method, if not {@code null}
+     * @see #hasTemporaryBitmap(Viewable, String, Object)
      */
     void onBindTemporaryBitmap(ViewClass view, BitmapClass bitmap, String bitmapUid, Object imageSpecs);
 
@@ -137,9 +136,9 @@ public class BasisDownloadInstructions
      * </p>
      *
      * @param instructor if you want the input stream download to be asynchronous, call
-     *                   {@link CoreBitmapDownloader.InputStreamDownloadInstructor#setAsynchronous()} and return {@code null} ; once the input stream has been
-     *                   download, invoke {@link CoreBitmapDownloader.InputStreamDownloadInstructor#onDownloaded(InputStream)}.
-     * @return if {@code null} and {@link CoreBitmapDownloader.InputStreamDownloadInstructor#setAsynchronous()} has not been invoked, the framework
+     *                   {@link BasisDownloadInstructions.InputStreamDownloadInstructor#setAsynchronous()} and return {@code null} ; once the input stream has been
+     *                   download, invoke {@link BasisDownloadInstructions.InputStreamDownloadInstructor#onDownloaded(InputStream)}.
+     * @return if {@code null} and {@link BasisDownloadInstructions.InputStreamDownloadInstructor#setAsynchronous()} has not been invoked, the framework
      * will download the input from Internet; otherwise that input stream will be used for populating the view
      */
     InputStream getInputStream(String bitmapUid, Object imageSpecs, String url,
@@ -278,7 +277,7 @@ public class BasisDownloadInstructions
    * <p/>
    * <p>
    * Caution: this implementation supposes that the provided {@View view} is actually an {@ImageView} in the
-   * {@link BasisDownloadInstructions.AbstractInstructions#onBindBitmap(boolean, View, Bitmap, String, Object)} method.
+   * {@link BasisDownloadInstructions.AbstractInstructions#onBindBitmap(boolean, Viewable, Bitmapable, String, Object)} method.
    * </p>
    */
   public static class AbstractInstructions<BitmapClass extends Bitmapable, ViewClass extends Viewable>

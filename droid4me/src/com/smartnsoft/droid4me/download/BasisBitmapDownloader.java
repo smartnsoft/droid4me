@@ -1253,7 +1253,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   /**
    * A map which handles the priorities of the {@link BasisBitmapDownloader.PreCommand pre-commands}: when a new command for an {@link View} is asked
-   * for, if a {@link BasisBitmapDownloader.PreCommand} is already stacked for the same view (i.e. present in {@link #preStack stacked}), the old one
+   * for, if a {@link BasisBitmapDownloader.PreCommand} is already stacked for the same view (i.e. present in {@link #prioritiesPreStack stacked}), the old one
    * will be discarded.
    */
   private final Map<ViewClass, PreCommand> prioritiesPreStack;
@@ -1261,7 +1261,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
   /**
    * A map which contains all the {@link BasisBitmapDownloader.PreCommand commands} that are currently at the top of the priorities stack. When a new
    * command for an {@link View} is asked for, if a {@link BasisBitmapDownloader.PreCommand} is already stacked for the same view (i.e. present in
-   * {@link BasisBitmapDownloader#preStack stacked}), the old one will be discarded.
+   * {@link BasisBitmapDownloader#prioritiesPreStack stacked}), the old one will be discarded.
    */
   private final Map<ViewClass, Integer> prioritiesStack;
 

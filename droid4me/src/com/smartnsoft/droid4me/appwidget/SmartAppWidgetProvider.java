@@ -8,7 +8,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 /**
  * Just wraps an {@link AppWidgetProvider Android application widget}.
  *
- * @author Édouard Mercier
+ * @author Édouard Mercier
  * @since 2011.03.24
  */
 public abstract class SmartAppWidgetProvider

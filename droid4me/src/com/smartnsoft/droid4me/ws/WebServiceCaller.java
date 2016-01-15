@@ -64,11 +64,11 @@ import org.json.JSONException;
  * <ol>
  * <li>the {@link #isConnected()} method is checked: if the return value is set to {@code false}, no request will be attempted and a
  * {@link WebServiceCaller.CallException} exception will be thrown (embedding a {@link UnknownHostException} exception) ;</li>
- * <li>the {@link #onBeforeHttpRequestExecution(DefaultHttpClient, HttpRequestBase)} method will be invoked, so as to let the caller tune the HTTP
+ * <li>the {@link #onBeforeHttpRequestExecution(HttpClient, HttpRequestBase, CallType)} method will be invoked, so as to let the caller tune the HTTP
  * method request ;</li>
  * <li>if a connection issue arises (connection time-out, socket time-out, lost of connectivity), a {@link WebServiceCaller.CallException} exception
  * will be thrown, and it will {@link Throwable#getCause() embed} the reason for the connection issue ;</li>
- * <li>if the status code of the HTTP response does not belong to the [{@link HttpStatus.SC_OK}, {@link HttpStatus.SC_MULTI_STATUS}] range, the
+ * <li>if the status code of the HTTP response does not belong to the [{@link HttpStatus#SC_OK}, {@link HttpStatus#SC_MULTI_STATUS}] range, the
  * {@link #onStatusCodeNotOk(String, WebServiceClient.CallType, HttpEntity, HttpResponse, int, int)} method will be invoked.</li>
  * </ol>
  * </p>
@@ -524,16 +524,16 @@ public abstract class WebServiceCaller
   /**
    * Computes a URI from its path elements.
    *
-   * @param methodUriPrefix the URI prefix
-   * @param methodUriSuffix the URI suffix ; a {@code /} separator will be appended after the {@code methodUriPrefix} parameter, if not {@code null}. May be
-   *                        {@code null}
-   * @param uriParameters   a dictionary with {@link String} keys and {@link String} values, which holds the URI query parameters ; may be {@code null}. If a value
-   *                        is {@code null}, an error log will be issued. If a value is the empty string ({@code ""}), the dictionary key will be used as the
-   *                        name+value URI parameter ; this is especially useful when the parameter value should not be encoded
-   * @param indicates       whether the provided {@code methodUriPrefix} or the {@code methodUriSuffix} parameters already contain a question mark {@code ?}, so
-   *                        that, when computing the URI with the additional {@code uriParameters}, it is not appended again. This is especially useful when
-   *                        building an URI from a basis URI, which already contains a {@code ?} for declaring URI parameters
-   * @param urlEnconding    the encoding used for writing the URI query parameters values
+   * @param methodUriPrefix             the URI prefix
+   * @param methodUriSuffix             the URI suffix ; a {@code /} separator will be appended after the {@code methodUriPrefix} parameter, if not {@code null}. May be
+   *                                    {@code null}
+   * @param uriParameters               a dictionary with {@link String} keys and {@link String} values, which holds the URI query parameters ; may be {@code null}. If a value
+   *                                    is {@code null}, an error log will be issued. If a value is the empty string ({@code ""}), the dictionary key will be used as the
+   *                                    name+value URI parameter ; this is especially useful when the parameter value should not be encoded
+   * @param alreadyContainsQuestionMark indicates whether the provided {@code methodUriPrefix} or the {@code methodUriSuffix} parameters already contain a question mark {@code ?}, so
+   *                                    that, when computing the URI with the additional {@code uriParameters}, it is not appended again. This is especially useful when
+   *                                    building an URI from a basis URI, which already contains a {@code ?} for declaring URI parameters
+   * @param urlEnconding                the encoding used for writing the URI query parameters values
    * @return a valid URI that may be used for running an HTTP request, for instance
    */
   public static String encodeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters,

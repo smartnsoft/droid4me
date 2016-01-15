@@ -138,7 +138,6 @@ public class BitmapDownloader
      * </p>
      *
      * @param context the context that will host the created widget
-     * @param height  the height of the generated widget
      * @return an Android {@link ViewGroup}, that you may add to a widgets hierarchy
      */
     public ViewGroup getView(Context context)

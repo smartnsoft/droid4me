@@ -50,7 +50,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
    *
    * @param activityClass the class of the splash screen
    * @return a non {@code null} date, if and only if the given screen has been initialized ; in that case, the returned date is the timestamp when it
-   * has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class))}
+   * has been marked as {@link SmartSplashScreenActivity#markAsInitialized(Class, boolean)})}
    */
   public static Date isInitialized(Class<? extends Activity> activityClass)
   {
@@ -227,7 +227,7 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
 
   /**
    * Indicates to the splash screen to stop doing anything, prevents the calling Intent from being executed, and considers the splash-screen as
-   * {@link #markAsUnitialized(Class) uninitialized}. Once this method has been invoked, the splash screen will never be able to resume.
+   * {@link #markAsInitialized(Class, boolean)} uninitialized. Once this method has been invoked, the splash screen will never be able to resume.
    * <p/>
    * <p>
    * Invoke this method during the {@link #onRetrieveBusinessObjectsCustom() method}. It may be called from any thread.

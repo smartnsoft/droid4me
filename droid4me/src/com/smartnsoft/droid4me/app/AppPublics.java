@@ -29,9 +29,11 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
@@ -103,7 +105,7 @@ public final class AppPublics
    * @author Édouard Mercier
    * @since 2010.01.05
    */
-  public static interface LifeCyclePublic
+  public interface LifeCyclePublic
   {
 
     /**
@@ -149,13 +151,13 @@ public final class AppPublics
 
     /**
      * Indicates whether the extending {@link Activity}/{@link android.app.Fragment} entity also implementing the {@link LifeCycle} interface is in
-     * the middle of a {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} call.
+     * the middle of a {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)} call.
      * <p/>
      * <p>
      * It is very handy when it comes to disable certain things, like menu entries, while an {@link Activity} is loading.
      * </p>
      *
-     * @return {@code true} if and only if the {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} is being executed.
+     * @return {@code true} if and only if the {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)} is being executed.
      */
     boolean isRefreshingBusinessObjectsAndDisplay();
 
@@ -176,7 +178,7 @@ public final class AppPublics
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   @Inherited
-  public static @interface UseNativeBroadcast
+  public @interface UseNativeBroadcast
   {
 
   }
@@ -194,19 +196,19 @@ public final class AppPublics
    * </p>
    * <p/>
    * <p>
-   * The framework will request this interface methods during the {@link Activity#onCreate(android.os.Bundle)} or
-   * {@link android.app.Fragment#onCreate(android.os.Bundle)} methods, create a corresponding {@link android.content.BroadcastReceiver} and
+   * The framework will request this interface methods during the {@link Activity#onCreate(Bundle)} or
+   * {@link android.app.Fragment#onCreate(Bundle)} methods, create a corresponding {@link android.content.BroadcastReceiver} and
    * {@link Context#registerReceiver(android.content.BroadcastReceiver, IntentFilter) register it}. This created
    * {@link android.content.BroadcastReceiver} will be {@link Context#unregisterReceiver(android.content.BroadcastReceiver) unregistered} during the
-   * {@link Activity#onDestroy()} or {@link android.app.Fragment#onDestroy()} method.
+   * {@link Activity#onDestroy()} or {@link Fragment#onDestroy()} method.
    * </p>
    *
    * @see Smarted#registerBroadcastListeners(BroadcastListener[])
    * @see AppPublics.BroadcastListenerProvider
-   * @see AppPublics.BroadcastListenersProviders
+   * @see AppPublics.BroadcastListenersProvider
    * @since 2010.02.04
    */
-  public static interface BroadcastListener
+  public interface BroadcastListener
   {
 
     /**
@@ -234,7 +236,7 @@ public final class AppPublics
   }
 
   /**
-   * States that the Android {@link Activity} or {@link android.app.Fragment} entity which implements this interface is able to provide a single
+   * States that the Android {@link Activity} or {@link Fragment} entity which implements this interface is able to provide a single
    * {@link AppPublics.BroadcastListener}.
    * <p/>
    * <p>
@@ -246,10 +248,10 @@ public final class AppPublics
    *
    * @see Smarted#registerBroadcastListeners(BroadcastListener[])
    * @see AppPublics.BroadcastListener
-   * @see AppPublics.BroadcastListenersProviders
+   * @see AppPublics.BroadcastListenersProvider
    * @since 2010.02.04
    */
-  public static interface BroadcastListenerProvider
+  public interface BroadcastListenerProvider
   {
 
     /**
@@ -263,7 +265,7 @@ public final class AppPublics
   }
 
   /**
-   * States that the Android {@link Activity} or {@link android.app.Fragment} entity which implements this interface is able to provide several
+   * States that the Android {@link Activity} or {@link Fragment} entity which implements this interface is able to provide several
    * {@link AppPublics.BroadcastListener}.
    * <p/>
    * <p>
@@ -284,7 +286,7 @@ public final class AppPublics
    * @see AppPublics.BroadcastListenersProvider
    * @since 2010.11.07
    */
-  public static interface BroadcastListenersProvider
+  public interface BroadcastListenersProvider
   {
 
     /**
@@ -300,7 +302,7 @@ public final class AppPublics
      * {@code  getBroadcastListenersCount() - 1}. The method implementation is responsible for returning all the {@link AppPublics.BroadcastListener}
      * that this entity is supposed to expose.
      *
-     * @param the index of the {@link AppPublics.BroadcastListener} to return
+     * @param index of the {@link AppPublics.BroadcastListener} to return
      * @return the {@link AppPublics.BroadcastListener} for the provided {@code index} parameter; it is not allowed to be null
      * @see #getBroadcastListenersCount()
      */
@@ -317,7 +319,7 @@ public final class AppPublics
    * @since 2010.02.04
    * @deprecated use {@link AppPublics.SendLoadingIntentAnnotation} instead
    */
-  public static interface SendLoadingIntent
+  public interface SendLoadingIntent
   {
 
   }
@@ -331,7 +333,7 @@ public final class AppPublics
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
   @Inherited
-  public static @interface SendLoadingIntentAnnotation
+  public @interface SendLoadingIntentAnnotation
   {
 
   }
@@ -340,7 +342,7 @@ public final class AppPublics
    * A broadcast listener which listens only to {@link AppPublics#UI_LOAD_ACTION} intents.
    * <p/>
    * <p>
-   * It is commonly used for {@link Activity} and {@link android.app.Fragment}, to get events when the entity is being loaded.
+   * It is commonly used for {@link Activity} and {@link Fragment}, to get events when the entity is being loaded.
    * </p>
    *
    * @since 2010.02.04
@@ -424,7 +426,7 @@ public final class AppPublics
    * A broadcast listener which only watch after {@link AppPublics#UI_LOAD_ACTION} UI loading intents action.
    * <p/>
    * <p>
-   * It is commonly used for {@link Activity} and {@link android.app.Fragment}, to get events when the entity is being loaded.
+   * It is commonly used for {@link Activity} and {@link Fragment}, to get events when the entity is being loaded.
    * </p>
    *
    * @since 2010.02.04
@@ -436,7 +438,7 @@ public final class AppPublics
     private int counter = 0;
 
     /**
-     * Triggers a loading event through a {@linkplain LocalBroadcastManager#sendBroadcast() broadcast intent action}.
+     * Triggers a loading event through a {@linkplain LocalBroadcastManager#sendBroadcast(Intent)} broadcast intent action}.
      *
      * @param context              the context which will be used to trigger the event
      * @param targetActivityClass  the class of the {@link Activity} which should receive the loading event; it is not allowed to be {@code null}
@@ -458,7 +460,7 @@ public final class AppPublics
     }
 
     /**
-     * Triggers a loading event through a {@linkplain LocalBroadcastManager#sendBroadcast() broadcast intent action}.
+     * Triggers a loading event through a {@linkplain LocalBroadcastManager#sendBroadcast(Intent)} broadcast intent action}.
      *
      * @param context           the context which will be used to trigger the event
      * @param targetActivityId  the identifier of the {@link Activity} which should receive the loading event
@@ -533,7 +535,7 @@ public final class AppPublics
   }
 
   /**
-   * A broadcast listener which only watch after {@link AppPublics#LOAD_ACTION} loading intent actions.
+   * A broadcast listener which only watch after {@link AppPublics#UI_LOAD_ACTION} loading intent actions.
    * <p/>
    * <p>
    * It is especially useful for indicating to an entity that it should reload its content.
@@ -546,7 +548,7 @@ public final class AppPublics
   {
 
     /**
-     * Triggers a reload event through a {@linkplain LocalBroadcastManager#sendBroadcast() broadcast intent action}.
+     * Triggers a reload event through a {@linkplain LocalBroadcastManager#sendBroadcast(Intent)} broadcast intent action}.
      *
      * @param context              the context which will be used to trigger the event
      * @param targetActivityClass  the class which should receive the loading event; it is not allowed to be {@code null}
@@ -667,7 +669,7 @@ public final class AppPublics
     /**
      * The interface which is invoked by the {@link MultiSelectionHandler} when a new selection event occurs.
      */
-    public static interface OnMultiSelectionChanged<BusinessObjectClass>
+    public interface OnMultiSelectionChanged<BusinessObjectClass>
     {
 
       /**
@@ -684,7 +686,7 @@ public final class AppPublics
     /**
      * Use this intent action when you need to indicate to the current activity that a business object has been selected or unselected.
      *
-     * @see use the {@link MultiSelectionHandler#EXTRA_SELECTED} and {@link MultiSelectionHandler#EXTRA_BUSINESS_OBJECT} extra flags for indicated
+     * @see {@link MultiSelectionHandler#EXTRA_SELECTED} and {@link MultiSelectionHandler#EXTRA_BUSINESS_OBJECT} extra flags for indicated
      * whether the business object is selected, and what business object this is about
      */
     public static String SELECTION_ACTION = "com.smartnsoft.droid4me.action.SELECTION";

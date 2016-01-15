@@ -61,7 +61,7 @@ final class AppInternals
   {
 
     /**
-     * Indicates whether nothing went wrong during the implementing entity, or if a {@link #isBeingRedirected() redirection} is being processed.
+     * Indicates whether nothing went wrong during the implementing entity, or if a redirection is being processed.
      * <p/>
      * <p>
      * Thanks to the {@link ActivityController.Redirector redirection controller}, it is possible to re-route any {@link Smartable} {@link Activity}
@@ -143,7 +143,7 @@ final class AppInternals
 
     /**
      * A counter which indicates whether the underlying {@link LifeCycle} is executing a
-     * {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable)} call.
+     * {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)} call.
      */
     private int refreshingBusinessObjectsAndDisplayCount;
 
@@ -494,7 +494,7 @@ final class AppInternals
     }
 
     /**
-     * Should be invoked during the {@link SmartActivity.onBeforeRefreshBusinessObjectsAndDisplay} method: is responsible for triggering a loading
+     * Should be invoked during the {@link Droid4mizer#onBeforeRefreshBusinessObjectsAndDisplay()} method: is responsible for triggering a loading
      * broadcast intent if required, in order to indicate that the activity is loading.
      */
     @SuppressWarnings("deprecation")
@@ -508,7 +508,7 @@ final class AppInternals
     }
 
     /**
-     * Should be invoked just after the {@link SmartActivity.onSynchronizeDisplayObjects} method: is responsible for triggering a loading broadcast
+     * Should be invoked just after the {@link SmartActivity#onSynchronizeDisplayObjects()} method: is responsible for triggering a loading broadcast
      * intent if required, in order to indicate that the activity has stopped loading.
      */
     @SuppressWarnings("deprecation")

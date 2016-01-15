@@ -45,7 +45,7 @@ import com.smartnsoft.droid4me.app.ActivityController;
 
 /**
  * A utility class which enables to report issues resulting from {@link Throwable} occurrences.
- * 
+ *
  * @author Édouard Mercier
  * @since 2013.12.23
  */
@@ -80,10 +80,8 @@ public class IssueReporter
   protected final AnalyticsSender<?> analyticsSender;
 
   /**
-   * @param context
-   *          the {@link Application} context
-   * @param analyticsSender
-   *          optional (may be {@code null}), used to report issues
+   * @param context         the {@link Application} context
+   * @param analyticsSender optional (may be {@code null}), used to report issues
    */
   public IssueReporter(Context context, AnalyticsSender<?> analyticsSender)
   {
@@ -182,8 +180,7 @@ public class IssueReporter
   public final void discardOutOfMemoryErrorEntry(OutOfMemoryErrorEntry entry)
   {
     new File(entry.dumpFilePath).delete();
-    computeOutOfMemoryErrorPreferences().edit().remove(entry.name).remove(entry.name + ".file").remove(entry.name + ".details").remove(
-        entry.name + ".stackTrace").commit();
+    computeOutOfMemoryErrorPreferences().edit().remove(entry.name).remove(entry.name + ".file").remove(entry.name + ".details").remove(entry.name + ".stackTrace").commit();
   }
 
   private SharedPreferences computeOutOfMemoryErrorPreferences()

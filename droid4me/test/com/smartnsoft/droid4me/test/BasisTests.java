@@ -2,16 +2,16 @@ package com.smartnsoft.droid4me.test;
 
 import java.io.File;
 
-import org.junit.Before;
-
 import android.util.Log;
 
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
+import org.junit.Before;
+
 /**
  * A common basis for all the tests.
- * 
- * @author Édouard Mercier
+ *
+ * @author Édouard Mercier
  * @since 2011.09.06
  */
 public abstract class BasisTests

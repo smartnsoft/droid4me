@@ -24,18 +24,18 @@ import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
  * @author Jocelyn Girard, Édouard Mercier
  * @since 2011.12.08
  */
-public abstract class SmartFragment<AggregrateClass>
+public abstract class SmartFragment<AggregateClass>
     extends Fragment
-    implements Smartable<AggregrateClass>
+    implements Smartable<AggregateClass>
 {
 
-  private Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>> droid4mizer;
+  private Droid4mizer<AggregateClass, SmartFragment<AggregateClass>> droid4mizer;
 
   @Override
   public void onAttach(Activity activity)
   {
     super.onAttach(activity);
-    droid4mizer = new Droid4mizer<AggregrateClass, SmartFragment<AggregrateClass>>(activity, this, this, this);
+    droid4mizer = new Droid4mizer<AggregateClass, SmartFragment<AggregateClass>>(activity, this, this, this);
     droid4mizer.onAttached(activity);
   }
 
@@ -172,12 +172,12 @@ public abstract class SmartFragment<AggregrateClass>
    * Smartable implementation.
    */
 
-  public AggregrateClass getAggregate()
+  public AggregateClass getAggregate()
   {
     return droid4mizer.getAggregate();
   }
 
-  public void setAggregate(AggregrateClass aggregate)
+  public void setAggregate(AggregateClass aggregate)
   {
     droid4mizer.setAggregate(aggregate);
   }
@@ -250,7 +250,7 @@ public abstract class SmartFragment<AggregrateClass>
   }
 
   /**
-   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
+   * Same as invoking {@code #refreshBusinessObjectsAndDisplay(true, null, false)}.
    *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */

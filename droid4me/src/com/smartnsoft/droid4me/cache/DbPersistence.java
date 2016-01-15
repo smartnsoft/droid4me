@@ -47,6 +47,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 
 import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.bo.Business.InputAtom;
 
 /**
  * Enables to store some input streams on a SQLite database.
@@ -308,7 +309,7 @@ public final class DbPersistence
   private final String readInputStreamQuery;
 
   /**
-   * Defined in order to make the {@link #writeInputStream()} method more optimized when determining whether to insert or update.
+   * Defined in order to make the {@link #writeInputStream(String, InputAtom, boolean)} method more optimized when determining whether to insert or update.
    */
   private SQLiteStatement writeInputStreamExistsStatement;
 

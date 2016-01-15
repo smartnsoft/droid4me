@@ -30,14 +30,14 @@ import com.smartnsoft.droid4me.app.ActivityController;
 /**
  * Enables to mark that an entity needs to log some analytics when being used. This interface is usually applied to an {@link Activity} or a
  * {@link Fragment} entity.
- * 
+ * <p/>
  * <p>
  * Using this marker interface with the {@link ActivityController.Interceptor} makes the reporting of analytics very straightforward, and enables to
  * centralize it in one place.
  * </p>
- * 
- * @see AnalyticsSender
+ *
  * @author Édouard Mercier
+ * @see AnalyticsSender
  * @since 2012.06.02
  */
 public interface AnalyticsLogger
@@ -45,12 +45,12 @@ public interface AnalyticsLogger
 
   /**
    * An analytics logger which states the tag of the analytics event to report.
-   * 
+   * <p/>
    * <p>
    * This interface is to be used when the name of the tag is not known at compile time ; otherwise, the
    * {@link AnalyticsLogger.AnalyticsTagLoggerAnnotation} annotation should be used instead.
    * </p>
-   * 
+   *
    * @see AnalyticsLogger.AnalyticsTagLoggerAnnotation
    */
   interface AnalyticsTagLogger
@@ -66,9 +66,8 @@ public interface AnalyticsLogger
 
   /**
    * An analytics logger which states the tag and a dictionary of the analytics event to report.
-   * 
-   * @param <DictionaryType>
-   *          the type of the dictionary used when reporting events
+   *
+   * @param <DictionaryType> the type of the dictionary used when reporting events
    */
   interface AnalyticsDictionaryLogger<DictionaryType>
       extends AnalyticsLogger.AnalyticsTagLogger
@@ -83,11 +82,11 @@ public interface AnalyticsLogger
 
   /**
    * An annotation which enables to express that an entity, usually an {@link Activity} or a {@link Fragment}, wants to report analytics usage.
-   * 
+   * <p/>
    * <p>
    * Use this annotation, when the entity tag is known at compile tag.
    * </p>
-   * 
+   *
    * @see AnalyticsLogger.AnalyticsTagLogger
    * @see AnalyticsLogger.AnalyticsTagLoggerAnnotation
    */
@@ -105,11 +104,11 @@ public interface AnalyticsLogger
 
   /**
    * An annotation which enables to express that an entity, usually an {@link Activity} or a {@link Fragment}, wishes to report analytics usage.
-   * 
+   * <p/>
    * <p>
    * Use this annotation, when you explicitly want the underlying entity to report an activity.
    * </p>
-   * 
+   *
    * @see AnalyticsLogger.AnalyticsDisabledLoggerAnnotation
    */
   @Retention(RetentionPolicy.RUNTIME)
@@ -122,11 +121,11 @@ public interface AnalyticsLogger
   /**
    * An annotation which enables to express that an entity, usually an {@link Activity} or a {@link Fragment}, does not wish to report any analytics
    * usage.
-   * 
+   * <p/>
    * <p>
    * Use this annotation, when you do not want the underlying entity to report any activity.
    * </p>
-   * 
+   *
    * @see AnalyticsLogger.AnalyticsTagLogger
    * @see AnalyticsLogger.AnalyticsTagLoggerAnnotation
    * @see AnalyticsLogger.AnalyticsEnabledLoggerAnnotation

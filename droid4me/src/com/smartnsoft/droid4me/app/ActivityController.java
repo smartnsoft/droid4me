@@ -29,6 +29,7 @@ import java.net.UnknownHostException;
 import javax.net.ssl.SSLException;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -84,7 +85,7 @@ public class ActivityController
     /**
      * Will be invoked by the {@link ActivityController#needsRedirection(Activity) framework}, in order to know whether an {@link Activity} should be
      * started instead of the provided one, which is supposed to have just {@link Activity#onCreate(Bundle) started}, or when the
-     * {@link Activity#onNewIntent()} method is invoked. However, the method will be not been invoked when those methods are invoked due to a
+     * {@link Activity#onNewIntent(Intent)} method is invoked. However, the method will be not been invoked when those methods are invoked due to a
      * {@link Activity#onConfigurationChanged(android.content.res.Configuration) configuration change}.
      * <p/>
      * <p>
@@ -129,7 +130,7 @@ public class ActivityController
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
-  public static @interface EscapeToRedirectorAnnotation
+  public @interface EscapeToRedirectorAnnotation
   {
 
   }
@@ -160,7 +161,7 @@ public class ActivityController
    * An interface which is queried during the various life cycle events of a {@link LifeCycle}.
    * <p/>
    * <p>
-   * An interceptor is the ideal place for centralizing in one place many of the {@link Activity}/{@link android.app.Fragment} entity life cycle
+   * An interceptor is the ideal place for centralizing in one place many of the {@link Activity}/{@link Fragment} entity life cycle
    * events.
    * </p>
    *
@@ -172,29 +173,29 @@ public class ActivityController
     /**
      * Defines all the events handled by the {@link ActivityController.Interceptor}.
      */
-    public static enum InterceptorEvent
+    enum InterceptorEvent
     {
       /**
-       * Called during the {@link Activity#onCreate()} / {@link android.app.Fragment#onCreate()} method, before the Android built-in super method
+       * Called during the {@code Activity.onCreate()} / {@code Fragment.onCreate()} method, before the Android built-in super method
        * {@link Activity#onCreate} method is invoked.
        * <p/>
        * <p>
-       * This is an ideal place where to {@link Window#requestFeature() request for window features}.
+       * This is an ideal place where to {@link Window#requestFeature(int)} request for window features}.
        * </p>
        */
       onSuperCreateBefore,
       /**
-       * Called during the {@link Activity#onCreate()} / {@link android.app.Fragment#onCreate()} method, at the beginning of the method, but after the
+       * Called during the {@code Activity.onCreate()} / {@code Fragment.onCreate()} method, at the beginning of the method, but after the
        * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
       onCreate,
       /**
-       * Called during the {@link Activity#onCreate()} / {@link android.app.Fragment#onCreate()} method, at the very end of the method, after the
+       * Called during the {@code Activity.onCreate()} / {@code Fragment.onCreate()} method, at the very end of the method, after the
        * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
       onCreateDone,
       /**
-       * <b>Only applies to {@link Activity} entities!</b>.Called during the {@link Activity#onPostCreate()} method, at the beginning of the method,
+       * <b>Only applies to {@link Activity} entities!</b>.Called during the {@code Activity#onPostCreate()} method, at the beginning of the method,
        * but after the parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
       onPostCreate,
@@ -204,7 +205,7 @@ public class ActivityController
        */
       onContentChanged,
       /**
-       * Called during the {@link Activity#onStart} / {@link android.app.Fragment#onStart()} method, at the beginning of the method, but after the
+       * Called during the {@link Activity#onStart} / {@link Fragment#onStart()} method, at the beginning of the method, but after the
        * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested and that the instance has not been
        * recreated due a configuration change.
        */
@@ -216,7 +217,7 @@ public class ActivityController
        */
       onRestart,
       /**
-       * Called during the {@link Activity#onResume()} / {@link android.app.Fragment#onResume()} method, at the beginning of the method, but after the
+       * Called during the {@link Activity#onResume()} / {@link Fragment#onResume()} method, at the beginning of the method, but after the
        * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
       onResume,
@@ -226,25 +227,25 @@ public class ActivityController
        */
       onPostResume,
       /**
-       * Called during the {@link Activity#onPause()} / {@link android.app.Fragment#onPause()} method, at the beginning of the method, but after the
+       * Called during the {@link Activity#onPause()} / {@link Fragment#onPause()} method, at the beginning of the method, but after the
        * parent's call, provided no {@link ActivityController.Redirector activity redirection} is requested.
        */
       onPause,
       /**
-       * Called during the {@link Activity#onStop()} / {@link android.app.Fragment#onPause()} method, at the beginning of the method, before the
+       * Called during the {@link Activity#onStop()} / {@link Fragment#onPause()} method, at the beginning of the method, before the
        * parent's call.
        */
       onStop,
       /**
-       * Called just after the {@link LifeCycle#onFulfillDisplayObjects} method.
+       * Called just after the {@link LifeCycle#onFulfillDisplayObjects()} method.
        */
       onFulfillDisplayObjectsDone,
       /**
-       * Called just after the {@link LifeCycle#onSynchronizeDisplayObjects} method.
+       * Called just after the {@link LifeCycle#onSynchronizeDisplayObjects()} method.
        */
       onSynchronizeDisplayObjectsDone,
       /**
-       * Called during the {@link Activity#onDestroy()} / {@link android.app.Fragment#onDestroy()} method, at the very end of the method.
+       * Called during the {@link Activity#onDestroy()} / {@link Fragment#onDestroy()} method, at the very end of the method.
        */
       onDestroy
     }
@@ -252,7 +253,7 @@ public class ActivityController
     /**
      * A logger which may be used by the classes implementing this interface.
      */
-    public static final Logger log = LoggerFactory.getInstance(Interceptor.class);
+    Logger log = LoggerFactory.getInstance(Interceptor.class);
 
     /**
      * Invoked every time a new event occurs on the provided {@code activity}/{@code component}. For instance, this is an ideal for logging
@@ -269,7 +270,7 @@ public class ActivityController
      * @param activity  the activity on which a life cycle event occurs ; cannot be {@code null}
      * @param component the component on which the life cycle event occurs ; may be {@code null}
      * @param event     the event that has just happened
-     * @see ActivityController#onLifeCycleEvent()
+     * @see ActivityController#onLifeCycleEvent(Activity, Object, InterceptorEvent)
      */
     void onLifeCycleEvent(Activity activity, Object component, ActivityController.Interceptor.InterceptorEvent event);
 
@@ -326,7 +327,7 @@ public class ActivityController
     boolean onActivityException(Activity activity, Object component, Throwable throwable);
 
     /**
-     * Is invoked whenever a handled exception is thrown with a non-{@link Activity} / {@link android.app.Fragment} {@link Context context}.
+     * Is invoked whenever a handled exception is thrown with a non-{@link Activity} / {@link Fragment} {@link Context context}.
      * <p/>
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
@@ -532,7 +533,7 @@ public class ActivityController
    * initial activity {@link Intent} through this {@link Parcelable} key.
    *
    * @see #needsRedirection(Activity)
-   * @see #registerInterceptor(ActivityController. Interceptor)
+   * @see #registerInterceptor(Interceptor)
    */
   public static final String CALLING_INTENT = "com.smartnsoft.droid4me.callingIntent";
 
@@ -583,7 +584,7 @@ public class ActivityController
    * another {@link Activity} ; {@code null} otherwise
    * @see ActivityController#CALLING_INTENT
    * @see #needsRedirection(Activity)
-   * @see #registerInterceptor(ActivityController. Interceptor)
+   * @see #registerInterceptor(Interceptor)
    */
   public static Intent extractCallingIntent(Activity activity)
   {
@@ -701,7 +702,7 @@ public class ActivityController
    *
    * @param isRecoverable indicates whether the application is about to crash when the exception has been triggered
    * @param context       the context that originated the exception ; may be {@code null}
-   * @param component     when not {@code null}, this will be the {@link android.app.Fragment} the exception has been thrown from
+   * @param component     when not {@code null}, this will be the {@link Fragment} the exception has been thrown from
    * @param throwable     the reported exception
    * @return {@code true} if the exception has been handled ; in particular, if no {@link ActivityController#getExceptionHandler() exception handled
    * has been set}, returns {@code false}

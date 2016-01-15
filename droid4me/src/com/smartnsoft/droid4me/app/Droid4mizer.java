@@ -148,7 +148,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   }
 
   /**
-   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
+   * Same as invoking {@code refreshBusinessObjectsAndDisplay(boolean, null, false)}.
    *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
@@ -158,7 +158,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   }
 
   /**
-   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(boolean, null, false)}.
+   * Same as invoking {@code refreshBusinessObjectsAndDisplay(boolean, null, false)}.
    *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
@@ -557,13 +557,13 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    */
 
   /**
-   * Has the same responsibility as the {@link Context#getSystemService()} method. It only applies to the {@link Activity} entity, and not to the
+   * Has the same responsibility as the {@link Context#getSystemService(String)} method. It only applies to the {@link Activity} entity, and not to the
    * {@link Fragment} entity!
    *
    * @param name           the name of the desired service
    * @param defaultService the default service provided by the underlying {@link #activity Activity}
    * @return the service or {@code null} if the name does not exist
-   * @see Context#getSystemService(name)
+   * @see Context#getSystemService(String)
    */
   public Object getSystemService(String name, Object defaultService)
   {

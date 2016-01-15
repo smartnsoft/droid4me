@@ -263,7 +263,7 @@ public abstract class SmartDialogFragment<AggregateClass>
   }
 
   /**
-   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
+   * Same as invoking {@code #refreshBusinessObjectsAndDisplay(true, null, false)}.
    *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */

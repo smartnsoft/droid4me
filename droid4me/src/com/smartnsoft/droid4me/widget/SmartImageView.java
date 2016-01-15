@@ -30,7 +30,7 @@ import android.widget.ImageView;
  * This is especially useful when an image width is set to a specific width policy and that the height should be set accordingly, and vice-versa.
  * </p>
  *
- * @author Édouard Mercier
+ * @author Édouard Mercier
  * @see SmartFrameLayout
  * @see SmartRelativeLayout
  * @see SmartLinearLayout

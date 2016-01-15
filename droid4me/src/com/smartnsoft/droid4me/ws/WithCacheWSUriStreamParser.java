@@ -61,8 +61,7 @@ public final class WithCacheWSUriStreamParser
     public final String ioStreamerUri;
 
     /**
-     * @param uriStreamerUri the business object entity {@link Business.UriStreamParser} URI
-     * @param ioStreamerUri  the business object entity {@link Business.IOStreamer} URI
+     * @param ioStreamerUri the business object entity {@link Business.IOStreamer} URI
      */
     public SimpleIOStreamerSourceKey(String ioStreamerUri)
     {

@@ -191,7 +191,7 @@ public final class Values
     }
 
     /**
-     * Is supposed to empty the underlying cached value(s). Invoking {@link #isEmpty()} afterwards will return <code>true</code.
+     * Is supposed to empty the underlying cached value(s).
      */
     public abstract void empty();
 
@@ -836,7 +836,6 @@ public final class Values
    *
    * @since 2009.06.18
    */
-
   public static class CachedMap<BusinessObjectType, KeyType, ExceptionType extends Exception>
       extends Values.Caching
   {

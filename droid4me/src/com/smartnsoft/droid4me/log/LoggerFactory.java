@@ -64,7 +64,7 @@ public class LoggerFactory
     /**
      * The method will be invoked by the {@link LoggerFactory#getInstance(Class)} every time a logger needs to be created.
      *
-     * @param category the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
+     * @param theClass the logger class, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
      *                 libraries
      * @return the {@link Logger} that should be used for logging on that category; is not allowed to be {@code null}
      * @see #getLogger(String)

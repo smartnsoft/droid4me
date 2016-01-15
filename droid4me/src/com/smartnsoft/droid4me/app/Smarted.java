@@ -72,7 +72,7 @@ public interface Smarted<AggregateClass>
    * @param broadcastListeners the wrapped {@link BroadcastReceiver receivers} to registers
    * @see AppPublics.BroadcastListener
    * @see AppPublics.BroadcastListenerProvider
-   * @see AppPublics.BroadcastListenerProviders
+   * @see AppPublics.BroadcastListenerProvider
    */
   void registerBroadcastListeners(AppPublics.BroadcastListener[] broadcastListeners);
 

@@ -30,6 +30,7 @@ import java.util.Map;
 import android.graphics.Bitmap;
 import android.view.View;
 
+import com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
@@ -420,7 +421,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * @param view         the view that will be bound with the retrieved {@link Bitmap}. May be {@code null}, which enables to simply download a bitmap and put it
    *                     into the cache
    * @param bitmapUid    the identifier of the bitmap to retrieve. Most of the time, this is the URL of the bitmap on Internet, but it can serve as a basis to
-   *                     {@link BasisBitmapDownloader.Instructions#computeUrl(String, Object) compute} the actual URL
+   *                     {@link BasisDownloadInstructions.Instructions#computeUrl(String, Object) compute} the actual URL
    * @param imageSpecs   a free object that will be passed along during the bitmap retrieval workflow
    * @param handler      will be used for performing GUI-thread operations
    * @param instructions the instructions that will be invoked during the retrieval workflow
@@ -430,7 +431,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       BasisDownloadInstructions.Instructions<BitmapClass, ViewClass> instructions);
 
   /**
-   * Provides the same feature as {@link #computeAndGetUrl(View, String, Object, HandlerClass, BasisBitmapDownloader.Instructions)}, except that it
+   * Provides the same feature as {@link #get(boolean, boolean, Viewable, String, Object, Handlerable, Instructions)}, except that it
    * may be called from the GUI thread and blocking.
    * <p/>
    * <p>

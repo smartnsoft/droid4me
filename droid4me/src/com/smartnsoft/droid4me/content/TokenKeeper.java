@@ -33,11 +33,11 @@ import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
 /**
  * A utility class which enables to remember persistently of token associated to a string: those tokens can
  * <ul>
- * <li>be {@link #rememberToken()) remembered},</li>
- * <li>be even more {@link #rememberTokenAndBroadcast() remembered and broadcast},</li>
- * <li>be simply {@link #broadcast() broadcast},</li>
- * <li>be {@link #discardToken() discarded},</li>
- * <li>be requested through the {@link #hasToken()} and {@link #missesToken()} methods.</li>
+ * <li>be {@code rememberToken()) remembered},</li>
+ * <li>be even more {@code rememberTokenAndBroadcast() remembered and broadcast},</li>
+ * <li>be simply {@code broadcast() broadcast},</li>
+ * <li>be {@link #discardToken(Serializable)} discarded,</li>
+ * <li>be requested through the {@link #hasToken(Serializable)} and {@link #missesToken(Serializable)} methods.</li>
  * </ul>
  * <p/>
  * <p>
@@ -177,7 +177,7 @@ public class TokenKeeper<Token extends Serializable>
    * <p/>
    * <p>
    * For every provided notification kind, it is added to the IntentFilter, by prefixing it with the prefix provided in the
-   * {@link #Notifier(Context, String) constructor}.
+   * {@link #TokenKeeper(Context, String) constructor}.
    * </p>
    *
    * @param intentFilter the intent filter which will be enriched

@@ -303,7 +303,7 @@ public abstract class SmartActivity<AggregateClass>
   }
 
   /**
-   * Same as invoking {@link #refreshBusinessObjectsAndDisplay(true, null, false)}.
+   * Same as invoking {@code refreshBusinessObjectsAndDisplay(true, null, false)}.
    *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */

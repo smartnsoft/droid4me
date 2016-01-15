@@ -298,7 +298,7 @@ public class DownloadInstructions
     }
 
     /**
-     * The method does not use the provided {@link inputStream}, and just returns it.
+     * The method does not use the provided {@link InputStream inputStream}, and just returns it.
      *
      * @return the provided {@link InputStream}, which means that the underlying {@link BitmapableBitmap} is not persisted
      */

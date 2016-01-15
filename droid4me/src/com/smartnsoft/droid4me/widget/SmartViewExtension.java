@@ -24,14 +24,14 @@ import android.widget.Gallery;
 
 /**
  * An interface introduced in order to get notified when a container size changes, because there is no {@code OnSizeChangedListener} in Android
- * {@link View}, whereas there is a {@link View#onSizeChanged()} method.
+ * {@link View}, whereas there is a {@link View#onSizeChanged(int, int, int, int)} method.
  * <p/>
  * <p>
  * In addition, this interface for disabling the {@link View#requestLayout()} method dynamically.
  * </p>
  *
  * @param <ViewClass> the {@link View} class the extension is applied on
- * @author Édouard Mercier
+ * @author Édouard Mercier
  * @since 2013.06.06
  */
 public interface SmartViewExtension<ViewClass extends View>
@@ -66,7 +66,7 @@ public interface SmartViewExtension<ViewClass extends View>
     private int maxHeight = Integer.MAX_VALUE;
 
     /**
-     * A flag which states whether the {@link #requestLayout()} calls should be disabled.
+     * A flag which states whether the {@link View#requestLayout()} calls should be disabled.
      */
     private boolean requestLayoutDisabled;
 
@@ -313,7 +313,7 @@ public interface SmartViewExtension<ViewClass extends View>
   void setRatio(float ratio);
 
   /**
-   * Sets the widget maximum width. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
+   * Sets the widget maximum width. Defaults to {@code Integer#MAX_VALUE}. A {@link View#requestLayout()} is required for the new value to take effect.
    *
    * @param maxWidth the new widget maximum width
    * @see #setMaxHeight(int)
@@ -321,7 +321,7 @@ public interface SmartViewExtension<ViewClass extends View>
   void setMaxWidth(int maxWidth);
 
   /**
-   * Sets the widget maximum height. Defaults to {@code Integer#MAX_VALUE}. A {@link #requestLayout()} is required for the new value to take effect.
+   * Sets the widget maximum height. Defaults to {@code Integer#MAX_VALUE}. A {@link View#requestLayout()} is required for the new value to take effect.
    *
    * @param maxHeight the new widget maximum height
    * @see #setMaxWidth(int)
@@ -343,30 +343,30 @@ public interface SmartViewExtension<ViewClass extends View>
   /**
    * The default value of the underlying flag is {@code false}.
    *
-   * @return {@code true} if and only if the {@link #requestLayout()} method execution should do nothing
-   * @see #setRequestLayoutEnabled(boolean)
+   * @return {@code true} if and only if the {@link View#requestLayout()} method execution should do nothing
+   * @see #setRequestLayoutDisabled(boolean)
    */
   boolean isRequestLayoutDisabled();
 
   /**
-   * Indicates that the view {@link #requestLayout()} method execution should do nothing (not invoking the parent method).
+   * Indicates that the view {@link View#requestLayout()} method execution should do nothing (not invoking the parent method).
    * <p/>
    * <p>
    * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
    * inside a {@link ViewGroup}.
    * </p>
    *
-   * @param requestLayoutDisabled when set to {@code true}, the {@link #requestLayout()} will not invoke its parent method, and hence will do nothing
+   * @param requestLayoutDisabled when set to {@code true}, the {@link View#requestLayout()} will not invoke its parent method, and hence will do nothing
    */
   void setRequestLayoutDisabled(boolean requestLayoutDisabled);
 
   /**
-   * Is responsible for invoking the underlying {@link View#onMeasure()} {@code super} method.
+   * Is responsible for invoking the underlying {@link View#onMeasure(int, int)} {@code super} method.
    */
   void onSuperMeasure(int widthMeasureSpec, int heightMeasureSpec);
 
   /**
-   * Is responsible for invoking the underlying {@link View#setMeasuredDimension()} method.
+   * Is responsible for invoking the underlying {@link View#setMeasuredDimension(int, int)} method.
    */
   void setSelfMeasuredDimension(int measuredWidth, int measuredHeight);
 

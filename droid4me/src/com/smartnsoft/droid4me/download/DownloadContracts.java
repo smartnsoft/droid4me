@@ -18,7 +18,7 @@
 package com.smartnsoft.droid4me.download;
 
 /**
- * Gathers in one place all contracts related to the {@link ImageDownloader}.
+ * Gathers in one place all contracts related to the {@link BitmapDownloader}.
  *
  * @author Édouard Mercier
  * @since 2011.09.03
@@ -87,7 +87,7 @@ public final class DownloadContracts
   }
 
   /**
-   * An abstraction of a {@link android.os.Handle} which makes possible the writing of unitary tests.
+   * An abstraction of a {@link android.os.Handler} which makes possible the writing of unitary tests.
    * <p/>
    * <p>
    * Any implementing class is supposed run a command in the User Interface thread.

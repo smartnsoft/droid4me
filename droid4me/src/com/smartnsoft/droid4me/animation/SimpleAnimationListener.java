@@ -4,7 +4,7 @@ import android.view.animation.Animation;
 
 /**
  * An abstract {@link Animation.AnimationListener} which makes possible to override only one method.
- * 
+ *
  * @author Édouard Mercier
  * @since 2013.03.26
  */

@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.bo.Business.InputAtom;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
@@ -417,7 +418,7 @@ public abstract class Persistence
   }
 
   /**
-   * Equivalent to calling {@link #getInstance(0)}.
+   * Equivalent to calling {@link #getInstance(int)} with the position equals to 0.
    */
   public static Persistence getInstance()
   {
@@ -594,7 +595,7 @@ public abstract class Persistence
    *
    * @return the date when the underlying persistent entry has been updated ; {@code null} if no persistent entry exists for the provided URI
    * @throws Persistence.PersistenceException in case an error occurred while processing the request or if the storage back-end is not available
-   * @see #getLastUpdateInstance()
+   * @see #getLastUpdateInstance(String)
    */
   @Override
   public final Date getLastUpdate(String uri)
@@ -605,11 +606,12 @@ public abstract class Persistence
   }
 
   /**
-   * Is responsible for performing the {@link #getLastUpdate()} method job.
+   * Is responsible for performing the {@code getLastUpdate()}} method job.
    *
    * @return the date when the underlying persistent entry has been updated ; {@code null} if no persistent entry exists for the provided URI
    * @throws Persistence.PersistenceException in case an error occurred while processing the request
-   * @see #getLastUpdate()
+   * @see #getLastUpdate(String)
+   * @see #getLastUpdate(Object)
    */
   protected abstract Date getLastUpdateInstance(String uri)
       throws Persistence.PersistenceException;
@@ -620,8 +622,10 @@ public abstract class Persistence
    * @param uri the URI which identifies the stream to extract
    * @return {@code null} if and only if there is no data associated to the given URI; otherwise, its related wrapped input stream is returned
    * @throws Persistence.PersistenceException in case an error occurred while extracting the input stream or if the storage back-end is not available
-   * @see #readInputStreamInstance()
-   * @see #readInputStream()
+   * @see #readInputStreamInstance(String)
+   * @see #readInputStream(String)
+   * @see #readInputStreamInstance(String)
+   * @see #readInputStream(Object)
    */
   public final Business.InputAtom extractInputStream(String uri)
       throws Persistence.PersistenceException
@@ -641,7 +645,7 @@ public abstract class Persistence
    * @param inputAtom the wrapper which contains the stream to write
    * @return a new stream wrapper, which is operational, and in particular not {@null}
    * @throws Persistence.PersistenceException if a problem occurred while persisting the data or if the storage back-end is not available
-   * @see #flushInputStreamInstance()
+   * @see #flushInputStreamInstance(String, InputAtom)
    */
   public final Business.InputAtom flushInputStream(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException
@@ -651,20 +655,20 @@ public abstract class Persistence
   }
 
   /**
-   * Is responsible for performing the {@link #flushInputStream()} method job.
+   * Is responsible for performing the {@link #flushInputStream(String, InputAtom)}} method job.
    *
    * @param uri       the URI which identifies the stream to persist
    * @param inputAtom the wrapper which contains the stream to write
    * @return a new stream wrapper, which is operational
    * @throws Persistence.PersistenceException if a problem occurred while persisting the data
-   * @see #flushInputStream()
+   * @see #flushInputStream(String, InputAtom)
    */
   protected abstract Business.InputAtom flushInputStreamInstance(String uri, Business.InputAtom inputAtom)
       throws Persistence.PersistenceException;
 
   /**
    * @throws Persistence.PersistenceException if a problem occurred while reading the data or if the storage back-end is not available
-   * @see #readInputStreamInstance()
+   * @see #readInputStreamInstance(String)
    */
   @Override
   public final Business.InputAtom readInputStream(String uri)
@@ -675,18 +679,20 @@ public abstract class Persistence
   }
 
   /**
-   * Is responsible for performing the {@link #readInputStream()} method job.
+   * Is responsible for performing the {@code readInputStream()} method job.
    *
    * @param uri the URI which identifies the stream to persist
    * @throws Persistence.PersistenceException if a problem occurred while reading the data
-   * @see #readInputStream()
+   * @see #readInputStream(String)
+   * @see #readInputStream(String)
+   * @see #readInputStream(String)
    */
   protected abstract Business.InputAtom readInputStreamInstance(String uri)
       throws Persistence.PersistenceException;
 
   /**
    * @throws Persistence.PersistenceException if a problem occurred while writing the data or if the storage back-end is not available
-   * @see #writeInputStreamInstance()
+   * @see #writeInputStreamInstance(String, InputAtom, boolean)
    */
   @Override
   public final InputStream writeInputStream(String uri, Business.InputAtom inputAtom, boolean returnStream)
@@ -697,7 +703,7 @@ public abstract class Persistence
   }
 
   /**
-   * Is responsible for performing the {@link #writeInputStream()} method job.
+   * Is responsible for performing the {@code writeInputStream()} method job.
    *
    * @param uri          the URI which identifies the stream to persist
    * @param inputAtom    the binary form of the data to store for the provided URI
@@ -706,7 +712,8 @@ public abstract class Persistence
    * @return {@code null} if {@code returnStream} is set to {@code false} ; if {@code returnStream} is set to {@code true}, an input stream which
    * holds the same data as the provided {@code inputAtom} {@link Business.InputAtom#inputStream}
    * @throws Persistence.PersistenceException if a problem occurred while writing the data
-   * @see #writeInputStream()
+   * @see #writeInputStream(String, InputAtom, boolean)
+   * @see #writeInputStream(Object, InputAtom, boolean)
    */
   protected abstract InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom,
       boolean returnStream)
@@ -714,7 +721,7 @@ public abstract class Persistence
 
   /**
    * @throws Persistence.PersistenceException if a problem occurred while erasing the data or if the storage back-end is not available
-   * @see #removeInstance()
+   * @see #removeInstance(String)
    */
   @Override
   public final void remove(String uri)
@@ -725,11 +732,12 @@ public abstract class Persistence
   }
 
   /**
-   * Is responsible for performing the {@link #remove()} method job.
+   * Is responsible for performing the {@code remove()} method job.
    *
    * @param uri the URI which identifies the stream to delete
    * @throws Persistence.PersistenceException if a problem occurred while erasing the data
-   * @see #remove()
+   * @see #remove(String)
+   * @see #remove(Object)
    */
   protected abstract void removeInstance(String uri)
       throws Persistence.PersistenceException;
@@ -738,7 +746,7 @@ public abstract class Persistence
    * Enables to define the way the persistence cache clean up is performed.
    * <p/>
    * <p>
-   * This method is supposed to be invoked by the {@link #cleanUpInstance()} method, when it attempts to determine the
+   * This method is supposed to be invoked by the {@link #cleanUpInstance(CleanUpPolicy)} method, when it attempts to determine the
    * {@link Persistence.CleanUpPolicy} to use.
    * </p>
    *
@@ -799,7 +807,7 @@ public abstract class Persistence
    * </p>
    *
    * @throws if any problem occurs while cleaning up the instance
-   * @see #cleanUpInstance()
+   * @see #cleanUpInstance(CleanUpPolicy)
    * @see #clear()
    * @see #close()
    */

@@ -5,21 +5,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
-import junit.framework.Assert;
-
-import org.apache.http.protocol.HTTP;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.smartnsoft.droid4me.bo.Business.InputAtom;
 import com.smartnsoft.droid4me.cache.FilePersistence;
 import com.smartnsoft.droid4me.cache.Persistence;
 import com.smartnsoft.droid4me.test.BasisTests;
 import com.smartnsoft.droid4me.ws.WebServiceCaller;
 
+import junit.framework.Assert;
+import org.apache.http.protocol.HTTP;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 /**
- * @author Édouard Mercier
+ * @author Édouard Mercier
  * @since 2011.09.06
  */
 public final class PersistenceTest

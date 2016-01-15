@@ -8,7 +8,7 @@ import android.widget.LinearLayout;
 /**
  * A page view component.
  *
- * @author Édouard Mercier
+ * @author Édouard Mercier
  * @since 2011.01.10
  */
 public class SmartPageIndicator

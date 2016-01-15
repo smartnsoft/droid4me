@@ -33,10 +33,9 @@ import android.widget.ListView;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.ui.WrappedListView.SmartAdapter;
 
 /**
- * Gathers in one place some classes used by the {@link com.smartnsoft.droid4me.app.AbstractSmartListActivity} class, which handles
+ * Gathers in one place some classes used by the {@link com.smartnsoft.droid4me.app.SmartActivity} class, which handles
  * {@link android.widget.ListView list views}.
  *
  * @author Édouard Mercier
@@ -253,8 +252,8 @@ public abstract class SmartAdapters
   /**
    * To capture how the simplified {@link SmartAdapters.BasisBusinessViewWrapper} work.
    *
-   * @param <BusinessObjectClass> the business object class in relation with the {@link SmartAdapter.BasisBusinessViewWrapper} first type parameter
-   * @param <ActivityClass>       the {@link Activity} class in relation with the {@link SmartAdapter.BasisBusinessViewWrapper} second type parameter
+   * @param <BusinessObjectClass> the business object class in relation with the {@link BasisBusinessViewWrapper} first type parameter
+   * @param <ActivityClass>       the {@link Activity} class in relation with the {@link BasisBusinessViewWrapper} second type parameter
    * @see SmartAdapters.BasisBusinessViewWrapper
    * @since 2014.05.23
    */
@@ -270,8 +269,8 @@ public abstract class SmartAdapters
   /**
    * An implementation which has been introduced so as to prevent from code duplication.
    *
-   * @param <BusinessObjectClass> the business object class in relation with the {@link SmartAdapter.BasisBusinessViewWrapper} first type parameter
-   * @param <ActivityClass>       the {@link Activity} class in relation with the {@link SmartAdapter.BasisBusinessViewWrapper} second type parameter
+   * @param <BusinessObjectClass> the business object class in relation with the {@link BasisBusinessViewWrapper} first type parameter
+   * @param <ActivityClass>       the {@link Activity} class in relation with the {@link BasisBusinessViewWrapper} second type parameter
    * @see SmartAdapters.BasisBusinessViewWrapper
    * @since 2014.05.23
    */
@@ -375,7 +374,7 @@ public abstract class SmartAdapters
   /**
    * This class wraps the {@link SmartAdapters.BusinessViewWrapper} when not used inside a {@link android.widget.ListView list}.
    *
-   * @param the business object class which is represented by the current wrapper
+   * @param <BusinessObjectClass> the business object class which is represented by the current wrapper
    * @since 2014.05.23
    */
   public static class BasisBusinessViewHolder<BusinessObjectClass, ActivityClass extends Activity>
@@ -392,7 +391,7 @@ public abstract class SmartAdapters
     }
 
     /**
-     * Is allowed to be invoked once the {@link #getView(ActivityClass)} or {@link #setView(ActivityClass, View)} method has been called.
+     * Is allowed to be invoked once the {@link #getView(ViewGroup, Activity)} or {@link #setView(ActivityClass, View)} method has been called.
      *
      * @return the view which represents the underlying business object
      */
@@ -418,7 +417,7 @@ public abstract class SmartAdapters
      * This method should be called only once during the object life cycle.
      * <p/>
      * <p>
-     * This will invoke the {@link DetailsProvider.BusinessViewWrapper#getNewView(ViewGroup, ActivityClass} method.
+     * This will invoke the {@link BusinessViewWrapper#getNewView(ViewGroup, ActivityClass)} method.
      * </p>
      *
      * @param activity the activity on which the business object is being rendered
@@ -431,7 +430,7 @@ public abstract class SmartAdapters
     }
 
     /**
-     * Sets the view of the of the underlying business view wrapper, so that it is not necessary to invoke the {@link #getView(ActivityClass)} method.
+     * Sets the view of the of the underlying business view wrapper, so that it is not necessary to invoke the {@link #getView(ViewGroup, Activity)} method.
      *
      * @param activity the activity on which the business object is being rendered
      * @param view     the view that will be attached to the business view wrapper
@@ -464,7 +463,7 @@ public abstract class SmartAdapters
    * The same exact purpose of its parent class, except that the {@code ActivityClass} type parameter is bound to the actual Android built-in
    * {@link Activity class}.
    *
-   * @param the business object class which is represented by the current wrapper
+   * @param <BusinessObjectClass> the business object class which is represented by the current wrapper
    * @since 2010.06.23
    */
   public static class BusinessViewHolder<BusinessObjectClass>

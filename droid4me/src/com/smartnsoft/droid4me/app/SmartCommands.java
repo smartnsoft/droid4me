@@ -473,7 +473,7 @@ public final class SmartCommands
     protected final Dialog dialog;
 
     /**
-     * Same as {@link SmartCommands.DialogGuardedCommand#ProgressDialogGuardedCommand(Context, String, String, Dialog)} with the second argument set
+     * Same as {@link SmartCommands.DialogGuardedCommand#DialogGuardedCommand(Activity, Object, String, int, Dialog)} with the second argument set
      * to {@code null}.
      */
     public DialogGuardedCommand(Activity context, String warningLogMessage, int warningDisplayMessageResourceId,
@@ -483,7 +483,7 @@ public final class SmartCommands
     }
 
     /**
-     * Same as {@link SmartCommands.DialogGuardedCommand#ProgressDialogGuardedCommand(Context, Object, String, String, Dialog)} with the fourth
+     * Same as {@link SmartCommands.DialogGuardedCommand#DialogGuardedCommand(Activity, Object, String, String, Dialog)} with the fourth
      * parameter equal to {@code context.getString(warningDisplayMessageResourceId)}.
      */
     public DialogGuardedCommand(Activity context, Object component, String warningLogMessage,
@@ -713,7 +713,7 @@ public final class SmartCommands
     private final Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler;
 
     /**
-     * @param context                         the context which will be used to handle the exception via the {@link ActivityController#handleException(Context, Object, Throwable)}
+     * @param context                         the context which will be used to handle the exception via the {@link ActivityController#handleException(boolean, Context, Object, Throwable)}
      *                                        method
      * @param builtinUncaughtExceptionHandler the built-in uncaught exception handler that will be invoked eventually
      */

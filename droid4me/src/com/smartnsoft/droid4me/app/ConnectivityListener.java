@@ -30,6 +30,7 @@ import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
+import android.os.Bundle;
 
 import com.smartnsoft.droid4me.app.ActivityController.Interceptor;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
@@ -53,7 +54,7 @@ import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
  * <p>
  * This component should be created during the {@link com.smartnsoft.droid4me.app.SmartApplication#onCreateCustom()} method, and it should be enrolled
  * to all the hosting application {@link Activity activities}, during the {@link com.smartnsoft.droid4me.app.SmartApplication#getInterceptor()} when
- * receiving the {@link ActivityController.Interceptor.InterceptorEvent.onCreate} and {@link ActivityController.Interceptor.InterceptorEvent.onResume}
+ * receiving the {@link ActivityController.Interceptor.InterceptorEvent#onCreate} and {@link ActivityController.Interceptor.InterceptorEvent#onResume}
  * events.
  * </p>
  *
@@ -169,7 +170,7 @@ public abstract class ConnectivityListener
 
   /**
    * This method is invoked systematically during the {@link Activity#onResume()} method, provided the
-   * {@link #registerBroadcastListenerOnResume(Activity, Object)} method has been invoked.
+   * {@link #registerBroadcastListenerOnCreate(Activity, Object)} method has been invoked.
    * <p/>
    * <p>
    * It is a place-holder for updating the {@link Activity} Internet connectivity new status.
@@ -223,7 +224,7 @@ public abstract class ConnectivityListener
   }
 
   /**
-   * This method should be invoked during the {@link Activity#onCreate()} or {android.app.Fragment#onCreate()} methods, so that it listens to the
+   * This method should be invoked during the {@code Activity.onCreate()} or {@code Fragment.onCreate()} methods, so that it listens to the
    * Internet connectivity status, and so that it is notified when this status changes.
    * <p/>
    * <p>
@@ -236,7 +237,7 @@ public abstract class ConnectivityListener
    * </p>
    *
    * @param activity  an {@link Activity} which is supposed to implement the {@link Smarted} interface
-   * @param component when not-null, the {@link android.app.Fragment} in which the {@link android.app.Fragment#onCreate()} method is invoked
+   * @param component when not-null, the {@link android.app.Fragment} in which the {@link android.app.Fragment#onCreate(Bundle)} method is invoked
    */
   private void registerBroadcastListenerOnCreate(final Activity activity, final Object component)
   {

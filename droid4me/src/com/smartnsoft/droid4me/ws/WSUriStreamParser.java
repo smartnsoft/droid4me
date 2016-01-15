@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.bo.Business.Source;
 
 /**
  * An abstract class which implements its interface via web service calls.
@@ -61,7 +62,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
     private final Map<Business.Source, WSUriStreamParser.SourceKey<?, ParameterType>> sourceLocators = new HashMap<Business.Source, WSUriStreamParser.SourceKey<?, ParameterType>>();
 
     /**
-     * This constructor is equivalent to invoking {@link WSUriStreamParser.KeysAggregator#KeysAggregator(ParameterType, null, null)}.
+     * This constructor is equivalent to invoking {@link WSUriStreamParser.KeysAggregator#KeysAggregator(Object, Source, SourceKey)} with the second and the third parameters set to {@code null}.
      */
     public KeysAggregator(ParameterType parameter)
     {

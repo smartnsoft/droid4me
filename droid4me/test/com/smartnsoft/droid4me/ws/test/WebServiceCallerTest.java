@@ -8,13 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.Assert;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.protocol.HTTP;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.bo.Business.InputAtom;
 import com.smartnsoft.droid4me.bo.Business.Source;
@@ -34,8 +27,14 @@ import com.smartnsoft.droid4me.ws.WebServiceClient.CallType;
 import com.smartnsoft.droid4me.ws.WithCacheWSUriStreamParser.SimpleIOStreamerSourceKey;
 import com.smartnsoft.droid4me.wscache.BackedWSUriStreamParser;
 
+import junit.framework.Assert;
+import org.apache.http.HttpEntity;
+import org.apache.http.protocol.HTTP;
+import org.junit.Before;
+import org.junit.Test;
+
 /**
- * @author Édouard Mercier
+ * @author Édouard Mercier
  * @since 2011.08.16
  */
 public final class WebServiceCallerTest
@@ -72,14 +71,22 @@ public final class WebServiceCallerTest
     public boolean equals(Object obj)
     {
       if (this == obj)
+      {
         return true;
+      }
       if (obj == null)
+      {
         return false;
+      }
       if (getClass() != obj.getClass())
+      {
         return false;
+      }
       StreamParameter other = (StreamParameter) obj;
       if (parameter != other.parameter)
+      {
         return false;
+      }
       return true;
     }
 
@@ -337,7 +344,8 @@ public final class WebServiceCallerTest
     }
   }
 
-  private WebServiceClient computeWebServiceClient(final AtomicInteger getInputStreamCallsCount, final String expectedValue)
+  private WebServiceClient computeWebServiceClient(final AtomicInteger getInputStreamCallsCount,
+      final String expectedValue)
   {
     final WebServiceClient webServiceClient = new WebServiceClient()
     {
@@ -367,8 +375,7 @@ public final class WebServiceCallerTest
       public KeysAggregator<StreamParameter> computeUri(StreamParameter parameters)
       {
         final String methodUriSuffix = "method";
-        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new WebServiceClient.HttpCallTypeAndBody(webServiceClient.computeUri(
-            WebServiceCallerTest.WEBSERVICES_BASE_URL, methodUriSuffix, parameters.computeUriParameters()), CallType.Get, null));
+        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new WebServiceClient.HttpCallTypeAndBody(webServiceClient.computeUri(WebServiceCallerTest.WEBSERVICES_BASE_URL, methodUriSuffix, parameters.computeUriParameters()), CallType.Get, null));
         final SimpleIOStreamerSourceKey<StreamParameter> ioStreamerSourceKey = new SimpleIOStreamerSourceKey<StreamParameter>(methodUriSuffix);
         return new KeysAggregator<StreamParameter>(parameters).add(Source.UriStreamer, uriStreamerSourceKey).add(Source.IOStreamer, ioStreamerSourceKey);
       }

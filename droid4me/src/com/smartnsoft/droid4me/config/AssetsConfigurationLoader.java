@@ -24,10 +24,10 @@ import android.content.res.AssetManager;
 
 /**
  * A basis class which reads the configuration from a the {@code assets} directory.
- * 
+ *
  * @author Édouard Mercier
- * @since 2013.10.19
  * @see AssetManager
+ * @since 2013.10.19
  */
 public class AssetsConfigurationLoader
     implements ConfigurationLoader
@@ -39,7 +39,8 @@ public class AssetsConfigurationLoader
 
   private final ConfigurationParser<InputStream> configurationParser;
 
-  public AssetsConfigurationLoader(AssetManager assetManager, String assetsFileName, ConfigurationParser<InputStream> configurationParser)
+  public AssetsConfigurationLoader(AssetManager assetManager, String assetsFileName,
+      ConfigurationParser<InputStream> configurationParser)
   {
     this.assetManager = assetManager;
     this.assetsFileName = assetsFileName;

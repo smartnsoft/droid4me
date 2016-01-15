@@ -120,13 +120,13 @@ public interface ConfigurationLoader
     private static Context applicationContext;
 
     /**
-     * This method should be invoked before the {@link ConfigurationFactory#setBean(ConfigurationType, String, Class)} method be invoked, hence very
+     * This method should be invoked before the {@link ConfigurationFactory#setBean(Class, Object)} method be invoked, hence very
      * early at the application start-up (typically during the {@link Application#onCreate() method}.
      *
      * @param applicationContext the Android application context, usually retrieved from a {@link Activity#getApplicationContext()} or from
      *                           {@link Application#getApplicationContext()}, which will be used to load the configuration parameters from the {@code assets} Android
      *                           installation package {@code .apk}, or from the internal storage
-     * @see #setBean(ConfigurationType, String, Class)
+     * @see #setBean(Class, Object)
      * @see #initialize(Context)
      */
     public static void initialize(Context applicationContext)
@@ -211,17 +211,17 @@ public interface ConfigurationLoader
      * <p/>
      * <p>
      * The method implementation is responsible for creating the right {@link ConfigurationLoader}, and then invoke its
-     * {@link ConfigurationLoader#load(Class)} method.
+     * {@link ConfigurationLoader#getBean(Class)} method.
      * </p>
      *
-     * @param configurationType the kind of configuration which indicates where and how the bean will be fulfilled
-     * @param value             will be passed to the internally created {@link ConfigurationLoader}
-     * @param theClass          the fully-qualified-name of the class of the bean which should be created. This class should expose a {@code public} no-argument
-     *                          constructor
+     * @param configurationLocation the kind of configuration which indicates where and how the bean will be fulfilled
+     * @param value                 will be passed to the internally created {@link ConfigurationLoader}
+     * @param theClass              the fully-qualified-name of the class of the bean which should be created. This class should expose a {@code public} no-argument
+     *                              constructor
      * @return a valid bean (cannot be {@code null})
      * @throws ConfigurationLoader.ConfigurationLoaderException if something went wrong during the method execution
      * @see #initialize(Context)
-     * @see #getInstance(ConfigurationType, String)
+     * @see #getInstance(ConfigurationLocation, ConfigurationFormat, String)
      */
     public static <T> T load(ConfigurationFactory.ConfigurationLocation configurationLocation,
         ConfigurationFactory.ConfigurationFormat configurationFormat, String value, Class<T> theClass)
@@ -253,20 +253,21 @@ public interface ConfigurationLoader
      * @param input    the source which holds the bean state, and which will be parsed
      * @return a valid and fulfilled bean
      * @throws ConfigurationLoader.ConfigurationLoaderException if an error occurred during the method
-     * @see #setBean(Class, InputStream, Object)
+     * @see #setBean(Class, Object)
+     * @see #setBean(Class, Object, Object)
      */
     public abstract <T> T getBean(Class<T> theClass, InputClass input)
         throws ConfigurationLoader.ConfigurationLoaderException;
 
     /**
-     * Does the same job as the {@link #getBean(Class, InputStream)} method, except that the bean is provided. the class the bean to be created
+     * Does the same job as the {@link #getBean(Class, Object)} method, except that the bean is provided. the class the bean to be created
      * belongs to
      *
      * @param input the source which holds the bean state, and which will be parsed
      * @param bean  the bean that should be updated
      * @return the provided fulfilled bean
      * @throws ConfigurationLoader.ConfigurationLoaderException if an error occurred during the method
-     * @see #getBean(Class, InputStream)
+     * @see #getBean(Class, Object)
      */
     public abstract <T> T setBean(Class<T> theClass, InputClass input, T bean)
         throws ConfigurationLoader.ConfigurationLoaderException;
@@ -304,8 +305,8 @@ public interface ConfigurationLoader
      * @param theClass      the class the bean to be created belongs to
      * @param bean          the bean the update will apply on
      * @param fieldName     the name of the bean class field to be updated
-     * @param rawFieldValue the string representation of the new field value. The only supported types are: {@link java.lang.int}, {@link java.lang.boolean},
-     *                      {@link java.lang.float}, {@link java.lang.double} and {@link java.lang.String}
+     * @param rawFieldValue the string representation of the new field value. The only supported types are: {@link int}, {@link boolean},
+     *                      {@link float}, {@link double} and {@link java.lang.String}
      */
     protected final void setField(Class<?> theClass, Object bean, String fieldName, String rawFieldValue)
     {
@@ -568,7 +569,7 @@ public interface ConfigurationLoader
   }
 
   /**
-   * Does the same thing as the {@link #getBean(Class, InputStream)} method, except that the POJO bean is provided.
+   * Does the same thing as the {@link #getBean(Class)} method, except that the POJO bean is provided.
    * <p/>
    * <p>
    * This method is especially useful, when a pre-defined configuration should be overwritten.
@@ -578,7 +579,7 @@ public interface ConfigurationLoader
    * @param bean     an already instantiated bean, which will be updated
    * @return a valid POJO which holds the loaded configuration parameters
    * @throws ConfigurationLoader.ConfigurationLoaderException if something unrecoverable went wrong during the processing
-   * @see #getBean(Class, InputStream)
+   * @see #getBean(Class)
    */
   <T> T setBean(Class<T> theClass, T bean)
       throws ConfigurationLoader.ConfigurationLoaderException;
