@@ -97,7 +97,7 @@
 
   <scm>
     <connection>scm:git:https://github.com/smartnsoft/droid4me.git</connection>
-    <developerConnection>scm:git:https://github.com/smartnsoft/droid4me.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:smartnsoft/droid4me.git</developerConnection>
     <url>https://github.com/smartnsoft/droid4me</url>
     <tag>HEAD</tag>
   </scm>
