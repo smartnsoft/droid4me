@@ -350,16 +350,25 @@ public final class WebServiceCallerTest
     final WebServiceClient webServiceClient = new WebServiceClient()
     {
 
+      @Override
       public String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
       {
         return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, false, HTTP.UTF_8);
       }
 
+      @Override
       public InputStream getInputStream(String uri, CallType callType, HttpEntity body)
           throws CallException
       {
         getInputStreamCallsCount.incrementAndGet();
         return new ByteArrayInputStream(expectedValue.getBytes());
+      }
+
+      @Override
+      public InputStream getInputStream(String uri, CallType callType, String body)
+          throws CallException
+      {
+        return null;
       }
 
     };

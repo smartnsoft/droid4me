@@ -356,7 +356,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   public ViewGroup createWrapperLayout(Context context)
   {
     wrapperLayout = new LinearLayout(context);
-    wrapperLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT));
+    wrapperLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
     wrapperLayout.setOrientation(LinearLayout.VERTICAL);
 
     {
@@ -364,10 +364,10 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
       listWrapperLayout.setOrientation(LinearLayout.HORIZONTAL);
       //
       // // This is essential to give a weight of 1
-      listWrapperLayout.addView(getListView(), new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
+      listWrapperLayout.addView(getListView(), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1));
 
       // This is essential to give weight of 1
-      wrapperLayout.addView(listWrapperLayout, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
+      wrapperLayout.addView(listWrapperLayout, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1));
     }
 
     return wrapperLayout;
@@ -377,14 +377,14 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
   {
     headerLayout = new LinearLayout(wrapperLayout.getContext());
     headerLayout.setOrientation(LinearLayout.VERTICAL);
-    wrapperLayout.addView(headerLayout, 0, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+    wrapperLayout.addView(headerLayout, 0, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
   }
 
   protected final void initializeFooter()
   {
     footerLayout = new LinearLayout(wrapperLayout.getContext());
     footerLayout.setOrientation(LinearLayout.VERTICAL);
-    wrapperLayout.addView(footerLayout, 1 + (headerAdded == true ? 1 : 0), new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+    wrapperLayout.addView(footerLayout, 1 + (headerAdded == true ? 1 : 0), new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
   }
 
   protected final void initializeLeft()
@@ -396,7 +396,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     // // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
     // leftLayout.addView(new View(wrapperLayout.getContext()), new LinearLayout.LayoutParams(0, 0));
     // }
-    listWrapperLayout.addView(leftLayout, 0, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+    listWrapperLayout.addView(leftLayout, 0, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
   }
 
   protected final void initializeRight()
@@ -408,7 +408,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     // // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
     // rightLayout.addView(new View(wrapperLayout.getContext()), new LinearLayout.LayoutParams(0, 0));
     // }
-    listWrapperLayout.addView(rightLayout, 1 + (leftAdded == true ? 1 : 0), new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+    listWrapperLayout.addView(rightLayout, 1 + (leftAdded == true ? 1 : 0), new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
   }
 
   public void onFulfillDisplayObjects()

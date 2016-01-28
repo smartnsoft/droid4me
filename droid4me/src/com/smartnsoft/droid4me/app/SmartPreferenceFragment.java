@@ -24,6 +24,7 @@ import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
  * @author Édouard Mercier
  * @since 2012.03.04
  */
+@Deprecated
 public abstract class SmartPreferenceFragment<AggregateClass>
     extends PreferenceFragment
     implements Smartable<AggregateClass>

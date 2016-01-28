@@ -163,7 +163,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
         {
           initializeHeader();
         }
-        headerLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+        headerLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         headerAdded = true;
       }
       else
@@ -179,7 +179,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
         {
           initializeFooter();
         }
-        footerLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+        footerLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         footerAdded = true;
       }
       else
@@ -203,7 +203,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
       // // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
       // leftLayout.removeViewAt(0);
       // }
-      leftLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+      leftLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
       leftAdded = true;
     }
     else
@@ -217,7 +217,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
       // // This works-around the bug http://code.google.com/p/android/issues/detail?id=3484
       // rightLayout.removeViewAt(0);
       // }
-      rightLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT));
+      rightLayout.addView(view, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
       rightAdded = true;
     }
   }
@@ -231,7 +231,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
     listView.setEmptyView(view);
     if (view != null)
     {
-      listWrapperLayout.addView(view, new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+      listWrapperLayout.addView(view, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
     }
   }
 
