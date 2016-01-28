@@ -133,10 +133,10 @@ public abstract class URLConnectionWebServiceCaller
   {
     final InputStream content = urlConnection.getInputStream();
 
-    if (URLConnectionWebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
+    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
     {
       final InputStream debugContent;
-      final int length = (int) (urlConnection.getContentLength() <= URLConnectionWebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? urlConnection.getContentLength() : URLConnectionWebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
+      final int length = (int) (urlConnection.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? urlConnection.getContentLength() : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
 
       if (content.markSupported() == true)
       {
@@ -144,7 +144,7 @@ public abstract class URLConnectionWebServiceCaller
       }
       else
       {
-        final int bufferMaxLength = (int) (length < 0 ? URLConnectionWebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES : length);
+        final int bufferMaxLength = (int) (length < 0 ? WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES : length);
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final byte[] buffer = new byte[8192];
         int bufferLength = 0;
@@ -270,7 +270,7 @@ public abstract class URLConnectionWebServiceCaller
       final StringBuilder curlSb = new StringBuilder();
       boolean logCurlCommand = false;
 
-      if (URLConnectionWebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+      if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
       {
         try
         {
@@ -309,7 +309,7 @@ public abstract class URLConnectionWebServiceCaller
     final String responseMessage = httpURLConnection.getResponseMessage();
     final StringBuilder responseHeadersSb = new StringBuilder();
 
-    if (URLConnectionWebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
+    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
     {
       for (final Map.Entry<String, List<String>> header : httpURLConnection.getHeaderFields().entrySet())
       {

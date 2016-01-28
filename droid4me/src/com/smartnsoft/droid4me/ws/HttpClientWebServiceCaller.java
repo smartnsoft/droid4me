@@ -281,10 +281,10 @@ public abstract class HttpClientWebServiceCaller
   {
     final HttpEntity entity = response.getEntity();
     final InputStream content = entity.getContent();
-    if (HttpClientWebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
+    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
     {
       final InputStream debugContent;
-      final int length = (int) (entity.getContentLength() <= HttpClientWebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? entity.getContentLength() : HttpClientWebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
+      final int length = (int) (entity.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? entity.getContentLength() : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
 
       if (content.markSupported() == true)
       {
@@ -292,7 +292,7 @@ public abstract class HttpClientWebServiceCaller
       }
       else
       {
-        final int bufferMaxLength = (int) (length < 0 ? HttpClientWebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES : length);
+        final int bufferMaxLength = (int) (length < 0 ? WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES : length);
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final byte[] buffer = new byte[8192];
         int bufferLength = 0;
@@ -507,14 +507,14 @@ public abstract class HttpClientWebServiceCaller
       final StringBuilder sb = new StringBuilder();
       final StringBuilder curlSb = new StringBuilder();
       boolean logCurlCommand = false;
-      if (HttpClientWebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+      if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
       {
         try
         {
           curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
           if (body != null && body.getContent() != null)
           {
-            if (body.getContentLength() <= HttpClientWebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES && body.getContent().markSupported() == true)
+            if (body.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES && body.getContent().markSupported() == true)
             {
               logCurlCommand = true;
               body.getContent().mark((int) body.getContentLength());
