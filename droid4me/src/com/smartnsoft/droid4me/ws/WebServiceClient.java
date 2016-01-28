@@ -201,7 +201,7 @@ public interface WebServiceClient
    *
    * @since 2009.11.10
    */
-  final class HttpCallTypeAndBody<BodyType>
+  final class HttpCallTypeAndBody
   {
 
     /**
@@ -217,7 +217,7 @@ public interface WebServiceClient
     /**
      * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the body of the request.
      */
-    public final BodyType body;
+    public final Object body;
 
     /**
      * This will create a {@link Verb#Get} HTTP request method.
@@ -234,7 +234,7 @@ public interface WebServiceClient
      * @param callType the HTTP request method
      * @param body     the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
      */
-    public HttpCallTypeAndBody(String url, CallType callType, BodyType body)
+    public HttpCallTypeAndBody(String url, CallType callType, Object body)
     {
       this.url = url;
       this.callType = callType;

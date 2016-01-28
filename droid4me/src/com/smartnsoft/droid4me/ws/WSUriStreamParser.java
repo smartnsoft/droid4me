@@ -213,7 +213,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
     final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
     final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
 
-    if (httpCallTypeAndBody.body instanceof HttpEntity)
+    if (webServiceClient instanceof HttpClientWebServiceCaller)
     {
       return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, (HttpEntity) httpCallTypeAndBody.body));
     }
