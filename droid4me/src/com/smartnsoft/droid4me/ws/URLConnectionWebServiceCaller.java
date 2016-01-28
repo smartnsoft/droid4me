@@ -53,9 +53,10 @@ public abstract class URLConnectionWebServiceCaller
   public final InputStream getInputStream(String uri)
       throws CallException
   {
-    return getInputStream(uri, CallType.Get, null);
+    return getInputStream(uri, CallType.Get, (String) null);
   }
 
+  @Override
   public final InputStream getInputStream(String uri, CallType callType, String body)
       throws CallException
   {

@@ -38,7 +38,7 @@ public interface WebServiceClient
    */
   enum Verb
   {
-    Get, Post, Put, Delete;
+    Get, Post, Put, Delete
   }
 
   /**
@@ -201,7 +201,7 @@ public interface WebServiceClient
    *
    * @since 2009.11.10
    */
-  final class HttpCallTypeAndBody
+  final class HttpCallTypeAndBody<BodyType>
   {
 
     /**
@@ -217,7 +217,7 @@ public interface WebServiceClient
     /**
      * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the body of the request.
      */
-    public final HttpEntity body;
+    public final BodyType body;
 
     /**
      * This will create a {@link Verb#Get} HTTP request method.
@@ -234,7 +234,7 @@ public interface WebServiceClient
      * @param callType the HTTP request method
      * @param body     the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
      */
-    public HttpCallTypeAndBody(String url, CallType callType, HttpEntity body)
+    public HttpCallTypeAndBody(String url, CallType callType, BodyType body)
     {
       this.url = url;
       this.callType = callType;
@@ -271,6 +271,19 @@ public interface WebServiceClient
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
   InputStream getInputStream(String uri, WebServiceClient.CallType callType, HttpEntity body)
+      throws WebServiceClient.CallException;
+
+  /**
+   * Is responsible to actually run the relevant HTTP method.
+   *
+   * @param uri      the URI against which the HTTP request should be run
+   * @param callType the type of HTTP method
+   * @param body     the body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
+   *                 {@code null} otherwise
+   * @return the input stream resulting to the HTTP request, which is taken from the response
+   * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
+   */
+  InputStream getInputStream(String uri, WebServiceClient.CallType callType, String body)
       throws WebServiceClient.CallException;
 
 }
