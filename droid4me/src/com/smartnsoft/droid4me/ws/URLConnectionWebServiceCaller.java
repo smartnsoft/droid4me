@@ -34,6 +34,7 @@ import java.util.Map;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 
 /**
@@ -54,6 +55,13 @@ public abstract class URLConnectionWebServiceCaller
       throws CallException
   {
     return getInputStream(uri, CallType.Get, (String) null);
+  }
+
+  @Override
+  public final InputStream getInputStream(String uri, WebServiceClient.CallType callType, HttpEntity body)
+      throws CallException
+  {
+    return null;
   }
 
   @Override

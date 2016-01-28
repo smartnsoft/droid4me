@@ -129,6 +129,13 @@ public abstract class HttpClientWebServiceCaller
     return getInputStream(uri, WebServiceCaller.CallType.Get, (HttpEntity) null);
   }
 
+  @Override
+  public final InputStream getInputStream(String uri, CallType callType, String body)
+      throws CallException
+  {
+    return null;
+  }
+
   /**
    * Performs an HTTP request corresponding to the provided parameters.
    * <p/>
