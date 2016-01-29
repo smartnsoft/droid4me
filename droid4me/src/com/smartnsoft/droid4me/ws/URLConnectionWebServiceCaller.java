@@ -38,6 +38,22 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 
 /**
+ * * A basis class for making web service calls easier.
+ * <p/>
+ * <p>
+ * When invoking an HTTP method, the caller goes through the following workflow:
+ * <ol>
+ * <li>the {@link #isConnected()} method is checked: if the return value is set to {@code false}, no request will be attempted and a
+ * {@link WebServiceCaller.CallException} exception will be thrown (embedding a {@link UnknownHostException} exception) ;</li>
+ * <li>the {@link #onBeforeHttpRequestExecution(URL, HttpURLConnection, CallType)} method will be invoked, so as to let the caller tune the HTTP
+ * method request ;</li>
+ * <li>if a connection issue arises (connection time-out, socket time-out, lost of connectivity), a {@link WebServiceCaller.CallException} exception
+ * will be thrown, and it will {@link Throwable#getCause() embed} the reason for the connection issue ;</li>
+ * <li>if the status code of the HTTP response does not belong to the [{@link HttpStatus#SC_OK}, {@link HttpStatus#SC_MULTI_STATUS}] range, the
+ * {@link #onStatusCodeNotOk(String, CallType, String, HttpURLConnection, URL, int, String, int)} method will be invoked.</li>
+ * </ol>
+ * </p>
+ *
  * @author Ludovic Roland
  * @since 2016.01.28
  */
@@ -49,8 +65,14 @@ public abstract class URLConnectionWebServiceCaller
 
   protected abstract int getReadTimeout();
 
-  protected abstract int getConnecTimeout();
+  protected abstract int getConnectTimeout();
 
+  /**
+   * Equivalent to calling {@link #getInputStream(String, WebServiceClient.CallType, String)} with {@code callType} parameter set to
+   * {@code WebServiceCaller.CallType.Get} and {@code body} parameter set to {@code null}.
+   *
+   * @see #getInputStream(String, WebServiceClient.CallType, HttpEntity)
+   */
   public final InputStream getInputStream(String uri)
       throws CallException
   {
@@ -58,12 +80,27 @@ public abstract class URLConnectionWebServiceCaller
   }
 
   @Override
-  public final InputStream getInputStream(String uri, WebServiceClient.CallType callType, HttpEntity body)
+  public final InputStream getInputStream(String uri, CallType callType, HttpEntity body)
       throws CallException
   {
     return null;
   }
 
+  /**
+   * Performs an HTTP request corresponding to the provided parameters.
+   *
+   * @param uri      the URI being requested
+   * @param callType the HTTP method
+   * @param body     if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the body of the
+   *                 request
+   * @return the input stream of the HTTP method call; cannot be {@code null}
+   * @throws CallException if the status code of the HTTP response does not belong to the [{@link HttpStatus#SC_OK}, {@link HttpStatus#SC_MULTI_STATUS}] range.
+   *                       Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
+   *                       {@link #isConnected()} method returns {@code false}, no request will be attempted and a {@link CallException}
+   *                       exception will be thrown (embedding a {@link UnknownHostException} exception).
+   * @see #getInputStream(String)
+   * @see #getInputStream(String, CallType, String)
+   */
   @Override
   public final InputStream getInputStream(String uri, CallType callType, String body)
       throws CallException
@@ -92,6 +129,20 @@ public abstract class URLConnectionWebServiceCaller
     }
   }
 
+  /**
+   * Invoked when the result of the HTTP request is not <code>20X</code>. The default implementation logs the problem and throws an exception.
+   *
+   * @param uri               the URI of the HTTP call
+   * @param callType          the type of the HTTP method
+   * @param body              the body of the HTTP method when its a {@link CallType#Post} or a {@link CallType#Put} ; {@code null}
+   *                          otherwise
+   * @param httpURLConnection the HttpURLConnection object
+   * @param url               the URL object
+   * @param statusCode        the status code of the response, which is not <code>20X</code>
+   * @param attemptsCount     the number of attempts that have been run for this HTTP method. Starts at <code>1</code>
+   * @return {@code true} if you want the request to be re-run if it has failed
+   * @throws CallException if you want the call to be considered as not OK
+   */
   protected boolean onStatusCodeNotOk(String uri, CallType callType, String body, HttpURLConnection httpURLConnection,
       URL url, int statusCode, String statusMessage, int attemptsCount)
       throws CallException
@@ -123,103 +174,129 @@ public abstract class URLConnectionWebServiceCaller
     throw new CallException(message, statusCode);
   }
 
+  /**
+   * This is the perfect place for customizing the HTTP request that is bound to be run.
+   *
+   * @param url               the URL object that will run the HTTP request
+   * @param httpURLConnection the HttpURLConnection object
+   * @param callType          the type of the HTTP method
+   * @throws CallException in case the HTTP request cannot be eventually invoked properly
+   */
   protected void onBeforeHttpRequestExecution(URL url, HttpURLConnection httpURLConnection, CallType callType)
       throws CallException
   {
   }
 
+  /**
+   * Invoked on every call, in order to extract the input stream from the response.
+   * <p/>
+   * <p>
+   * If the content type is gzipped, this is the ideal place for unzipping it.
+   * </p>
+   *
+   * @param uri           the web call initial URI
+   * @param callType      the kind of request
+   * @param urlConnection the HttpURLConnection object
+   * @return the (decoded) input stream of the response
+   * @throws IOException if some exception occurred while extracting the content of the response
+   */
   protected InputStream getContent(String uri, CallType callType, HttpURLConnection urlConnection)
       throws IOException
   {
     final InputStream content = urlConnection.getInputStream();
 
-    //    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
+    final InputStream debugContent;
+    final int length = (int) (urlConnection.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? urlConnection.getContentLength() : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
+
+    if (content.markSupported() == true)
     {
-      final InputStream debugContent;
-      final int length = (int) (urlConnection.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? urlConnection.getContentLength() : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
+      debugContent = content;
+    }
+    else
+    {
+      final int bufferMaxLength = (int) (length < 0 ? WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES : length);
+      final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      final byte[] buffer = new byte[8192];
+      int bufferLength = 0;
 
-      if (content.markSupported() == true)
+      try
       {
-        debugContent = content;
+        while ((bufferLength = content.read(buffer)) > 0 && bufferLength <= bufferMaxLength)
+        {
+          outputStream.write(buffer, 0, bufferLength);
+        }
       }
-      else
+      catch (IndexOutOfBoundsException exception)
       {
-        final int bufferMaxLength = (int) (length < 0 ? WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES : length);
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final byte[] buffer = new byte[8192];
-        int bufferLength = 0;
-
-        try
+        if (log.isWarnEnabled())
         {
-          while ((bufferLength = content.read(buffer)) > 0 && bufferLength <= bufferMaxLength)
-          {
-            outputStream.write(buffer, 0, bufferLength);
-          }
-        }
-        catch (IndexOutOfBoundsException exception)
-        {
-          if (log.isWarnEnabled())
-          {
-            log.error("Could not copy the input stream corresponding to the HTTP response content in order to log it", exception);
-          }
-
-          return content;
+          log.error("Could not copy the input stream corresponding to the HTTP response content in order to log it", exception);
         }
 
-        try
-        {
-          content.close();
-        }
-        catch (IOException exception)
-        {
-          if (log.isWarnEnabled())
-          {
-            log.error("Could not close the input stream corresponding to the HTTP response content", exception);
-          }
-        }
-
-        try
-        {
-          outputStream.close();
-        }
-        catch (IOException exception)
-        {
-          if (log.isWarnEnabled())
-          {
-            log.error("Could not close the input stream corresponding to the copy of the HTTP response content", exception);
-          }
-        }
-
-        debugContent = new ByteArrayInputStream(outputStream.toByteArray());
+        return content;
       }
 
-      if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
+      try
       {
-        try
+        content.close();
+      }
+      catch (IOException exception)
+      {
+        if (log.isWarnEnabled())
         {
-          debugContent.mark(length);
-          final String bodyAsString = getString(debugContent);
-          log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
-        }
-        catch (IOException exception)
-        {
-          if (log.isWarnEnabled())
-          {
-            log.warn("Cannot log the HTTP body of the response", exception);
-          }
-        }
-        finally
-        {
-          debugContent.reset();
+          log.error("Could not close the input stream corresponding to the HTTP response content", exception);
         }
       }
 
-      return debugContent;
+      try
+      {
+        outputStream.close();
+      }
+      catch (IOException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.error("Could not close the input stream corresponding to the copy of the HTTP response content", exception);
+        }
+      }
+
+      debugContent = new ByteArrayInputStream(outputStream.toByteArray());
     }
 
-    //    return content;
+    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
+    {
+      try
+      {
+        debugContent.mark(length);
+        final String bodyAsString = getString(debugContent);
+        log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
+      }
+      catch (IOException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Cannot log the HTTP body of the response", exception);
+        }
+      }
+      finally
+      {
+        debugContent.reset();
+      }
+    }
+
+    return debugContent;
   }
 
+  /**
+   * Is responsible for returning an HTTP client instance, used for actually running the HTTP requests.
+   * <p/>
+   * <p>
+   * The current implementation returns a {@link HttpURLConnection} instance.
+   * </p>
+   *
+   * @return a valid HTTP client
+   * @throws CallException is the uri is {@code null} or the connectivity has been lost
+   */
   private HttpURLConnection performHttpRequest(String uri, CallType callType, String body, int attemptsCount)
       throws IOException, CallException
   {
@@ -235,7 +312,7 @@ public abstract class URLConnectionWebServiceCaller
     final URL url = new URL(uri);
     final HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
     httpURLConnection.setReadTimeout(getReadTimeout());
-    httpURLConnection.setConnectTimeout(getConnecTimeout());
+    httpURLConnection.setConnectTimeout(getConnectTimeout());
     httpURLConnection.setDoInput(true);
 
     switch (callType.verb)

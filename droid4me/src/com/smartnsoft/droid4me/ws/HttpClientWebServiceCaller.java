@@ -370,8 +370,8 @@ public abstract class HttpClientWebServiceCaller
    * {@link #computeHttpClient()} method, if no {@link HttpClient} is currently created.
    * <p/>
    * <p>
-   * The current implementation returns a {@link SensibleHttpClient} instance, which is thread-safe, in case the extending class implements the
-   * {@link HttpClientWebServiceCaller.ReuseHttpClient} interface.
+   * The current implementation returns a {@link SensibleHttpClient} instance, which is thread-safe, in case the extending class uses the
+   * {@link HttpClientWebServiceCaller.ReuseHttpClient} annotation.
    * </p>
    *
    * @return a valid HTTP client
@@ -382,7 +382,8 @@ public abstract class HttpClientWebServiceCaller
   protected synchronized final HttpClient getHttpClient()
       throws CallException
   {
-    if (this instanceof HttpClientWebServiceCaller.ReuseHttpClient)
+    final ReuseHttpClient reuseHttpClientAnnotation = this.getClass().getAnnotation(ReuseHttpClient.class);
+    if (reuseHttpClientAnnotation != null)
     {
       if (httpClient == null)
       {
@@ -435,14 +436,15 @@ public abstract class HttpClientWebServiceCaller
    * parameters need to fine-tuned.
    * <p/>
    * <p>
-   * In the case the class implements {@link HttpClientWebServiceCaller.ReuseHttpClient} interface, this method will be invoked only once.
+   * In the case the class uses {@link HttpClientWebServiceCaller.ReuseHttpClient} annotation, this method will be invoked only once.
    * </p>
    *
    * @return an HTTP client that will be used for running HTTP requests
    */
   protected HttpClient computeHttpClient()
   {
-    if (this instanceof HttpClientWebServiceCaller.ReuseHttpClient)
+    final ReuseHttpClient reuseHttpClientAnnotation = this.getClass().getAnnotation(ReuseHttpClient.class);
+    if (reuseHttpClientAnnotation != null)
     {
       // Taken from http://foo.jasonhudgins.com/2010/03/http-connections-revisited.html
       final DefaultHttpClient initialHttpClient = new DefaultHttpClient();
