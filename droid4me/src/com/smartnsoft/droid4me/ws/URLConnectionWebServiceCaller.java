@@ -133,7 +133,7 @@ public abstract class URLConnectionWebServiceCaller
   {
     final InputStream content = urlConnection.getInputStream();
 
-    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
+    //    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
     {
       final InputStream debugContent;
       final int length = (int) (urlConnection.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? urlConnection.getContentLength() : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
@@ -193,28 +193,31 @@ public abstract class URLConnectionWebServiceCaller
         debugContent = new ByteArrayInputStream(outputStream.toByteArray());
       }
 
-      try
+      if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
       {
-        debugContent.mark(length);
-        final String bodyAsString = getString(debugContent);
-        log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
-      }
-      catch (IOException exception)
-      {
-        if (log.isWarnEnabled())
+        try
         {
-          log.warn("Cannot log the HTTP body of the response", exception);
+          debugContent.mark(length);
+          final String bodyAsString = getString(debugContent);
+          log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
         }
-      }
-      finally
-      {
-        debugContent.reset();
+        catch (IOException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.warn("Cannot log the HTTP body of the response", exception);
+          }
+        }
+        finally
+        {
+          debugContent.reset();
+        }
       }
 
       return debugContent;
     }
 
-    return content;
+    //    return content;
   }
 
   private HttpURLConnection performHttpRequest(String uri, CallType callType, String body, int attemptsCount)
