@@ -67,6 +67,7 @@ import org.apache.http.protocol.HttpContext;
  * @author Ludovic Roland
  * @since 2016.01.28
  */
+@Deprecated
 public abstract class HttpClientWebServiceCaller
     extends WebServiceCaller
 {
