@@ -68,10 +68,10 @@ public abstract class URLConnectionWebServiceCaller
   protected abstract int getConnectTimeout();
 
   /**
-   * Equivalent to calling {@link #getInputStream(String, WebServiceClient.CallType, String)} with {@code callType} parameter set to
-   * {@code WebServiceCaller.CallType.Get} and {@code body} parameter set to {@code null}.
+   * Equivalent to calling {@link #getInputStream(String, CallType, String)} with {@code callType} parameter set to
+   * {@code CallType.Get} and {@code body} parameter set to {@code null}.
    *
-   * @see #getInputStream(String, WebServiceClient.CallType, HttpEntity)
+   * @see #getInputStream(String, CallType, HttpEntity)
    */
   public final InputStream getInputStream(String uri)
       throws CallException
@@ -87,12 +87,25 @@ public abstract class URLConnectionWebServiceCaller
   }
 
   /**
+   * Equivalent to calling {@link #getInputStream(String, CallType, String, Map)} with {@code headers} parameter set to {@code null}.
+   *
+   * @see #getInputStream(String, CallType, String, Map)
+   */
+  @Override
+  public final InputStream getInputStream(String uri, CallType callType, String body)
+      throws CallException
+  {
+    return getInputStream(uri, callType, body, null);
+  }
+
+  /**
    * Performs an HTTP request corresponding to the provided parameters.
    *
    * @param uri      the URI being requested
    * @param callType the HTTP method
    * @param body     if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the body of the
    *                 request
+   * @param headers  the headers of the HTTP request
    * @return the input stream of the HTTP method call; cannot be {@code null}
    * @throws CallException if the status code of the HTTP response does not belong to the [{@link HttpStatus#SC_OK}, {@link HttpStatus#SC_MULTI_STATUS}] range.
    *                       Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
@@ -101,15 +114,14 @@ public abstract class URLConnectionWebServiceCaller
    * @see #getInputStream(String)
    * @see #getInputStream(String, CallType, String)
    */
-  @Override
-  public final InputStream getInputStream(String uri, CallType callType, String body)
+  public final InputStream getInputStream(String uri, CallType callType, String body, Map<String, String> headers)
       throws CallException
   {
     HttpURLConnection httpURLConnection = null;
 
     try
     {
-      httpURLConnection = performHttpRequest(uri, callType, body);
+      httpURLConnection = performHttpRequest(uri, callType, body, headers);
       return getContent(uri, callType, httpURLConnection);
     }
     catch (CallException exception)
@@ -297,7 +309,8 @@ public abstract class URLConnectionWebServiceCaller
    * @return a valid HTTP client
    * @throws CallException is the uri is {@code null} or the connectivity has been lost
    */
-  private HttpURLConnection performHttpRequest(String uri, CallType callType, String body, int attemptsCount)
+  private HttpURLConnection performHttpRequest(String uri, CallType callType, String body, Map<String, String> headers,
+      int attemptsCount)
       throws IOException, CallException
   {
     if (uri == null)
@@ -330,6 +343,14 @@ public abstract class URLConnectionWebServiceCaller
     case Delete:
       httpURLConnection.setRequestMethod("DELETE");
       break;
+    }
+
+    if (headers != null && headers.size() > 0)
+    {
+      for (final Map.Entry<String, String> header : headers.entrySet())
+      {
+        httpURLConnection.setRequestProperty(header.getKey(), header.getValue());
+      }
     }
 
     if ((callType.verb == Verb.Post || callType.verb == Verb.Put) && body != null)
@@ -414,17 +435,17 @@ public abstract class URLConnectionWebServiceCaller
     {
       if (onStatusCodeNotOk(uri, callType, body, httpURLConnection, url, responseCode, responseMessage, attemptsCount + 1) == true)
       {
-        return performHttpRequest(uri, callType, body, attemptsCount + 1);
+        return performHttpRequest(uri, callType, body, headers, attemptsCount + 1);
       }
     }
 
     return httpURLConnection;
   }
 
-  private HttpURLConnection performHttpRequest(String uri, CallType callType, String body)
+  private HttpURLConnection performHttpRequest(String uri, CallType callType, String body, Map<String, String> headers)
       throws IOException, CallException
   {
-    return performHttpRequest(uri, callType, body, 0);
+    return performHttpRequest(uri, callType, body, headers, 0);
   }
 
 }
