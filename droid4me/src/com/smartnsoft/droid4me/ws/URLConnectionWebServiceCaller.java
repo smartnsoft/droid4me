@@ -324,6 +324,7 @@ public abstract class URLConnectionWebServiceCaller
 
     final URL url = new URL(uri);
     final HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+    onBeforeHttpRequestExecution(url, httpURLConnection, callType);
     httpURLConnection.setReadTimeout(getReadTimeout());
     httpURLConnection.setConnectTimeout(getConnectTimeout());
     httpURLConnection.setDoInput(true);
@@ -362,8 +363,6 @@ public abstract class URLConnectionWebServiceCaller
       bufferedWriter.close();
       outputStream.close();
     }
-
-    onBeforeHttpRequestExecution(url, httpURLConnection, callType);
 
     if (log.isDebugEnabled() == true)
     {
