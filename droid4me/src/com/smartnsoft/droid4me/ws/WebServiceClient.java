@@ -276,14 +276,14 @@ public interface WebServiceClient
   /**
    * Is responsible to actually run the relevant HTTP method.
    *
-   * @param uri      the URI against which the HTTP request should be run
-   * @param callType the type of HTTP method
-   * @param body     the body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
-   *                 {@code null} otherwise
+   * @param uri            the URI against which the HTTP request should be run
+   * @param callType       the type of HTTP method
+   * @param postParameters the body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
+   *                       {@code null} otherwise
    * @return the input stream resulting to the HTTP request, which is taken from the response
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  InputStream getInputStream(String uri, WebServiceClient.CallType callType, String body)
+  InputStream getInputStream(String uri, WebServiceClient.CallType callType, Map<String, String> postParameters)
       throws WebServiceClient.CallException;
 
 }

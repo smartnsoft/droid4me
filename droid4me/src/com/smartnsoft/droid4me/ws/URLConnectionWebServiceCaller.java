@@ -31,6 +31,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -51,7 +52,7 @@ import org.apache.http.HttpStatus;
  * <li>if a connection issue arises (connection time-out, socket time-out, lost of connectivity), a {@link WebServiceCaller.CallException} exception
  * will be thrown, and it will {@link Throwable#getCause() embed} the reason for the connection issue ;</li>
  * <li>if the status code of the HTTP response does not belong to the [{@link HttpStatus#SC_OK}, {@link HttpStatus#SC_MULTI_STATUS}] range, the
- * {@link #onStatusCodeNotOk(String, CallType, String, HttpURLConnection, URL, int, String, int)} method will be invoked.</li>
+ * {@link #onStatusCodeNotOk(String, CallType, Map, HttpURLConnection, URL, int, String, int)} method will be invoked.</li>
  * </ol>
  * </p>
  *
@@ -62,6 +63,29 @@ public abstract class URLConnectionWebServiceCaller
     extends WebServiceCaller
 {
 
+  public static final class URLConnectionMultipartFile
+  {
+
+    public final String name;
+
+    public final String fileName;
+
+    public final String contentType;
+
+    public final FileInputStream fileInputStream;
+
+    public URLConnectionMultipartFile(String name, String fileName, String contentType, FileInputStream fileInputStream)
+    {
+      this.name = name;
+      this.fileName = fileName;
+      this.contentType = contentType;
+      this.fileInputStream = fileInputStream;
+    }
+
+  }
+
+  private final static String BOUNDARY = "----URLConnectionWebServiceCaller";
+
   protected final static Logger log = LoggerFactory.getInstance(URLConnectionWebServiceCaller.class);
 
   protected abstract int getReadTimeout();
@@ -69,7 +93,7 @@ public abstract class URLConnectionWebServiceCaller
   protected abstract int getConnectTimeout();
 
   /**
-   * Equivalent to calling {@link #getInputStream(String, CallType, String)} with {@code callType} parameter set to
+   * Equivalent to calling {@link #getInputStream(String, CallType, Map)} with {@code callType} parameter set to
    * {@code CallType.Get} and {@code body} parameter set to {@code null}.
    *
    * @see #getInputStream(String, CallType, HttpEntity)
@@ -77,7 +101,7 @@ public abstract class URLConnectionWebServiceCaller
   public final InputStream getInputStream(String uri)
       throws CallException
   {
-    return getInputStream(uri, CallType.Get, (String) null);
+    return getInputStream(uri, CallType.Get, (Map<String, String>) null);
   }
 
   @Override
@@ -88,42 +112,42 @@ public abstract class URLConnectionWebServiceCaller
   }
 
   /**
-   * Equivalent to calling {@link #getInputStream(String, CallType, Map, String, FileInputStream)} with {@code headers} and the {@code fileinputstream} parameters set to {@code null}.
+   * Equivalent to calling {@link #getInputStream(String, CallType, Map, Map, List)} with {@code headers} and the {@code fileinputstream} parameters set to {@code null}.
    *
-   * @see #getInputStream(String, CallType, Map, String, FileInputStream)
+   * @see #getInputStream(String, CallType, Map, Map, List)
    */
   @Override
-  public final InputStream getInputStream(String uri, CallType callType, String body)
+  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> postParameters)
       throws CallException
   {
-    return getInputStream(uri, callType, null, body, null);
+    return getInputStream(uri, callType, null, postParameters, null);
   }
 
   /**
    * Performs an HTTP request corresponding to the provided parameters.
    *
-   * @param uri      the URI being requested
-   * @param callType the HTTP method
-   * @param body     if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the body of the
-   *                 request
-   * @param headers  the headers of the HTTP request
+   * @param uri            the URI being requested
+   * @param callType       the HTTP method
+   * @param postParameters if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the body of the
+   *                       request
+   * @param headers        the headers of the HTTP request
    * @return the input stream of the HTTP method call; cannot be {@code null}
    * @throws CallException if the status code of the HTTP response does not belong to the [{@link HttpStatus#SC_OK}, {@link HttpStatus#SC_MULTI_STATUS}] range.
    *                       Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
    *                       {@link #isConnected()} method returns {@code false}, no request will be attempted and a {@link CallException}
    *                       exception will be thrown (embedding a {@link UnknownHostException} exception).
    * @see #getInputStream(String)
-   * @see #getInputStream(String, CallType, String)
+   * @see #getInputStream(String, CallType, Map)
    */
-  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> headers, String body,
-      FileInputStream fileInputStream)
+  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> headers,
+      Map<String, String> postParameters, List<URLConnectionMultipartFile> files)
       throws CallException
   {
     HttpURLConnection httpURLConnection = null;
 
     try
     {
-      httpURLConnection = performHttpRequest(uri, callType, headers, body, fileInputStream);
+      httpURLConnection = performHttpRequest(uri, callType, headers, postParameters, files);
       return getContent(uri, callType, httpURLConnection);
     }
     catch (CallException exception)
@@ -148,7 +172,7 @@ public abstract class URLConnectionWebServiceCaller
    *
    * @param uri               the URI of the HTTP call
    * @param callType          the type of the HTTP method
-   * @param body              the body of the HTTP method when its a {@link CallType#Post} or a {@link CallType#Put} ; {@code null}
+   * @param postParameters    the body of the HTTP method when its a {@link CallType#Post} or a {@link CallType#Put} ; {@code null}
    *                          otherwise
    * @param httpURLConnection the HttpURLConnection object
    * @param url               the URL object
@@ -157,8 +181,8 @@ public abstract class URLConnectionWebServiceCaller
    * @return {@code true} if you want the request to be re-run if it has failed
    * @throws CallException if you want the call to be considered as not OK
    */
-  protected boolean onStatusCodeNotOk(String uri, CallType callType, String body, HttpURLConnection httpURLConnection,
-      URL url, int statusCode, String statusMessage, int attemptsCount)
+  protected boolean onStatusCodeNotOk(String uri, CallType callType, Map<String, String> postParameters,
+      HttpURLConnection httpURLConnection, URL url, int statusCode, String statusMessage, int attemptsCount)
       throws CallException
   {
     final String message = "The result code of the call to the web method '" + uri + "' is not OK (not 20X). Status: " + (statusMessage != null ? statusMessage : "") + " (" + statusCode + ")";
@@ -311,8 +335,8 @@ public abstract class URLConnectionWebServiceCaller
    * @return a valid HTTP client
    * @throws CallException is the uri is {@code null} or the connectivity has been lost
    */
-  private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers, String body,
-      FileInputStream fileInputStream, int attemptsCount)
+  private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
+      Map<String, String> postParamaters, List<URLConnectionMultipartFile> files, int attemptsCount)
       throws IOException, CallException
   {
     if (uri == null)
@@ -324,6 +348,7 @@ public abstract class URLConnectionWebServiceCaller
       throw new CallException(new UnknownHostException("No connectivity"));
     }
 
+    final StringBuilder logBuilder = new StringBuilder();
     final URL url = new URL(uri);
     final HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
     onBeforeHttpRequestExecution(url, httpURLConnection, callType);
@@ -358,25 +383,59 @@ public abstract class URLConnectionWebServiceCaller
       }
     }
 
-    if ((callType.verb == Verb.Post || callType.verb == Verb.Put) && body != null)
+    if ((callType.verb == Verb.Post || callType.verb == Verb.Put) && postParamaters != null)
     {
       final OutputStream outputStream = httpURLConnection.getOutputStream();
       final BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, getContentEncoding()));
-      bufferedWriter.write(body);
-      bufferedWriter.flush();
 
-      if (fileInputStream != null)
+      for (final Entry<String, String> parameter : postParamaters.entrySet())
       {
-        int bytesRead;
-        final byte[] dataBuffer = new byte[1024];
-
-        while ((bytesRead = fileInputStream.read(dataBuffer)) != -1)
+        if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
         {
-          outputStream.write(dataBuffer, 0, bytesRead);
+          logBuilder.append("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
+          logBuilder.append("\nContent-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
+          logBuilder.append("\n\n");
+          logBuilder.append(parameter.getValue());
         }
 
-        outputStream.flush();
+        bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
+        bufferedWriter.write("\nContent-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
+        bufferedWriter.write("\n\n");
+        bufferedWriter.write(parameter.getValue());
       }
+
+      for (final URLConnectionMultipartFile file : files)
+      {
+        if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+        {
+          logBuilder.append("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
+          logBuilder.append("\nContent-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+          logBuilder.append("\nContent-Type: " + file.contentType);
+          logBuilder.append("\n\n");
+        }
+
+        bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
+        bufferedWriter.write("\nContent-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+        bufferedWriter.write("\nContent-Type: " + file.contentType);
+        bufferedWriter.write("\n\n");
+        bufferedWriter.flush();
+
+        if (file.fileInputStream != null)
+        {
+          int bytesRead;
+          final byte[] dataBuffer = new byte[1024];
+
+          while ((bytesRead = file.fileInputStream.read(dataBuffer)) != -1)
+          {
+            outputStream.write(dataBuffer, 0, bytesRead);
+          }
+
+          outputStream.flush();
+        }
+      }
+
+      bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY + "--\n");
+      bufferedWriter.flush();
 
       outputStream.close();
       bufferedWriter.close();
@@ -394,10 +453,10 @@ public abstract class URLConnectionWebServiceCaller
         {
           curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
 
-          if (body != null)
+          if (logBuilder != null && "".equals(logBuilder.toString()) == false)
           {
-            sb.append(" with body '").append(body).append("'");
-            curlSb.append(" --data \"").append(body).append("\"");
+            sb.append(" with body '").append(logBuilder.toString()).append("'");
+            curlSb.append(" --data \"").append(logBuilder.toString()).append("\"");
 
             for (final Map.Entry<String, List<String>> header : httpURLConnection.getRequestProperties().entrySet())
             {
@@ -450,20 +509,20 @@ public abstract class URLConnectionWebServiceCaller
 
     if (!(responseCode >= HttpStatus.SC_OK && responseCode <= HttpStatus.SC_MULTI_STATUS))
     {
-      if (onStatusCodeNotOk(uri, callType, body, httpURLConnection, url, responseCode, responseMessage, attemptsCount + 1) == true)
+      if (onStatusCodeNotOk(uri, callType, postParamaters, httpURLConnection, url, responseCode, responseMessage, attemptsCount + 1) == true)
       {
-        return performHttpRequest(uri, callType, headers, body, fileInputStream, attemptsCount + 1);
+        return performHttpRequest(uri, callType, headers, postParamaters, files, attemptsCount + 1);
       }
     }
 
     return httpURLConnection;
   }
 
-  private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers, String body,
-      FileInputStream fileInputStream)
+  private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
+      Map<String, String> postParameters, List<URLConnectionMultipartFile> files)
       throws IOException, CallException
   {
-    return performHttpRequest(uri, callType, headers, body, fileInputStream, 0);
+    return performHttpRequest(uri, callType, headers, postParameters, files, 0);
   }
 
 }
