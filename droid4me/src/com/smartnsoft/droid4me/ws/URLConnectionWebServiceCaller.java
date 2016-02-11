@@ -21,6 +21,7 @@ package com.smartnsoft.droid4me.ws;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -87,15 +88,15 @@ public abstract class URLConnectionWebServiceCaller
   }
 
   /**
-   * Equivalent to calling {@link #getInputStream(String, CallType, String, Map)} with {@code headers} parameter set to {@code null}.
+   * Equivalent to calling {@link #getInputStream(String, CallType, Map, String, FileInputStream)} with {@code headers} and the {@code fileinputstream} parameters set to {@code null}.
    *
-   * @see #getInputStream(String, CallType, String, Map)
+   * @see #getInputStream(String, CallType, Map, String, FileInputStream)
    */
   @Override
   public final InputStream getInputStream(String uri, CallType callType, String body)
       throws CallException
   {
-    return getInputStream(uri, callType, body, null);
+    return getInputStream(uri, callType, null, body, null);
   }
 
   /**
@@ -114,14 +115,15 @@ public abstract class URLConnectionWebServiceCaller
    * @see #getInputStream(String)
    * @see #getInputStream(String, CallType, String)
    */
-  public final InputStream getInputStream(String uri, CallType callType, String body, Map<String, String> headers)
+  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> headers, String body,
+      FileInputStream fileInputStream)
       throws CallException
   {
     HttpURLConnection httpURLConnection = null;
 
     try
     {
-      httpURLConnection = performHttpRequest(uri, callType, body, headers);
+      httpURLConnection = performHttpRequest(uri, callType, headers, body, fileInputStream);
       return getContent(uri, callType, httpURLConnection);
     }
     catch (CallException exception)
@@ -309,8 +311,8 @@ public abstract class URLConnectionWebServiceCaller
    * @return a valid HTTP client
    * @throws CallException is the uri is {@code null} or the connectivity has been lost
    */
-  private HttpURLConnection performHttpRequest(String uri, CallType callType, String body, Map<String, String> headers,
-      int attemptsCount)
+  private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers, String body,
+      FileInputStream fileInputStream, int attemptsCount)
       throws IOException, CallException
   {
     if (uri == null)
@@ -337,9 +339,11 @@ public abstract class URLConnectionWebServiceCaller
       break;
     case Post:
       httpURLConnection.setRequestMethod("POST");
+      httpURLConnection.setDoOutput(true);
       break;
     case Put:
       httpURLConnection.setRequestMethod("PUT");
+      httpURLConnection.setDoOutput(true);
       break;
     case Delete:
       httpURLConnection.setRequestMethod("DELETE");
@@ -360,8 +364,22 @@ public abstract class URLConnectionWebServiceCaller
       final BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, getContentEncoding()));
       bufferedWriter.write(body);
       bufferedWriter.flush();
-      bufferedWriter.close();
+
+      if (fileInputStream != null)
+      {
+        int bytesRead;
+        final byte[] dataBuffer = new byte[1024];
+
+        while ((bytesRead = fileInputStream.read(dataBuffer)) != -1)
+        {
+          outputStream.write(dataBuffer, 0, bytesRead);
+        }
+
+        outputStream.flush();
+      }
+
       outputStream.close();
+      bufferedWriter.close();
     }
 
     if (log.isDebugEnabled() == true)
@@ -434,17 +452,18 @@ public abstract class URLConnectionWebServiceCaller
     {
       if (onStatusCodeNotOk(uri, callType, body, httpURLConnection, url, responseCode, responseMessage, attemptsCount + 1) == true)
       {
-        return performHttpRequest(uri, callType, body, headers, attemptsCount + 1);
+        return performHttpRequest(uri, callType, headers, body, fileInputStream, attemptsCount + 1);
       }
     }
 
     return httpURLConnection;
   }
 
-  private HttpURLConnection performHttpRequest(String uri, CallType callType, String body, Map<String, String> headers)
+  private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers, String body,
+      FileInputStream fileInputStream)
       throws IOException, CallException
   {
-    return performHttpRequest(uri, callType, body, headers, 0);
+    return performHttpRequest(uri, callType, headers, body, fileInputStream, 0);
   }
 
 }
