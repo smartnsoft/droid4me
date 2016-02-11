@@ -383,54 +383,62 @@ public abstract class URLConnectionWebServiceCaller
       }
     }
 
-    if ((callType.verb == Verb.Post || callType.verb == Verb.Put) && postParamaters != null)
+    if ((callType.verb == Verb.Post || callType.verb == Verb.Put))
     {
       final OutputStream outputStream = httpURLConnection.getOutputStream();
       final BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, getContentEncoding()));
 
-      for (final Entry<String, String> parameter : postParamaters.entrySet())
+      if (postParamaters != null)
       {
-        if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+        for (final Entry<String, String> parameter : postParamaters.entrySet())
         {
-          logBuilder.append("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
-          logBuilder.append("\nContent-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
-          logBuilder.append("\n\n");
-          logBuilder.append(parameter.getValue());
-        }
-
-        bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
-        bufferedWriter.write("\nContent-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
-        bufferedWriter.write("\n\n");
-        bufferedWriter.write(parameter.getValue());
-      }
-
-      for (final URLConnectionMultipartFile file : files)
-      {
-        if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
-        {
-          logBuilder.append("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
-          logBuilder.append("\nContent-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
-          logBuilder.append("\nContent-Type: " + file.contentType);
-          logBuilder.append("\n\n");
-        }
-
-        bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
-        bufferedWriter.write("\nContent-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
-        bufferedWriter.write("\nContent-Type: " + file.contentType);
-        bufferedWriter.write("\n\n");
-        bufferedWriter.flush();
-
-        if (file.fileInputStream != null)
-        {
-          int bytesRead;
-          final byte[] dataBuffer = new byte[1024];
-
-          while ((bytesRead = file.fileInputStream.read(dataBuffer)) != -1)
+          if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
           {
-            outputStream.write(dataBuffer, 0, bytesRead);
+            logBuilder.append("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
+            logBuilder.append("\nContent-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
+            logBuilder.append("\n\n");
+            logBuilder.append(parameter.getValue());
           }
 
-          outputStream.flush();
+          bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
+          bufferedWriter.write("\nContent-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
+          bufferedWriter.write("\n\n");
+          bufferedWriter.write(parameter.getValue());
+        }
+      }
+
+      if (files != null)
+      {
+        httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
+
+        for (final URLConnectionMultipartFile file : files)
+        {
+          if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+          {
+            logBuilder.append("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
+            logBuilder.append("\nContent-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+            logBuilder.append("\nContent-Type: " + file.contentType);
+            logBuilder.append("\n\n");
+          }
+
+          bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
+          bufferedWriter.write("\nContent-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+          bufferedWriter.write("\nContent-Type: " + file.contentType);
+          bufferedWriter.write("\n\n");
+          bufferedWriter.flush();
+
+          if (file.fileInputStream != null)
+          {
+            int bytesRead;
+            final byte[] dataBuffer = new byte[1024];
+
+            while ((bytesRead = file.fileInputStream.read(dataBuffer)) != -1)
+            {
+              outputStream.write(dataBuffer, 0, bytesRead);
+            }
+
+            outputStream.flush();
+          }
         }
       }
 
