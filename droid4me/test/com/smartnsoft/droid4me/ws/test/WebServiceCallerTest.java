@@ -365,7 +365,7 @@ public final class WebServiceCallerTest
       }
 
       @Override
-      public InputStream getInputStream(String uri, CallType callType, String body)
+      public InputStream getInputStream(String uri, CallType callType, Map<String, String> body)
           throws CallException
       {
         return null;

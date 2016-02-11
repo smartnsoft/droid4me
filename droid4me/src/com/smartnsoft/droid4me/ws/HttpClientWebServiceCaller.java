@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.smartnsoft.droid4me.log.Logger;
@@ -131,7 +132,7 @@ public abstract class HttpClientWebServiceCaller
   }
 
   @Override
-  public final InputStream getInputStream(String uri, CallType callType, String body)
+  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> postParamaters)
       throws CallException
   {
     return null;

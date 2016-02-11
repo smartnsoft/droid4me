@@ -188,7 +188,7 @@ public final class WithCacheWSUriStreamParser
         return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, (HttpEntity) httpCallTypeAndBody.body));
       }
 
-      return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, (String) httpCallTypeAndBody.body));
+      return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, (Map<String, String>) httpCallTypeAndBody.body));
 
     }
 
