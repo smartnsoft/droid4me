@@ -352,6 +352,12 @@ public abstract class URLConnectionWebServiceCaller
     final URL url = new URL(uri);
     final HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
     onBeforeHttpRequestExecution(url, httpURLConnection, callType);
+
+    if ((callType.verb == Verb.Post || callType.verb == Verb.Put) && files != null && files.size() > 0)
+    {
+      httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
+    }
+
     httpURLConnection.setReadTimeout(getReadTimeout());
     httpURLConnection.setConnectTimeout(getConnectTimeout());
     httpURLConnection.setDoInput(true);
@@ -383,7 +389,7 @@ public abstract class URLConnectionWebServiceCaller
       }
     }
 
-    if ((callType.verb == Verb.Post || callType.verb == Verb.Put))
+    if (callType.verb == Verb.Post || callType.verb == Verb.Put)
     {
       final OutputStream outputStream = httpURLConnection.getOutputStream();
       final BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, getContentEncoding()));
@@ -409,8 +415,6 @@ public abstract class URLConnectionWebServiceCaller
 
       if (files != null)
       {
-        httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
-
         for (final URLConnectionMultipartFile file : files)
         {
           if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
