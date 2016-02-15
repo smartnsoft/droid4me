@@ -18,14 +18,12 @@
 
 package com.smartnsoft.droid4me.ws;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -84,7 +82,11 @@ public abstract class URLConnectionWebServiceCaller
 
   }
 
-  private final static String BOUNDARY = "----URLConnectionWebServiceCaller";
+  private final static String BOUNDARY = "URLConnectionWebServiceCaller";
+
+  private final static String HYPHEN_HYPHEN = "--";
+
+  private final static String NEW_LINE = "\r\n";
 
   protected final static Logger log = LoggerFactory.getInstance(URLConnectionWebServiceCaller.class);
 
@@ -391,8 +393,7 @@ public abstract class URLConnectionWebServiceCaller
 
     if (callType.verb == Verb.Post || callType.verb == Verb.Put)
     {
-      final OutputStream outputStream = httpURLConnection.getOutputStream();
-      final BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, getContentEncoding()));
+      final DataOutputStream outputStream = new DataOutputStream(httpURLConnection.getOutputStream());
 
       if (postParamaters != null)
       {
@@ -400,16 +401,19 @@ public abstract class URLConnectionWebServiceCaller
         {
           if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
           {
-            logBuilder.append("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
-            logBuilder.append("\nContent-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
-            logBuilder.append("\n\n");
+            logBuilder.append(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+            logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
+            logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
             logBuilder.append(parameter.getValue());
+            logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE);
           }
 
-          bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
-          bufferedWriter.write("\nContent-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
-          bufferedWriter.write("\n\n");
-          bufferedWriter.write(parameter.getValue());
+          outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
+          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
+          outputStream.writeBytes(parameter.getValue());
+          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE);
+          outputStream.flush();
         }
       }
 
@@ -419,17 +423,17 @@ public abstract class URLConnectionWebServiceCaller
         {
           if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
           {
-            logBuilder.append("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
-            logBuilder.append("\nContent-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
-            logBuilder.append("\nContent-Type: " + file.contentType);
-            logBuilder.append("\n\n");
+            logBuilder.append(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+            logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+            logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + "Content-Type: " + file.contentType);
+            logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
           }
 
-          bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY);
-          bufferedWriter.write("\nContent-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
-          bufferedWriter.write("\nContent-Type: " + file.contentType);
-          bufferedWriter.write("\n\n");
-          bufferedWriter.flush();
+          outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Type: " + file.contentType);
+          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
+          outputStream.flush();
 
           if (file.fileInputStream != null)
           {
@@ -441,16 +445,16 @@ public abstract class URLConnectionWebServiceCaller
               outputStream.write(dataBuffer, 0, bytesRead);
             }
 
+            outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE);
             outputStream.flush();
           }
         }
       }
 
-      bufferedWriter.write("\n--" + URLConnectionWebServiceCaller.BOUNDARY + "--\n");
-      bufferedWriter.flush();
-
+      outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.NEW_LINE);
+      outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE);
+      outputStream.flush();
       outputStream.close();
-      bufferedWriter.close();
     }
 
     if (log.isDebugEnabled() == true)
