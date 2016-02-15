@@ -128,11 +128,12 @@ public abstract class HttpClientWebServiceCaller
   public final InputStream getInputStream(String uri)
       throws WebServiceCaller.CallException
   {
-    return getInputStream(uri, WebServiceCaller.CallType.Get, (HttpEntity) null);
+    return getInputStream(uri, WebServiceCaller.CallType.Get, null);
   }
 
   @Override
-  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> postParamaters)
+  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> postParamaters,
+      String body)
       throws CallException
   {
     return null;

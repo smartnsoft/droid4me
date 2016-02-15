@@ -313,7 +313,7 @@ public final class WebServiceCallerTest
 
       public KeysAggregator<StreamParameter> computeUri(StreamParameter parameters)
       {
-        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new WebServiceClient.HttpCallTypeAndBody(uriStreamerPath, CallType.Get, null));
+        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new WebServiceClient.HttpCallTypeAndBody(uriStreamerPath, CallType.Get, null, null));
         final SimpleIOStreamerSourceKey<StreamParameter> ioStreamerSourceKey = new SimpleIOStreamerSourceKey<StreamParameter>(ioStreamerUri);
         return new KeysAggregator<StreamParameter>(parameters).add(Source.UriStreamer, uriStreamerSourceKey).add(Source.IOStreamer, ioStreamerSourceKey);
       }
@@ -365,7 +365,7 @@ public final class WebServiceCallerTest
       }
 
       @Override
-      public InputStream getInputStream(String uri, CallType callType, Map<String, String> body)
+      public InputStream getInputStream(String uri, CallType callType, Map<String, String> postParameters, String body)
           throws CallException
       {
         return null;
@@ -384,7 +384,7 @@ public final class WebServiceCallerTest
       public KeysAggregator<StreamParameter> computeUri(StreamParameter parameters)
       {
         final String methodUriSuffix = "method";
-        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new WebServiceClient.HttpCallTypeAndBody(webServiceClient.computeUri(WebServiceCallerTest.WEBSERVICES_BASE_URL, methodUriSuffix, parameters.computeUriParameters()), CallType.Get, null));
+        final SimpleUriStreamerSourceKey<StreamParameter> uriStreamerSourceKey = new SimpleUriStreamerSourceKey<StreamParameter>(new WebServiceClient.HttpCallTypeAndBody(webServiceClient.computeUri(WebServiceCallerTest.WEBSERVICES_BASE_URL, methodUriSuffix, parameters.computeUriParameters()), CallType.Get, null, null));
         final SimpleIOStreamerSourceKey<StreamParameter> ioStreamerSourceKey = new SimpleIOStreamerSourceKey<StreamParameter>(methodUriSuffix);
         return new KeysAggregator<StreamParameter>(parameters).add(Source.UriStreamer, uriStreamerSourceKey).add(Source.IOStreamer, ioStreamerSourceKey);
       }

@@ -218,7 +218,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
       return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, (HttpEntity) httpCallTypeAndBody.body));
     }
 
-    return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, (Map<String, String>) httpCallTypeAndBody.body));
+    return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.postParameters, (String) httpCallTypeAndBody.body));
   }
 
   public final BusinessObjectType rawGetValue(ParameterType parameter)

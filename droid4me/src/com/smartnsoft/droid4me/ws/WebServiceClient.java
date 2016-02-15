@@ -220,25 +220,32 @@ public interface WebServiceClient
     public final Object body;
 
     /**
+     * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the body of the request as form-data fields.
+     */
+    public final Map<String, String> postParameters;
+
+    /**
      * This will create a {@link Verb#Get} HTTP request method.
      *
      * @param url the URL to use when performing the HTTP request
      */
     public HttpCallTypeAndBody(String url)
     {
-      this(url, CallType.Get, null);
+      this(url, CallType.Get, null, null);
     }
 
     /**
-     * @param url      the URL to use when performing the HTTP request
-     * @param callType the HTTP request method
-     * @param body     the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
+     * @param url            the URL to use when performing the HTTP request
+     * @param callType       the HTTP request method
+     * @param body           the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
+     * @param postParameters the HTTP request body as form-data fields, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
      */
-    public HttpCallTypeAndBody(String url, CallType callType, Object body)
+    public HttpCallTypeAndBody(String url, CallType callType, Object body, Map<String, String> postParameters)
     {
       this.url = url;
       this.callType = callType;
       this.body = body;
+      this.postParameters = postParameters;
     }
 
     @Override
@@ -278,12 +285,15 @@ public interface WebServiceClient
    *
    * @param uri            the URI against which the HTTP request should be run
    * @param callType       the type of HTTP method
-   * @param postParameters the body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
+   * @param postParameters the form-data parameters (body) of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
+   *                       {@code null} otherwise
+   * @param body           the string body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
    *                       {@code null} otherwise
    * @return the input stream resulting to the HTTP request, which is taken from the response
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  InputStream getInputStream(String uri, WebServiceClient.CallType callType, Map<String, String> postParameters)
+  InputStream getInputStream(String uri, WebServiceClient.CallType callType, Map<String, String> postParameters,
+      String body)
       throws WebServiceClient.CallException;
 
 }
