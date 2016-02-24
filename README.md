@@ -9,8 +9,8 @@ droid4me addresses the following topics:
 
   * [Activity/Fragment life cycle](https://github.com/smartnsoft/droid4me/wiki/LifeCycle): it attempts to turn the `Activity`/`Fragment` life cycle from something technical to something functional
   * [Centralized exception handling](https://github.com/smartnsoft/droid4me/wiki/ExceptionHandler): whenever an exception is thrown during the application, it can be handled in a centralized and secure way
-  * [Activity redirection](https://github.com/smartnsoft/droid4me/wiki/ActivityController): if an Activity should always be displayed before another one, you have control over it
-  * [Activity/Fragment events interception](https://github.com/smartnsoft/droid4me/wiki/ActivityController): handle in one place most of the entities life cycle events through a dedicated `Interceptor`
+  * [Activity redirection](https://github.com/smartnsoft/droid4me/wiki/ActivityController#the-redirector-interface): if an Activity should always be displayed before another one, you have control over it
+  * [Activity/Fragment events interception](https://github.com/smartnsoft/droid4me/wiki/ActivityController#the-interceptor-interface): handle in one place most of the entities life cycle events through a dedicated `Interceptor`
   * [Application helper](https://github.com/smartnsoft/droid4me/wiki/SmartApplication): eases the framework integration to your application
   * [Logging](https://github.com/smartnsoft/droid4me/wiki/LoggerFactory): proposes something similar to log4j/java.util.logging with logging level trigger and condition logging. Logging is still effective outside of Android environment
   * [Bitmap downloading](https://github.com/smartnsoft/droid4me/wiki/BitmapDownloader): it provides a fully fledge component which makes bitmap downloading and binding to Views very simple, effective, and easy to be supported with persistence
