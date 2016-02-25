@@ -421,7 +421,7 @@ public abstract class URLConnectionWebServiceCaller
             outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
-            outputStream.writeBytes(parameter.getValue());
+            outputStream.write(parameter.getValue().getBytes(getContentEncoding()));
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE);
             outputStream.flush();
           }
@@ -544,7 +544,7 @@ public abstract class URLConnectionWebServiceCaller
       log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + responseCode + (responseHeadersSb.length() <= 0 ? "" : " with the HTTP headers:" + responseHeadersSb.toString()));
     }
 
-    if (!(responseCode >= HttpStatus.SC_OK && responseCode <= HttpStatus.SC_MULTI_STATUS))
+    if (!(responseCode >= HttpURLConnection.HTTP_OK && responseCode < HttpURLConnection.HTTP_MULT_CHOICE))
     {
       if (onStatusCodeNotOk(uri, callType, postParamaters, body, httpURLConnection, url, responseCode, responseMessage, attemptsCount + 1) == true)
       {
