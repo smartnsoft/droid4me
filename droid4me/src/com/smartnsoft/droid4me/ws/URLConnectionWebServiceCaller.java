@@ -252,25 +252,25 @@ public abstract class URLConnectionWebServiceCaller
       throws IOException
   {
     final InputStream content = urlConnection.getInputStream();
-
-    final InputStream debugContent;
-    final int length = (int) (urlConnection.getContentLength() <= WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES ? urlConnection.getContentLength() : WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES);
+    final InputStream markedContent;
+    int length = 0;
 
     if (content.markSupported() == true)
     {
-      debugContent = content;
+      markedContent = content;
+      length = urlConnection.getContentLength();
     }
     else
     {
-      final int bufferMaxLength = (int) (length < 0 ? WebServiceCaller.BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES : length);
       final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       final byte[] buffer = new byte[8192];
       int bufferLength = 0;
 
       try
       {
-        while ((bufferLength = content.read(buffer)) > 0 && bufferLength <= bufferMaxLength)
+        while ((bufferLength = content.read(buffer)) > 0)
         {
+          length += bufferLength;
           outputStream.write(buffer, 0, bufferLength);
         }
       }
@@ -278,7 +278,7 @@ public abstract class URLConnectionWebServiceCaller
       {
         if (log.isWarnEnabled())
         {
-          log.error("Could not copy the input stream corresponding to the HTTP response content in order to log it", exception);
+          log.error("Could not copy the input stream corresponding to the HTTP response content", exception);
         }
 
         return content;
@@ -308,15 +308,15 @@ public abstract class URLConnectionWebServiceCaller
         }
       }
 
-      debugContent = new ByteArrayInputStream(outputStream.toByteArray());
+      markedContent = new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
     {
       try
       {
-        debugContent.mark(length);
-        final String bodyAsString = getString(debugContent);
+        markedContent.mark(length);
+        final String bodyAsString = getString(markedContent);
         log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
       }
       catch (IOException exception)
@@ -328,11 +328,11 @@ public abstract class URLConnectionWebServiceCaller
       }
       finally
       {
-        debugContent.reset();
+        markedContent.reset();
       }
     }
 
-    return debugContent;
+    return markedContent;
   }
 
   /**
