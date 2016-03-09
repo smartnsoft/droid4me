@@ -353,6 +353,7 @@ public abstract class URLConnectionWebServiceCaller
     {
       throw new CallException("Cannot perform an HTTP request with a null URI!");
     }
+
     if (isConnected == false)
     {
       throw new CallException(new UnknownHostException("No connectivity"));
@@ -365,14 +366,7 @@ public abstract class URLConnectionWebServiceCaller
 
     if (callType.verb == Verb.Post || callType.verb == Verb.Put)
     {
-      if (files != null && files.size() > 0)
-      {
-        httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
-      }
-      else
-      {
-        httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
-      }
+      httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
     }
 
     httpURLConnection.setReadTimeout(getReadTimeout());
@@ -406,6 +400,75 @@ public abstract class URLConnectionWebServiceCaller
       }
     }
 
+    if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
+    {
+      try
+      {
+        if (callType.verb == Verb.Post || callType.verb == Verb.Put)
+        {
+
+          if (postParamaters != null || files != null)
+          {
+            if (postParamaters != null)
+            {
+              for (final Entry<String, String> parameter : postParamaters.entrySet())
+              {
+                logBuilder.append(" " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+                logBuilder.append("Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
+                logBuilder.append(" " + parameter.getValue());
+              }
+            }
+
+            if (files != null)
+            {
+              for (final URLConnectionMultipartFile file : files)
+              {
+                logBuilder.append(" " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+                logBuilder.append("Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+                logBuilder.append("Content-Type: " + file.contentType);
+              }
+            }
+          }
+        }
+
+        //headers and curl request
+        final StringBuilder sb = new StringBuilder();
+        final StringBuilder curlSb = new StringBuilder();
+        boolean logCurlCommand = false;
+
+        try
+        {
+          curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
+
+          if (logBuilder != null && "".equals(logBuilder.toString()) == false)
+          {
+            logCurlCommand = true;
+
+            sb.append(" with body '").append(logBuilder.toString()).append("'");
+            curlSb.append(" --data \"").append(logBuilder.toString()).append("\"");
+
+            for (final Map.Entry<String, List<String>> header : httpURLConnection.getRequestProperties().entrySet())
+            {
+              for (final String headerValue : header.getValue())
+              {
+                curlSb.append(" --header \"").append(header.getKey()).append(": ").append(headerValue.replace("\"", "\\\"")).append("\"");
+              }
+            }
+          }
+        }
+        catch (Exception exception)
+        {
+          // We simply ignore the issue because it is only a debug feature
+        }
+
+        log.debug("Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + (logCurlCommand == true ? curlSb.toString() : ""));
+      }
+      catch (Exception exception)
+      {
+        // We simply ignore the issue because it is only a debug feature
+      }
+    }
+
     if (callType.verb == Verb.Post || callType.verb == Verb.Put)
     {
       if (postParamaters != null || files != null)
@@ -416,15 +479,6 @@ public abstract class URLConnectionWebServiceCaller
         {
           for (final Entry<String, String> parameter : postParamaters.entrySet())
           {
-            if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
-            {
-              logBuilder.append(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
-              logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
-              logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
-              logBuilder.append(parameter.getValue());
-              logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE);
-            }
-
             outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
@@ -438,14 +492,6 @@ public abstract class URLConnectionWebServiceCaller
         {
           for (final URLConnectionMultipartFile file : files)
           {
-            if (log.isDebugEnabled() == true && WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
-            {
-              logBuilder.append(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
-              logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
-              logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + "Content-Type: " + file.contentType);
-              logBuilder.append(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
-            }
-
             outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Type: " + file.contentType);
@@ -483,43 +529,6 @@ public abstract class URLConnectionWebServiceCaller
         bufferedWriter.close();
         outputStream.close();
       }
-    }
-
-    if (log.isDebugEnabled() == true)
-    {
-      final StringBuilder sb = new StringBuilder();
-      final StringBuilder curlSb = new StringBuilder();
-      boolean logCurlCommand = false;
-
-      if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true)
-      {
-        try
-        {
-          curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
-
-          if (logBuilder != null && "".equals(logBuilder.toString()) == false)
-          {
-            logCurlCommand = true;
-
-            sb.append(" with body '").append(logBuilder.toString()).append("'");
-            curlSb.append(" --data \"").append(logBuilder.toString()).append("\"");
-
-            for (final Map.Entry<String, List<String>> header : httpURLConnection.getRequestProperties().entrySet())
-            {
-              for (final String headerValue : header.getValue())
-              {
-                curlSb.append(" --header \"").append(header.getKey()).append(": ").append(headerValue.replace("\"", "\\\"")).append("\"");
-              }
-            }
-          }
-        }
-        catch (Exception exception)
-        {
-          // We simply ignore the issue because it is only a debug feature
-        }
-      }
-
-      log.debug("Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + (logCurlCommand == true ? curlSb.toString() : ""));
     }
 
     final long start = System.currentTimeMillis();
