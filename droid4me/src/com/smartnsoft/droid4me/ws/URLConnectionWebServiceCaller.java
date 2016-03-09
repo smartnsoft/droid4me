@@ -363,9 +363,16 @@ public abstract class URLConnectionWebServiceCaller
     final HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
     onBeforeHttpRequestExecution(url, httpURLConnection, callType);
 
-    if ((callType.verb == Verb.Post || callType.verb == Verb.Put) && files != null && files.size() > 0)
+    if (callType.verb == Verb.Post || callType.verb == Verb.Put)
     {
-      httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
+      if (files != null && files.size() > 0)
+      {
+        httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
+      }
+      else
+      {
+        httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
+      }
     }
 
     httpURLConnection.setReadTimeout(getReadTimeout());
@@ -492,6 +499,8 @@ public abstract class URLConnectionWebServiceCaller
 
           if (logBuilder != null && "".equals(logBuilder.toString()) == false)
           {
+            logCurlCommand = true;
+
             sb.append(" with body '").append(logBuilder.toString()).append("'");
             curlSb.append(" --data \"").append(logBuilder.toString()).append("\"");
 
@@ -502,10 +511,6 @@ public abstract class URLConnectionWebServiceCaller
                 curlSb.append(" --header \"").append(header.getKey()).append(": ").append(headerValue.replace("\"", "\\\"")).append("\"");
               }
             }
-          }
-          else
-          {
-            logCurlCommand = true;
           }
         }
         catch (Exception exception)
