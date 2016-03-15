@@ -27,8 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
@@ -366,7 +368,14 @@ public abstract class URLConnectionWebServiceCaller
 
     if (callType.verb == Verb.Post || callType.verb == Verb.Put)
     {
-      httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
+      if (files != null && files.size() > 0)
+      {
+        httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
+      }
+      else
+      {
+        httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+      }
     }
 
     httpURLConnection.setReadTimeout(getReadTimeout());
@@ -471,11 +480,12 @@ public abstract class URLConnectionWebServiceCaller
 
     if (callType.verb == Verb.Post || callType.verb == Verb.Put)
     {
-      if (postParamaters != null || files != null)
+      //This a form with a file
+      if (files != null && files.size() > 0)
       {
         final DataOutputStream outputStream = new DataOutputStream(httpURLConnection.getOutputStream());
 
-        if (postParamaters != null)
+        if (postParamaters != null && postParamaters.size() > 0)
         {
           for (final Entry<String, String> parameter : postParamaters.entrySet())
           {
@@ -488,29 +498,26 @@ public abstract class URLConnectionWebServiceCaller
           }
         }
 
-        if (files != null)
+        for (final URLConnectionMultipartFile file : files)
         {
-          for (final URLConnectionMultipartFile file : files)
+          outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Type: " + file.contentType);
+          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
+          outputStream.flush();
+
+          if (file.fileInputStream != null)
           {
-            outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
-            outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
-            outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Type: " + file.contentType);
-            outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
-            outputStream.flush();
+            int bytesRead;
+            final byte[] dataBuffer = new byte[1024];
 
-            if (file.fileInputStream != null)
+            while ((bytesRead = file.fileInputStream.read(dataBuffer)) != -1)
             {
-              int bytesRead;
-              final byte[] dataBuffer = new byte[1024];
-
-              while ((bytesRead = file.fileInputStream.read(dataBuffer)) != -1)
-              {
-                outputStream.write(dataBuffer, 0, bytesRead);
-              }
-
-              outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE);
-              outputStream.flush();
+              outputStream.write(dataBuffer, 0, bytesRead);
             }
+
+            outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE);
+            outputStream.flush();
           }
         }
 
@@ -518,6 +525,10 @@ public abstract class URLConnectionWebServiceCaller
         outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE);
         outputStream.flush();
         outputStream.close();
+      }
+      else if (postParamaters != null && postParamaters.size() > 0)
+      {
+        body = transformPostParametersToDataString(postParamaters);
       }
 
       if ("".equals(body) == false && body != null)
@@ -574,6 +585,31 @@ public abstract class URLConnectionWebServiceCaller
       throws IOException, CallException
   {
     return performHttpRequest(uri, callType, headers, postParameters, body, files, 0);
+  }
+
+  private String transformPostParametersToDataString(Map<String, String> params)
+      throws UnsupportedEncodingException
+  {
+    final StringBuilder bodyBuilder = new StringBuilder();
+    boolean first = true;
+
+    for (final Map.Entry<String, String> entry : params.entrySet())
+    {
+      if (first == true)
+      {
+        first = false;
+      }
+      else
+      {
+        bodyBuilder.append("&");
+      }
+
+      bodyBuilder.append(URLEncoder.encode(entry.getKey(), getContentEncoding()));
+      bodyBuilder.append("=");
+      bodyBuilder.append(URLEncoder.encode(entry.getValue(), getContentEncoding()));
+    }
+
+    return bodyBuilder.toString();
   }
 
 }
