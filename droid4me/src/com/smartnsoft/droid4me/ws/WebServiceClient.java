@@ -262,6 +262,17 @@ public interface WebServiceClient
     }
 
     /**
+     * This will create a HTTP request method.
+     *
+     * @param url      the URL to use when performing the HTTP request
+     * @param callType the HTTP request method
+     */
+    public HttpCallTypeAndBody(String url, CallType callType)
+    {
+      this(url, callType, null, null, null);
+    }
+
+    /**
      * @param url        the URL to use when performing the HTTP request
      * @param callType   the HTTP request method
      * @param body       the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
