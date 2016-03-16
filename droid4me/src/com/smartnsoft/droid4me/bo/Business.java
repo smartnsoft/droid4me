@@ -91,7 +91,7 @@ public final class Business
   /**
    * Associates a time stamp to an input stream.
    */
-  public final static class InputAtom
+  public static final class InputAtom
       extends Business.Atom
   {
 
@@ -118,7 +118,7 @@ public final class Business
    *
    * @since 2009.08.31
    */
-  public final static class OutputAtom
+  public static final class OutputAtom
       extends Business.Atom
   {
 

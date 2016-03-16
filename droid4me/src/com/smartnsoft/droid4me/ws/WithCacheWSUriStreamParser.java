@@ -25,8 +25,6 @@ import java.util.Map;
 import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.ws.WSUriStreamParser.UriStreamerSourceKey;
 
-import org.apache.http.HttpEntity;
-
 /**
  * @author Édouard Mercier
  * @since 2009.11.19
@@ -182,13 +180,7 @@ public final class WithCacheWSUriStreamParser
     {
       final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
       final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
-
-      if (webServiceClient instanceof HttpClientWebServiceCaller)
-      {
-        return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, (HttpEntity) httpCallTypeAndBody.body));
-      }
-
-      return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.postParameters, (String) httpCallTypeAndBody.body));
+      return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.postParameters, httpCallTypeAndBody.body));
 
     }
 

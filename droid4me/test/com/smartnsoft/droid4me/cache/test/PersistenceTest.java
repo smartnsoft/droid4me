@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import android.util.Xml.Encoding;
+
 import com.smartnsoft.droid4me.bo.Business.InputAtom;
 import com.smartnsoft.droid4me.cache.FilePersistence;
 import com.smartnsoft.droid4me.cache.Persistence;
@@ -12,7 +14,6 @@ import com.smartnsoft.droid4me.test.BasisTests;
 import com.smartnsoft.droid4me.ws.WebServiceCaller;
 
 import junit.framework.Assert;
-import org.apache.http.protocol.HTTP;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,7 +93,7 @@ public final class PersistenceTest
       final InputAtom atom = persistence.readInputStream(uri3);
       Assert.assertNotNull("The atom should not be null", atom);
       Assert.assertNotNull("The input stream should not be null", atom.inputStream);
-      final String retrievedPersistedValue = WebServiceCaller.getString(atom.inputStream, HTTP.UTF_8);
+      final String retrievedPersistedValue = WebServiceCaller.getString(atom.inputStream, Encoding.UTF_8.toString());
       Assert.assertEquals("The input stream is not the expected one", persistedValue, retrievedPersistedValue);
     }
 
@@ -104,7 +105,7 @@ public final class PersistenceTest
       final InputAtom atom = persistence.readInputStream(uri4);
       Assert.assertNotNull("The atom should not be null", atom);
       Assert.assertNotNull("The input stream should not be null", atom.inputStream);
-      final String retrievedPersistedValue = WebServiceCaller.getString(atom.inputStream, HTTP.UTF_8);
+      final String retrievedPersistedValue = WebServiceCaller.getString(atom.inputStream, Encoding.UTF_8.toString());
       Assert.assertEquals("The input stream is not the expected one", persistedValue4, retrievedPersistedValue);
     }
   }

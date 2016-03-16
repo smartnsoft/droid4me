@@ -18,11 +18,15 @@
 package com.smartnsoft.droid4me.ws;
 
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
+import javax.net.ssl.SSLException;
 
-import org.apache.http.HttpEntity;
+import com.smartnsoft.droid4me.ws.WebServiceCaller.MultipartFile;
 
 /**
  * A minimalist contract when creating a web service client.
@@ -38,7 +42,7 @@ public interface WebServiceClient
    */
   enum Verb
   {
-    Get, Post, Put, Delete
+    Get, Post, Put, Delete, Patch, Head, Options
   }
 
   /**
@@ -75,6 +79,18 @@ public interface WebServiceClient
         {
           return CallType.Get;
         }
+        else if ("PATCH".equals(upperString) == true)
+        {
+          return CallType.Patch;
+        }
+        else if ("HEAD".equals(upperString) == true)
+        {
+          return CallType.Head;
+        }
+        else if ("OPTIONS".equals(upperString) == true)
+        {
+          return CallType.Options;
+        }
       }
       return null;
     }
@@ -91,6 +107,12 @@ public interface WebServiceClient
     public final static WebServiceClient.CallType Put = new WebServiceClient.CallType(WebServiceClient.Verb.Put, WebServiceClient.CallType.NO_CALL_CODE);
 
     public final static WebServiceClient.CallType Delete = new WebServiceClient.CallType(WebServiceClient.Verb.Delete, WebServiceClient.CallType.NO_CALL_CODE);
+
+    public final static WebServiceClient.CallType Patch = new WebServiceClient.CallType(Verb.Patch, WebServiceClient.CallType.NO_CALL_CODE);
+
+    public final static WebServiceClient.CallType Head = new WebServiceClient.CallType(WebServiceClient.Verb.Head, WebServiceClient.CallType.NO_CALL_CODE);
+
+    public final static WebServiceClient.CallType Options = new WebServiceClient.CallType(WebServiceClient.Verb.Options, WebServiceClient.CallType.NO_CALL_CODE);
 
     /**
      * The HTTP method.
@@ -185,7 +207,7 @@ public interface WebServiceClient
       // We investigate over the whole cause stack
       while ((cause = newThrowable.getCause()) != null)
       {
-        if (cause instanceof UnknownHostException || cause instanceof SocketException)
+        if (cause instanceof UnknownHostException || cause instanceof SocketException || cause instanceof SocketTimeoutException || cause instanceof InterruptedIOException || cause instanceof SSLException)
         {
           return true;
         }
@@ -217,7 +239,7 @@ public interface WebServiceClient
     /**
      * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the body of the request.
      */
-    public final Object body;
+    public final String body;
 
     /**
      * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the body of the request as form-data fields.
@@ -240,7 +262,7 @@ public interface WebServiceClient
      * @param body           the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
      * @param postParameters the HTTP request body as form-data fields, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
      */
-    public HttpCallTypeAndBody(String url, CallType callType, Object body, Map<String, String> postParameters)
+    public HttpCallTypeAndBody(String url, CallType callType, String body, Map<String, String> postParameters)
     {
       this.url = url;
       this.callType = callType;
@@ -270,15 +292,12 @@ public interface WebServiceClient
   /**
    * Is responsible to actually run the relevant HTTP method.
    *
-   * @param uri      the URI against which the HTTP request should be run
-   * @param callType the type of HTTP method
-   * @param body     the body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
-   *                 {@code null} otherwise
+   * @param uri the URI against which the HTTP request should be run
    * @return the input stream resulting to the HTTP request, which is taken from the response
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  InputStream getInputStream(String uri, WebServiceClient.CallType callType, HttpEntity body)
-      throws WebServiceClient.CallException;
+  InputStream getInputStream(String uri)
+      throws CallException;
 
   /**
    * Is responsible to actually run the relevant HTTP method.
@@ -295,5 +314,23 @@ public interface WebServiceClient
   InputStream getInputStream(String uri, WebServiceClient.CallType callType, Map<String, String> postParameters,
       String body)
       throws WebServiceClient.CallException;
+
+  /**
+   * Is responsible to actually run the relevant HTTP method.
+   *
+   * @param uri            the URI against which the HTTP request should be run
+   * @param callType       the type of HTTP method
+   * @param postParameters the form-data parameters (body) of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
+   *                       {@code null} otherwise
+   * @param body           the string body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
+   *                       {@code null} otherwise
+   * @param files          the files of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
+   *                       {@code null} otherwise
+   * @return the input stream resulting to the HTTP request, which is taken from the response
+   * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
+   */
+  InputStream getInputStream(String uri, CallType callType, Map<String, String> headers,
+      Map<String, String> postParameters, String body, List<MultipartFile> files)
+      throws CallException;
 
 }

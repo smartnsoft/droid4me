@@ -22,7 +22,6 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,8 +37,6 @@ import java.util.Map.Entry;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-
-import org.apache.http.HttpEntity;
 
 /**
  * * A basis class for making web service calls easier.
@@ -65,27 +62,6 @@ public abstract class URLConnectionWebServiceCaller
     extends WebServiceCaller
 {
 
-  public static final class URLConnectionMultipartFile
-  {
-
-    public final String name;
-
-    public final String fileName;
-
-    public final String contentType;
-
-    public final FileInputStream fileInputStream;
-
-    public URLConnectionMultipartFile(String name, String fileName, String contentType, FileInputStream fileInputStream)
-    {
-      this.name = name;
-      this.fileName = fileName;
-      this.contentType = contentType;
-      this.fileInputStream = fileInputStream;
-    }
-
-  }
-
   private final static String BOUNDARY = "URLConnectionWebServiceCaller";
 
   private final static String HYPHEN_HYPHEN = "--";
@@ -102,19 +78,13 @@ public abstract class URLConnectionWebServiceCaller
    * Equivalent to calling {@link #getInputStream(String, CallType, Map, String)} with {@code callType} parameter set to
    * {@code CallType.Get} and {@code body} and {@code postParameters} parameters set to {@code null}.
    *
-   * @see #getInputStream(String, CallType, HttpEntity)
+   * @see #getInputStream(String, CallType, Map, String)
    */
+  @Override
   public final InputStream getInputStream(String uri)
       throws CallException
   {
     return getInputStream(uri, CallType.Get, null, null);
-  }
-
-  @Override
-  public final InputStream getInputStream(String uri, CallType callType, HttpEntity body)
-      throws CallException
-  {
-    return null;
   }
 
   /**
@@ -150,8 +120,9 @@ public abstract class URLConnectionWebServiceCaller
    * @see #getInputStream(String)
    * @see #getInputStream(String, CallType, Map, String)
    */
+  @Override
   public final InputStream getInputStream(String uri, CallType callType, Map<String, String> headers,
-      Map<String, String> postParameters, String body, List<URLConnectionMultipartFile> files)
+      Map<String, String> postParameters, String body, List<MultipartFile> files)
       throws CallException
   {
     HttpURLConnection httpURLConnection = null;
@@ -349,7 +320,7 @@ public abstract class URLConnectionWebServiceCaller
    * @throws CallException is the uri is {@code null} or the connectivity has been lost
    */
   private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
-      Map<String, String> postParamaters, String body, List<URLConnectionMultipartFile> files, int attemptsCount)
+      Map<String, String> postParamaters, String body, List<MultipartFile> files, int attemptsCount)
       throws IOException, CallException
   {
     if (uri == null)
@@ -428,7 +399,7 @@ public abstract class URLConnectionWebServiceCaller
               }
             }
 
-            for (final URLConnectionMultipartFile file : files)
+            for (final MultipartFile file : files)
             {
               logBuilder.append(" " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
               logBuilder.append(" Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
@@ -499,7 +470,7 @@ public abstract class URLConnectionWebServiceCaller
           }
         }
 
-        for (final URLConnectionMultipartFile file : files)
+        for (final MultipartFile file : files)
         {
           outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
           outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
@@ -582,7 +553,7 @@ public abstract class URLConnectionWebServiceCaller
   }
 
   private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
-      Map<String, String> postParameters, String body, List<URLConnectionMultipartFile> files)
+      Map<String, String> postParameters, String body, List<MultipartFile> files)
       throws IOException, CallException
   {
     return performHttpRequest(uri, callType, headers, postParameters, body, files, 0);

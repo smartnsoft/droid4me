@@ -34,7 +34,7 @@ import com.smartnsoft.droid4me.ws.WithCacheWSUriStreamParser;
 public final class BackedWSUriStreamParser
 {
 
-  public abstract static class BackedUriStreamedValue<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
+  public static abstract class BackedUriStreamedValue<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
       extends WithCacheWSUriStreamParser.CacheableWebUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType, StreamerExceptionType>
   {
 
@@ -50,7 +50,7 @@ public final class BackedWSUriStreamParser
 
   }
 
-  public abstract static class BackedUriStreamedMap<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
+  public static abstract class BackedUriStreamedMap<BusinessObjectType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable>
       extends WithCacheWSUriStreamParser.CachedWebUriStreamParser<BusinessObjectType, ParameterType, ParseExceptionType, StreamerExceptionType>
 
   {

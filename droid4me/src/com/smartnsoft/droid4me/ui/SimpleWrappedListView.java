@@ -58,7 +58,7 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
     {
       super(context);
       setId(android.R.id.list);
-      gestureDetector = new GestureDetector(this);
+      gestureDetector = new GestureDetector(context, this);
     }
 
     @Override

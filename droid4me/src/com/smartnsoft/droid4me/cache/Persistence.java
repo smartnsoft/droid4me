@@ -67,7 +67,7 @@ public abstract class Persistence
    * For the time being, only the classes in the current package can create such exception.
    * </p>
    */
-  public final static class PersistenceException
+  public static final class PersistenceException
       extends Error
   {
 
@@ -97,7 +97,7 @@ public abstract class Persistence
   /**
    * Defined in order to count how many times an URI has been consumed.
    */
-  protected final static class UriUsage
+  protected static final class UriUsage
       implements Comparable<Persistence.UriUsage>
   {
 

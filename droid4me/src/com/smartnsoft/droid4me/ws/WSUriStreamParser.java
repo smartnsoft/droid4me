@@ -25,8 +25,6 @@ import java.util.Map;
 import com.smartnsoft.droid4me.bo.Business;
 import com.smartnsoft.droid4me.bo.Business.Source;
 
-import org.apache.http.HttpEntity;
-
 /**
  * An abstract class which implements its interface via web service calls.
  *
@@ -212,13 +210,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   {
     final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
     final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
-
-    if (webServiceClient instanceof HttpClientWebServiceCaller)
-    {
-      return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, (HttpEntity) httpCallTypeAndBody.body));
-    }
-
-    return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.postParameters, (String) httpCallTypeAndBody.body));
+    return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.postParameters, httpCallTypeAndBody.body));
   }
 
   public final BusinessObjectType rawGetValue(ParameterType parameter)

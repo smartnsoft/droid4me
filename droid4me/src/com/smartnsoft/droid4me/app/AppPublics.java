@@ -663,7 +663,7 @@ public final class AppPublics
    *
    * @since 2010.06.21
    */
-  public final static class MultiSelectionHandler<BusinessObjectClass extends Serializable>
+  public static final class MultiSelectionHandler<BusinessObjectClass extends Serializable>
   {
 
     /**

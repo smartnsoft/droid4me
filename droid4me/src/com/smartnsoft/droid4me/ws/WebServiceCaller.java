@@ -19,16 +19,12 @@
 package com.smartnsoft.droid4me.ws;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,7 +38,6 @@ import org.json.JSONException;
  * A basis class for making web service calls easier.
  *
  * @author Édouard Mercier, Ludovic Roland
- * @see HttpClientWebServiceCaller
  * @see URLConnectionWebServiceCaller
  * @since 2009.03.26
  */
@@ -50,15 +45,24 @@ public abstract class WebServiceCaller
     implements WebServiceClient
 {
 
-  /**
-   * An empty interface which states that the underlying client instance should be reused for all HTTP requests, instead of creating a new
-   * one each time.
-   */
-  @Retention(RetentionPolicy.RUNTIME)
-  @Target(ElementType.TYPE)
-  @Inherited
-  public @interface ReuseHttpClient
+  public static final class MultipartFile
   {
+
+    public final String name;
+
+    public final String fileName;
+
+    public final String contentType;
+
+    public final FileInputStream fileInputStream;
+
+    public MultipartFile(String name, String fileName, String contentType, FileInputStream fileInputStream)
+    {
+      this.name = name;
+      this.fileName = fileName;
+      this.contentType = contentType;
+      this.fileInputStream = fileInputStream;
+    }
 
   }
 

@@ -84,7 +84,7 @@ public final class SmartCommands
    * @param <ContextClass> the class will holds the {@link Context} responsible for the command
    * @since 2010.06.08
    */
-  public abstract static class GuardedCommand<ContextClass extends Context>
+  public static abstract class GuardedCommand<ContextClass extends Context>
       implements Runnable, SmartCommands.GuardedHandler
   {
 
@@ -343,7 +343,7 @@ public final class SmartCommands
    * @param <ContextClass> the class will holds the {@link Context} responsible for the command
    * @since 2012.01.25
    */
-  public abstract static class AbstractSimpleGuardedCommand<ContextClass extends Context>
+  public static abstract class AbstractSimpleGuardedCommand<ContextClass extends Context>
       extends SmartCommands.GuardedCommand<ContextClass>
   {
 
@@ -424,7 +424,7 @@ public final class SmartCommands
    *
    * @since 2011.11.03
    */
-  public abstract static class SimpleGuardedCommand
+  public static abstract class SimpleGuardedCommand
       extends SmartCommands.AbstractSimpleGuardedCommand<Activity>
   {
 
@@ -463,7 +463,7 @@ public final class SmartCommands
    *
    * @since 2011.11.03
    */
-  public abstract static class DialogGuardedCommand
+  public static abstract class DialogGuardedCommand
       extends SmartCommands.SimpleGuardedCommand
   {
 
@@ -698,7 +698,7 @@ public final class SmartCommands
    *
    * @since 2010.07.21
    */
-  final static class SmartUncaughtExceptionHandler
+  static final class SmartUncaughtExceptionHandler
       implements Thread.UncaughtExceptionHandler
   {
 
@@ -751,7 +751,7 @@ public final class SmartCommands
    *
    * @since 2010.03.02
    */
-  public final static class SmartThreadPoolExecutor
+  public static final class SmartThreadPoolExecutor
       extends ThreadPoolExecutor
   {
 

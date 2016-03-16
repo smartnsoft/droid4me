@@ -19,6 +19,7 @@
 package com.smartnsoft.droid4me.support.v4.app;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -54,11 +55,11 @@ public abstract class SmartFragment<AggregateClass>
   private Droid4mizer<AggregateClass, SmartFragment<AggregateClass>> droid4mizer;
 
   @Override
-  public void onAttach(Activity activity)
+  public void onAttach(Context context)
   {
-    super.onAttach(activity);
+    super.onAttach(context);
     droid4mizer = new Droid4mizer<AggregateClass, SmartFragment<AggregateClass>>(getActivity(), this, this, this);
-    droid4mizer.onAttached(activity);
+    droid4mizer.onAttached(getActivity());
   }
 
   @Override
