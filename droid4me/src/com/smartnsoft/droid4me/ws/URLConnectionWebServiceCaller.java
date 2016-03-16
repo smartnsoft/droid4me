@@ -76,7 +76,7 @@ public abstract class URLConnectionWebServiceCaller
 
   /**
    * Equivalent to calling {@link #getInputStream(String, CallType, Map, String)} with {@code callType} parameter set to
-   * {@code CallType.Get} and {@code body} and {@code postParameters} parameters set to {@code null}.
+   * {@code CallType.Get} and {@code body} and {@code parameters} parameters set to {@code null}.
    *
    * @see #getInputStream(String, CallType, Map, String)
    */
@@ -93,25 +93,24 @@ public abstract class URLConnectionWebServiceCaller
    * @see #getInputStream(String, CallType, Map, Map, String, List)
    */
   @Override
-  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> postParameters,
-      String body)
+  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> parameters, String body)
       throws CallException
   {
-    return getInputStream(uri, callType, null, postParameters, body, null);
+    return getInputStream(uri, callType, null, parameters, body, null);
   }
 
   /**
    * Performs an HTTP request corresponding to the provided parameters.
    *
-   * @param uri            the URI being requested
-   * @param callType       the HTTP method
-   * @param headers        the headers of the HTTP request
-   * @param postParameters if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the form data of the
-   *                       request
-   * @param body           if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the string body of the
-   *                       request
-   * @param files          if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the file data of the
-   *                       request
+   * @param uri        the URI being requested
+   * @param callType   the HTTP method
+   * @param headers    the headers of the HTTP request
+   * @param parameters if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the form data of the
+   *                   request
+   * @param body       if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the string body of the
+   *                   request
+   * @param files      if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the file data of the
+   *                   request
    * @return the input stream of the HTTP method call; cannot be {@code null}
    * @throws CallException if the status code of the HTTP response does not belong to the [{@link HttpURLConnection#HTTP_OK}, {@link HttpURLConnection#HTTP_MULT_CHOICE}] range.
    *                       Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
@@ -122,14 +121,14 @@ public abstract class URLConnectionWebServiceCaller
    */
   @Override
   public final InputStream getInputStream(String uri, CallType callType, Map<String, String> headers,
-      Map<String, String> postParameters, String body, List<MultipartFile> files)
+      Map<String, String> parameters, String body, List<MultipartFile> files)
       throws CallException
   {
     HttpURLConnection httpURLConnection = null;
 
     try
     {
-      httpURLConnection = performHttpRequest(uri, callType, headers, postParameters, body, files);
+      httpURLConnection = performHttpRequest(uri, callType, headers, parameters, body, files);
       return getContent(uri, callType, httpURLConnection);
     }
     catch (CallException exception)

@@ -242,9 +242,14 @@ public interface WebServiceClient
     public final String body;
 
     /**
-     * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the body of the request as form-data fields.
+     * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the body of the request (form-data).
      */
-    public final Map<String, String> postParameters;
+    public final Map<String, String> parameters;
+
+    /**
+     * If the HTTP method is a {@link Verb#Post} or a {@link Verb#Put}, the files of the request (form-data).
+     */
+    public final List<MultipartFile> files;
 
     /**
      * This will create a {@link Verb#Get} HTTP request method.
@@ -253,21 +258,24 @@ public interface WebServiceClient
      */
     public HttpCallTypeAndBody(String url)
     {
-      this(url, CallType.Get, null, null);
+      this(url, CallType.Get, null, null, null);
     }
 
     /**
-     * @param url            the URL to use when performing the HTTP request
-     * @param callType       the HTTP request method
-     * @param body           the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
-     * @param postParameters the HTTP request body as form-data fields, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
+     * @param url        the URL to use when performing the HTTP request
+     * @param callType   the HTTP request method
+     * @param body       the HTTP request body, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
+     * @param parameters the HTTP request body as form-data fields, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
+     * @param files      the HTTP request files as form-data fields, if the 'callType" is a {@link Verb#Post POST} or a {@link Verb#Put PUT}
      */
-    public HttpCallTypeAndBody(String url, CallType callType, String body, Map<String, String> postParameters)
+    public HttpCallTypeAndBody(String url, CallType callType, String body, Map<String, String> parameters,
+        List<MultipartFile> files)
     {
       this.url = url;
       this.callType = callType;
       this.body = body;
-      this.postParameters = postParameters;
+      this.parameters = parameters;
+      this.files = files;
     }
 
     @Override
