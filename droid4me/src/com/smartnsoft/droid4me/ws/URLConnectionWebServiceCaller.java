@@ -319,7 +319,7 @@ public abstract class URLConnectionWebServiceCaller
    * @throws CallException is the uri is {@code null} or the connectivity has been lost
    */
   private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
-      Map<String, String> postParamaters, String body, List<MultipartFile> files, int attemptsCount)
+      Map<String, String> paramaters, String body, List<MultipartFile> files, int attemptsCount)
       throws IOException, CallException
   {
     if (uri == null)
@@ -388,9 +388,9 @@ public abstract class URLConnectionWebServiceCaller
         {
           if (files != null && files.size() > 0)
           {
-            if (postParamaters != null && postParamaters.size() > 0)
+            if (paramaters != null && paramaters.size() > 0)
             {
-              for (final Entry<String, String> parameter : postParamaters.entrySet())
+              for (final Entry<String, String> parameter : paramaters.entrySet())
               {
                 logBuilder.append(" " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
                 logBuilder.append(" Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
@@ -406,9 +406,9 @@ public abstract class URLConnectionWebServiceCaller
             }
           }
         }
-        else if (postParamaters != null && postParamaters.size() > 0)
+        else if (paramaters != null && paramaters.size() > 0)
         {
-          logBuilder.append(transformPostParametersToDataString(postParamaters));
+          logBuilder.append(transformPostParametersToDataString(paramaters));
         }
 
         //headers and curl request
@@ -456,9 +456,9 @@ public abstract class URLConnectionWebServiceCaller
       {
         final DataOutputStream outputStream = new DataOutputStream(httpURLConnection.getOutputStream());
 
-        if (postParamaters != null && postParamaters.size() > 0)
+        if (paramaters != null && paramaters.size() > 0)
         {
-          for (final Entry<String, String> parameter : postParamaters.entrySet())
+          for (final Entry<String, String> parameter : paramaters.entrySet())
           {
             outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
@@ -497,9 +497,9 @@ public abstract class URLConnectionWebServiceCaller
         outputStream.flush();
         outputStream.close();
       }
-      else if (postParamaters != null && postParamaters.size() > 0)
+      else if (paramaters != null && paramaters.size() > 0)
       {
-        body = transformPostParametersToDataString(postParamaters);
+        body = transformPostParametersToDataString(paramaters);
       }
 
       if ("".equals(body) == false && body != null)
@@ -542,9 +542,9 @@ public abstract class URLConnectionWebServiceCaller
 
     if (!(responseCode >= HttpURLConnection.HTTP_OK && responseCode < HttpURLConnection.HTTP_MULT_CHOICE))
     {
-      if (onStatusCodeNotOk(uri, callType, postParamaters, body, httpURLConnection, url, responseCode, responseMessage, attemptsCount + 1) == true)
+      if (onStatusCodeNotOk(uri, callType, paramaters, body, httpURLConnection, url, responseCode, responseMessage, attemptsCount + 1) == true)
       {
-        return performHttpRequest(uri, callType, headers, postParamaters, body, files, attemptsCount + 1);
+        return performHttpRequest(uri, callType, headers, paramaters, body, files, attemptsCount + 1);
       }
     }
 
@@ -552,10 +552,10 @@ public abstract class URLConnectionWebServiceCaller
   }
 
   private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
-      Map<String, String> postParameters, String body, List<MultipartFile> files)
+      Map<String, String> parameters, String body, List<MultipartFile> files)
       throws IOException, CallException
   {
-    return performHttpRequest(uri, callType, headers, postParameters, body, files, 0);
+    return performHttpRequest(uri, callType, headers, parameters, body, files, 0);
   }
 
   private String transformPostParametersToDataString(Map<String, String> params)
