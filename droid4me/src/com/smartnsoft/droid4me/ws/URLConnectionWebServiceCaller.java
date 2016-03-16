@@ -40,7 +40,6 @@ import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
 
 /**
  * * A basis class for making web service calls easier.
@@ -54,7 +53,7 @@ import org.apache.http.HttpStatus;
  * method request ;</li>
  * <li>if a connection issue arises (connection time-out, socket time-out, lost of connectivity), a {@link WebServiceCaller.CallException} exception
  * will be thrown, and it will {@link Throwable#getCause() embed} the reason for the connection issue ;</li>
- * <li>if the status code of the HTTP response does not belong to the [{@link HttpStatus#SC_OK}, {@link HttpStatus#SC_MULTI_STATUS}] range, the
+ * <li>if the status code of the HTTP response does not belong to the [{@link HttpURLConnection#HTTP_OK}, {@link HttpURLConnection#HTTP_MULT_CHOICE}] range, the
  * {@link #onStatusCodeNotOk(String, CallType, Map, String, HttpURLConnection, URL, int, String, int)} method will be invoked.</li>
  * </ol>
  * </p>
@@ -136,13 +135,15 @@ public abstract class URLConnectionWebServiceCaller
    *
    * @param uri            the URI being requested
    * @param callType       the HTTP method
+   * @param headers        the headers of the HTTP request
    * @param postParameters if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the form data of the
    *                       request
    * @param body           if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the string body of the
    *                       request
-   * @param headers        the headers of the HTTP request
+   * @param files          if the HTTP method is set to {@link CallType#Post} or {@link CallType#Put}, this is the file data of the
+   *                       request
    * @return the input stream of the HTTP method call; cannot be {@code null}
-   * @throws CallException if the status code of the HTTP response does not belong to the [{@link HttpStatus#SC_OK}, {@link HttpStatus#SC_MULTI_STATUS}] range.
+   * @throws CallException if the status code of the HTTP response does not belong to the [{@link HttpURLConnection#HTTP_OK}, {@link HttpURLConnection#HTTP_MULT_CHOICE}] range.
    *                       Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
    *                       {@link #isConnected()} method returns {@code false}, no request will be attempted and a {@link CallException}
    *                       exception will be thrown (embedding a {@link UnknownHostException} exception).
@@ -415,29 +416,29 @@ public abstract class URLConnectionWebServiceCaller
       {
         if (callType.verb == Verb.Post || callType.verb == Verb.Put)
         {
-
-          if (postParamaters != null || files != null)
+          if (files != null && files.size() > 0)
           {
-            if (postParamaters != null)
+            if (postParamaters != null && postParamaters.size() > 0)
             {
               for (final Entry<String, String> parameter : postParamaters.entrySet())
               {
                 logBuilder.append(" " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
-                logBuilder.append("Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
+                logBuilder.append(" Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
                 logBuilder.append(" " + parameter.getValue());
               }
             }
 
-            if (files != null)
+            for (final URLConnectionMultipartFile file : files)
             {
-              for (final URLConnectionMultipartFile file : files)
-              {
-                logBuilder.append(" " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
-                logBuilder.append("Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
-                logBuilder.append("Content-Type: " + file.contentType);
-              }
+              logBuilder.append(" " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+              logBuilder.append(" Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+              logBuilder.append(" Content-Type: " + file.contentType);
             }
           }
+        }
+        else if (postParamaters != null && postParamaters.size() > 0)
+        {
+          logBuilder.append(transformPostParametersToDataString(postParamaters));
         }
 
         //headers and curl request
