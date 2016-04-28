@@ -11,7 +11,7 @@
 
   <artifactId>droid4me</artifactId>
   <name>droid4me</name>
-  <version>2.4.0</version>
+  <version>2.4.1</version>
   <packaging>jar</packaging>
   <description>droid4me is a framework library dedicated to the development of Android applications.</description>
   <url>https://github.com/smartnsoft/droid4me</url>
