@@ -24,6 +24,7 @@ import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
  * @author Édouard Mercier
  * @since 2012.03.04
  */
+@Deprecated
 public abstract class SmartPreferenceFragment<AggregateClass>
     extends PreferenceFragment
     implements Smartable<AggregateClass>
@@ -36,7 +37,7 @@ public abstract class SmartPreferenceFragment<AggregateClass>
   {
     super.onAttach(activity);
     droid4mizer = new Droid4mizer<AggregateClass, SmartPreferenceFragment<AggregateClass>>(getActivity(), this, this, this);
-    droid4mizer.onAttached(activity);
+    droid4mizer.onAttached(getActivity());
   }
 
   @Override

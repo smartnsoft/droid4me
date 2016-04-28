@@ -311,7 +311,7 @@ public abstract class SmartAdapters
    * @param <ActivityClass>       the {@link Activity} class which will host the current wrapper graphical representation
    * @since 2014.05.23
    */
-  public abstract static class BasisSimpleBusinessViewWrapper<BusinessObjectClass, ActivityClass extends Activity>
+  public static abstract class BasisSimpleBusinessViewWrapper<BusinessObjectClass, ActivityClass extends Activity>
       extends SmartAdapters.BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass>
       implements SmartAdapters.BusinessViewWrapperSimplified<BusinessObjectClass, ActivityClass>
   {
@@ -344,7 +344,7 @@ public abstract class SmartAdapters
    *
    * @param <BusinessObjectClass> the business object class which is represented by the current wrapper
    */
-  public abstract static class SimpleBusinessViewWrapper<BusinessObjectClass>
+  public static abstract class SimpleBusinessViewWrapper<BusinessObjectClass>
       extends SmartAdapters.BusinessViewWrapper<BusinessObjectClass>
       implements SmartAdapters.BusinessViewWrapperSimplified<BusinessObjectClass, Activity>
   {

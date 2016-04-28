@@ -45,8 +45,6 @@ import com.smartnsoft.droid4me.LifeCycle.BusinessObjectUnavailableException;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
-import org.apache.http.NoHttpResponseException;
-
 /**
  * Is responsible for intercepting an activity starting and redirect it to a prerequisite one if necessary, and for handling globally exceptions.
  * <p/>
@@ -373,10 +371,10 @@ public class ActivityController
   public static abstract class IssueAnalyzer
   {
 
-    public final static class IssueContext
+    public static final class IssueContext
     {
 
-      private final static String SPLITTER = ";";
+      private static final String SPLITTER = ";";
 
       public final String applicationName;
 
@@ -493,7 +491,7 @@ public class ActivityController
      */
     public static boolean isAConnectivityProblem(Throwable throwable)
     {
-      return ActivityController.IssueAnalyzer.searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class, NoHttpResponseException.class, SSLException.class) != null;
+      return ActivityController.IssueAnalyzer.searchForCause(throwable, UnknownHostException.class, SocketException.class, SocketTimeoutException.class, InterruptedIOException.class, SSLException.class) != null;
     }
 
     /**

@@ -66,7 +66,7 @@ public abstract class StatefulDefaultHandler
   /**
    * Expresses what information to catch from the XML.
    */
-  private final static class Expectation
+  private static final class Expectation
   {
 
     public final String localName;

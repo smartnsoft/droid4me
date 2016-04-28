@@ -200,7 +200,7 @@ public final class DbPersistence
   /**
    * Defined in order to set up the database columns.
    */
-  public final static class CacheColumns
+  public static final class CacheColumns
       implements BaseColumns
   {
 
@@ -430,7 +430,6 @@ public final class DbPersistence
     if (database == null)
     {
       database = SQLiteDatabase.openDatabase(filePath, null, SQLiteDatabase.OPEN_READWRITE);
-      database.setLockingEnabled(true);
       DbPersistence.writeableDatabases.put(filePath, database);
       count = new Integer(0);
     }
@@ -467,7 +466,6 @@ public final class DbPersistence
   private static void ensureDatabaseAvailability(String dbFilePath, String tableName)
   {
     final SQLiteDatabase database = SQLiteDatabase.openDatabase(dbFilePath, null, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.OPEN_READWRITE);
-    database.setLockingEnabled(true);
     try
     {
       final int version = database.getVersion();

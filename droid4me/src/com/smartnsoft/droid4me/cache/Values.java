@@ -139,7 +139,7 @@ public final class Values
 
   }
 
-  public final static class InstructionsException
+  public static final class InstructionsException
       extends Exception
   {
 
@@ -304,7 +304,7 @@ public final class Values
   /**
    * The exception which may be triggered to indicate that a caching method has failed.
    */
-  public final static class CacheException
+  public static final class CacheException
       extends Business.BusinessException
   {
 
@@ -322,7 +322,7 @@ public final class Values
 
   }
 
-  public abstract static class WithParameterInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
+  public static abstract class WithParameterInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
       implements Values.Instructions<BusinessObjectType, Values.CacheException, Values.CacheException>
   {
 
@@ -382,8 +382,6 @@ public final class Values
     }
 
   }
-
-  ;
 
   public static class MemoryInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
       extends WithParameterInstructions<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType>

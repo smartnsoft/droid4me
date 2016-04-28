@@ -35,8 +35,8 @@ public abstract class SmartFragment<AggregateClass>
   public void onAttach(Activity activity)
   {
     super.onAttach(activity);
-    droid4mizer = new Droid4mizer<AggregateClass, SmartFragment<AggregateClass>>(activity, this, this, this);
-    droid4mizer.onAttached(activity);
+    droid4mizer = new Droid4mizer<AggregateClass, SmartFragment<AggregateClass>>(getActivity(), this, this, this);
+    droid4mizer.onAttached(getActivity());
   }
 
   @Override

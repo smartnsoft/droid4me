@@ -81,7 +81,7 @@ final class AppInternals
    * @param <ComponentClass> the instance the container has been created for
    * @since 2009.02.16
    */
-  final static class StateContainer<AggregateClass, ComponentClass>
+  static final class StateContainer<AggregateClass, ComponentClass>
   {
 
     private final static class RefreshBusinessObjectsAndDisplay

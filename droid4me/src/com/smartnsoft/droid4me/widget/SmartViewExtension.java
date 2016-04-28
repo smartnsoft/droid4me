@@ -20,7 +20,6 @@ package com.smartnsoft.droid4me.widget;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
-import android.widget.Gallery;
 
 /**
  * An interface introduced in order to get notified when a container size changes, because there is no {@code OnSizeChangedListener} in Android
@@ -352,7 +351,7 @@ public interface SmartViewExtension<ViewClass extends View>
    * Indicates that the view {@link View#requestLayout()} method execution should do nothing (not invoking the parent method).
    * <p/>
    * <p>
-   * This feature is especially useful used in combination with the {@link Gallery} widget, which causes flickering issues when updating the widgets
+   * This feature is especially useful used in combination with the Gallery widget, which causes flickering issues when updating the widgets
    * inside a {@link ViewGroup}.
    * </p>
    *

@@ -23,16 +23,16 @@ import android.util.Log;
 /**
  * In order to have an entry point for the logging interface. Because, when we use the Android logger, there are problems during the unitary tests on
  * a desktop machine.
- * <p/>
+ *
  * <p>
  * By default, the {@link AndroidLogger} implementation is used.
  * </p>
- * <p/>
+ *
  * <p>
  * In order to tune the {@link Logger} implementation that should be used at runtime, you may define the {@code SmartConfigurator} class, as explained
  * in {@link LoggerFactory.LoggerConfigurator}.
  * </p>
- * <p/>
+ *
  * <p>
  * If no {@code SmartConfigurator} class is present in the classpath, when the the Java system property <code>droid4me.logging</code> is defined with
  * the value "false", the logging uses the standard error and output streams. This is useful when unit-testing the framework.
@@ -54,8 +54,9 @@ public class LoggerFactory
     /**
      * The method will be invoked by the {@link LoggerFactory#getInstance(String)} every time a logger needs to be created.
      *
-     * @param category the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
-     *                 libraries
+     * @param category
+     *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
+     *          libraries
      * @return the {@link Logger} that should be used for logging on that category; is not allowed to be {@code null}
      * @see #getLogger(Class)
      */
@@ -64,8 +65,9 @@ public class LoggerFactory
     /**
      * The method will be invoked by the {@link LoggerFactory#getInstance(Class)} every time a logger needs to be created.
      *
-     * @param theClass the logger class, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
-     *                 libraries
+     * @param category
+     *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
+     *          libraries
      * @return the {@link Logger} that should be used for logging on that category; is not allowed to be {@code null}
      * @see #getLogger(String)
      */
@@ -84,7 +86,7 @@ public class LoggerFactory
   /**
    * Tunes the logging system verbosity. The {@code Logger#isXXXEnabled()} method return values will depend on this trigger level. Defaults to
    * {@code Log.WARN}.
-   * <p/>
+   *
    * <p>
    * It uses the Android built-in {@link android.util.Log} attributes for defining those log levels.
    * </p>
@@ -131,6 +133,22 @@ public class LoggerFactory
       if (LoggerFactory.loggerImplementation == null)
       {
         // The logger implementation has not been decided yet
+        if (LoggerFactory.retrieveCustomLoggerInstance("SmartConfigurator") == false)
+        {
+          if (LoggerFactory.retrieveCustomLoggerInstance("com.smartnsoft.droid4me.SmartConfigurator") == false)
+          {
+            // This means that the project does not expose the class which enables to configure the logging system
+            if (System.getProperty("droid4me.logging", "true").equals("false") == true)
+            {
+              LoggerFactory.loggerImplementation = LoggerImplementation.NativeLogger;
+            }
+            else
+            {
+              LoggerFactory.loggerImplementation = LoggerImplementation.AndroidLogger;
+            }
+          }
+        }
+        // The logger implementation has not been decided yet
         final String loggerConfiguratorClassFqn = "SmartConfigurator";
         try
         {
@@ -140,15 +158,8 @@ public class LoggerFactory
         }
         catch (Exception exception)
         {
-          // This means that the project does not expose the class which enables to configure the logging system
-          if (System.getProperty("droid4me.logging", "true").equals("false") == true)
-          {
-            LoggerFactory.loggerImplementation = LoggerImplementation.NativeLogger;
-          }
-          else
-          {
-            LoggerFactory.loggerImplementation = LoggerImplementation.AndroidLogger;
-          }
+
+
         }
         if (LoggerFactory.logLevel >= android.util.Log.INFO)
         {
@@ -187,6 +198,22 @@ public class LoggerFactory
       {
         return new NativeLogger(category);
       }
+    }
+  }
+
+  private static boolean retrieveCustomLoggerInstance(String loggerConfiguratorClassFqn)
+  {
+    try
+    {
+      final Class<?> loggerConfiguratorClass = Class.forName(loggerConfiguratorClassFqn);
+      LoggerFactory.loggerConfigurator = (LoggerConfigurator) loggerConfiguratorClass.newInstance();
+      LoggerFactory.loggerImplementation = LoggerImplementation.Other;
+      return true;
+    }
+    catch (Exception rollbackException)
+    {
+      // This means that the project does not expose the class which enables to configure the logging system
+      return false;
     }
   }
 

@@ -57,7 +57,7 @@ public abstract class SmartApplication
   /**
    * Contains various attributes in order to have the default dialog boxes related to exceptions i18ned.
    */
-  protected final static class I18N
+  protected static final class I18N
   {
 
     public CharSequence dialogBoxErrorTitle;
