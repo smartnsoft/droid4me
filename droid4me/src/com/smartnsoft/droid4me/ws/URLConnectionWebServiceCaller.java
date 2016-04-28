@@ -120,7 +120,7 @@ public abstract class URLConnectionWebServiceCaller
    * @see #getInputStream(String, CallType, Map, String)
    */
   @Override
-  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> headers,
+  public InputStream getInputStream(String uri, CallType callType, Map<String, String> headers,
       Map<String, String> parameters, String body, List<MultipartFile> files)
       throws CallException
   {
@@ -551,7 +551,7 @@ public abstract class URLConnectionWebServiceCaller
     return httpURLConnection;
   }
 
-  private HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
+  protected  HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
       Map<String, String> parameters, String body, List<MultipartFile> files)
       throws IOException, CallException
   {
