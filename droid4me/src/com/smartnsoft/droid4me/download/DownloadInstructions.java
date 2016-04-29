@@ -44,6 +44,13 @@ public class DownloadInstructions
 {
 
   /**
+   * We do not want that container class to be instantiated.
+   */
+  protected DownloadInstructions()
+  {
+  }
+
+  /**
    * An implementation of the {@link BitmapableBitmap} interface specific to the Android platform.
    */
   public final static class BitmapableBitmap
@@ -414,6 +421,16 @@ public class DownloadInstructions
     }
 
     /**
+     * Actually converts the given {@link InputStream} into an Android {@link Bitmap} using the default decoding.
+     * @see #convertInputStreamToBitmap(InputStream, String, Object, String)
+     */
+    protected Bitmap convertInputStreamToBitmap(InputStream inputStream, String bitmapUid, Object imageSpecs,
+        String url)
+    {
+      return convertInputStreamToBitmap(inputStream, bitmapUid, imageSpecs, url, ImageType.Default);
+    }
+
+    /**
      * Actually converts the given {@link InputStream} into an Android {@link Bitmap}.
      * <p/>
      * <p>
@@ -421,26 +438,30 @@ public class DownloadInstructions
      * </p>
      *
      * @param inputStream the representation of the {@link Bitmap} to be decoded
+     * @param flag the flag giving hint on how to decode the input stream
      * @return the decoded {@link Bitmap} if the conversion could be performed properly ; {@code null} otherwise
      * @see #convert(InputStream, String, Object, String)
      */
     protected Bitmap convertInputStreamToBitmap(InputStream inputStream, String bitmapUid, Object imageSpecs,
-        String url)
+        String url, ImageType flag)
     {
       final BitmapFactory.Options options = new BitmapFactory.Options();
       options.inScaled = false;
       options.inDither = false;
       options.inDensity = 0;
+      if (flag == ImageType.RGB_565)
+      {
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        options.inDither = true;
+      }
       return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
-  }
+    public enum ImageType
+    {
+      Default, ARGB_8888, RGB_565
+    }
 
-  /**
-   * We do not want that container class to be instantiated.
-   */
-  protected DownloadInstructions()
-  {
   }
 
 }
