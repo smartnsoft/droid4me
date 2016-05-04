@@ -18,6 +18,10 @@ package com.smartnsoft.droid4me.download;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
@@ -32,6 +36,7 @@ import android.widget.ImageView;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
+import com.smartnsoft.droid4me.download.DownloadInstructions.AbstractInstructions.EncodingAnnotation.EncodingType;
 
 /**
  * Gathers in one place the download instructions contracts used by {@link BitmapDownloader}.
@@ -421,16 +426,6 @@ public class DownloadInstructions
     }
 
     /**
-     * Actually converts the given {@link InputStream} into an Android {@link Bitmap} using the default decoding.
-     * @see #convertInputStreamToBitmap(InputStream, String, Object, String)
-     */
-    protected Bitmap convertInputStreamToBitmap(InputStream inputStream, String bitmapUid, Object imageSpecs,
-        String url)
-    {
-      return convertInputStreamToBitmap(inputStream, bitmapUid, imageSpecs, url, ImageType.Default);
-    }
-
-    /**
      * Actually converts the given {@link InputStream} into an Android {@link Bitmap}.
      * <p/>
      * <p>
@@ -438,18 +433,17 @@ public class DownloadInstructions
      * </p>
      *
      * @param inputStream the representation of the {@link Bitmap} to be decoded
-     * @param flag the flag giving hint on how to decode the input stream
      * @return the decoded {@link Bitmap} if the conversion could be performed properly ; {@code null} otherwise
      * @see #convert(InputStream, String, Object, String)
      */
     protected Bitmap convertInputStreamToBitmap(InputStream inputStream, String bitmapUid, Object imageSpecs,
-        String url, ImageType flag)
+        String url)
     {
       final BitmapFactory.Options options = new BitmapFactory.Options();
       options.inScaled = false;
       options.inDither = false;
       options.inDensity = 0;
-      if (flag == ImageType.RGB_565)
+      if (getClass().isAnnotationPresent(EncodingAnnotation.class) == true && getClass().getAnnotation(EncodingAnnotation.class).encodingType() == EncodingType.RGB_565)
       {
         options.inPreferredConfig = Bitmap.Config.RGB_565;
         options.inDither = true;
@@ -457,9 +451,17 @@ public class DownloadInstructions
       return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
-    public enum ImageType
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface EncodingAnnotation
     {
-      Default, ARGB_8888, RGB_565
+
+      EncodingType encodingType() default EncodingType.Default;
+
+      enum EncodingType
+      {
+        Default, ARGB_8888, RGB_565
+      }
     }
 
   }
