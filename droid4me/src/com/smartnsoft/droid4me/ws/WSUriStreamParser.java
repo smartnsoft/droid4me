@@ -210,7 +210,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   {
     final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
     final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
-    return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.parameters, httpCallTypeAndBody.body));
+    return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.headers, httpCallTypeAndBody.parameters, httpCallTypeAndBody.body, httpCallTypeAndBody.files));
   }
 
   public final BusinessObjectType rawGetValue(ParameterType parameter)
