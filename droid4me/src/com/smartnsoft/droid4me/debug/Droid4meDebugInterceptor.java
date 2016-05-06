@@ -99,7 +99,7 @@ public class Droid4meDebugInterceptor
     }
   }
 
-  private final class DebugAggregate
+  protected final class DebugAggregate
   {
 
     private AnalyticsDisplayer analyticsDisplayer;
