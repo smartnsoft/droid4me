@@ -191,18 +191,7 @@ public class Droid4meDebugInterceptor
     {
       if (event == InterceptorEvent.onDestroy)
       {
-        // We remove the popup window
-        final DebugAggregate debugAggregate = getDebugAggregate(false, activity);
-        if (debugAggregate != null)
-        {
-          final PopupWindow popupWindow = debugAggregate.getPopupWindow(activity.getApplicationContext(), false, null);
-          if (popupWindow != null)
-          {
-            popupWindow.dismiss();
-          }
-          debugAggregate.onDestroy();
-          discardDebugAggregate(activity);
-        }
+        dismissPopupWindow(activity);
       }
       else
       {
@@ -231,7 +220,23 @@ public class Droid4meDebugInterceptor
     }
   }
 
-  private DebugAggregate getDebugAggregate(boolean createIfNecessary, Activity activity)
+  protected void dismissPopupWindow(Activity activity)
+  {
+    // We remove the popup window
+    final DebugAggregate debugAggregate = getDebugAggregate(false, activity);
+    if (debugAggregate != null)
+    {
+      final PopupWindow popupWindow = debugAggregate.getPopupWindow(activity.getApplicationContext(), false, null);
+      if (popupWindow != null)
+      {
+        popupWindow.dismiss();
+      }
+      debugAggregate.onDestroy();
+      discardDebugAggregate(activity);
+    }
+  }
+
+  protected DebugAggregate getDebugAggregate(boolean createIfNecessary, Activity activity)
   {
     DebugAggregate debugAggregate = Droid4meDebugInterceptor.debugAggregates.get(activity);
     if (createIfNecessary == true)
@@ -245,7 +250,7 @@ public class Droid4meDebugInterceptor
     return debugAggregate;
   }
 
-  private void discardDebugAggregate(Activity activity)
+  protected void discardDebugAggregate(Activity activity)
   {
     Droid4meDebugInterceptor.debugAggregates.remove(activity);
   }
