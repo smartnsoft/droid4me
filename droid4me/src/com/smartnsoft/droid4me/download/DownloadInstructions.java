@@ -18,6 +18,10 @@ package com.smartnsoft.droid4me.download;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
@@ -32,6 +36,7 @@ import android.widget.ImageView;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
+import com.smartnsoft.droid4me.download.DownloadInstructions.AbstractInstructions.EncodingAnnotation.EncodingType;
 
 /**
  * Gathers in one place the download instructions contracts used by {@link BitmapDownloader}.
@@ -42,6 +47,13 @@ import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
 public class DownloadInstructions
     extends BasisDownloadInstructions
 {
+
+  /**
+   * We do not want that container class to be instantiated.
+   */
+  protected DownloadInstructions()
+  {
+  }
 
   /**
    * An implementation of the {@link BitmapableBitmap} interface specific to the Android platform.
@@ -431,16 +443,27 @@ public class DownloadInstructions
       options.inScaled = false;
       options.inDither = false;
       options.inDensity = 0;
+      if (getClass().isAnnotationPresent(EncodingAnnotation.class) == true && getClass().getAnnotation(EncodingAnnotation.class).encodingType() == EncodingType.RGB_565)
+      {
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        options.inDither = true;
+      }
       return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
-  }
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface EncodingAnnotation
+    {
 
-  /**
-   * We do not want that container class to be instantiated.
-   */
-  protected DownloadInstructions()
-  {
+      EncodingType encodingType() default EncodingType.Default;
+
+      enum EncodingType
+      {
+        Default, ARGB_8888, RGB_565
+      }
+    }
+
   }
 
 }
