@@ -27,6 +27,7 @@ import java.net.URLConnection;
 import java.util.Map;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Handler;
@@ -36,7 +37,6 @@ import android.widget.ImageView;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
-import com.smartnsoft.droid4me.download.DownloadInstructions.AbstractInstructions.EncodingAnnotation.EncodingType;
 
 /**
  * Gathers in one place the download instructions contracts used by {@link BitmapDownloader}.
@@ -48,11 +48,13 @@ public class DownloadInstructions
     extends BasisDownloadInstructions
 {
 
-  /**
-   * We do not want that container class to be instantiated.
-   */
-  protected DownloadInstructions()
+  @Target(ElementType.TYPE)
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface BitmapConfigAnnotation
   {
+
+    Config bitmapConfig() default Config.RGB_565;
+
   }
 
   /**
@@ -443,27 +445,27 @@ public class DownloadInstructions
       options.inScaled = false;
       options.inDither = false;
       options.inDensity = 0;
-      if (getClass().isAnnotationPresent(EncodingAnnotation.class) == true && getClass().getAnnotation(EncodingAnnotation.class).encodingType() == EncodingType.RGB_565)
+
+      if (getClass().isAnnotationPresent(BitmapConfigAnnotation.class) == true)
       {
-        options.inPreferredConfig = Bitmap.Config.RGB_565;
-        options.inDither = true;
+        options.inPreferredConfig = getClass().getAnnotation(BitmapConfigAnnotation.class).bitmapConfig();
+
+        if (getClass().getAnnotation(BitmapConfigAnnotation.class).bitmapConfig() == Config.RGB_565)
+        {
+          options.inDither = true;
+        }
       }
+
       return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
-    @Target(ElementType.TYPE)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface EncodingAnnotation
-    {
+  }
 
-      EncodingType encodingType() default EncodingType.Default;
-
-      enum EncodingType
-      {
-        Default, ARGB_8888, RGB_565
-      }
-    }
-
+  /**
+   * We do not want that container class to be instantiated.
+   */
+  protected DownloadInstructions()
+  {
   }
 
 }
