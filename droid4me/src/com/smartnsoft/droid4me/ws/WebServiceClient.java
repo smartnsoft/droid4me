@@ -278,6 +278,18 @@ public interface WebServiceClient
     }
 
     /**
+     * This will create a HTTP request method.
+     *
+     * @param url      the URL to use when performing the HTTP request
+     * @param callType the HTTP request method
+     * @param headers  the HTTP request headers
+     */
+    public HttpCallTypeAndBody(String url, CallType callType, Map<String, String> headers)
+    {
+      this(url, callType, headers, null, null, null);
+    }
+
+    /**
      * @param url        the URL to use when performing the HTTP request
      * @param callType   the HTTP request method
      * @param headers    the HTTP request headers
