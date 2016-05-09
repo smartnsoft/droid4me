@@ -48,13 +48,6 @@ public class DownloadInstructions
     extends BasisDownloadInstructions
 {
 
-  /**
-   * We do not want that container class to be instantiated.
-   */
-  protected DownloadInstructions()
-  {
-  }
-
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
   @interface BitmapConfigAnnotation
@@ -466,6 +459,13 @@ public class DownloadInstructions
       return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
+  }
+
+  /**
+   * We do not want that container class to be instantiated.
+   */
+  protected DownloadInstructions()
+  {
   }
 
 }
