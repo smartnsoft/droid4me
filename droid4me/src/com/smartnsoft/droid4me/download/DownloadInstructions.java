@@ -466,7 +466,6 @@ public class DownloadInstructions
    */
   protected DownloadInstructions()
   {
-
   }
 
 }
