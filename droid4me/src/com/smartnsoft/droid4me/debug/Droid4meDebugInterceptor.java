@@ -16,6 +16,13 @@
  */
 package com.smartnsoft.droid4me.debug;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -28,16 +35,10 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+
 import com.smartnsoft.droid4me.app.ActivityController.Interceptor;
 import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.download.BitmapDownloader.AnalyticsDisplayer;
-
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An interceptor which may be used to display debug and development indicators on the screen.
@@ -169,15 +170,15 @@ public class Droid4meDebugInterceptor
     }
   }
 
+  public static final String DISPLAY_BITMAP_DOWNLOADER_EXTRA = "displayBitmapDownloaderWindowExtra";
+
+  private static final Map<Activity, DebugAggregate> debugAggregates = new HashMap<Activity, DebugAggregate>();
+
   public final int anchorViewResourceId;
 
   public final int panelWidth;
 
   public final int panelHeight;
-
-  private final static Map<Activity, DebugAggregate> debugAggregates = new HashMap<Activity, DebugAggregate>();
-
-  public static final String DISPLAY_BITMAP_DOWNLOADER_EXTRA = "displayBitmapDownloaderWindowExtra";
 
   public Droid4meDebugInterceptor(int anchorViewResourceId, int panelWidth, int panelHeight)
   {
@@ -191,26 +192,34 @@ public class Droid4meDebugInterceptor
   {
     final Intent intent = activity.getIntent();
     boolean isWindowDisplaying = false;
-    if(intent != null)
+    if (intent != null)
     {
       isWindowDisplaying = intent.getBooleanExtra(Droid4meDebugInterceptor.DISPLAY_BITMAP_DOWNLOADER_EXTRA, false);
     }
-    if (isWindowDisplaying == true)
+    if (isWindowDisplaying == true || Droid4mizer.ARE_DEBUG_LOG_ENABLED == true)
     {
-      if (event == InterceptorEvent.onResume || event == InterceptorEvent.onDestroy) {
-        if (event == InterceptorEvent.onDestroy) {
+      if (event == InterceptorEvent.onResume || event == InterceptorEvent.onDestroy)
+      {
+        if (event == InterceptorEvent.onDestroy)
+        {
           dismissPopupWindow(activity);
-        } else {
+        }
+        else
+        {
           final View anchorView = activity.findViewById(anchorViewResourceId);
-          if (anchorView != null) {
+          if (anchorView != null)
+          {
             final DebugAggregate debugAggregate = getDebugAggregate(true, activity);
             final AtomicBoolean hasBeenCreated = new AtomicBoolean();
             final PopupWindow popupWindow = debugAggregate.getPopupWindow(activity.getApplicationContext(), true, hasBeenCreated);
             debugAggregate.onResume();
-            if (hasBeenCreated.get() == true) {
-              anchorView.post(new Runnable() {
+            if (hasBeenCreated.get() == true)
+            {
+              anchorView.post(new Runnable()
+              {
                 @Override
-                public void run() {
+                public void run()
+                {
                   // We do that in the next UI thread run, so as to prevent from a "BadTokenException and says "Unable to add window -- token null
                   // is not valid"", as explained at http://stackoverflow.com/questions/4187673/problems-creating-a-popup-window-in-android-activity
                   popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, 0, activity.getResources().getDisplayMetrics().heightPixels - panelHeight);
