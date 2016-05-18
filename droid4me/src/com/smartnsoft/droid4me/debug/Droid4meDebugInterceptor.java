@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -190,14 +189,14 @@ public class Droid4meDebugInterceptor
   @Override
   public void onLifeCycleEvent(final Activity activity, Object component, InterceptorEvent event)
   {
-    final Intent intent = activity.getIntent();
-    boolean isWindowDisplaying = false;
-    if (intent != null)
-    {
-      isWindowDisplaying = intent.getBooleanExtra(Droid4meDebugInterceptor.DISPLAY_BITMAP_DOWNLOADER_EXTRA, false);
-    }
-    if (isWindowDisplaying == true || Droid4mizer.ARE_DEBUG_LOG_ENABLED == true)
-    {
+//    final Intent intent = activity.getIntent();
+//    boolean isWindowDisplaying = false;
+//    if (intent != null)
+//    {
+//      isWindowDisplaying = intent.getBooleanExtra(Droid4meDebugInterceptor.DISPLAY_BITMAP_DOWNLOADER_EXTRA, false);
+//    }
+//    if (isWindowDisplaying == true || Droid4mizer.ARE_DEBUG_LOG_ENABLED == true)
+//    {
       if (event == InterceptorEvent.onResume || event == InterceptorEvent.onDestroy)
       {
         if (event == InterceptorEvent.onDestroy)
@@ -229,7 +228,7 @@ public class Droid4meDebugInterceptor
           }
         }
       }
-    }
+//    }
   }
 
   protected void dismissPopupWindow(Activity activity)
