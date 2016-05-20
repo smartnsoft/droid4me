@@ -18,7 +18,6 @@
 
 package com.smartnsoft.droid4me.wscache;
 
-import com.smartnsoft.droid4me.bo.Business.Cacheable;
 import com.smartnsoft.droid4me.bo.Business.IOStreamer;
 import com.smartnsoft.droid4me.cache.Cacher;
 import com.smartnsoft.droid4me.cache.Values;
@@ -60,7 +59,7 @@ public final class BackedWSUriStreamParser
     public BackedUriStreamedMap(IOStreamer<String, StreamerExceptionType> ioStreamer, WebServiceClient webServiceClient)
     {
       super(ioStreamer, webServiceClient);
-      final Cacher<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> cacher = new Cacher<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>((Cacheable<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>) this);
+      final Cacher<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException> cacher = new Cacher<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>(this);
       backed = new Values.BackedCachedMap<BusinessObjectType, WSUriStreamParser.KeysAggregator<ParameterType>, ParameterType, ParseExceptionType, StreamerExceptionType, WebServiceClient.CallException>(cacher);
     }
 
