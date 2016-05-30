@@ -17,9 +17,11 @@
 
 package com.smartnsoft.droid4me.log;
 
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * A class which enables to wrap a {@link Logger}, and to delegate all its interface methods to its underlying logger.
@@ -49,7 +51,8 @@ public class LoggerWrapper
   {
     synchronized (LoggerWrapper.instances)
     {
-      for (Entry<String, LoggerWrapper> entry : LoggerWrapper.instances.entrySet())
+      final Set<Entry<String, LoggerWrapper>> entries = new HashSet<Entry<String, LoggerWrapper>>(LoggerWrapper.instances.entrySet());
+      for (Entry<String, LoggerWrapper> entry : entries)
       {
         final LoggerWrapper loggerWrapper = entry.getValue();
         loggerWrapper.logger = loggerConfigurator.getLogger(entry.getKey());
@@ -78,9 +81,9 @@ public class LoggerWrapper
    */
   public LoggerWrapper(String category, Logger logger)
   {
+    this.logger = logger;
     synchronized (LoggerWrapper.instances)
     {
-      this.logger = logger;
       LoggerWrapper.instances.put(category, this);
     }
   }
