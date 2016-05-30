@@ -78,8 +78,11 @@ public class LoggerWrapper
    */
   public LoggerWrapper(String category, Logger logger)
   {
-    this.logger = logger;
-    LoggerWrapper.instances.put(category, this);
+    synchronized (LoggerWrapper.instances)
+    {
+      this.logger = logger;
+      LoggerWrapper.instances.put(category, this);
+    }
   }
 
   @Override
