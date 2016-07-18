@@ -28,9 +28,13 @@ import android.content.Context;
 import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -64,7 +68,9 @@ public class Droid4meDebugInterceptor
 
     private TextView totalMemory;
 
-    public View getView(Context context)
+    private Button garbageCollector;
+
+    public View getView(final Context context)
     {
       final LinearLayout container = new LinearLayout(context);
       container.setOrientation(LinearLayout.VERTICAL);
@@ -74,6 +80,16 @@ public class Droid4meDebugInterceptor
       freeMemory = createTextView(context, container);
       maxMemory = createTextView(context, container);
       totalMemory = createTextView(context, container);
+      garbageCollector = createButton(context, container);
+      garbageCollector.setOnClickListener(new OnClickListener()
+      {
+        @Override
+        public void onClick(View v)
+        {
+          Runtime.getRuntime().gc();
+          updateView();
+        }
+      });
       return container;
     }
 
@@ -84,9 +100,9 @@ public class Droid4meDebugInterceptor
       Droid4mizer.getStatistics(allocatedCountHolder, aliveCountHolder);
       allocatedCount.setText(Integer.toString(allocatedCountHolder.get()));
       aliveCount.setText(Integer.toString(aliveCountHolder.get()));
-      freeMemory.setText(memoryDecimalFormat.format((float) (Runtime.getRuntime().freeMemory()) / (1024f * 1204f)) + " MB");
-      maxMemory.setText(memoryDecimalFormat.format((float) (Runtime.getRuntime().maxMemory()) / (1024f * 1204f)) + " MB");
-      totalMemory.setText(memoryDecimalFormat.format((float) (Runtime.getRuntime().totalMemory()) / (1024f * 1204f)) + " MB");
+      freeMemory.setText("Free Mbs : " + memoryDecimalFormat.format((float) (Runtime.getRuntime().freeMemory()) / (1024f * 1204f)) + " MB");
+      maxMemory.setText("Max MBs : " + memoryDecimalFormat.format((float) (Runtime.getRuntime().maxMemory()) / (1024f * 1204f)) + " MB");
+      totalMemory.setText("Tot MBs : " + memoryDecimalFormat.format((float) (Runtime.getRuntime().totalMemory()) / (1024f * 1204f)) + " MB");
     }
 
     private TextView createTextView(Context context, final LinearLayout container)
@@ -96,6 +112,15 @@ public class Droid4meDebugInterceptor
       textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 8f);
       container.addView(textView);
       return textView;
+    }
+
+    private Button createButton(Context context, final LinearLayout container)
+    {
+      final Button button = new Button(context);
+      button.setText("Garbage\nCollector");
+      button.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 8f);
+      container.addView(button);
+      return button;
     }
   }
 
@@ -108,7 +133,7 @@ public class Droid4meDebugInterceptor
 
     private PopupWindow popupWindow;
 
-    public PopupWindow getPopupWindow(Context context, boolean createIfNecessary, AtomicBoolean hasBeenCreated)
+    public PopupWindow getPopupWindow(final Context context, boolean createIfNecessary, AtomicBoolean hasBeenCreated)
     {
       if (popupWindow == null && createIfNecessary == true)
       {
@@ -124,9 +149,11 @@ public class Droid4meDebugInterceptor
         container.setOrientation(LinearLayout.HORIZONTAL);
         addView(container, "Droid4mizer", view2);
         addView(container, "BitmapDownloader", view1);
+
         popupWindow.setContentView(container);
         popupWindow.setWidth(panelWidth);
         popupWindow.setHeight(panelHeight);
+        addTouchEvent(container);
         if (hasBeenCreated != null)
         {
           hasBeenCreated.set(true);
@@ -149,6 +176,36 @@ public class Droid4meDebugInterceptor
       }
     }
 
+    private void addTouchEvent(LinearLayout container)
+    {
+      container.setOnTouchListener(new OnTouchListener()
+      {
+
+        int x0 = 0;
+
+        int y0 = 0;
+
+        @Override
+        public boolean onTouch(View view, MotionEvent event)
+        {
+          int action = event.getAction();
+
+          switch (action)
+          {
+          case MotionEvent.ACTION_DOWN:
+            x0 = (int) event.getX();
+            y0 = (int) event.getY();
+            break;
+
+          case MotionEvent.ACTION_MOVE:
+            popupWindow.update((int) event.getRawX() - x0, (int) event.getRawY() - y0, -1, -1, true);
+            break;
+          }
+          return true;
+        }
+      });
+    }
+
     private void addView(ViewGroup container, String groupTitle, View view)
     {
       final LinearLayout intermediateContainer = new LinearLayout(container.getContext());
@@ -162,9 +219,10 @@ public class Droid4meDebugInterceptor
         intermediateContainer.addView(title);
       }
       intermediateContainer.addView(view);
+
       final ViewGroup.MarginLayoutParams marginLayoutParams = new ViewGroup.MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-      marginLayoutParams.leftMargin = 4;
-      marginLayoutParams.rightMargin = 4;
+      marginLayoutParams.leftMargin = 10;
+      marginLayoutParams.rightMargin = 10;
       container.addView(intermediateContainer, marginLayoutParams);
     }
   }
@@ -189,46 +247,37 @@ public class Droid4meDebugInterceptor
   @Override
   public void onLifeCycleEvent(final Activity activity, Object component, InterceptorEvent event)
   {
-//    final Intent intent = activity.getIntent();
-//    boolean isWindowDisplaying = false;
-//    if (intent != null)
-//    {
-//      isWindowDisplaying = intent.getBooleanExtra(Droid4meDebugInterceptor.DISPLAY_BITMAP_DOWNLOADER_EXTRA, false);
-//    }
-//    if (isWindowDisplaying == true || Droid4mizer.ARE_DEBUG_LOG_ENABLED == true)
-//    {
-      if (event == InterceptorEvent.onResume || event == InterceptorEvent.onDestroy)
+    if (event == InterceptorEvent.onResume || event == InterceptorEvent.onDestroy)
+    {
+      if (event == InterceptorEvent.onDestroy)
       {
-        if (event == InterceptorEvent.onDestroy)
+        dismissPopupWindow(activity);
+      }
+      else
+      {
+        final View anchorView = activity.findViewById(anchorViewResourceId);
+        if (anchorView != null)
         {
-          dismissPopupWindow(activity);
-        }
-        else
-        {
-          final View anchorView = activity.findViewById(anchorViewResourceId);
-          if (anchorView != null)
+          final DebugAggregate debugAggregate = getDebugAggregate(true, activity);
+          final AtomicBoolean hasBeenCreated = new AtomicBoolean();
+          final PopupWindow popupWindow = debugAggregate.getPopupWindow(activity.getApplicationContext(), true, hasBeenCreated);
+          debugAggregate.onResume();
+          if (hasBeenCreated.get() == true)
           {
-            final DebugAggregate debugAggregate = getDebugAggregate(true, activity);
-            final AtomicBoolean hasBeenCreated = new AtomicBoolean();
-            final PopupWindow popupWindow = debugAggregate.getPopupWindow(activity.getApplicationContext(), true, hasBeenCreated);
-            debugAggregate.onResume();
-            if (hasBeenCreated.get() == true)
+            anchorView.post(new Runnable()
             {
-              anchorView.post(new Runnable()
+              @Override
+              public void run()
               {
-                @Override
-                public void run()
-                {
-                  // We do that in the next UI thread run, so as to prevent from a "BadTokenException and says "Unable to add window -- token null
-                  // is not valid"", as explained at http://stackoverflow.com/questions/4187673/problems-creating-a-popup-window-in-android-activity
-                  popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, 0, activity.getResources().getDisplayMetrics().heightPixels - panelHeight);
-                }
-              });
-            }
+                // We do that in the next UI thread run, so as to prevent from a "BadTokenException and says "Unable to add window -- token null
+                // is not valid"", as explained at http://stackoverflow.com/questions/4187673/problems-creating-a-popup-window-in-android-activity
+                popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, 0, activity.getResources().getDisplayMetrics().heightPixels - panelHeight);
+              }
+            });
           }
         }
       }
-//    }
+    }
   }
 
   protected void dismissPopupWindow(Activity activity)

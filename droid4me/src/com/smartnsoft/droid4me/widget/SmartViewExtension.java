@@ -296,7 +296,8 @@ public interface SmartViewExtension<ViewClass extends View>
   float getRatio();
 
   /**
-   * Sets the ratio between the width and the height of the image. The default value is {@code 9 / 16}.
+   * Sets the ratio between the width and the height of the image.
+   * More formally, the value of the ratio is equal to the height divided by the width. The default value is {@code 9 / 16}.
    * <p/>
    * <p>
    * <ul>
