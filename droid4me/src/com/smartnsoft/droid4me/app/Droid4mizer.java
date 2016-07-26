@@ -148,7 +148,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   }
 
   /**
-   * Same as invoking {@code refreshBusinessObjectsAndDisplay(boolean, null, false)}.
+   * Same as invoking {@code refreshBusinessObjectsAndDisplay(true, null, false)}.
    *
    * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
@@ -236,16 +236,32 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     return stateContainer.isRefreshingBusinessObjectsAndDisplay();
   }
 
+  /*
+   * Enables to know how many times the display synchronization cycle has been run so far for the current entity.
+   *
+   * @return the number of times the {@link #onSynchronizeDisplayObjects()} method has been invoked. The base
+   * method {@link #onSynchronizeDisplayObjects()} increments a counter on each call, even if an exception is thrown.
+   * This method will retrieve the current count the previous method has been invoked, starting from {@code 0}.
+   * @see #onSynchronizeDisplayObjects()
+   */
   public final int getOnSynchronizeDisplayObjectsCount()
   {
     return stateContainer.getOnSynchronizeDisplayObjectsCount();
   }
-
+  ​
+  /*
+   * Indicates whether the entity has been restarted due to a configuruation change, or being restored from a saved state.
+   *
+   * @return {@code false} if and only if the life cycle is starting back from a saved instance state, i.e. whether
+   * the {@link onSaveInstanceState(Bundle)} method has already been invoked. For instance, when the device
+   * configuration changes, the application will start back from a saved instance state, and this results in
+   * this method returning {@code false}.
+   * @see #onSaveInstanceState(Bundle)
+   */
   public final boolean isFirstLifeCycle()
   {
     return stateContainer.isFirstLifeCycle();
   }
-
   public final boolean isInteracting()
   {
     return stateContainer.isInteracting();
