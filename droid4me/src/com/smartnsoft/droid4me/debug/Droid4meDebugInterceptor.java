@@ -278,9 +278,12 @@ public class Droid4meDebugInterceptor
         }
       }
     }
-    else if (event == InterceptorEvent.onStop || event == InterceptorEvent.onPause)
+    else if (event == InterceptorEvent.onStop)
     {
-      discardDebugAggregate(activity);
+      if (activity != null)
+      {
+        dismissPopupWindow(activity);
+      }
     }
   }
 

@@ -248,7 +248,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   {
     return stateContainer.getOnSynchronizeDisplayObjectsCount();
   }
-  ​
   /*
    * Indicates whether the entity has been restarted due to a configuruation change, or being restored from a saved state.
    *
