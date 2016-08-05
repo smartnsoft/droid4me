@@ -359,6 +359,9 @@ public abstract class URLConnectionWebServiceCaller
     case Get:
       httpURLConnection.setRequestMethod("GET");
       break;
+    case Head:
+      httpURLConnection.setRequestMethod("HEAD");
+      break;
     case Post:
       httpURLConnection.setRequestMethod("POST");
       httpURLConnection.setDoOutput(true);
@@ -551,7 +554,7 @@ public abstract class URLConnectionWebServiceCaller
     return httpURLConnection;
   }
 
-  protected  HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
+  protected HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
       Map<String, String> parameters, String body, List<MultipartFile> files)
       throws IOException, CallException
   {
