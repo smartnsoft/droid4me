@@ -245,7 +245,8 @@ public final class Business
     }
 
     @SuppressWarnings("unchecked")
-    public final BusinessObjectType parse(ParameterType parameter, InputStream inputStream)
+    public final BusinessObjectType parse(ParameterType parameter, Map<String, List<String>> headers,
+        InputStream inputStream)
         throws Business.BusinessException
     {
       final long start = System.currentTimeMillis();
