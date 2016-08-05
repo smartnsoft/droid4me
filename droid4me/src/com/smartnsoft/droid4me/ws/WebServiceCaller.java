@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -62,6 +63,21 @@ public abstract class WebServiceCaller
       this.fileName = fileName;
       this.contentType = contentType;
       this.fileInputStream = fileInputStream;
+    }
+
+  }
+
+  public static final class HttpResponse
+  {
+
+    public final Map<String, List<String>> headers;
+
+    public final InputStream inputStream;
+
+    public HttpResponse(Map<String, List<String>> headers, InputStream inputStream)
+    {
+      this.headers = headers;
+      this.inputStream = inputStream;
     }
 
   }

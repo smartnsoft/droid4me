@@ -81,7 +81,7 @@ public abstract class URLConnectionWebServiceCaller
    * @see #getInputStream(String, CallType, Map, String)
    */
   @Override
-  public final InputStream getInputStream(String uri)
+  public final HttpResponse getInputStream(String uri)
       throws CallException
   {
     return getInputStream(uri, CallType.Get, null, null);
@@ -93,7 +93,7 @@ public abstract class URLConnectionWebServiceCaller
    * @see #getInputStream(String, CallType, Map, Map, String, List)
    */
   @Override
-  public final InputStream getInputStream(String uri, CallType callType, Map<String, String> parameters, String body)
+  public final HttpResponse getInputStream(String uri, CallType callType, Map<String, String> parameters, String body)
       throws CallException
   {
     return getInputStream(uri, callType, null, parameters, body, null);
@@ -120,7 +120,7 @@ public abstract class URLConnectionWebServiceCaller
    * @see #getInputStream(String, CallType, Map, String)
    */
   @Override
-  public InputStream getInputStream(String uri, CallType callType, Map<String, String> headers,
+  public HttpResponse getInputStream(String uri, CallType callType, Map<String, String> headers,
       Map<String, String> parameters, String body, List<MultipartFile> files)
       throws CallException
   {
@@ -129,7 +129,10 @@ public abstract class URLConnectionWebServiceCaller
     try
     {
       httpURLConnection = performHttpRequest(uri, callType, headers, parameters, body, files);
-      return getContent(uri, callType, httpURLConnection);
+      final Map<String, List<String>> headerFields = httpURLConnection.getHeaderFields();
+      final InputStream inputStream = getContent(uri, callType, httpURLConnection);
+
+      return new HttpResponse(headerFields, inputStream);
     }
     catch (CallException exception)
     {

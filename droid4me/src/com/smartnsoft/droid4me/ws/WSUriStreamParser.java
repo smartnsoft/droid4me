@@ -23,7 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.smartnsoft.droid4me.bo.Business;
+import com.smartnsoft.droid4me.bo.Business.InputAtom;
 import com.smartnsoft.droid4me.bo.Business.Source;
+import com.smartnsoft.droid4me.ws.WebServiceCaller.HttpResponse;
 
 /**
  * An abstract class which implements its interface via web service calls.
@@ -210,13 +212,15 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   {
     final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
     final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
-    return new Business.InputAtom(new Date(), webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.headers, httpCallTypeAndBody.parameters, httpCallTypeAndBody.body, httpCallTypeAndBody.files));
+    final HttpResponse httpResponse = webServiceClient.getInputStream(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.headers, httpCallTypeAndBody.parameters, httpCallTypeAndBody.body, httpCallTypeAndBody.files);
+    return new Business.InputAtom(new Date(), httpResponse.inputStream, null, httpResponse.headers);
   }
 
   public final BusinessObjectType rawGetValue(ParameterType parameter)
       throws ParseExceptionType, WebServiceCaller.CallException
   {
-    return parse(parameter, getInputStream(computeUri(parameter)).inputStream);
+    final InputAtom inputAtom = getInputStream(computeUri(parameter));
+    return parse(parameter, inputAtom.headers, inputAtom.inputStream);
   }
 
   public final BusinessObjectType getValue(ParameterType parameter)
@@ -224,7 +228,8 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   {
     try
     {
-      return parse(parameter, getInputStream(computeUri(parameter)).inputStream);
+      final InputAtom inputAtom = getInputStream(computeUri(parameter));
+      return parse(parameter, inputAtom.headers, inputAtom.inputStream);
     }
     catch (Exception exception)
     {

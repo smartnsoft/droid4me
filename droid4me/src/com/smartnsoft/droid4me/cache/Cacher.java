@@ -328,7 +328,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
       markableInputStream = null;
     }
     // We first parse the input stream, so as to make sure that it is valid before persisting it
-    final BusinessObjectType businessObject = uriStreamParser.parse(parameter, markableInputStream);
+    final BusinessObjectType businessObject = uriStreamParser.parse(parameter, atom.headers, markableInputStream);
     boolean invokeOnNewInputStream = true;
     if (markableInputStream != null)
     {
@@ -392,7 +392,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     if (atom != null)
     {
       // If the input stream is null but not the atom, we return a null business object
-      return new Values.Info<BusinessObjectType>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.inputStream), atom.timestamp, Business.Source.IOStreamer);
+      return new Values.Info<BusinessObjectType>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.headers, atom.inputStream), atom.timestamp, Business.Source.IOStreamer);
     }
     return null;
   }

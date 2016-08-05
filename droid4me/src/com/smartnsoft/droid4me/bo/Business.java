@@ -29,6 +29,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import com.smartnsoft.droid4me.cache.Persistence;
 import com.smartnsoft.droid4me.log.Logger;
@@ -99,6 +101,8 @@ public final class Business
 
     public final Serializable context;
 
+    public final Map<String, List<String>> headers;
+
     public InputAtom(Date timestamp, InputStream inputStream)
     {
       this(timestamp, inputStream, null);
@@ -106,9 +110,15 @@ public final class Business
 
     public InputAtom(Date timestamp, InputStream inputStream, Serializable context)
     {
+      this(timestamp, inputStream, context, null);
+    }
+
+    public InputAtom(Date timestamp, InputStream inputStream, Serializable context, Map<String, List<String>> headers)
+    {
       super(timestamp);
       this.inputStream = inputStream;
       this.context = context;
+      this.headers = headers;
     }
 
   }
@@ -162,7 +172,7 @@ public final class Business
       extends Business.Urier<UriType, ParameterType>
   {
 
-    BusinessObjectType parse(ParameterType parameter, InputStream inputStream)
+    BusinessObjectType parse(ParameterType parameter, Map<String, List<String>> headers, InputStream inputStream)
         throws ExceptionType;
 
   }

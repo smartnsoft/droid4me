@@ -17,7 +17,6 @@
 
 package com.smartnsoft.droid4me.ws;
 
-import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -26,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import javax.net.ssl.SSLException;
 
+import com.smartnsoft.droid4me.ws.WebServiceCaller.HttpResponse;
 import com.smartnsoft.droid4me.ws.WebServiceCaller.MultipartFile;
 
 /**
@@ -334,7 +334,7 @@ public interface WebServiceClient
    * @return the input stream resulting to the HTTP request, which is taken from the response
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  InputStream getInputStream(String uri)
+  HttpResponse getInputStream(String uri)
       throws CallException;
 
   /**
@@ -349,7 +349,7 @@ public interface WebServiceClient
    * @return the input stream resulting to the HTTP request, which is taken from the response
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  InputStream getInputStream(String uri, WebServiceClient.CallType callType, Map<String, String> postParameters,
+  HttpResponse getInputStream(String uri, WebServiceClient.CallType callType, Map<String, String> postParameters,
       String body)
       throws WebServiceClient.CallException;
 
@@ -367,7 +367,7 @@ public interface WebServiceClient
    * @return the input stream resulting to the HTTP request, which is taken from the response
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  InputStream getInputStream(String uri, CallType callType, Map<String, String> headers,
+  HttpResponse getInputStream(String uri, CallType callType, Map<String, String> headers,
       Map<String, String> postParameters, String body, List<MultipartFile> files)
       throws CallException;
 
