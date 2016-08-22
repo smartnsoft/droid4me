@@ -53,7 +53,14 @@ public abstract class SmartAppCompatActivity<AggregateClass>
   @Override
   public Object getSystemService(String name)
   {
-    return droid4mizer.getSystemService(name, super.getSystemService(name));
+    if (Context.LAYOUT_INFLATER_SERVICE.equals(name) && getWindow() != null)
+    {
+      return droid4mizer.getSystemService(name, getWindow().getLayoutInflater());
+    }
+    else
+    {
+      return droid4mizer.getSystemService(name, super.getSystemService(name));
+    }
   }
 
   @Override
