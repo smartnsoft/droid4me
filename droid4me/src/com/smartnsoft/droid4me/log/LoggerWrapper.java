@@ -51,6 +51,10 @@ public class LoggerWrapper
   {
     synchronized (LoggerWrapper.instances)
     {
+      /**
+       * We do this because of concurrent acces on the list
+       * It could cause massive crashs when logging
+       */
       final Set<Entry<String, LoggerWrapper>> entries = new HashSet<Entry<String, LoggerWrapper>>(LoggerWrapper.instances.entrySet());
       for (Entry<String, LoggerWrapper> entry : entries)
       {
