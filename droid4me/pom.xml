@@ -7,12 +7,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>com.smartnsoft</groupId>
-    <artifactId>distribution</artifactId>
-    <version>1.1</version>
-  </parent>
-
+  <groupId>com.smartnsoft</groupId>
   <artifactId>droid4me</artifactId>
   <name>droid4me</name>
   <version>2.4.7</version>
@@ -406,6 +401,12 @@
       <id>bintray-smartnsoft-maven</id>
       <url>https://api.bintray.com/maven/smartnsoft/maven/droid4me/;publish=1</url>
     </repository>
+    <snapshotRepository>
+      <id>deployment</id>
+      <name>Internal Releases SNAPSHOT</name>
+      <url>
+        http://developer.smartnsoft.com:8081/nexus/content/repositories/snapshots/
+      </url>
+    </snapshotRepository>
   </distributionManagement>
-
 </project>
