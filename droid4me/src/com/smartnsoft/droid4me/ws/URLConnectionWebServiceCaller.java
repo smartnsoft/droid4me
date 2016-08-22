@@ -75,28 +75,28 @@ public abstract class URLConnectionWebServiceCaller
   protected abstract int getConnectTimeout();
 
   /**
-   * Equivalent to calling {@link #getInputStream(String, CallType, Map, String)} with {@code callType} parameter set to
+   * Equivalent to calling {@link #runRequest(String, CallType, Map, String)} with {@code callType} parameter set to
    * {@code CallType.Get} and {@code body} and {@code parameters} parameters set to {@code null}.
    *
-   * @see #getInputStream(String, CallType, Map, String)
+   * @see #runRequest(String, CallType, Map, String)
    */
   @Override
-  public final HttpResponse getInputStream(String uri)
+  public final HttpResponse runRequest(String uri)
       throws CallException
   {
-    return getInputStream(uri, CallType.Get, null, null);
+    return runRequest(uri, CallType.Get, null, null);
   }
 
   /**
-   * Equivalent to calling {@link #getInputStream(String, CallType, Map, Map, String, List)} with {@code headers} and the {@code file} parameters set to {@code null}.
+   * Equivalent to calling {@link #runRequest(String, CallType, Map, Map, String, List)} with {@code headers} and the {@code file} parameters set to {@code null}.
    *
-   * @see #getInputStream(String, CallType, Map, Map, String, List)
+   * @see #runRequest(String, CallType, Map, Map, String, List)
    */
   @Override
-  public final HttpResponse getInputStream(String uri, CallType callType, Map<String, String> parameters, String body)
+  public final HttpResponse runRequest(String uri, CallType callType, Map<String, String> parameters, String body)
       throws CallException
   {
-    return getInputStream(uri, callType, null, parameters, body, null);
+    return runRequest(uri, callType, null, parameters, body, null);
   }
 
   /**
@@ -116,11 +116,11 @@ public abstract class URLConnectionWebServiceCaller
    *                       Also if a connection issue occurred: the exception will {@link Throwable#getCause() embed} the cause of the exception. If the
    *                       {@link #isConnected()} method returns {@code false}, no request will be attempted and a {@link CallException}
    *                       exception will be thrown (embedding a {@link UnknownHostException} exception).
-   * @see #getInputStream(String)
-   * @see #getInputStream(String, CallType, Map, String)
+   * @see #runRequest(String)
+   * @see #runRequest(String, CallType, Map, String)
    */
   @Override
-  public HttpResponse getInputStream(String uri, CallType callType, Map<String, String> headers,
+  public HttpResponse runRequest(String uri, CallType callType, Map<String, String> headers,
       Map<String, String> parameters, String body, List<MultipartFile> files)
       throws CallException
   {
@@ -220,95 +220,100 @@ public abstract class URLConnectionWebServiceCaller
    *
    * @param uri           the web call initial URI
    * @param callType      the kind of request
-   * @param urlConnection the HttpURLConnection object
-   * @return the (decoded) input stream of the response
+   * @param urlConnection the {@link HttpURLConnection} object
+   * @return the (decoded) input stream of the response or null if the {@link CallType} <code>Verb.Head</code>
    * @throws IOException if some exception occurred while extracting the content of the response
    */
   protected InputStream getContent(String uri, CallType callType, HttpURLConnection urlConnection)
       throws IOException
   {
-    final InputStream content = urlConnection.getInputStream();
-    final InputStream markedContent;
-    int length = 0;
-
-    if (content.markSupported() == true)
+    if (callType.verb != Verb.Head)
     {
-      markedContent = content;
-      length = urlConnection.getContentLength();
+      final InputStream content = urlConnection.getInputStream();
+      final InputStream markedContent;
+      int length = 0;
+
+      if (content.markSupported() == true)
+      {
+        markedContent = content;
+        length = urlConnection.getContentLength();
+      }
+      else
+      {
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final byte[] buffer = new byte[8192];
+        int bufferLength = 0;
+
+        try
+        {
+          while ((bufferLength = content.read(buffer)) > 0)
+          {
+            length += bufferLength;
+            outputStream.write(buffer, 0, bufferLength);
+          }
+        }
+        catch (IndexOutOfBoundsException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.error("Could not copy the input stream corresponding to the HTTP response content", exception);
+          }
+
+          return content;
+        }
+
+        try
+        {
+          content.close();
+        }
+        catch (IOException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.error("Could not close the input stream corresponding to the HTTP response content", exception);
+          }
+        }
+
+        try
+        {
+          outputStream.close();
+        }
+        catch (IOException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.error("Could not close the input stream corresponding to the copy of the HTTP response content", exception);
+          }
+        }
+
+        markedContent = new ByteArrayInputStream(outputStream.toByteArray());
+      }
+
+      if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
+      {
+        try
+        {
+          markedContent.mark(length);
+          final String bodyAsString = getString(markedContent);
+          log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
+        }
+        catch (IOException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.warn("Cannot log the HTTP body of the response", exception);
+          }
+        }
+        finally
+        {
+          markedContent.reset();
+        }
+      }
+
+      return markedContent;
     }
-    else
-    {
-      final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-      final byte[] buffer = new byte[8192];
-      int bufferLength = 0;
 
-      try
-      {
-        while ((bufferLength = content.read(buffer)) > 0)
-        {
-          length += bufferLength;
-          outputStream.write(buffer, 0, bufferLength);
-        }
-      }
-      catch (IndexOutOfBoundsException exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.error("Could not copy the input stream corresponding to the HTTP response content", exception);
-        }
-
-        return content;
-      }
-
-      try
-      {
-        content.close();
-      }
-      catch (IOException exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.error("Could not close the input stream corresponding to the HTTP response content", exception);
-        }
-      }
-
-      try
-      {
-        outputStream.close();
-      }
-      catch (IOException exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.error("Could not close the input stream corresponding to the copy of the HTTP response content", exception);
-        }
-      }
-
-      markedContent = new ByteArrayInputStream(outputStream.toByteArray());
-    }
-
-    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
-    {
-      try
-      {
-        markedContent.mark(length);
-        final String bodyAsString = getString(markedContent);
-        log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
-      }
-      catch (IOException exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.warn("Cannot log the HTTP body of the response", exception);
-        }
-      }
-      finally
-      {
-        markedContent.reset();
-      }
-    }
-
-    return markedContent;
+    return null;
   }
 
   /**

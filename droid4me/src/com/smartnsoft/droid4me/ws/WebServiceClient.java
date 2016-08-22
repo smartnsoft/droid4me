@@ -331,10 +331,10 @@ public interface WebServiceClient
    * Is responsible to actually run the relevant HTTP method.
    *
    * @param uri the URI against which the HTTP request should be run
-   * @return the input stream resulting to the HTTP request, which is taken from the response
+   * @return a {@link HttpResponse} object that wraps the headers and the input stream resulting to the HTTP request, which are taken from the response
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  HttpResponse getInputStream(String uri)
+  HttpResponse runRequest(String uri)
       throws CallException;
 
   /**
@@ -346,10 +346,10 @@ public interface WebServiceClient
    *                       {@code null} otherwise
    * @param body           the string body of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
    *                       {@code null} otherwise
-   * @return the input stream resulting to the HTTP request, which is taken from the response
+   * @return a {@link HttpResponse} object that wraps the headers and the input stream resulting to the HTTP request, which are taken from the response
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  HttpResponse getInputStream(String uri, WebServiceClient.CallType callType, Map<String, String> postParameters,
+  HttpResponse runRequest(String uri, WebServiceClient.CallType callType, Map<String, String> postParameters,
       String body)
       throws WebServiceClient.CallException;
 
@@ -364,10 +364,10 @@ public interface WebServiceClient
    *                       {@code null} otherwise
    * @param files          the files of the HTTP method, in case of a {@link WebServiceClient.CallType#Post} or {@link WebServiceClient.CallType#Put} method;
    *                       {@code null} otherwise
-   * @return the input stream resulting to the HTTP request, which is taken from the response
+   * @return a {@link HttpResponse} object that wraps the headers and the input stream resulting to the HTTP request, which are taken from the response
    * @throws WebServiceClient.CallException in case an error occurred during the HTTP request execution, or if the HTTP request status code is not {@code 2XX}
    */
-  HttpResponse getInputStream(String uri, CallType callType, Map<String, String> headers,
+  HttpResponse runRequest(String uri, CallType callType, Map<String, String> headers,
       Map<String, String> postParameters, String body, List<MultipartFile> files)
       throws CallException;
 

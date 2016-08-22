@@ -97,11 +97,11 @@ public final class Business
       extends Business.Atom
   {
 
+    public final Map<String, List<String>> headers;
+
     public final InputStream inputStream;
 
     public final Serializable context;
-
-    public final Map<String, List<String>> headers;
 
     public InputAtom(Date timestamp, InputStream inputStream)
     {
@@ -110,15 +110,15 @@ public final class Business
 
     public InputAtom(Date timestamp, InputStream inputStream, Serializable context)
     {
-      this(timestamp, inputStream, context, null);
+      this(timestamp, null, inputStream, context);
     }
 
-    public InputAtom(Date timestamp, InputStream inputStream, Serializable context, Map<String, List<String>> headers)
+    public InputAtom(Date timestamp, Map<String, List<String>> headers, InputStream inputStream, Serializable context)
     {
       super(timestamp);
+      this.headers = headers;
       this.inputStream = inputStream;
       this.context = context;
-      this.headers = headers;
     }
 
   }
