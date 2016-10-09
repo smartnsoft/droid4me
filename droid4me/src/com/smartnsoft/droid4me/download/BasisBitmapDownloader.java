@@ -785,7 +785,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
               // We want to make sure that the process resumes if a problem occurred during the retrieval of the bitmap
               if (log.isWarnEnabled())
               {
-                log.warn(logCommandId() + "An unattended problem occured while retrieving the bitmap with uid '" + bitmapUid + "' corresponding to the URL '" + url + "'", throwable);
+                log.warn(logCommandId() + "An unattended problem occurred while retrieving the bitmap with uid '" + bitmapUid + "' corresponding to the URL '" + url + "'", throwable);
               }
             }
             bitmap = retrievedBitmap;
