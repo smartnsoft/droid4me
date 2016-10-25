@@ -130,9 +130,10 @@ public abstract class URLConnectionWebServiceCaller
     {
       httpURLConnection = performHttpRequest(uri, callType, headers, parameters, body, files);
       final Map<String, List<String>> headerFields = httpURLConnection.getHeaderFields();
+      final int statusCode = httpURLConnection.getResponseCode();
       final InputStream inputStream = getContent(uri, callType, httpURLConnection);
 
-      return new HttpResponse(headerFields, inputStream);
+      return new HttpResponse(headerFields, statusCode, inputStream);
     }
     catch (CallException exception)
     {

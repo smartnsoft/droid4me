@@ -72,11 +72,14 @@ public abstract class WebServiceCaller
 
     public final Map<String, List<String>> headers;
 
+    public final int statusCode;
+
     public final InputStream inputStream;
 
-    public HttpResponse(Map<String, List<String>> headers, InputStream inputStream)
+    public HttpResponse(Map<String, List<String>> headers, int statusCode, InputStream inputStream)
     {
       this.headers = headers;
+      this.statusCode = statusCode;
       this.inputStream = inputStream;
     }
 
