@@ -417,6 +417,10 @@ public abstract class URLConnectionWebServiceCaller
               logBuilder.append(" Content-Type: " + file.contentType);
             }
           }
+          else
+          {
+            logBuilder.append(transformPostParametersToDataString(paramaters));
+          }
         }
         else if (paramaters != null && paramaters.size() > 0)
         {
