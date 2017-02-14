@@ -404,7 +404,7 @@
       <id>deployment</id>
       <name>Internal Releases SNAPSHOT</name>
       <url>
-        http://nexus2.smartnsoft.com/nexus/content/repository/snapshots/
+        http://nexus2.smartnsoft.com/nexus/content/repositories/snapshots/
       </url>
     </snapshotRepository>
   </distributionManagement>
