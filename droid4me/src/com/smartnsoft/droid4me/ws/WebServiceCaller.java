@@ -18,22 +18,15 @@
 
 package com.smartnsoft.droid4me.ws;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
+import org.json.JSONException;
+
+import java.io.*;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
-
-import org.json.JSONException;
 
 /**
  * A basis class for making web service calls easier.
@@ -55,14 +48,14 @@ public abstract class WebServiceCaller
 
     public final String contentType;
 
-    public final FileInputStream fileInputStream;
+    public final InputStream inputStream;
 
-    public MultipartFile(String name, String fileName, String contentType, FileInputStream fileInputStream)
+    public MultipartFile(String name, String fileName, String contentType, InputStream inputStream)
     {
       this.name = name;
       this.fileName = fileName;
       this.contentType = contentType;
-      this.fileInputStream = fileInputStream;
+      this.inputStream = inputStream;
     }
 
   }
@@ -72,11 +65,14 @@ public abstract class WebServiceCaller
 
     public final Map<String, List<String>> headers;
 
+    public final int statusCode;
+
     public final InputStream inputStream;
 
-    public HttpResponse(Map<String, List<String>> headers, InputStream inputStream)
+    public HttpResponse(Map<String, List<String>> headers, int statusCode, InputStream inputStream)
     {
       this.headers = headers;
+      this.statusCode = statusCode;
       this.inputStream = inputStream;
     }
 
