@@ -18,10 +18,15 @@
 
 package com.smartnsoft.droid4me.ws;
 
-import com.smartnsoft.droid4me.log.Logger;
-import com.smartnsoft.droid4me.log.LoggerFactory;
-
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -29,6 +34,9 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * * A basis class for making web service calls easier.
@@ -350,6 +358,7 @@ public abstract class URLConnectionWebServiceCaller
       }
     }
 
+    httpURLConnection.setInstanceFollowRedirects(true);
     httpURLConnection.setReadTimeout(getReadTimeout());
     httpURLConnection.setConnectTimeout(getConnectTimeout());
     httpURLConnection.setDoInput(true);
