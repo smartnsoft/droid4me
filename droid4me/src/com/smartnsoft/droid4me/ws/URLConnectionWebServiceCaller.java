@@ -62,17 +62,13 @@ public abstract class URLConnectionWebServiceCaller
     extends WebServiceCaller
 {
 
+  protected final static Logger log = LoggerFactory.getInstance(URLConnectionWebServiceCaller.class);
+
   private final static String BOUNDARY = "URLConnectionWebServiceCaller";
 
   private final static String HYPHEN_HYPHEN = "--";
 
   private final static String NEW_LINE = "\r\n";
-
-  protected final static Logger log = LoggerFactory.getInstance(URLConnectionWebServiceCaller.class);
-
-  protected abstract int getReadTimeout();
-
-  protected abstract int getConnectTimeout();
 
   /**
    * Equivalent to calling {@link #runRequest(String, CallType, Map, String)} with {@code callType} parameter set to
@@ -151,6 +147,10 @@ public abstract class URLConnectionWebServiceCaller
       }
     }
   }
+
+  protected abstract int getReadTimeout();
+
+  protected abstract int getConnectTimeout();
 
   /**
    * Invoked when the result of the HTTP request is not <code>20X</code>. The default implementation logs the problem and throws an exception.
@@ -283,7 +283,8 @@ public abstract class URLConnectionWebServiceCaller
         {
           if (log.isWarnEnabled())
           {
-            log.error("Could not close the input stream corresponding to the copy of the HTTP response content", exception);
+            log.error("Could not close the input stream corresponding to the copy of the HTTP response content",
+                exception);
           }
         }
 
@@ -315,6 +316,13 @@ public abstract class URLConnectionWebServiceCaller
     }
 
     return null;
+  }
+
+  protected HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
+      Map<String, String> parameters, String body, List<MultipartFile> files)
+      throws IOException, CallException
+  {
+    return performHttpRequest(uri, callType, headers, parameters, body, files, 0);
   }
 
   /**
@@ -350,7 +358,8 @@ public abstract class URLConnectionWebServiceCaller
     {
       if (files != null && files.size() > 0)
       {
-        httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
+        httpURLConnection.setRequestProperty("Content-Type",
+            "multipart/form-data; boundary=" + URLConnectionWebServiceCaller.BOUNDARY);
       }
       else
       {
@@ -358,31 +367,30 @@ public abstract class URLConnectionWebServiceCaller
       }
     }
 
-    httpURLConnection.setInstanceFollowRedirects(true);
     httpURLConnection.setReadTimeout(getReadTimeout());
     httpURLConnection.setConnectTimeout(getConnectTimeout());
     httpURLConnection.setDoInput(true);
 
     switch (callType.verb)
     {
-    default:
-    case Get:
-      httpURLConnection.setRequestMethod("GET");
-      break;
-    case Head:
-      httpURLConnection.setRequestMethod("HEAD");
-      break;
-    case Post:
-      httpURLConnection.setRequestMethod("POST");
-      httpURLConnection.setDoOutput(true);
-      break;
-    case Put:
-      httpURLConnection.setRequestMethod("PUT");
-      httpURLConnection.setDoOutput(true);
-      break;
-    case Delete:
-      httpURLConnection.setRequestMethod("DELETE");
-      break;
+      default:
+      case Get:
+        httpURLConnection.setRequestMethod("GET");
+        break;
+      case Head:
+        httpURLConnection.setRequestMethod("HEAD");
+        break;
+      case Post:
+        httpURLConnection.setRequestMethod("POST");
+        httpURLConnection.setDoOutput(true);
+        break;
+      case Put:
+        httpURLConnection.setRequestMethod("PUT");
+        httpURLConnection.setDoOutput(true);
+        break;
+      case Delete:
+        httpURLConnection.setRequestMethod("DELETE");
+        break;
     }
 
     if (headers != null && headers.size() > 0)
@@ -405,7 +413,8 @@ public abstract class URLConnectionWebServiceCaller
             {
               for (final Entry<String, String> parameter : paramaters.entrySet())
               {
-                logBuilder.append(" " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+                logBuilder.append(
+                    " " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
                 logBuilder.append(" Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
                 logBuilder.append(" " + parameter.getValue());
               }
@@ -413,8 +422,10 @@ public abstract class URLConnectionWebServiceCaller
 
             for (final MultipartFile file : files)
             {
-              logBuilder.append(" " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
-              logBuilder.append(" Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+              logBuilder.append(
+                  " " + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+              logBuilder.append(
+                  " Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
               logBuilder.append(" Content-Type: " + file.contentType);
             }
           }
@@ -435,7 +446,8 @@ public abstract class URLConnectionWebServiceCaller
 
         try
         {
-          curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(" \"").append(uri).append("\"");
+          curlSb.append("\n>> ").append("curl --request ").append(callType.toString().toUpperCase()).append(
+              " \"").append(uri).append("\"");
 
           if (logBuilder != null && "".equals(logBuilder.toString()) == false)
           {
@@ -448,7 +460,8 @@ public abstract class URLConnectionWebServiceCaller
             {
               for (final String headerValue : header.getValue())
               {
-                curlSb.append(" --header \"").append(header.getKey()).append(": ").append(headerValue.replace("\"", "\\\"")).append("\"");
+                curlSb.append(" --header \"").append(header.getKey()).append(": ").append(
+                    headerValue.replace("\"", "\\\"")).append("\"");
               }
             }
           }
@@ -458,7 +471,8 @@ public abstract class URLConnectionWebServiceCaller
           // We simply ignore the issue because it is only a debug feature
         }
 
-        log.debug("Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + (logCurlCommand == true ? curlSb.toString() : ""));
+        log.debug(
+            "Running the HTTP " + callType + " request '" + uri + "'" + sb.toString() + (logCurlCommand == true ? curlSb.toString() : ""));
       }
       catch (Exception exception)
       {
@@ -477,8 +491,10 @@ public abstract class URLConnectionWebServiceCaller
         {
           for (final Entry<String, String> parameter : paramaters.entrySet())
           {
-            outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
-            outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
+            outputStream.writeBytes(
+                URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
+            outputStream.writeBytes(
+                URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + parameter.getKey() + "\"");
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
             outputStream.write(parameter.getValue().getBytes(getContentEncoding()));
             outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE);
@@ -489,7 +505,8 @@ public abstract class URLConnectionWebServiceCaller
         for (final MultipartFile file : files)
         {
           outputStream.writeBytes(URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY);
-          outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
+          outputStream.writeBytes(
+              URLConnectionWebServiceCaller.NEW_LINE + "Content-Disposition: form-data; name=\"" + file.name + "\"; filename=\"" + file.fileName + "\"");
           outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + "Content-Type: " + file.contentType);
           outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.NEW_LINE);
           outputStream.flush();
@@ -509,7 +526,8 @@ public abstract class URLConnectionWebServiceCaller
           }
         }
 
-        outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.NEW_LINE);
+        outputStream.writeBytes(
+            URLConnectionWebServiceCaller.NEW_LINE + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.BOUNDARY + URLConnectionWebServiceCaller.HYPHEN_HYPHEN + URLConnectionWebServiceCaller.NEW_LINE);
         outputStream.writeBytes(URLConnectionWebServiceCaller.NEW_LINE);
         outputStream.flush();
         outputStream.close();
@@ -522,7 +540,8 @@ public abstract class URLConnectionWebServiceCaller
       if ("".equals(body) == false && body != null)
       {
         final OutputStream outputStream = httpURLConnection.getOutputStream();
-        final BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, getContentEncoding()));
+        final BufferedWriter bufferedWriter = new BufferedWriter(
+            new OutputStreamWriter(outputStream, getContentEncoding()));
         bufferedWriter.write(body);
         bufferedWriter.flush();
         bufferedWriter.close();
@@ -547,32 +566,28 @@ public abstract class URLConnectionWebServiceCaller
             responseHeadersSb.append(",");
           }
 
-          responseHeadersSb.append("(\"").append(header.getKey()).append(": ").append(headerValue.replace("\"", "\\\"")).append("\")");
+          responseHeadersSb.append("(\"").append(header.getKey()).append(": ").append(
+              headerValue.replace("\"", "\\\"")).append("\")");
         }
       }
     }
 
     if (log.isDebugEnabled() == true)
     {
-      log.debug("The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + responseCode + (responseHeadersSb.length() <= 0 ? "" : " with the HTTP headers:" + responseHeadersSb.toString()));
+      log.debug(
+          "The call to the HTTP " + callType + " request '" + uri + "' took " + (System.currentTimeMillis() - start) + " ms and returned the status code " + responseCode + (responseHeadersSb.length() <= 0 ? "" : " with the HTTP headers:" + responseHeadersSb.toString()));
     }
 
     if (!(responseCode >= HttpURLConnection.HTTP_OK && responseCode < HttpURLConnection.HTTP_MULT_CHOICE))
     {
-      if (onStatusCodeNotOk(uri, callType, paramaters, body, httpURLConnection, url, responseCode, responseMessage, attemptsCount + 1) == true)
+      if (onStatusCodeNotOk(uri, callType, paramaters, body, httpURLConnection, url, responseCode, responseMessage,
+          attemptsCount + 1) == true)
       {
         return performHttpRequest(uri, callType, headers, paramaters, body, files, attemptsCount + 1);
       }
     }
 
     return httpURLConnection;
-  }
-
-  protected HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
-      Map<String, String> parameters, String body, List<MultipartFile> files)
-      throws IOException, CallException
-  {
-    return performHttpRequest(uri, callType, headers, parameters, body, files, 0);
   }
 
   private String transformPostParametersToDataString(Map<String, String> params)
