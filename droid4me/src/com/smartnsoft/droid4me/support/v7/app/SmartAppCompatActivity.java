@@ -32,6 +32,7 @@ import android.view.MenuItem;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.SmartableActivity;
+import com.smartnsoft.droid4me.support.v4.app.SmartFragmentActivity;
 
 /**
  * @author Jocelyn Girard
@@ -43,6 +44,7 @@ public abstract class SmartAppCompatActivity<AggregateClass>
 {
 
   private final Droid4mizer<AggregateClass, SmartAppCompatActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartAppCompatActivity<AggregateClass>>(this, this, this, null);
+  private final Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>> droid4mizer = new Droid4mizer<AggregateClass, SmartFragmentActivity<AggregateClass>>(this, this, this, null);
 
   @Override
   public LayoutInflater getLayoutInflater()

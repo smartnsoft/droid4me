@@ -39,7 +39,7 @@ public abstract class SmartPreferenceFragmentCompat<AggregateClass>
   public void onAttach(Activity activity)
   {
     super.onAttach(activity);
-    droid4mizer = new Droid4mizer<>(getActivity(), this, this, this);
+    droid4mizer = new Droid4mizer<AggregateClass, SmartPreferenceFragmentCompat<AggregateClass>>(getActivity(), this, this, this);
     droid4mizer.onAttached(activity);
   }
 
