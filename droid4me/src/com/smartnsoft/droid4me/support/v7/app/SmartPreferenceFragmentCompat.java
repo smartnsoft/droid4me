@@ -17,8 +17,6 @@ import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.Smartable;
 
 /**
- * The class description here.
- *
  * @author Adrien Vitti
  * @since 2016.08.11
  */
