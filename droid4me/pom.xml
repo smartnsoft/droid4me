@@ -133,6 +133,12 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>android.support</groupId>
+      <artifactId>compatibility-v7-preference</artifactId>
+      <version>23.1.1</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>de.mindpipe.android</groupId>
       <artifactId>android-logging-log4j</artifactId>
       <version>1.0.3</version>
