@@ -32,6 +32,7 @@ import android.view.MenuItem;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.SmartableActivity;
+import com.smartnsoft.droid4me.support.v4.app.SmartFragmentActivity;
 
 /**
  * @author Jocelyn Girard
