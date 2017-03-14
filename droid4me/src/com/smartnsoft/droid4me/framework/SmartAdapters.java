@@ -36,7 +36,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * Gathers in one place some classes used by the {@link com.smartnsoft.droid4me.app.SmartActivity} class, which handles
- * {@link android.widget.ListView list views}.
+ * {@link ListView list views}.
  *
  * @author Édouard Mercier
  * @since 2011.09.27
@@ -44,7 +44,24 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public abstract class SmartAdapters
 {
 
-  protected static final Logger log = LoggerFactory.getInstance("SmartAdapters");
+  /**
+   * To capture how the simplified {@link BasisBusinessViewWrapper} work.
+   *
+   * @param <BusinessObjectClass> the business object class in relation with the {@link BasisBusinessViewWrapper} first type parameter
+   * @param <ActivityClass>       the {@link Activity} class in relation with the {@link BasisBusinessViewWrapper} second type parameter
+   * @param <LayoutInflaterClass> the {@link LayoutInflater} class in relation with the {@link BasisBusinessViewWrapper} third type parameter
+   * @see BasisBusinessViewWrapper
+   * @since 2014.05.23
+   */
+  public interface BusinessViewWrapperSimplified<BusinessObjectClass, ActivityClass extends Activity, LayoutInflaterClass extends LayoutInflater>
+  {
+
+    int getType(int position, BusinessObjectClass businessObjectClass);
+
+    View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflator, ViewGroup parent,
+        BusinessObjectClass businessObject);
+
+  }
 
   /**
    * Indicates the type of action on the underlying business object.
@@ -55,13 +72,14 @@ public abstract class SmartAdapters
   }
 
   /**
-   * Wraps a business object and its underlying Android {@link android.view.View} in a list or a grid, or whatever kind of {@link Adapter}.
+   * Wraps a business object and its underlying Android {@link View} in a list or a grid, or whatever kind of {@link Adapter}.
    *
    * @param <BusinessObjectClass> the business object class which is represented by the current wrapper
    * @param <ActivityClass>       the {@link Activity} class which will host the current wrapper graphical representation
+   * @param <LayoutInflaterClass> the {@link LayoutInflater} class which will inflate the current wrapper layout
    * @since 2014.05.23
    */
-  protected static abstract class BasicBusinessViewWrapper<BusinessObjectClass, ActivityClass extends Activity, ViewAttributesType>
+  protected static abstract class BasicBusinessViewWrapper<BusinessObjectClass, ActivityClass extends Activity, LayoutInflaterClass extends LayoutInflater, ViewAttributesType>
   {
 
     /**
@@ -99,31 +117,6 @@ public abstract class SmartAdapters
       return 0;
     }
 
-    /**
-     * Is responsible for creating a new {@link View}, which is able to represent the provided business object.
-     *
-     * @param activity            the Activity which hosts the view
-     * @param parent              the parent view, as provided by the {@link Adapter#getView(int, View, ViewGroup)} method
-     * @param businessObjectClass the business object the returned view will represent graphically
-     * @return a new view, which will be used by the underlying {@link Adapter}
-     */
-    protected abstract View createNewView(ActivityClass activity, ViewGroup parent,
-        BusinessObjectClass businessObjectClass);
-
-    protected abstract ViewAttributesType extractNewViewAttributes(ActivityClass activity, View view,
-        BusinessObjectClass businessObjectClass);
-
-    protected abstract void updateView(ActivityClass activity, ViewAttributesType viewAttributes, View view,
-        BusinessObjectClass businessObjectClass, int position);
-
-    /**
-     * @return the {@link Object#hashCode()} value, by default
-     */
-    protected long getId(BusinessObjectClass businessObject)
-    {
-      return businessObject == null ? BusinessViewWrapper.DEFAULT_ITEM_ID : businessObject.hashCode();
-    }
-
     public final long getId()
     {
       return getId(getBusinessObject());
@@ -149,48 +142,36 @@ public abstract class SmartAdapters
       return true;
     }
 
-    public final Intent computeIntent(ActivityClass activity, View view, SmartAdapters.ObjectEvent objectEvent,
+    public final Intent computeIntent(ActivityClass activity, View view, ObjectEvent objectEvent,
         int position)
     {
-      return computeIntent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent, position);
+      return computeIntent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent,
+          position);
     }
 
     public Intent computeIntent(ActivityClass activity, Object viewAttributes, View view,
-        BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position)
+        BusinessObjectClass businessObject, ObjectEvent objectEvent, int position)
     {
       return null;
     }
 
-    public final boolean onObjectEvent(ActivityClass activity, View view, SmartAdapters.ObjectEvent objectEvent,
+    public final boolean onObjectEvent(ActivityClass activity, View view, ObjectEvent objectEvent,
         int position)
     {
-      return onObjectEvent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent, position);
+      return onObjectEvent(activity, (view == null ? null : view.getTag()), view, getBusinessObject(), objectEvent,
+          position);
     }
 
     public boolean onObjectEvent(ActivityClass activity, Object viewAttributes, View view,
-        BusinessObjectClass businessObject, SmartAdapters.ObjectEvent objectEvent, int position)
+        BusinessObjectClass businessObject, ObjectEvent objectEvent, int position)
     {
       return false;
     }
 
-    public final View getNewView(ViewGroup parent, ActivityClass activity)
+    public final View getNewView(ViewGroup parent, ActivityClass activity, LayoutInflaterClass layoutInflater)
     {
-      final View view = createNewView(activity, parent, getBusinessObject());
+      final View view = createNewView(activity, layoutInflater, parent, getBusinessObject());
       return setNewView(activity, view);
-    }
-
-    /**
-     * Attaches a view to the underlying business object.
-     *
-     * @param activity the activity the view belongs to
-     * @param view     the view to attach
-     * @return the provided view
-     */
-    final View setNewView(ActivityClass activity, View view)
-    {
-      final Object viewAttributes = extractNewViewAttributes(activity, view, getBusinessObject());
-      view.setTag(viewAttributes);
-      return view;
     }
 
     /**
@@ -211,6 +192,45 @@ public abstract class SmartAdapters
       updateView(activity, viewAttributes, view, getBusinessObject(), position);
     }
 
+    /**
+     * Is responsible for creating a new {@link View}, which is able to represent the provided business object.
+     *
+     * @param activity            the Activity which hosts the view
+     * @param parent              the parent view, as provided by the {@link Adapter#getView(int, View, ViewGroup)} method
+     * @param businessObjectClass the business object the returned view will represent graphically
+     * @return a new view, which will be used by the underlying {@link Adapter}
+     */
+    protected abstract View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflater, ViewGroup parent,
+        BusinessObjectClass businessObjectClass);
+
+    protected abstract ViewAttributesType extractNewViewAttributes(ActivityClass activity, View view,
+        BusinessObjectClass businessObjectClass);
+
+    protected abstract void updateView(ActivityClass activity, ViewAttributesType viewAttributes, View view,
+        BusinessObjectClass businessObjectClass, int position);
+
+    /**
+     * @return the {@link Object#hashCode()} value, by default
+     */
+    protected long getId(BusinessObjectClass businessObject)
+    {
+      return businessObject == null ? BusinessViewWrapper.DEFAULT_ITEM_ID : businessObject.hashCode();
+    }
+
+    /**
+     * Attaches a view to the underlying business object.
+     *
+     * @param activity the activity the view belongs to
+     * @param view     the view to attach
+     * @return the provided view
+     */
+    final View setNewView(ActivityClass activity, View view)
+    {
+      final Object viewAttributes = extractNewViewAttributes(activity, view, getBusinessObject());
+      view.setTag(viewAttributes);
+      return view;
+    }
+
   }
 
   /**
@@ -218,10 +238,11 @@ public abstract class SmartAdapters
    *
    * @param <BusinessObjectClass> the business object class which is represented by the current wrapper
    * @param <ActivityClass>       the {@link Activity} class which will host the current wrapper graphical representation
+   * @param <LayoutInflaterClass> the {@link LayoutInflater} class which will inflate the current wrapper layout
    * @since 2014.05.23
    */
-  public static abstract class BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass extends Activity>
-      extends SmartAdapters.BasicBusinessViewWrapper<BusinessObjectClass, ActivityClass, Object>
+  public static abstract class BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass extends Activity, LayoutInflaterClass extends LayoutInflater>
+      extends BasicBusinessViewWrapper<BusinessObjectClass, ActivityClass, LayoutInflaterClass, Object>
   {
 
     public BasisBusinessViewWrapper(BusinessObjectClass businessObject)
@@ -239,7 +260,7 @@ public abstract class SmartAdapters
    * @since 2009.04.29
    */
   public static abstract class BusinessViewWrapper<BusinessObjectClass>
-      extends SmartAdapters.BasisBusinessViewWrapper<BusinessObjectClass, Activity>
+      extends BasisBusinessViewWrapper<BusinessObjectClass, Activity, LayoutInflater>
   {
 
     public BusinessViewWrapper(BusinessObjectClass businessObject)
@@ -250,32 +271,16 @@ public abstract class SmartAdapters
   }
 
   /**
-   * To capture how the simplified {@link SmartAdapters.BasisBusinessViewWrapper} work.
-   *
-   * @param <BusinessObjectClass> the business object class in relation with the {@link BasisBusinessViewWrapper} first type parameter
-   * @param <ActivityClass>       the {@link Activity} class in relation with the {@link BasisBusinessViewWrapper} second type parameter
-   * @see SmartAdapters.BasisBusinessViewWrapper
-   * @since 2014.05.23
-   */
-  public interface BusinessViewWrapperSimplified<BusinessObjectClass, ActivityClass extends Activity>
-  {
-
-    int getType(int position, BusinessObjectClass businessObjectClass);
-
-    View createNewView(ActivityClass activity, ViewGroup parent, BusinessObjectClass businessObject);
-
-  }
-
-  /**
    * An implementation which has been introduced so as to prevent from code duplication.
    *
    * @param <BusinessObjectClass> the business object class in relation with the {@link BasisBusinessViewWrapper} first type parameter
    * @param <ActivityClass>       the {@link Activity} class in relation with the {@link BasisBusinessViewWrapper} second type parameter
-   * @see SmartAdapters.BasisBusinessViewWrapper
+   * @param <LayoutInflaterClass> the {@link LayoutInflater} class in relation with the {@link BasisBusinessViewWrapper} third parameter
+   * @see BasisBusinessViewWrapper
    * @since 2014.05.23
    */
-  public static class BusinessViewWrapperSimplifier<BusinessObjectClass, ActivityClass extends Activity>
-      implements SmartAdapters.BusinessViewWrapperSimplified<BusinessObjectClass, ActivityClass>
+  public static class BusinessViewWrapperSimplifier<BusinessObjectClass, ActivityClass extends Activity, LayoutInflaterClass extends LayoutInflater>
+      implements BusinessViewWrapperSimplified<BusinessObjectClass, ActivityClass, LayoutInflaterClass>
   {
 
     public final int type;
@@ -295,7 +300,8 @@ public abstract class SmartAdapters
     }
 
     @Override
-    public View createNewView(ActivityClass activity, ViewGroup parent, BusinessObjectClass businessObject)
+    public View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflator, ViewGroup parent,
+        BusinessObjectClass businessObject)
     {
       // It is important that the activity itself be used as a basis context, otherwise, the inflated View context is limited!
       return activity.getLayoutInflater().inflate(layoutResourceId, parent, false);
@@ -305,23 +311,25 @@ public abstract class SmartAdapters
 
   /**
    * A basic wrapper implementation, which lets specify its {@link #getType(int, Object)} and representation layout identifier used to
-   * {@link LayoutInflater#inflate(int, android.view.ViewGroup) inflate it}.
+   * {@link LayoutInflater#inflate(int, ViewGroup) inflate it}.
    *
    * @param <BusinessObjectClass> the business object class which is represented by the current wrapper
    * @param <ActivityClass>       the {@link Activity} class which will host the current wrapper graphical representation
+   * @param <LayoutInflaterClass> the {@link LayoutInflater} class which will inflate the current wrapper layout
    * @since 2014.05.23
    */
-  public static abstract class BasisSimpleBusinessViewWrapper<BusinessObjectClass, ActivityClass extends Activity>
-      extends SmartAdapters.BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass>
-      implements SmartAdapters.BusinessViewWrapperSimplified<BusinessObjectClass, ActivityClass>
+  public static abstract class BasisSimpleBusinessViewWrapper<BusinessObjectClass, ActivityClass extends Activity, LayoutInflaterClass extends LayoutInflater>
+      extends BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass, LayoutInflaterClass>
+      implements BusinessViewWrapperSimplified<BusinessObjectClass, ActivityClass, LayoutInflaterClass>
   {
 
-    protected final SmartAdapters.BusinessViewWrapperSimplifier<BusinessObjectClass, ActivityClass> simplifier;
+    protected final BusinessViewWrapperSimplifier<BusinessObjectClass, ActivityClass, LayoutInflaterClass> simplifier;
 
     public BasisSimpleBusinessViewWrapper(BusinessObjectClass businessObject, int type, int layoutResourceId)
     {
       super(businessObject);
-      this.simplifier = new SmartAdapters.BusinessViewWrapperSimplifier<BusinessObjectClass, ActivityClass>(type, layoutResourceId);
+      this.simplifier = new BusinessViewWrapperSimplifier<BusinessObjectClass, ActivityClass, LayoutInflaterClass>(type,
+          layoutResourceId);
     }
 
     @Override
@@ -331,9 +339,10 @@ public abstract class SmartAdapters
     }
 
     @Override
-    public View createNewView(ActivityClass activity, ViewGroup parent, BusinessObjectClass businessObject)
+    public View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflator, ViewGroup parent,
+        BusinessObjectClass businessObject)
     {
-      return simplifier.createNewView(activity, parent, businessObject);
+      return simplifier.createNewView(activity, layoutInflator, parent, businessObject);
     }
 
   }
@@ -345,16 +354,17 @@ public abstract class SmartAdapters
    * @param <BusinessObjectClass> the business object class which is represented by the current wrapper
    */
   public static abstract class SimpleBusinessViewWrapper<BusinessObjectClass>
-      extends SmartAdapters.BusinessViewWrapper<BusinessObjectClass>
-      implements SmartAdapters.BusinessViewWrapperSimplified<BusinessObjectClass, Activity>
+      extends BusinessViewWrapper<BusinessObjectClass>
+      implements BusinessViewWrapperSimplified<BusinessObjectClass, Activity, LayoutInflater>
   {
 
-    protected final SmartAdapters.BusinessViewWrapperSimplifier<BusinessObjectClass, Activity> simplifier;
+    protected final BusinessViewWrapperSimplifier<BusinessObjectClass, Activity, LayoutInflater> simplifier;
 
     public SimpleBusinessViewWrapper(BusinessObjectClass businessObject, int type, int layoutResourceId)
     {
       super(businessObject);
-      this.simplifier = new SmartAdapters.BusinessViewWrapperSimplifier<BusinessObjectClass, Activity>(type, layoutResourceId);
+      this.simplifier = new BusinessViewWrapperSimplifier<BusinessObjectClass, Activity, LayoutInflater>(type,
+          layoutResourceId);
     }
 
     @Override
@@ -364,34 +374,37 @@ public abstract class SmartAdapters
     }
 
     @Override
-    public View createNewView(Activity activity, ViewGroup parent, BusinessObjectClass businessObject)
+    public View createNewView(Activity activity, LayoutInflater layoutInflater, ViewGroup parent,
+        BusinessObjectClass businessObject)
     {
-      return simplifier.createNewView(activity, parent, businessObject);
+      return simplifier.createNewView(activity, layoutInflater, parent, businessObject);
     }
 
   }
 
   /**
-   * This class wraps the {@link SmartAdapters.BusinessViewWrapper} when not used inside a {@link android.widget.ListView list}.
+   * This class wraps the {@link BusinessViewWrapper} when not used inside a {@link ListView list}.
    *
    * @param <BusinessObjectClass> the business object class which is represented by the current wrapper
+   * @param <ActivityClass>       the {@link Activity} class which will host the current wrapper graphical representation
+   * @param <LayoutInflaterClass> the {@link LayoutInflater} class which will inflate the current wrapper layout
    * @since 2014.05.23
    */
-  public static class BasisBusinessViewHolder<BusinessObjectClass, ActivityClass extends Activity>
+  public static class BasisBusinessViewHolder<BusinessObjectClass, ActivityClass extends Activity, LayoutInflaterClass extends LayoutInflater>
   {
 
-    private final SmartAdapters.BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass> businessViewWrapper;
+    private final BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass, LayoutInflaterClass> businessViewWrapper;
 
     private View view;
 
     public BasisBusinessViewHolder(
-        SmartAdapters.BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass> businessViewWrapper)
+        BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass, LayoutInflaterClass> businessViewWrapper)
     {
       this.businessViewWrapper = businessViewWrapper;
     }
 
     /**
-     * Is allowed to be invoked once the {@link #getView(ViewGroup, Activity)} or {@link #setView(ActivityClass, View)} method has been called.
+     * Is allowed to be invoked once the {@link #getView(ViewGroup, Activity, LayoutInflater)} or {@link #setView(ActivityClass, View)} method has been called.
      *
      * @return the view which represents the underlying business object
      */
@@ -403,7 +416,7 @@ public abstract class SmartAdapters
     /**
      * @return the wrapper passed in the constructor
      */
-    public final SmartAdapters.BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass> getBusinessViewWrapper()
+    public final BasisBusinessViewWrapper<BusinessObjectClass, ActivityClass, LayoutInflaterClass> getBusinessViewWrapper()
     {
       return businessViewWrapper;
     }
@@ -417,20 +430,20 @@ public abstract class SmartAdapters
      * This method should be called only once during the object life cycle.
      * <p/>
      * <p>
-     * This will invoke the {@link BusinessViewWrapper#getNewView(ViewGroup, ActivityClass)} method.
+     * This will invoke the {@link BusinessViewWrapper#getNewView(ViewGroup, ActivityClass, LayoutInflaterClass)} method.
      * </p>
      *
      * @param activity the activity on which the business object is being rendered
      * @return the initialized view that represent the underlying business object
      */
-    public final View getView(ViewGroup parent, ActivityClass activity)
+    public final View getView(ViewGroup parent, ActivityClass activity, LayoutInflaterClass layoutInflater)
     {
-      view = businessViewWrapper.getNewView(parent, activity);
+      view = businessViewWrapper.getNewView(parent, activity, layoutInflater);
       return view;
     }
 
     /**
-     * Sets the view of the of the underlying business view wrapper, so that it is not necessary to invoke the {@link #getView(ViewGroup, Activity)} method.
+     * Sets the view of the of the underlying business view wrapper, so that it is not necessary to invoke the {@link #getView(ViewGroup, Activity, LayoutInflater)} method.
      *
      * @param activity the activity on which the business object is being rendered
      * @param view     the view that will be attached to the business view wrapper
@@ -446,7 +459,7 @@ public abstract class SmartAdapters
      * Synchronizes the rendering of the inner {@link View} with the state of the business object.
      * <p/>
      * <p>
-     * This will invoke the {@link SmartAdapters.BusinessViewWrapper#updateView(ActivityClass, View, int)} method with a <code>position</code> set to
+     * This will invoke the {@link BusinessViewWrapper#updateView(ActivityClass, View, int)} method with a <code>position</code> set to
      * 0.
      * </p>
      *
@@ -467,10 +480,11 @@ public abstract class SmartAdapters
    * @since 2010.06.23
    */
   public static class BusinessViewHolder<BusinessObjectClass>
-      extends SmartAdapters.BasisBusinessViewHolder<BusinessObjectClass, Activity>
+      extends BasisBusinessViewHolder<BusinessObjectClass, Activity, LayoutInflater>
   {
 
-    public BusinessViewHolder(BasisBusinessViewWrapper<BusinessObjectClass, Activity> businessViewWrapper)
+    public BusinessViewHolder(
+        BasisBusinessViewWrapper<BusinessObjectClass, Activity, LayoutInflater> businessViewWrapper)
     {
       super(businessViewWrapper);
     }
@@ -478,7 +492,7 @@ public abstract class SmartAdapters
   }
 
   /**
-   * A {@link ListView} adapter, which works closely with the {@link SmartAdapters.BusinessViewWrapper}.
+   * A {@link ListView} adapter, which works closely with the {@link BusinessViewWrapper}.
    *
    * @param <ViewClass> the class which represents each graphical row of the list
    * @since 2012.11.23
@@ -490,11 +504,13 @@ public abstract class SmartAdapters
 
     protected final Activity activity;
 
+    protected List<? extends BusinessViewWrapper<?>> wrappers = new ArrayList<BusinessViewWrapper<?>>();
+
+    private final LayoutInflater inflater;
+
     private int viewTypeCount = 1;
 
-    protected List<? extends SmartAdapters.BusinessViewWrapper<?>> wrappers = new ArrayList<SmartAdapters.BusinessViewWrapper<?>>();
-
-    private List<? extends SmartAdapters.BusinessViewWrapper<?>> forthcomingWrappers = null;
+    private List<? extends BusinessViewWrapper<?>> forthcomingWrappers = null;
 
     /**
      * @param activity
@@ -502,27 +518,11 @@ public abstract class SmartAdapters
      */
     // Regarding the 'getViewTypeCount()' method invocation, read
     // http://stackoverflow.com/questions/15099041/listview-baseadapter-getviewtypecount-how-to-force-adapter-to-check-again
-    public SmartListAdapter(Activity activity, int viewTypeCount)
+    public SmartListAdapter(Activity activity, LayoutInflater inflater, int viewTypeCount)
     {
       this.activity = activity;
       this.viewTypeCount = viewTypeCount;
-    }
-
-    public void setWrappers(List<? extends SmartAdapters.BusinessViewWrapper<?>> wrappers)
-    {
-      this.forthcomingWrappers = wrappers;
-    }
-
-    public void setAdapter(ListView listView)
-    {
-      listView.setAdapter(this);
-      listView.setOnItemClickListener(this);
-    }
-
-    public void setAdapter(GridView gridView)
-    {
-      gridView.setAdapter(this);
-      gridView.setOnItemClickListener(this);
+      this.inflater = inflater;
     }
 
     public final int getCount()
@@ -576,12 +576,12 @@ public abstract class SmartAdapters
     {
       try
       {
-        final SmartAdapters.BusinessViewWrapper<?> businessObject = wrappers.get(position);
+        final BusinessViewWrapper<?> businessObject = wrappers.get(position);
         final ViewClass innerView;
         final boolean isRecycled = (convertView != null);
         if (isRecycled == false)
         {
-          innerView = (ViewClass) businessObject.getNewView(parent, activity);
+          innerView = (ViewClass) businessObject.getNewView(parent, activity, inflater);
         }
         else
         {
@@ -647,11 +647,29 @@ public abstract class SmartAdapters
       {
         if (log.isErrorEnabled())
         {
-          log.error("The selected row " + actualPosition + " exceeds the size of the filtered business objetcs list which is " + wrappers.size());
+          log.error(
+              "The selected row " + actualPosition + " exceeds the size of the filtered business objetcs list which is " + wrappers.size());
         }
         return;
       }
       onInternalEvent(adapterView, view, wrappers.get(actualPosition), ObjectEvent.Clicked, actualPosition);
+    }
+
+    public void setWrappers(List<? extends BusinessViewWrapper<?>> wrappers)
+    {
+      this.forthcomingWrappers = wrappers;
+    }
+
+    public void setAdapter(ListView listView)
+    {
+      listView.setAdapter(this);
+      listView.setOnItemClickListener(this);
+    }
+
+    public void setAdapter(GridView gridView)
+    {
+      gridView.setAdapter(this);
+      gridView.setOnItemClickListener(this);
     }
 
     /**
@@ -666,7 +684,7 @@ public abstract class SmartAdapters
     }
 
     private boolean onInternalEvent(AdapterView<?> adapterView, View view,
-        SmartAdapters.BusinessViewWrapper<?> businessObject, ObjectEvent objectEvent, int position)
+        BusinessViewWrapper<?> businessObject, ObjectEvent objectEvent, int position)
     {
       if (adapterView.isEnabled() == true)
       {
@@ -680,7 +698,9 @@ public abstract class SmartAdapters
         {
           if (log.isErrorEnabled())
           {
-            log.error("The computing of the intent related to the business object with id '" + businessObject.getId() + "' and for the UI event '" + objectEvent + "' seems buggy; not taken into account!", throwable);
+            log.error(
+                "The computing of the intent related to the business object with id '" + businessObject.getId() + "' and for the UI event '" + objectEvent + "' seems buggy; not taken into account!",
+                throwable);
           }
           return false;
         }
@@ -700,7 +720,9 @@ public abstract class SmartAdapters
           {
             if (log.isErrorEnabled())
             {
-              log.error("The computation of the action related to the business object with id '" + businessObject.getId() + "' and for the UI event '" + objectEvent + "' seems faulty; not taken into account!", throwable);
+              log.error(
+                  "The computation of the action related to the business object with id '" + businessObject.getId() + "' and for the UI event '" + objectEvent + "' seems faulty; not taken into account!",
+                  throwable);
             }
             return false;
           }
@@ -710,5 +732,7 @@ public abstract class SmartAdapters
     }
 
   }
+
+  protected static final Logger log = LoggerFactory.getInstance("SmartAdapters");
 
 }
