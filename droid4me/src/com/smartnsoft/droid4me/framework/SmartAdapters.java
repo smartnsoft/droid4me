@@ -58,7 +58,7 @@ public abstract class SmartAdapters
 
     int getType(int position, BusinessObjectClass businessObjectClass);
 
-    View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflator, ViewGroup parent,
+    View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflater, ViewGroup parent,
         BusinessObjectClass businessObject);
 
   }
@@ -300,11 +300,11 @@ public abstract class SmartAdapters
     }
 
     @Override
-    public View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflator, ViewGroup parent,
+    public View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflater, ViewGroup parent,
         BusinessObjectClass businessObject)
     {
       // It is important that the activity itself be used as a basis context, otherwise, the inflated View context is limited!
-      return activity.getLayoutInflater().inflate(layoutResourceId, parent, false);
+      return layoutInflater.inflate(layoutResourceId, parent, false);
     }
 
   }
@@ -339,10 +339,10 @@ public abstract class SmartAdapters
     }
 
     @Override
-    public View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflator, ViewGroup parent,
+    public View createNewView(ActivityClass activity, LayoutInflaterClass layoutInflater, ViewGroup parent,
         BusinessObjectClass businessObject)
     {
-      return simplifier.createNewView(activity, layoutInflator, parent, businessObject);
+      return simplifier.createNewView(activity, layoutInflater, parent, businessObject);
     }
 
   }
