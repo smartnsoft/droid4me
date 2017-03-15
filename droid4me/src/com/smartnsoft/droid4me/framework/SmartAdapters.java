@@ -186,10 +186,10 @@ public abstract class SmartAdapters
       return (ViewAttributesType) view.getTag();
     }
 
-    public final void updateView(ActivityClass activity, View view, int position)
+    public final void updateView(ActivityClass activity, LayoutInflaterClass layoutInflater, View view, int position)
     {
       final ViewAttributesType viewAttributes = getViewAttributes(view);
-      updateView(activity, viewAttributes, view, getBusinessObject(), position);
+      updateView(activity, layoutInflater, viewAttributes, view, getBusinessObject(), position);
     }
 
     /**
@@ -206,7 +206,8 @@ public abstract class SmartAdapters
     protected abstract ViewAttributesType extractNewViewAttributes(ActivityClass activity, View view,
         BusinessObjectClass businessObjectClass);
 
-    protected abstract void updateView(ActivityClass activity, ViewAttributesType viewAttributes, View view,
+    protected abstract void updateView(ActivityClass activity, LayoutInflaterClass layoutInflater,
+        ViewAttributesType viewAttributes, View view,
         BusinessObjectClass businessObjectClass, int position);
 
     /**
@@ -459,15 +460,15 @@ public abstract class SmartAdapters
      * Synchronizes the rendering of the inner {@link View} with the state of the business object.
      * <p/>
      * <p>
-     * This will invoke the {@link BusinessViewWrapper#updateView(ActivityClass, View, int)} method with a <code>position</code> set to
+     * This will invoke the {@link BusinessViewWrapper#updateView(ActivityClass, LayoutInflaterClass, View, int)} method with a <code>position</code> set to
      * 0.
      * </p>
      *
      * @param activity the activity on which the business object is being rendered
      */
-    public final void updateView(ActivityClass activity)
+    public final void updateView(ActivityClass activity, LayoutInflaterClass layoutInflaterClass)
     {
-      businessViewWrapper.updateView(activity, view, 0);
+      businessViewWrapper.updateView(activity, layoutInflaterClass, view, 0);
     }
 
   }
@@ -506,7 +507,7 @@ public abstract class SmartAdapters
 
     protected List<? extends BusinessViewWrapper<?>> wrappers = new ArrayList<BusinessViewWrapper<?>>();
 
-    private final LayoutInflater inflater;
+    private final LayoutInflater layoutInflater;
 
     private int viewTypeCount = 1;
 
@@ -518,11 +519,11 @@ public abstract class SmartAdapters
      */
     // Regarding the 'getViewTypeCount()' method invocation, read
     // http://stackoverflow.com/questions/15099041/listview-baseadapter-getviewtypecount-how-to-force-adapter-to-check-again
-    public SmartListAdapter(Activity activity, LayoutInflater inflater, int viewTypeCount)
+    public SmartListAdapter(Activity activity, LayoutInflater layoutInflater, int viewTypeCount)
     {
       this.activity = activity;
       this.viewTypeCount = viewTypeCount;
-      this.inflater = inflater;
+      this.layoutInflater = layoutInflater;
     }
 
     public final int getCount()
@@ -581,13 +582,13 @@ public abstract class SmartAdapters
         final boolean isRecycled = (convertView != null);
         if (isRecycled == false)
         {
-          innerView = (ViewClass) businessObject.getNewView(parent, activity, inflater);
+          innerView = (ViewClass) businessObject.getNewView(parent, activity, layoutInflater);
         }
         else
         {
           innerView = (ViewClass) convertView;
         }
-        businessObject.updateView(activity, innerView, position);
+        businessObject.updateView(activity, layoutInflater, innerView, position);
 
         // We let the opportunity to catch this update event
         onInterceptGetView(innerView, position, isRecycled);
