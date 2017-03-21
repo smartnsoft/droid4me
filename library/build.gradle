@@ -59,6 +59,8 @@ task sourcesJar(type: Jar) {
 
 task javadoc(type: Javadoc) {
   source = android.sourceSets.main.java.srcDirs
+
+  options.overview = "src/main/java/com/smartnsoft/droid4me/overview.html"
   classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
 
@@ -72,6 +74,18 @@ artifacts
 {
   archives javadocJar
   archives sourcesJar
+}
+
+def pomConfig = {
+  licenses
+  {
+    license
+    {
+      name "GNU Lesser General Public License"
+      url "http://www.gnu.org/licenses/lgpl.html"
+      distribution "repo"
+    }
+  }
 }
 
 publishing
