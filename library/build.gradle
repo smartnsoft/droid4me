@@ -1,6 +1,5 @@
 apply plugin: "com.android.library"
 apply plugin: "com.jfrog.bintray"
-apply plugin: "java"
 apply plugin: "maven"
 apply plugin: "maven-publish"
 
@@ -53,13 +52,34 @@ dependencies
   testCompile("org.json:json:20090211")
 }
 
+task sourcesJar(type: Jar) {
+  classifier = "sources"
+  from android.sourceSets.main.java.srcDirs
+}
+
+task javadoc(type: Javadoc) {
+  source = android.sourceSets.main.java.srcDirs
+  classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = "javadoc"
+  from javadoc.destinationDir
+  // options.encoding = 'UTF-8'
+}
+
+artifacts
+{
+  archives javadocJar
+  archives sourcesJar
+}
+
 publishing
 {
   publications
   {
     ReleasePublication(MavenPublication)
     {
-      from components.java
       artifact sourcesJar
       artifact javadocJar
       groupId "com.smartnsoft"
@@ -69,19 +89,13 @@ publishing
       pom.withXml
       {
         def root = asNode()
-        root.appendNode('description', 'Your description of the lib')
-        root.appendNode('name', 'Your name of the lib')
-        root.appendNode('url', 'https://site_for_lib.tld')
+        root.appendNode("description", "droid4me is a framework library dedicated to the development of Android applications")
+        root.appendNode("name", "droid4me")
+        root.appendNode("url", "https://github.com/smartnsoft/droid4me")
         root.children().last() + pomConfig
       }
     }
   }
-}
-
-artifacts
-{
-  archives javadocJar
-  archives sourcesJar
 }
 
 //https://gist.github.com/bugs84/b7887fb5d7f9f2d484b8
@@ -94,7 +108,8 @@ publishing.publications.all
       it.scope.text() == "runtime" && project.configurations.compile.allDependencies.find { dep ->
         dep.name == it.artifactId.text()
       }
-    }.each {
+    }.each
+    {
       it.scope*.value = "compile"
     }
   }
@@ -151,20 +166,4 @@ uploadArchives
       }
     }
   }
-}
-
-task sourcesJar(type: Jar) {
-  from android.sourceSets.main.java.srcDirs
-  classifier = "sources"
-}
-
-task javadoc(type: Javadoc) {
-  source = android.sourceSets.main.java.srcDirs
-  classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  classifier = "javadoc"
-  from javadoc.destinationDir
-  // options.encoding = 'UTF-8'
 }
