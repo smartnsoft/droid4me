@@ -62,7 +62,7 @@ task javadoc(type: Javadoc) {
   title = "droid4me API"
   description "Javadoc for the droid4me framework"
   source = android.sourceSets.main.java.srcDirs
-  excludes = ["com/smartnsoft/droid4me/log/Log4JLogger.java"]
+  excludes = ["com/smartnsoft/droid4me/log/Log4JLogger.java", "com/smartnsoft/droid4me/support/v4/app", "com/smartnsoft/droid4me/support/v7/app"]
 
   options.charSet = "UTF-8"
   options.overview = "src/main/javadoc/overview.html"
