@@ -69,13 +69,13 @@ public final class SmartCommands
 
   /**
    * A {@link Runnable} used as command, which is allowed to throw an exception during its execution.
-   * <p/>
+   * <p>
    * <p>
    * During the command execution, any thrown {@link Throwable} will be delivered to the
    * {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler} through its
    * {@link ActivityController#handleException(boolean, Context, Object, Throwable)} method, so that it can be controlled in a central way, and not "swallowed".
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * It has been specifically designed for being able to run {@link Runnable} which throw exceptions within the
    * {@link SmartCommands.SmartThreadPoolExecutor}.
@@ -133,7 +133,7 @@ public final class SmartCommands
     /**
      * Creates a command that may be executed through the {@link SmartCommands#execute(SmartCommands.GuardedCommand)} method, and which is able to
      * tune any thrown exception during its execution.
-     * <p/>
+     * <p>
      * <p>
      * It is also possible to set the {@link SmartCommands.GuardedHandler delegate} as long as the command execution has not been started through the
      * {@link #setDelegate(GuardedHandler)} method.
@@ -141,8 +141,7 @@ public final class SmartCommands
      *
      * @param context   the context from which the execution originates, and which will be used when reporting a potential exception ; it is not allowed to be
      * @param component the component from which the execution originates, and which will be used when reporting a potential exception ; may be @{code null}
-     * @param delegate  if not {@code null}, the {@link #onThrowable(Throwable)} execution will be delegated to it
-     * @{code null}
+     * @param delegate  if not {@code null}, the {@link #onThrowable(Throwable)} execution will be delegated to it @{code null}
      * @see #setDelegate(SmartCommands.GuardedHandler)
      */
     public GuardedCommand(ContextClass context, Object component, SmartCommands.GuardedHandler delegate)
@@ -197,7 +196,7 @@ public final class SmartCommands
     /**
      * A fallback method which will be triggered if a {@link Throwable} is thrown during the {@link #runGuarded()} method, so as to let the caller a
      * chance to handle locally the exception.
-     * <p/>
+     * <p>
      * <p>
      * By default, the method does nothing and returns the provided {@code throwable}.
      * </p>
@@ -239,7 +238,7 @@ public final class SmartCommands
   /**
    * Enables to execute in background a task, by notifying when the execution is running. It is especially useful when the UI should be notified when
    * a command is running.
-   * <p/>
+   * <p>
    * <p>
    * When the command is executed by the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL}, its underlying {@link ProgressHandler} is notified.
    * </p>
@@ -306,7 +305,7 @@ public final class SmartCommands
   /**
    * An exception which acts as an {@link Throwable} wrapper, and which works in combination with the {@link SmartCommands.SimpleGuardedCommand}. It
    * will be triggered during the {@link SmartCommands.SimpleGuardedCommand#onThrowable(Throwable)} method.
-   * <p/>
+   * <p>
    * <p>
    * The traditional case is to let the {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler}
    * cope in a centralized way with this kind of exception.
@@ -388,8 +387,7 @@ public final class SmartCommands
      * @param component             the component from which the execution originates, and which will be used when reporting a potential exception ; may be @{code null}
      * @param warningLogMessage     the log message that will be output in case of exception
      * @param warningDisplayMessage the (supposedly i18ned) human readable that will be transfered to the {@link SmartCommands.GuardedException} in case of exception
-     *                              during the command execution
-     * @{code null}
+     *                              during the command execution @{code null}
      */
     public AbstractSimpleGuardedCommand(ContextClass context, Object component, String warningLogMessage,
         String warningDisplayMessage)
@@ -455,7 +453,7 @@ public final class SmartCommands
   /**
    * A handy {@link SmartCommands.SimpleGuardedCommand} which will issue systematically {@link DialogInterface#dismiss() dismiss} a {@link Dialog}
    * once the command execution is over.
-   * <p/>
+   * <p>
    * <p>
    * This kind of command is especially useful when a {@link ProgressDialog} is being displayed just before the current command execution, and that it
    * should be dismissed at the end of its execution.
@@ -503,8 +501,7 @@ public final class SmartCommands
      * @param warningDisplayMessage the (supposedly i18ned) human readable that will be transfered to the {@link SmartCommands.GuardedException} in case of exception
      *                              during the command execution
      * @param dialog                the dialog to be dismissed at the end of the command execution ; may be {@code null}, and in that case, just behaves as its parent
-     *                              {@link SmartCommands.SimpleGuardedCommand}
-     * @{code null}
+     *                              {@link SmartCommands.SimpleGuardedCommand} @{code null}
      * @see SmartCommands.SimpleGuardedCommand#SimpleGuardedCommand(Activity, String, String)
      */
     public DialogGuardedCommand(Activity context, Object component, String warningLogMessage,
@@ -780,7 +777,7 @@ public final class SmartCommands
 
     /**
      * Available for statistics.
-     * <p/>
+     * <p>
      * <p>
      * Warning: this method will return valid data only if {@link #ARE_DEBUG_LOG_ENABLED} is set to {@code true}.
      * </p>
@@ -856,7 +853,7 @@ public final class SmartCommands
   /**
    * Indicates how many threads at most will be available in the {@link #LOW_PRIORITY_THREAD_POOL low-priority threads pool}, by default. It needs to
    * be sent at the application start-up.
-   * <p/>
+   * <p>
    * <p>
    * You may change that pool size by invoking the {@link ThreadPoolExecutor#setCorePoolSize(int)} method.
    * </p>
@@ -865,12 +862,12 @@ public final class SmartCommands
 
   /**
    * Use this threads pool instead of creating your own {@link Thread#MIN_PRIORITY} threads.
-   * <p/>
+   * <p>
    * <ul>
    * <li>This pool will contain at most {@link #LOW_PRIORITY_THREAD_POOL_DEFAULT_SIZE} threads by default;</li>
    * <li>exceptions thrown by the {@link Runnable} are handled by the {@link ActivityController.ExceptionHandler}.</li>
    * </ul>
-   * <p/>
+   * <p>
    * <p>
    * You can use this pool in the application, instead of creating new threads.
    * </p>
@@ -911,9 +908,9 @@ public final class SmartCommands
   /**
    * Simply executes the provided command via the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL}, which enables to run a command, and take benefit
    * from the {@link ExceptionHandler} if the command triggers an exception.
-   * <p/>
    * <p>
-   * Equivalent to invoking {@link SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(SmartCommands.GuardedCommand)}.
+   * <p>
+   * Equivalent to invoking {@link SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(Runnable)}.
    * </p>
    *
    * @param guardedCommand the command to be executed

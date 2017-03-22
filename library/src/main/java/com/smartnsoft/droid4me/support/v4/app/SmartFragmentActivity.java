@@ -34,9 +34,9 @@ import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.SmartableActivity;
 
 /**
- * A basis class for designing an Android compatibility library {@link android.support.v4.app.FragmentActivity} compatible with the framework, i.e.
+ * A basis class for designing an Android compatibility library {@code FragmentActivity} compatible with the framework, i.e.
  * droid4me-ready.
- * <p/>
+ * <p>
  * <p>
  * Warning: this class is only available for applications running under Android v1.6+, i.e. API level 4+, with the <a
  * href="http://developer.android.com/sdk/compatibility-library.html">Android Support Package</a>!

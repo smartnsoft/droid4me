@@ -30,7 +30,7 @@ import com.smartnsoft.droid4me.app.ActivityController;
 /**
  * Enables to mark that an entity needs to log some analytics when being used. This interface is usually applied to an {@link Activity} or a
  * {@link Fragment} entity.
- * <p/>
+ * <p>
  * <p>
  * Using this marker interface with the {@link ActivityController.Interceptor} makes the reporting of analytics very straightforward, and enables to
  * centralize it in one place.
@@ -45,7 +45,7 @@ public interface AnalyticsLogger
 
   /**
    * An analytics logger which states the tag of the analytics event to report.
-   * <p/>
+   * <p>
    * <p>
    * This interface is to be used when the name of the tag is not known at compile time ; otherwise, the
    * {@link AnalyticsLogger.AnalyticsTagLoggerAnnotation} annotation should be used instead.
@@ -82,7 +82,7 @@ public interface AnalyticsLogger
 
   /**
    * An annotation which enables to express that an entity, usually an {@link Activity} or a {@link Fragment}, wants to report analytics usage.
-   * <p/>
+   * <p>
    * <p>
    * Use this annotation, when the entity tag is known at compile tag.
    * </p>
@@ -104,7 +104,7 @@ public interface AnalyticsLogger
 
   /**
    * An annotation which enables to express that an entity, usually an {@link Activity} or a {@link Fragment}, wishes to report analytics usage.
-   * <p/>
+   * <p>
    * <p>
    * Use this annotation, when you explicitly want the underlying entity to report an activity.
    * </p>
@@ -121,7 +121,7 @@ public interface AnalyticsLogger
   /**
    * An annotation which enables to express that an entity, usually an {@link Activity} or a {@link Fragment}, does not wish to report any analytics
    * usage.
-   * <p/>
+   * <p>
    * <p>
    * Use this annotation, when you do not want the underlying entity to report any activity.
    * </p>

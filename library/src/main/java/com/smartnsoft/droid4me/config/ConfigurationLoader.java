@@ -208,7 +208,7 @@ public interface ConfigurationLoader
 
     /**
      * Loads a Java bean.
-     * <p/>
+     * <p>
      * <p>
      * The method implementation is responsible for creating the right {@link ConfigurationLoader}, and then invoke its
      * {@link ConfigurationLoader#getBean(Class)} method.
@@ -244,7 +244,7 @@ public interface ConfigurationLoader
 
     /**
      * Is responsible for creating a bean, and then fulfilling its fields.
-     * <p/>
+     * <p>
      * <p>
      * The method is supposed to skip fields available in the {@code input}, but which cannot be mapped properly to any of the created bean fields.
      * </p>
@@ -296,7 +296,7 @@ public interface ConfigurationLoader
 
     /**
      * Sets a value to one of the bean field.
-     * <p/>
+     * <p>
      * <p>
      * If the mapping was successful, the bean field will have been updated. If an error occurs during this treatment, an error log is issued, and the
      * provided value is simply ignored.
@@ -570,7 +570,7 @@ public interface ConfigurationLoader
 
   /**
    * Does the same thing as the {@link #getBean(Class)} method, except that the POJO bean is provided.
-   * <p/>
+   * <p>
    * <p>
    * This method is especially useful, when a pre-defined configuration should be overwritten.
    * </p>

@@ -1,5 +1,5 @@
-<!--
- * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+/*
+ * (C) Copyright 2009-2017 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,13 +12,14 @@
  * Lesser General Public License for more details.
  *
  * Contributors:
+ *     E2M - initial API and implementation
  *     Smart&Soft - initial API and implementation
- -->
- <html>
-  <head></head>
-  <body>
+ */
 
-Contains all the classes required for the <a href="http://android-developers.blogspot.com/2011/03/fragments-for-all.html">Android compatibility library</a>.
-
-  </body>
-</html>
+/**
+ * Some helper classes.
+ *
+ * @author Édouard Mercier
+ * @since 2010.07.09
+ */
+package com.smartnsoft.droid4me.util;

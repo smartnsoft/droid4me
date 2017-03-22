@@ -39,22 +39,22 @@ import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
  * <li>be {@link #discardToken(Serializable)} discarded,</li>
  * <li>be requested through the {@link #hasToken(Serializable)} and {@link #missesToken(Serializable)} methods.</li>
  * </ul>
- * <p/>
+ * <p>
  * <p>
  * The token is represented by the class NotificationKind template.
  * </p>
- * <p/>
+ * <p>
  * <p>
  * The implementation uses the Android {@link SharedPreferences} to store persistently the tokens, and it resorts to {@link Intent intents} when it
- * comes to {@link #broadcast(Token)} a token to the rest of the application: this is the reason why the template class must carefully implement the
+ * comes to {@link #broadcast(Serializable)} a token to the rest of the application: this is the reason why the template class must carefully implement the
  * {@link #toString()} method.
  * </p>
- * <p/>
+ * <p>
  * <p>
  * The class does not impose any threaded affinity. It will not trigger exceptions under concurrent races conditions, but it has not functionally been
  * designed for a thread-safe mode (no atomicity is granted).
  * </p>
- * <p/>
+ * <p>
  * <p>
  * This class is especially useful when, in at some point in the application, a web service is invoked, which causes the local cached data to be
  * partially out-dated, and that the application should keep this information, so that it refreshes some business objects via web services when
@@ -78,9 +78,9 @@ public class TokenKeeper<Token extends Serializable>
   {
 
     /**
-     * Is invoked only by the {@link TokenKeeper#rememberToken(Token)}, in order to determine the tokens that should be remembered along with the
-     * provided one. However, this method will not be invoked when {@link TokenKeeper#discardToken(Token) discarding} a token.
-     * <p/>
+     * Is invoked only by the {@link TokenKeeper#rememberToken(Serializable)}, in order to determine the tokens that should be remembered along with the
+     * provided one. However, this method will not be invoked when {@link TokenKeeper#discardToken(Serializable) discarding} a token.
+     * <p>
      * <p>
      * This method will not be run recursively on each returned token.
      * </p>
@@ -88,7 +88,7 @@ public class TokenKeeper<Token extends Serializable>
      * @param token the token that should be analyzed
      * @return the tokens related to the provided token. If {@code null}, it will be considered that no sub-token is available for the given token.
      * The array should not contain the provided token (for better performances). The returned token will just be
-     * {@link TokenKeeper#rememberToken(Token) remembered} but not {@link TokenKeeper#rememberToken(Token) remembered}
+     * {@link TokenKeeper#rememberToken(Serializable) remembered} but not {@link TokenKeeper#rememberToken(Serializable) remembered}
      */
     Token[] getSubTokens(Token token);
 
@@ -111,8 +111,8 @@ public class TokenKeeper<Token extends Serializable>
    *
    * @param context it will be used to create an internal {@link SharedPreferences} instance, but also to invoke the
    *                {@link LocalBroadcastManager#sendBroadcast(Intent)} method when broadcasting
-   * @param prefix  a string, which will be used when storing the token in the {@link SharedPreferences preferences}, and when {@link #broadcast(Token)
-   *                broadcasting} it; can be {@code null}
+   * @param prefix  a string, which will be used when storing the token in the {@link SharedPreferences preferences}, and when {@link #broadcast(Serializable) broadcasting} it;
+   *                can be {@code null}
    */
   public TokenKeeper(Context context, String prefix)
   {
@@ -133,10 +133,10 @@ public class TokenKeeper<Token extends Serializable>
   /**
    * It is possible to totally disable the token keeper. By default, the token keeper is enabled/turned on. This is especially useful when you want to
    * turn it off, while running tests.
-   * <p/>
-   * <p/>
+   * <p>
+   * <p>
    * When turned-off, no token will be remembered, discarded, nor broadcast.
-   * <p/>
+   * <p>
    *
    * @param enabled whether the token keeper should be on or off
    * @see #isEnabled()
@@ -156,12 +156,12 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * When {@link #rememberToken(Token) remembering a token}, it may be useful to remember other tokens which depend on it. By default, no token
+   * When {@link #rememberToken(Serializable) remembering a token}, it may be useful to remember other tokens which depend on it. By default, no token
    * multiplier is registered. This method enables to register an interface, which enables to remember other tokens than the provided one at the same
    * time.
-   * <p/>
    * <p>
-   * This method has no impact on the {@link #broadcast(Token) token broadcasting}.
+   * <p>
+   * This method has no impact on the {@link #broadcast(Serializable) token broadcasting}.
    * </p>
    *
    * @param tokenMultiplier the interface that will be used to "multiply" the remembered token; it should be set to {@code null}, if that feature needs to be
@@ -174,7 +174,7 @@ public class TokenKeeper<Token extends Serializable>
 
   /**
    * Adds the {@link IntentFilter#addAction(String) actions} to the provided {@link IntentFilter}.
-   * <p/>
+   * <p>
    * <p>
    * For every provided notification kind, it is added to the IntentFilter, by prefixing it with the prefix provided in the
    * {@link #TokenKeeper(Context, String) constructor}.
@@ -223,7 +223,7 @@ public class TokenKeeper<Token extends Serializable>
    *
    * @param token the token to search for
    * @return {@code true} if and only if the notification kind token is present
-   * @see #missesToken(Token)
+   * @see #missesToken(Serializable)
    */
   public boolean hasToken(Token token)
   {
@@ -232,9 +232,9 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Returns the opposite value of the {@link #hasToken(Token)} method.
+   * Returns the opposite value of the {@link #hasToken(Serializable)} method.
    *
-   * @see #hasToken(Token)
+   * @see #hasToken(Serializable)
    */
   public boolean missesToken(Token token)
   {
@@ -242,11 +242,11 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Sets persistently a token for the given notification kind, so that a {@link #hasToken(Token) subsequent call} returns {@code true}.
+   * Sets persistently a token for the given notification kind, so that a {@link #hasToken(Serializable) subsequent call} returns {@code true}.
    *
    * @param token the token to set and remember
-   * @see #discardToken(Token)
-   * @see #rememberTokenAndBroadcast(Token)
+   * @see #discardToken(Serializable)
+   * @see #rememberTokenAndBroadcast(Serializable)
    */
   public void rememberToken(Token token)
   {
@@ -265,7 +265,7 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Invokes successively the {@link #rememberToken(Token)} method on each provided token.
+   * Invokes successively the {@link #rememberToken(Serializable)} method on each provided token.
    *
    * @param tokens the list of tokens to set and remember
    */
@@ -278,10 +278,10 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Invokes consequently the {@link #rememberToken(Token)} and {@link #broadcast(Token)} methods.
+   * Invokes consequently the {@link #rememberToken(Serializable)} and {@link #broadcast(Serializable)} methods.
    *
-   * @see #broadcast(Token)
-   * @see #rememberTokensAndBroadcast(Token...)
+   * @see #broadcast(Serializable)
+   * @see #rememberTokensAndBroadcast(Serializable...)
    */
   public void rememberTokenAndBroadcast(Token token)
   {
@@ -290,10 +290,10 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Invokes successively the {@link #rememberTokenAndBroadcast(Token)} method for each provided token.
+   * Invokes successively the {@link #rememberTokenAndBroadcast(Serializable)} method for each provided token.
    *
    * @param tokens the list of tokens to handle
-   * @see #rememberTokenAndBroadcast(Token)
+   * @see #rememberTokenAndBroadcast(Serializable)
    */
   public void rememberTokensAndBroadcast(Token... tokens)
   {
@@ -305,14 +305,14 @@ public class TokenKeeper<Token extends Serializable>
 
   /**
    * Triggers an Android broadcast {@link Intent} with the provided token as the single {@link Intent#setAction(String) action}.
-   * <p/>
+   * <p>
    * <p>
    * This method will invoke the {@link LocalBroadcastManager#sendBroadcast(Intent)} method.
    * </p>
    *
    * @param token the token to be broadcast, which will be used to compute the broadcast {@link Intent} action through the
-   * @see #discardToken(Token)
-   * @see #computeTokenKey(Token, boolean)
+   * @see #discardToken(Serializable)
+   * @see #computeTokenKey(Serializable, boolean)
    * @see #enrichBroadcast(Serializable, Intent)
    */
   public void broadcast(Token token)
@@ -327,7 +327,7 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Invokes successively the {@link #broadcast(Token)} method for each provided token.
+   * Invokes successively the {@link #broadcast(Serializable)} method for each provided token.
    *
    * @param tokens the list of tokens to handle
    */
@@ -340,10 +340,10 @@ public class TokenKeeper<Token extends Serializable>
   }
 
   /**
-   * Discards the given token, so as a {@link #hasToken(Token) subsequent method call} returns {@code false}.
+   * Discards the given token, so as a {@link #hasToken(Serializable) subsequent method call} returns {@code false}.
    *
    * @param token the token to discard
-   * @see #rememberToken(Token)
+   * @see #rememberToken(Serializable)
    */
   public void discardToken(Token token)
   {
@@ -352,7 +352,7 @@ public class TokenKeeper<Token extends Serializable>
 
   /**
    * Indicates whether the token corresponding to the provided key is currently persisted and available.
-   * <p/>
+   * <p>
    * <p>
    * Overriding this method enables to change the way the token persistence is ensured. The current implementation relies on the {@link #preferences}.
    * </p>
@@ -369,17 +369,17 @@ public class TokenKeeper<Token extends Serializable>
   /**
    * This is the place where the token is being stored at the persistence level. This method will eventually be invoked when a token is remembered or
    * discarded.
-   * <p/>
+   * <p>
    * <p>
    * The default implementation stores the token in the {@link #preferences}: overriding this method enables to customize the token persistence
    * implementation.
    * </p>
    *
-   * @param tokenKey the key resulting from the {@code Token.toString()} method call invoked on the parameter provided to the {@link #rememberToken(Token)}/
-   *                 {@link #discardToken(Token)} methods
+   * @param tokenKey the key resulting from the {@code Token.toString()} method call invoked on the parameter provided to the {@link #rememberToken(Serializable)}/
+   *                 {@link #discardToken(Serializable)} methods
    * @param value    {@code true} and if only if the token needs to be remembered
-   * @see #rememberToken(Token)
-   * @see #discardToken(Token)
+   * @see #rememberToken(Serializable)
+   * @see #discardToken(Serializable)
    * @see #hasPersistedToken(String)
    */
   protected void persistToken(String tokenKey, boolean value)
@@ -399,7 +399,7 @@ public class TokenKeeper<Token extends Serializable>
   /**
    * The method responsible for generating a {@link String} from a token, so that the token key may be serialized when persisting it, or when
    * computing the related broadcast {@link Intent} action.
-   * <p/>
+   * <p>
    * <p>
    * By overriding this method, it is possible to tune the way the token key is stored in the persistence layer. The default implementation resorts to
    * the {@link #prefix} value for computing the string prefix.
@@ -411,9 +411,9 @@ public class TokenKeeper<Token extends Serializable>
    *                       specific
    * @return a string which identifies the provided token
    * @see #prefix
-   * @see #rememberToken(Token)
-   * @see #discardToken(Token)
-   * @see #broadcast(Token)
+   * @see #rememberToken(Serializable)
+   * @see #discardToken(Serializable)
+   * @see #broadcast(Serializable)
    */
   protected String computeTokenKey(Token token, boolean forPersistence)
   {
@@ -422,7 +422,7 @@ public class TokenKeeper<Token extends Serializable>
 
   /**
    * Enables to enrich the {@link Intent} that is bound to be broadcast.
-   * <p/>
+   * <p>
    * <p>
    * The method does nothing, and it may be overriden.
    * </p>

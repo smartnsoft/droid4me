@@ -36,6 +36,7 @@ android
 dependencies
 {
   //Android
+  compile("com.android.support:support-v4:$appCompatVersion")
   compile("com.android.support:appcompat-v7:$appCompatVersion")
 
   //Third party
@@ -58,10 +59,16 @@ task sourcesJar(type: Jar) {
 }
 
 task javadoc(type: Javadoc) {
+  title = "droid4me API"
+  description "Javadoc for the droid4me framework"
   source = android.sourceSets.main.java.srcDirs
+  excludes = ["com/smartnsoft/droid4me/log/Log4JLogger.java"]
 
-  options.overview = "src/main/java/com/smartnsoft/droid4me/overview.html"
-  classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+  options.charSet = "UTF-8"
+  options.overview = "src/main/javadoc/overview.html"
+  options.links = ["http://docs.oracle.com/javase/7/docs/api/", "http://d.android.com/reference/"]
+
+  classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {

@@ -83,7 +83,7 @@ public final class WithCacheWSUriStreamParser
      * @param parameter           the parameter that will be used to create the returned keys aggregator
      * @return a new keys aggregator composed of a newly created {@link WSUriStreamParser.UriStreamerSourceKey}, and a
      * {@link WithCacheWSUriStreamParser.IOStreamerSourceKey} the URI of which will be taken from the previously created
-     * {@link WSUriStreamParser.UriStreamerSourceKey} via its {@link WSUriStreamParser.UriStreamerSourceKey#computeUri(ParameterType)} method
+     * {@link WSUriStreamParser.UriStreamerSourceKey} via its {@link WSUriStreamParser.UriStreamerSourceKey#computeUri(Object)} method
      */
     public static <ParameterType> WSUriStreamParser.KeysAggregator<ParameterType> fromUriStreamerSourceKey(
         WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody, ParameterType parameter)

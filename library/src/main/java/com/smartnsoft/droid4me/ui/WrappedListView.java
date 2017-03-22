@@ -344,7 +344,7 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   /**
    * Is responsible for creating the {@link ViewGroup wrapper widget} which will hold the underlying {@link ListView}.
-   * <p/>
+   * <p>
    * <p>
    * This method is responsible for creating the {@link #wrapperLayout} and {@link #listWrapperLayout} widget objects, and for adding the
    * {@link #getListView()} to the created {@link #getListWrapperLayout()}.

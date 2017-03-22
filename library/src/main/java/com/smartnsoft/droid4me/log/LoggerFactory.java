@@ -23,16 +23,16 @@ import android.util.Log;
 /**
  * In order to have an entry point for the logging interface. Because, when we use the Android logger, there are problems during the unitary tests on
  * a desktop machine.
- *
+ * <p>
  * <p>
  * By default, the {@link AndroidLogger} implementation is used.
  * </p>
- *
+ * <p>
  * <p>
  * In order to tune the {@link Logger} implementation that should be used at runtime, you may define the {@code SmartConfigurator} class, as explained
  * in {@link LoggerFactory.LoggerConfigurator}.
  * </p>
- *
+ * <p>
  * <p>
  * If no {@code SmartConfigurator} class is present in the classpath, when the the Java system property <code>droid4me.logging</code> is defined with
  * the value "false", the logging uses the standard error and output streams. This is useful when unit-testing the framework.
@@ -54,9 +54,8 @@ public class LoggerFactory
     /**
      * The method will be invoked by the {@link LoggerFactory#getInstance(String)} every time a logger needs to be created.
      *
-     * @param category
-     *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
-     *          libraries
+     * @param category the logger category, which is a common concept to the {@link android.util.Log}, {@code java java.util.logging.Logging}, {@code Log4J}
+     *                 libraries
      * @return the {@link Logger} that should be used for logging on that category; is not allowed to be {@code null}
      * @see #getLogger(Class)
      */
@@ -65,9 +64,8 @@ public class LoggerFactory
     /**
      * The method will be invoked by the {@link LoggerFactory#getInstance(Class)} every time a logger needs to be created.
      *
-     * @param category
-     *          the logger category, which is a common concept to the {@link android.util.Log}, {@link java.util.logging.Logging}, {@code Log4J}
-     *          libraries
+     * @param theClass the logger category, which is a common concept to the {@link android.util.Log}, {@code java.util.logging.Logging}, {@code Log4J}
+     *                 libraries
      * @return the {@link Logger} that should be used for logging on that category; is not allowed to be {@code null}
      * @see #getLogger(String)
      */
@@ -80,13 +78,13 @@ public class LoggerFactory
    */
   private enum LoggerImplementation
   {
-    AndroidLogger, NativeLogger, Other;
+    AndroidLogger, NativeLogger, Other
   }
 
   /**
    * Tunes the logging system verbosity. The {@code Logger#isXXXEnabled()} method return values will depend on this trigger level. Defaults to
    * {@code Log.WARN}.
-   *
+   * <p>
    * <p>
    * It uses the Android built-in {@link android.util.Log} attributes for defining those log levels.
    * </p>
@@ -170,34 +168,34 @@ public class LoggerFactory
 
     switch (LoggerFactory.loggerImplementation)
     {
-    case Other:
-      if (theClass != null)
-      {
-        return LoggerFactory.loggerConfigurator.getLogger(theClass);
-      }
-      else
-      {
-        return LoggerFactory.loggerConfigurator.getLogger(category);
-      }
-    case AndroidLogger:
-    default:
-      if (theClass != null)
-      {
-        return new AndroidLogger(theClass);
-      }
-      else
-      {
-        return new AndroidLogger(category);
-      }
-    case NativeLogger:
-      if (theClass != null)
-      {
-        return new NativeLogger(theClass);
-      }
-      else
-      {
-        return new NativeLogger(category);
-      }
+      case Other:
+        if (theClass != null)
+        {
+          return LoggerFactory.loggerConfigurator.getLogger(theClass);
+        }
+        else
+        {
+          return LoggerFactory.loggerConfigurator.getLogger(category);
+        }
+      case AndroidLogger:
+      default:
+        if (theClass != null)
+        {
+          return new AndroidLogger(theClass);
+        }
+        else
+        {
+          return new AndroidLogger(category);
+        }
+      case NativeLogger:
+        if (theClass != null)
+        {
+          return new NativeLogger(theClass);
+        }
+        else
+        {
+          return new NativeLogger(category);
+        }
     }
   }
 

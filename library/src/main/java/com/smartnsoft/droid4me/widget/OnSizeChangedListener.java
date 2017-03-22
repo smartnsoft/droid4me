@@ -20,13 +20,13 @@ package com.smartnsoft.droid4me.widget;
 import android.view.View;
 
 /**
- * A simple interface method will be invoked every time its underlying {@View view} size {@link View#onSizeChanged(int, int, int, int)} changes}.
- * <p/>
+ * A simple interface method will be invoked every time its underlying {@link View view} size {@link View#onSizeChanged(int, int, int, int)} changes}.
+ * <p>
  * <p>
  * It Enables to capture the event when the widget size changes.
  * </p>
  *
- * @param <ViewClass> the {@link View} the size change listener applies to
+ * @param <ViewClass> the {@link View view} the size change listener applies to
  * @author Édouard Mercier
  * @since 2011.04.01
  */

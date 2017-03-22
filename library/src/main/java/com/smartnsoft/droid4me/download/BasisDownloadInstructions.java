@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import android.view.View;
+import android.widget.ImageView;
 
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
@@ -44,7 +45,7 @@ public class BasisDownloadInstructions
     /**
      * The method will be invoked, so as to known whether the bitmap could not be extracted locally, i.e. from the application .apk, or a static local
      * resource.
-     * <p/>
+     * <p>
      * <p>
      * Do not use that placeholder for introducing any persistent strategy, but use the
      * {@link #getInputStream(String, Object, String, BasisDownloadInstructions.InputStreamDownloadInstructor)} and
@@ -60,7 +61,7 @@ public class BasisDownloadInstructions
 
     /**
      * When a local bitmap usage has been specified, is responsible for binding the view with that local bitmap.
-     * <p/>
+     * <p>
      * <p>
      * It is ensured that this method will be run from the UI thread.
      * </p>
@@ -72,7 +73,7 @@ public class BasisDownloadInstructions
 
     /**
      * Given the bitmap identifier, its extra specifications, returns its URL, which will be used for downloading it.
-     * <p/>
+     * <p>
      * <p>
      * This method will be invoked from the GUI thread, if and only if the
      * {@link CoreBitmapDownloader#get(boolean, boolean, Viewable, String, Object, com.smartnsoft.droid4me.download.DownloadContracts.Handlerable, Instructions)}
@@ -81,7 +82,7 @@ public class BasisDownloadInstructions
      * {@link CoreBitmapDownloader#get(boolean, boolean, Viewable, String, Object, com.smartnsoft.droid4me.download.DownloadContracts.Handlerable, Instructions)}
      * method invocation (i.e. for a command).
      * </p>
-     * <p/>
+     * <p>
      * <p>
      * For performance reasons, the method does not manage {@link RuntimeException}: this is the reason why the implementation should make sure that
      * no such error occurs ; in particular, pay attention to the {@link NullPointerException}
@@ -95,7 +96,7 @@ public class BasisDownloadInstructions
     /**
      * Enables to determine whether a temporary bitmap (which will be eventually a final bound bitmap if the case the provided <code>bitmapUid</code>
      * is {@code null}) should be bound to the underlying view.
-     * <p/>
+     * <p>
      * <p>
      * The method will be invoked even with a <code>bitmapUid</code> set to {@code null}, but not if the
      * {@link CoreBitmapDownloader#get(Viewable, String, Object, com.smartnsoft.droid4me.download.DownloadContracts.Handlerable, Instructions)} is
@@ -113,11 +114,11 @@ public class BasisDownloadInstructions
 
     /**
      * When a temporary bitmap usage has been specified, is responsible for binding the view with that temporary bitmap.
-     * <p/>
+     * <p>
      * <p>
      * The method will be invoked even with a <code>bitmapUid</code> set to {@code null}.
      * </p>
-     * <p/>
+     * <p>
      * <p>
      * It is ensured that this method will be run from the UI thread.
      * </p>
@@ -130,7 +131,7 @@ public class BasisDownloadInstructions
     /**
      * Is invoked just before {@link #downloadInputStream(String, Object, String) the stream download} corresponding to the bitmap is started,
      * provided its computed URL is not null nor empty.
-     * <p/>
+     * <p>
      * <p>
      * This is a good place for fetching from a local cache the input stream related to the bitmap.
      * </p>
@@ -147,7 +148,7 @@ public class BasisDownloadInstructions
 
     /**
      * Should download from the network the input stream corresponding to the bitmap.
-     * <p/>
+     * <p>
      * <p>
      * The callback is invoked when the {@link #getInputStream(String, Object, String, InputStreamDownloadInstructor)} method could not return a valid
      * input stream. This callback will not be invoked if the {@link CoreBitmapDownloader#isConnected()} returns {@code false}.
@@ -163,7 +164,7 @@ public class BasisDownloadInstructions
 
     /**
      * Is invoked once the stream related to the image view has been downloaded.
-     * <p/>
+     * <p>
      * <p>
      * This is a good place for storing the input stream related to the image.
      * </p>
@@ -175,7 +176,7 @@ public class BasisDownloadInstructions
 
     /**
      * Invoked when a downloaded input stream need to be converted into a bitmap.
-     * <p/>
+     * <p>
      * <p>
      * It is not ensured that this method will be invoked from the GUI thread.
      * </p>
@@ -188,7 +189,7 @@ public class BasisDownloadInstructions
      * Is invoked every time, once the underlying view bitmap is either not {@code null} ready in memory (the <code>allright</code> parameter is set
      * to {@code true}), or when it occurs that the bitmap could not be downloaded or is not well formed (the <code>allright</code> parameter is set
      * to {@code false}).
-     * <p/>
+     * <p>
      * <p>
      * It is NOT ensured that this method will be run from the UI thread.
      * </p>
@@ -202,7 +203,7 @@ public class BasisDownloadInstructions
     /**
      * Is invoked once the bitmap is ready when the provided {@link View} is not {@code null}, whether it has been downloaded from Internet or
      * retrieved from the cache.
-     * <p/>
+     * <p>
      * <p>
      * It is ensured that this method will be run from the UI thread.
      * </p>
@@ -222,11 +223,11 @@ public class BasisDownloadInstructions
      * <li>or the underlying bitmap has actually been bound to its {@link View} from a local resource,</li>
      * <li>or, the underlying bitmap download was a failure (wrong or null bitmap URL, connectivity problem).</li>
      * </ul>
-     * <p/>
+     * <p>
      * <p>
      * The method will be invoked even with a <code>bitmapUid</code> set to {@code null}.
      * </p>
-     * <p/>
+     * <p>
      * <p>
      * It is ensured that this notification will be invoked from the GUI thread.
      * </p>
@@ -237,11 +238,11 @@ public class BasisDownloadInstructions
 
     /**
      * This method is invoked systematically once the command is over, either when it has successfully completed, or when it has been aborted.
-     * <p/>
+     * <p>
      * <p>
      * Do not make any assumption regarding the thread invoking that method: it may be the GUI thread or a background taken from a worker thread!
      * </p>
-     * <p/>
+     * <p>
      * <p>
      * This callback is especially useful the unitary tests.
      * </p>
@@ -274,9 +275,9 @@ public class BasisDownloadInstructions
   /**
    * An implementation of the {@link Instructions}, which returns the <code>bitmapUid</code> as an URL, and which does not present any temporary nor
    * local bitmap.
-   * <p/>
    * <p>
-   * Caution: this implementation supposes that the provided {@View view} is actually an {@ImageView} in the
+   * <p>
+   * Caution: this implementation supposes that the provided {@link View view} is actually an {@link ImageView} in the
    * {@link BasisDownloadInstructions.AbstractInstructions#onBindBitmap(boolean, Viewable, Bitmapable, String, Object)} method.
    * </p>
    */

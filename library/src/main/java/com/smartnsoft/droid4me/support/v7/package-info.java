@@ -1,5 +1,5 @@
-<!--
- * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+/*
+ * (C) Copyright 2009-2017 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -14,12 +14,12 @@
  * Contributors:
  *     E2M - initial API and implementation
  *     Smart&Soft - initial API and implementation
- -->
- <html>
-  <head></head>
-  <body>
+ */
 
-Contains utilities for downloading bitmaps and binding them to {@link ImageView} or any widget which can display a {@link Bitmap}.
-
-  </body>
-</html>
+/**
+ * Contains all the classes required for the appcompat-v7 android compatibility library.
+ *
+ * @author Ludovic Roland
+ * @since 2017.03.22
+ */
+package com.smartnsoft.droid4me.support.v7;

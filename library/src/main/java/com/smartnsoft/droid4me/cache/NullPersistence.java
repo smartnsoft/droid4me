@@ -26,7 +26,7 @@ import com.smartnsoft.droid4me.bo.Business.InputAtom;
 
 /**
  * An implementation of {@link Persistence persistence} which stores nothing.
- * <p/>
+ * <p>
  * <p>
  * This class is helpful when a {@link Persistence} instance is required, but that no data should be actually persisted.
  * </p>

@@ -17,7 +17,7 @@ import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 
 /**
  * A basis classes for designing a {@link Fragment} compatible with the framework, i.e. droid4me-ready.
- * <p/>
+ * <p>
  * <p>
  * Warning: this class is only available for applications running under Android v3+, i.e. release 11+!
  * </p>

@@ -24,7 +24,7 @@ import android.view.ViewGroup;
 /**
  * An interface introduced in order to get notified when a container size changes, because there is no {@code OnSizeChangedListener} in Android
  * {@link View}, whereas there is a {@link View#onSizeChanged(int, int, int, int)} method.
- * <p/>
+ * <p>
  * <p>
  * In addition, this interface for disabling the {@link View#requestLayout()} method dynamically.
  * </p>
@@ -298,14 +298,12 @@ public interface SmartViewExtension<ViewClass extends View>
   /**
    * Sets the ratio between the width and the height of the image.
    * More formally, the value of the ratio is equal to the height divided by the width. The default value is {@code 9 / 16}.
-   * <p/>
    * <p>
    * <ul>
    * <li>When set to a positive value, the image width is taken as a reference to force the height.</li>
    * <li>When set to a negative value, the image height is taken as a reference to force the width, and the {@code ratio} argument absolute value is
    * taken.</li>
    * </ul>
-   * </p>
    *
    * @param ratio when set to {@code 0}, no ratio is applied
    * @see #getRatio()
@@ -350,7 +348,7 @@ public interface SmartViewExtension<ViewClass extends View>
 
   /**
    * Indicates that the view {@link View#requestLayout()} method execution should do nothing (not invoking the parent method).
-   * <p/>
+   * <p>
    * <p>
    * This feature is especially useful used in combination with the Gallery widget, which causes flickering issues when updating the widgets
    * inside a {@link ViewGroup}.

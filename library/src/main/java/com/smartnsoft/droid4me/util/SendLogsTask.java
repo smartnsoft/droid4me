@@ -37,7 +37,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * An asynchronous task which enables to send the logs of the application, along with the device details.
- * <p/>
+ * <p>
  * <p>
  * Caution: the <code>android.permission.READ_LOGS</code> Android permission must be set in the <code>AnroidManifest.xml</code> file, when using that
  * task.

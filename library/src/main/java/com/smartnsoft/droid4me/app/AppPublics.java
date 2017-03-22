@@ -85,7 +85,7 @@ public final class AppPublics
 
   /**
    * Defined in order to compute the default intent actions.
-   * <p/>
+   * <p>
    * <p>
    * Is invoked by the framework, at initialization time.
    * </p>
@@ -117,7 +117,7 @@ public final class AppPublics
 
     /**
      * Provides information about the current entity life cycle.
-     * <p/>
+     * <p>
      * <p>
      * It is very handy when it comes to know whether the end-user can interact with the underlying {@link Activity}/{@link android.app.Fragment}
      * entity.
@@ -131,7 +131,7 @@ public final class AppPublics
 
     /**
      * Indicates whether the current entity is still alive.
-     * <p/>
+     * <p>
      * <p>
      * It enables to know whether the underlying {@link Activity}/{@link android.app.Fragment} entity UI is still available for being handled.
      * </p>
@@ -152,7 +152,7 @@ public final class AppPublics
     /**
      * Indicates whether the extending {@link Activity}/{@link android.app.Fragment} entity also implementing the {@link LifeCycle} interface is in
      * the middle of a {@link LifeCycle#refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)} call.
-     * <p/>
+     * <p>
      * <p>
      * It is very handy when it comes to disable certain things, like menu entries, while an {@link Activity} is loading.
      * </p>
@@ -166,7 +166,7 @@ public final class AppPublics
   /**
    * When applied to the {@link AppPublics.BroadcastListener#getIntentFilter()} method, the implementation used will be the native
    * {@link Context#sendBroadcast(Intent)} method will be used, instead of the {@link LocalBroadcastManager#sendBroadcast(Intent)}.
-   * <p/>
+   * <p>
    * <p>
    * The {@link LocalBroadcastManager} is better regarding the performance, and safer in terms of security, because it restricts the broadcast
    * consumption to the application.
@@ -189,12 +189,12 @@ public final class AppPublics
    * {@link Activity} or {@link android.app.Fragment} {@link Smartable} entity implements that interface, the framework will
    * {@link Context#registerReceiver(android.content.BroadcastReceiver, IntentFilter) register} a {@link android.content.BroadcastReceiver}, and
    * {@link Context#unregisterReceiver(android.content.BroadcastReceiver) unregister} automatically during its life cycle.
-   * <p/>
+   * <p>
    * <p>
    * It indicates what kind of broadcast {@link Intent} are being listened to, and how to handle them, and enables to express both some {@link Intent}
    * filters, and their consumption at the same place.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * The framework will request this interface methods during the {@link Activity#onCreate(Bundle)} or
    * {@link android.app.Fragment#onCreate(Bundle)} methods, create a corresponding {@link android.content.BroadcastReceiver} and
@@ -213,7 +213,7 @@ public final class AppPublics
 
     /**
      * This method will be invoked by the framework to determine what {@link IntentFilter} should be associated to the current listener.
-     * <p/>
+     * <p>
      * <p>
      * The returned value of the method will be used to invoke the {@link Context#registerReceiver(android.content.BroadcastReceiver, IntentFilter)}
      * method. If this method is annotated with {@link AppPublics.UseNativeBroadcast}, the implementation will use the {@link LocalBroadcastManager}
@@ -238,7 +238,7 @@ public final class AppPublics
   /**
    * States that the Android {@link Activity} or {@link Fragment} entity which implements this interface is able to provide a single
    * {@link AppPublics.BroadcastListener}.
-   * <p/>
+   * <p>
    * <p>
    * As soon as a {@link Smartable} entity implements this interface, it is able to register a wrapped {@link android.content.BroadcastReceiver}
    * instance through the concept of {@link BroadcastListener}: this is handy, because it enables to integrate an independent reusable
@@ -267,14 +267,14 @@ public final class AppPublics
   /**
    * States that the Android {@link Activity} or {@link Fragment} entity which implements this interface is able to provide several
    * {@link AppPublics.BroadcastListener}.
-   * <p/>
+   * <p>
    * <p>
    * As soon as a {@link Smartable} entity implements this interface, it is able to register several wrapped {@link android.content.BroadcastReceiver}
    * instances through the concept of {@link BroadcastListener}: this is handy, because it enables to aggregate several independent reusable
    * {@link BroadcastListener} at the same time, and because the framework takes care of
    * {@link Context#unregisterReceiver(android.content.BroadcastReceiver) unregistering} them when the embedding entity is destroyed.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * This interface has been split into two distinct methods, {@link #getBroadcastListenersCount() one} for determining how many
    * {@link AppPublics.BroadcastListener broadcast listeners} the entity exposes, {@link #getBroadcastListener(int) one} for getting each individual
@@ -340,7 +340,7 @@ public final class AppPublics
 
   /**
    * A broadcast listener which listens only to {@link AppPublics#UI_LOAD_ACTION} intents.
-   * <p/>
+   * <p>
    * <p>
    * It is commonly used for {@link Activity} and {@link Fragment}, to get events when the entity is being loaded.
    * </p>
@@ -424,7 +424,7 @@ public final class AppPublics
 
   /**
    * A broadcast listener which only watch after {@link AppPublics#UI_LOAD_ACTION} UI loading intents action.
-   * <p/>
+   * <p>
    * <p>
    * It is commonly used for {@link Activity} and {@link Fragment}, to get events when the entity is being loaded.
    * </p>
@@ -536,7 +536,7 @@ public final class AppPublics
 
   /**
    * A broadcast listener which only watch after {@link AppPublics#UI_LOAD_ACTION} loading intent actions.
-   * <p/>
+   * <p>
    * <p>
    * It is especially useful for indicating to an entity that it should reload its content.
    * </p>
@@ -655,7 +655,7 @@ public final class AppPublics
   /**
    * A helper which receives multi-selection {@link Intent intents} with an action set to {@link MultiSelectionHandler#SELECTION_ACTION}, and which
    * remembers and triggers event according to the current selection.
-   * <p/>
+   * <p>
    * <p>
    * The <code>BusinessObjectClass</code> "template" class must implement properly the {@link Object#equals(Object)} method, in order to ensure the
    * unicity of business objects inside the {@link MultiSelectionHandler#getSelectedObjects() selected business objects}.
@@ -685,9 +685,12 @@ public final class AppPublics
 
     /**
      * Use this intent action when you need to indicate to the current activity that a business object has been selected or unselected.
-     *
-     * @see {@link MultiSelectionHandler#EXTRA_SELECTED} and {@link MultiSelectionHandler#EXTRA_BUSINESS_OBJECT} extra flags for indicated
+     * <p>
+     * see {@link MultiSelectionHandler#EXTRA_SELECTED} and {@link MultiSelectionHandler#EXTRA_BUSINESS_OBJECT} extra flags for indicated
      * whether the business object is selected, and what business object this is about
+     *
+     * @see MultiSelectionHandler#EXTRA_SELECTED
+     * @see MultiSelectionHandler#EXTRA_BUSINESS_OBJECT
      */
     public static String SELECTION_ACTION = "com.smartnsoft.droid4me.action.SELECTION";
 
@@ -731,7 +734,7 @@ public final class AppPublics
     /**
      * The method to invoke when the activity receives a {@link MultiSelectionHandler#SELECTION_ACTION intent}, due to as business object
      * selection/unselection.
-     * <p/>
+     * <p>
      * <p>
      * Usually invoked from the {@link android.content.BroadcastReceiver} which is listening to business objects selection events}.
      * </p>
@@ -762,7 +765,7 @@ public final class AppPublics
 
     /**
      * Sets the selection state for a given business object.
-     * <p/>
+     * <p>
      * <p>
      * However, the call does not trigger the
      * {@link AppPublics.MultiSelectionHandler.OnMultiSelectionChanged#onSelectionChanged(boolean, boolean, List)} callback.

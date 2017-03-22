@@ -1,5 +1,5 @@
-<!--
- * (C) Copyright 2009-2011 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+/*
+ * (C) Copyright 2009-2017 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -14,12 +14,12 @@
  * Contributors:
  *     E2M - initial API and implementation
  *     Smart&Soft - initial API and implementation
- -->
- <html>
-  <head></head>
-  <body>
+ */
 
-This package is a counterpart of the {@link android.content} Android package.
-
-  </body>
-</html>
+/**
+ * Handles Android desktop widgets.
+ *
+ * @author Édouard Mercier
+ * @since 2011.03.24
+ */
+package com.smartnsoft.droid4me.appwidget;

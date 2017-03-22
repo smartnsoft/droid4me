@@ -37,7 +37,7 @@ public interface Smarted<AggregateClass>
 
   /**
    * Gives access to the entity underlying "aggregate" object.
-   * <p/>
+   * <p>
    * <p>
    * This "aggregate" is especially useful to provide data to the entity, and is typically used by the {@link ActivityController.Interceptor} through
    * the entity life cycle events.
@@ -59,11 +59,11 @@ public interface Smarted<AggregateClass>
   /**
    * Explicitly registers some {@link BroadcastReceiver wrapped broadcast receivers} for the {@link Activity}/{@link Fragment} entity. This method is
    * especially useful to declare and consume at the same place {@link Intent broadcast intents}.
-   * <p/>
+   * <p>
    * <p>
    * Those receivers will finally be unregistered by the {@link Activity#onDestroy()}/{@link Fragment#onDestroy()} method.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * When invoking that method, all previously registered listeners via the {@link AppPublics.BroadcastListenerProvider} or
    * {@link AppPublics.BroadcastListenersProvider} are kept, and the new provided ones are added.
@@ -78,7 +78,7 @@ public interface Smarted<AggregateClass>
 
   /**
    * This is a centralized method which will be invoked by the framework any time an exception is thrown by the entity.
-   * <p/>
+   * <p>
    * <p>
    * It may be also invoked from the implementing entity, when an exception is thrown, so that the {@link ActivityController.ExceptionHandler} handles
    * it.

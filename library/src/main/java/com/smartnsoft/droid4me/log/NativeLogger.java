@@ -22,7 +22,7 @@ import android.util.Log;
 
 /**
  * An implementation which uses the Java standard output and error streams.
- * <p/>
+ * <p>
  * <p>
  * This implementation can be used when the code integrating the library needs to run on an environment with no Android runtime available.
  * </p>

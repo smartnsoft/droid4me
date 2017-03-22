@@ -46,7 +46,7 @@ public final class ExceptionHandlers
 
   /**
    * A simple implementation of {@link ExceptionHandlers.DefaultExceptionHandler} which pops-up error dialog boxes and toasts.
-   * <p/>
+   * <p>
    * <p>
    * The labels of the dialogs and the toasts are i18ned though the provided {@link SmartApplication.I18N} provided instance.
    * </p>
@@ -154,7 +154,7 @@ public final class ExceptionHandlers
     /**
      * This method will be invoked by the {@link #onBusinessObjectAvailableException(Activity, Object, BusinessObjectUnavailableException)} method, as a fallback if the provided exception has not been
      * handled neither by the {@link #handleCommonCauses(Activity, Object, Throwable, ConnectivityUIExperience)} nor the {@link #handleOtherCauses(Activity, Object, Throwable)} methods.
-     * <p/>
+     * <p>
      * <p>
      * A dialog box which reports the problem will be popped up by the current implementation: when the end-user acknowledges the issue reported by
      * the dialog box, the {@link Activity#finish() Activity will be finished}.
@@ -188,7 +188,7 @@ public final class ExceptionHandlers
     /**
      * This method will be invoked by the {@link #onActivityException(Activity, Object, Throwable)} method, as a fallback if the provided exception has not been handled neither
      * by the {@link #handleCommonCauses(Activity, Object, Throwable, ConnectivityUIExperience)} nor the {@link #handleOtherCauses(Activity, Object, Throwable)} methods.
-     * <p/>
+     * <p>
      * <p>
      * A dialog box which reports the problem will be popped up by the current implementation: when the end-user acknowledges the issue reported by
      * the dialog box, the {@link Activity#finish() Activity will be finished}.
@@ -248,7 +248,7 @@ public final class ExceptionHandlers
 
     /**
      * Checks for an Internet connectivity issue or a memory saturation issue inside the provided exception root causes.
-     * <p/>
+     * <p>
      * <p>
      * This method is especially useful when overriding the {@link ExceptionHandlers.AbstractExceptionHandler}, in order to let the framework hunt for
      * common troubles.
@@ -305,7 +305,7 @@ public final class ExceptionHandlers
     /**
      * The method which should be invoked internally when reporting an error dialog box. The parameters are the same as for the
      * {@link #onShowDialog(Activity, CharSequence, CharSequence, CharSequence, OnClickListener, CharSequence, OnClickListener, OnCancelListener)} method.
-     * <p/>
+     * <p>
      * <p>
      * It is possible to invoke that method from any thread.
      * </p>
@@ -357,7 +357,7 @@ public final class ExceptionHandlers
 
     /**
      * A place holder for handling in a centralized way all kinds of exceptions.
-     * <p/>
+     * <p>
      * <p>
      * When deriving from the {@link ExceptionHandlers.AbstractExceptionHandler} class, this method should be overridden, so as to handle all
      * application specific exceptions.
@@ -375,7 +375,7 @@ public final class ExceptionHandlers
 
     /**
      * Is invoked when a connectivity issue has been detected, and display a dialog box if any.
-     * <p/>
+     * <p>
      * <p>
      * If such Internet connectivity issue is detected, a {@link Toast} will be displayed if the {@code connectivityUIExperience} parameter is set to
      * {@link ConnectivityUIExperience#Toast} ; otherwise, a dialog box will be popped up: if the end-user does not hit the button which proposes to
@@ -459,7 +459,7 @@ public final class ExceptionHandlers
 
     /**
      * Is invoked when a memory saturation issue has been detected, and display a dialog box if any.
-     * <p/>
+     * <p>
      * <p>
      * In the exception root cause is a memory saturation issue, a @{link .hprof} dump file will be generated into the directory {@link
      * Environment#getExternalStorageDirectory()}, and the exact name of this file will be traced.
@@ -476,8 +476,8 @@ public final class ExceptionHandlers
     }
 
     /**
-     * Is responsible for displaying a dialog box. This enables to customize in a centralized way the dialog boxes look & feel.
-     * <p/>
+     * Is responsible for displaying a dialog box. This enables to customize in a centralized way the dialog boxes look &amp; feel.
+     * <p>
      * <p>
      * It is ensured that the framework will invoke that method from the UI thread, and when invoking that method directly, this must be done from the
      * UI thread as well.

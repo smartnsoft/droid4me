@@ -39,15 +39,15 @@ import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
 
 /**
  * An implementation of the {@link CoreBitmapDownloader} class, which is independent from the Android platform.
- * <p/>
+ * <p>
  * <p>
  * This implementation relies on two internal threads pools, which are shared among all {@link CoreBitmapDownloader} instances. The tunable parameters
  * are:
+ * </p>
  * <ul>
  * <li>{@link #setPreThreadPoolSize(int)},</li>
  * <li>{@link #setDownloadThreadPoolSize(int)}.</li>
  * </ul>
- * </p>
  *
  * @author Édouard Mercier
  * @since 2009.02.19

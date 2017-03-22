@@ -47,11 +47,11 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * Is responsible for intercepting an activity starting and redirect it to a prerequisite one if necessary, and for handling globally exceptions.
- * <p/>
+ * <p>
  * <p>
  * Everything described here which involves the {@link Activity activities}, is applicable provided the activity is a {@link Smartable}.
  * </p>
- * <p/>
+ * <p>
  * <p>
  * It is also a container for multiple interfaces relative to its architecture.
  * </p>
@@ -64,12 +64,12 @@ public class ActivityController
 
   /**
    * An interface which is requested when a new {@link Activity} is bound to be {@link Context#startActivity(Intent) started}.
-   * <p/>
+   * <p>
    * <p>
    * The redirector acts as a controller over the activities starting phase: if an activity should be started before another one is really
    * {@link Activity#onResume() active}, this is the right place to handle this at runtime.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * This component is especially useful when ones need to make sure that an {@link Activity} has actually been submitted to the end-user before
    * resuming a workflow. The common cases are the traditional application splash screen, or a signin/signup process.
@@ -85,14 +85,14 @@ public class ActivityController
      * started instead of the provided one, which is supposed to have just {@link Activity#onCreate(Bundle) started}, or when the
      * {@link Activity#onNewIntent(Intent)} method is invoked. However, the method will be not been invoked when those methods are invoked due to a
      * {@link Activity#onConfigurationChanged(android.content.res.Configuration) configuration change}.
-     * <p/>
+     * <p>
      * <p>
      * Caution: if an exception is thrown during the method execution, the application will crash!
      * </p>
      *
      * @param activity the activity which is bound to be displayed
      * @return {@code null} if and only if nothing is to be done, i.e. no activity should be started instead. Otherwise, the given intent will be
-     * executed: in that case, the provided activity {@Activity#finish finishes}
+     * executed: in that case, the provided activity {@link Activity#finish finishes}
      * @see ActivityController#needsRedirection(Activity)
      */
     Intent getRedirection(Activity activity);
@@ -102,7 +102,7 @@ public class ActivityController
   /**
    * An empty interface which should be used as a marker on an {@link Activity}, which does not want to be requested by the
    * {@link ActivityController.Redirector}.
-   * <p/>
+   * <p>
    * <p>
    * When an {@link Activity} implements this interface, the {@link ActivityController.Redirector#getRedirection(Activity)} method will not be
    * invoked.
@@ -149,7 +149,7 @@ public class ActivityController
      * @param name           the name of the desired service
      * @param defaultService the provided {@code activity} default system service (retrieved by invoking the {@link Activity#getSystemService(String)} method)
      * @return the desired service, or {@code null} if no service corresponding to the provided {@code name} is available nor exists
-     * @see {@link Activity#getSystemService(String)}
+     * @see Activity#getSystemService(String)
      */
     Object getSystemService(Activity activity, String name, Object defaultService);
 
@@ -157,7 +157,7 @@ public class ActivityController
 
   /**
    * An interface which is queried during the various life cycle events of a {@link LifeCycle}.
-   * <p/>
+   * <p>
    * <p>
    * An interceptor is the ideal place for centralizing in one place many of the {@link Activity}/{@link Fragment} entity life cycle
    * events.
@@ -176,7 +176,7 @@ public class ActivityController
       /**
        * Called during the {@code Activity.onCreate()} / {@code Fragment.onCreate()} method, before the Android built-in super method
        * {@link Activity#onCreate} method is invoked.
-       * <p/>
+       * <p>
        * <p>
        * This is an ideal place where to {@link Window#requestFeature(int)} request for window features}.
        * </p>
@@ -256,11 +256,11 @@ public class ActivityController
     /**
      * Invoked every time a new event occurs on the provided {@code activity}/{@code component}. For instance, this is an ideal for logging
      * application usage analytics.
-     * <p/>
+     * <p>
      * <p>
      * The framework ensures that this method will be invoked from the UI thread, hence the method implementation should last a very short time!
      * <p>
-     * <p/>
+     * <p>
      * <p>
      * Caution: if an exception is thrown during the method execution, the application will crash!
      * </p>
@@ -277,7 +277,7 @@ public class ActivityController
   /**
    * Defines and splits the handling of various exceptions in a single place. This handler will be invoked once it has been
    * {@link ActivityController#registerExceptionHandler(ExceptionHandler) registered}.
-   * <p/>
+   * <p>
    * <p>
    * The exception handler will be invoked at runtime when an exception is thrown and is not handled. You do not need to log the exception, because
    * the {@link ActivityController} already takes care of logging it, before invoking the current interface methods.
@@ -290,7 +290,7 @@ public class ActivityController
 
     /**
      * Is invoked whenever the {@link LifeCycle#onRetrieveBusinessObjects()} throws an exception.
-     * <p/>
+     * <p>
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
@@ -307,11 +307,11 @@ public class ActivityController
     /**
      * Is invoked whenever an activity implementing {@link LifeCycle} throws an unexpected exception outside from the
      * {@link LifeCycle#onRetrieveBusinessObjects()} method.
-     * <p/>
+     * <p>
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
      * </p>
-     * <p/>
+     * <p>
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
@@ -326,11 +326,11 @@ public class ActivityController
 
     /**
      * Is invoked whenever a handled exception is thrown with a non-{@link Activity} / {@link Fragment} {@link Context context}.
-     * <p/>
+     * <p>
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
      * </p>
-     * <p/>
+     * <p>
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
@@ -345,11 +345,11 @@ public class ActivityController
 
     /**
      * Is invoked whenever a handled exception is thrown outside from an available {@link Context context}.
-     * <p/>
+     * <p>
      * <p>
      * This method serves as a fallback on the framework, in order to handle gracefully exceptions and prevent the application from crashing.
      * </p>
-     * <p/>
+     * <p>
      * <p>
      * Warning, it is not ensured that this method will be invoked from the UI thread!
      * </p>
@@ -665,7 +665,7 @@ public class ActivityController
 
   /**
    * Is invoked by the framework every time a life cycle event occurs for the provided activity. You should not invoke that method yourself!
-   * <p/>
+   * <p>
    * <p>
    * Note that the method is synchronized, which means that the previous call will block the next one, if no thread is spawn.
    * </p>
@@ -686,13 +686,13 @@ public class ActivityController
 
   /**
    * Dispatches the exception to the {@link ActivityController.ExceptionHandler}, and invokes the right method depending on its nature.
-   * <p/>
+   * <p>
    * <p>
    * The framework is responsible for invoking that method every time an unhandled exception is thrown. If no
    * {@link ActivityController#registerExceptionHandler(ExceptionHandler) exception handler is registered}, the exception will be only logged, and the
    * method will return {@code false}.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * Note that this method is {@code synchronized}, which prevents it from being invoking while it is already being executed, and which involves that
    * only one {@link Throwable} may be handled at the same time.
@@ -778,12 +778,12 @@ public class ActivityController
    * Indicates whether a redirection is required before letting the activity continue its life cycle. It launches the redirected {@link Activity} if a
    * redirection is need, and provide to its {@link Intent} the initial activity {@link Intent} trough the extra {@link Parcelable}
    * {@link ActivityController#CALLING_INTENT} key.
-   * <p/>
+   * <p>
    * <p>
    * If the provided {@code activity} implements the {@link ActivityController.EscapeToRedirector} interface or exposes the
    * {@link ActivityController.EscapeToRedirectorAnnotation} annotation, the method returns {@code false}.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * Note that this method does not need to be marked as {@code synchronized}, because it is supposed to be invoked systematically from the UI thread.
    * </p>

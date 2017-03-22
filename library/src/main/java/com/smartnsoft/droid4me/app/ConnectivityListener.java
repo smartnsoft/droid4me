@@ -41,11 +41,11 @@ import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
 
 /**
  * A basis class responsible for listening to connectivity events.
- * <p/>
+ * <p>
  * <p>
  * <b>Caution: this component requires the Android {@code android.permission.ACCESS_NETWORK_STATE} permission!</b>.
  * </p>
- * <p/>
+ * <p>
  * <p>
  * This component will issue a {@link Intent broadcast Intent}, every time the hosting application Internet connectivity status changes with the
  * {@link ConnectivityListener#CONNECTIVITY_CHANGED_ACTION} action, and an extra {@link ConnectivityListener#EXTRA_HAS_CONNECTIVITY boolean flag},
@@ -129,12 +129,12 @@ public abstract class ConnectivityListener
 
   /**
    * This method should be invoked during the {@link Activity#onResume()} or {android.app.Fragment#onResume()} methods.
-   * <p/>
+   * <p>
    * <p>
    * If the provided {@code activity} parameter does not implement that interface, or if it has a {@link Activity#getParent()} method, or if the
    * {@code component} second parameter is {@code null} the method will do nothing.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * This method will invoke the {@link #updateActivity(Smarted)} method from the calling thread.
    * </p>
@@ -155,11 +155,11 @@ public abstract class ConnectivityListener
   /**
    * This method is invoked when the component has detected an Internet connectivity change. It is invoked a first time when the connectivity status
    * is known.
-   * <p/>
+   * <p>
    * <p>
    * It is a place-holder for notify all components depending on the Internet connectivity about the new status.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * Note that this method will be invoked from the UI thread.
    * </p>
@@ -171,11 +171,11 @@ public abstract class ConnectivityListener
   /**
    * This method is invoked systematically during the {@link Activity#onResume()} method, provided the
    * {@link #registerBroadcastListenerOnCreate(Activity, Object)} method has been invoked.
-   * <p/>
+   * <p>
    * <p>
    * It is a place-holder for updating the {@link Activity} Internet connectivity new status.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * Note that this method will be invoked from the UI thread.
    * </p>
@@ -226,12 +226,12 @@ public abstract class ConnectivityListener
   /**
    * This method should be invoked during the {@code Activity.onCreate()} or {@code Fragment.onCreate()} methods, so that it listens to the
    * Internet connectivity status, and so that it is notified when this status changes.
-   * <p/>
+   * <p>
    * <p>
    * If the provided {@code activity} parameter does not implement that interface, or if it has a {@link Activity#getParent()} method, or if the
    * {@code component} second parameter is {@code null} the method will do nothing.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * This method will {@link Smarted#registerBroadcastListeners(BroadcastListener[]) register} the current instance.
    * </p>

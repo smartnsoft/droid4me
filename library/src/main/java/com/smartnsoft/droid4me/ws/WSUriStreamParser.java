@@ -73,7 +73,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
 
     /**
      * Creates a keys aggregator and adds immediately a source key to it.
-     * <p/>
+     * <p>
      * <p>
      * That constructor will invoke the {@link #add(Business.Source, SourceKey)} method.
      * </p>
@@ -102,9 +102,9 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
 
     /**
      * Registers a source key to the aggregator, for a given source.
-     * <p/>
      * <p>
-     * Note that invoking the method multiple times with the same <coce>source</code> parameter value will just replace the existing source key.
+     * <p>
+     * Note that invoking the method multiple times with the same <code>source</code> parameter value will just replace the existing source key.
      * </p>
      *
      * @param source    the source the provided key belongs to
@@ -131,7 +131,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   /**
    * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#UriStreamer} source,
    * i.e. through a {#link {@link Business.UriStreamParser}.
-   * <p/>
+   * <p>
    * <p>
    * Indicates the type of HTTP request and the underlying HTTP body and URL.
    * </p>

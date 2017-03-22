@@ -44,7 +44,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * An abstract to be implemented when using the framework, because it initializes some of the components, and eases the development.
- * <p/>
+ * <p>
  * If you use your own implementation, do not forget to declare it in the {@code AndroidManifest.xml}.
  *
  * @author Édouard Mercier
@@ -167,7 +167,7 @@ public abstract class SmartApplication
 
   /**
    * A callback method which enables to indicate whether the process newly created should use the default {@link SmartApplication} workflow.
-   * <p/>
+   * <p>
    * <p>
    * It is useful when having multiple processes for the same application, and that some of the processes should not use the framework.
    * </p>
@@ -184,7 +184,7 @@ public abstract class SmartApplication
    * This callback will be invoked by the application instance, in order to get a reference on the application
    * {@link ActivityController.SystemServiceProvider}: this method is responsible for creating an implementation of this component interface. Override
    * this method, in order to override the system services which are provided by default by an {@link Activity}.
-   * <p/>
+   * <p>
    * <p>
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
    * {@link Application#onCreate()} method execution.
@@ -203,7 +203,7 @@ public abstract class SmartApplication
    * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Redirector}:
    * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the redirection
    * mechanism.
-   * <p/>
+   * <p>
    * <p>
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
    * {@link Application#onCreate()} method execution.
@@ -222,7 +222,7 @@ public abstract class SmartApplication
    * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Interceptor}:
    * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the interception
    * mechanism.
-   * <p/>
+   * <p>
    * <p>
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
    * {@link Application#onCreate()} method execution.
@@ -241,7 +241,7 @@ public abstract class SmartApplication
    * This callback will be invoked by the application instance, in order to get a reference on the application
    * {@link ActivityController.ExceptionHandler}: this method is responsible for creating an implementation of this component interface. Override this
    * method, in order to handle more specifically some application-specific exceptions.
-   * <p/>
+   * <p>
    * <p>
    * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which should not be the case), during the
    * {@link Application#onCreate()} method execution.
@@ -278,12 +278,12 @@ public abstract class SmartApplication
    * <li>register an internal default {@link Thread.UncaughtExceptionHandler} for the UI and for the background threads,</li>
    * <li>logs how much time the {@link #onCreate()} method execution took.</li>
    * </ol>
-   * <p/>
+   * <p>
    * <p>
    * Note: if the method has already been invoked once, the second time (because of a concurrent access), it will do nothing but output an error log.
    * This is the reason why the method has been declared as synchronized.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * This method normally does not need to be override, if needed override rather the {@link #onCreateCustom() method}
    * </p>
@@ -399,7 +399,7 @@ public abstract class SmartApplication
    * This is the place where to register other {@link UncaughtExceptionHandler default exception handlers} like <a
    * href="https://github.com/ACRA/acra">ACRA</a>. The default implementation does nothing, and if overriden, this method should not invoke its
    * {@code super} method.
-   * <p/>
+   * <p>
    * <p>
    * It is ensured that the framework default exception handlers will be set-up after this method, and they will fallback to the already registered
    * default exception handlers.
@@ -411,7 +411,7 @@ public abstract class SmartApplication
 
   /**
    * This method will be invoked if and only if the {@link #shouldBeSilent()} method has returned {@code true}.
-   * <p/>
+   * <p>
    * <p>
    * This enables to execute some code, even if the application runs in silent mode.
    * </p>
@@ -455,12 +455,12 @@ public abstract class SmartApplication
   /**
    * This method will be invoked at the end of the {@link #onCreate()} method, once the framework initialization is over. You can override this
    * method, which does nothing by default, in order to initialize your application specific variables, invoke some services.
-   * <p/>
+   * <p>
    * <p>
    * Keep in mind that this method should complete very quickly, in order to prevent from hanging the GUI thread, and thus causing a bad end-user
    * experience, and a potential ANR.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * The method does nothing, by default.
    * </p>

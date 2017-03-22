@@ -25,7 +25,7 @@ import android.widget.ImageView;
 /**
  * Enables to receive an event when the {@link ImageView} size has changed, set an automatic ratio between its width and its height, and discard the
  * layout requests.
- * <p/>
+ * <p>
  * <p>
  * This is especially useful when an image width is set to a specific width policy and that the height should be set accordingly, and vice-versa.
  * </p>

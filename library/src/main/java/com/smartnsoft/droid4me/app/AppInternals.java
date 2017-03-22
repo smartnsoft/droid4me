@@ -62,7 +62,7 @@ final class AppInternals
 
     /**
      * Indicates whether nothing went wrong during the implementing entity, or if a redirection is being processed.
-     * <p/>
+     * <p>
      * <p>
      * Thanks to the {@link ActivityController.Redirector redirection controller}, it is possible to re-route any {@link Smartable} {@link Activity}
      * when it starts, if some other {@code Activity} needs to be executed beforehand.
@@ -611,7 +611,7 @@ final class AppInternals
 
     /**
      * Invoked when the underlying activity/fragment enters the {@link Activity#onDestroy()} method.
-     * <p/>
+     * <p>
      * <p>
      * The method marks the entity as {@link #isAlive no more alive}, unregisters the previously registered {@link AppPublics.BroadcastListener
      * broadcast listeners}, and eventually interrupts all pending {@link #futures}.
@@ -712,7 +712,7 @@ final class AppInternals
 
     /**
      * Is responsible for executing the given runnable in background via the {@link AppInternals#THREAD_POOL internal threads pool}.
-     * <p/>
+     * <p>
      * <p>
      * The command will be remembered, so as to be able to abort/cancel/remove it when the underlying activity/fragment is destroyed.
      * </p>
@@ -760,13 +760,13 @@ final class AppInternals
 
   /**
    * This threads pool is used internally, in order to prevent from new thread creation, for an optimization purpose.
-   * <p/>
+   * <p>
    * <ul>
    * <li>This pool can contain an unlimited number of threads;</li>
    * <li>exceptions thrown by the {@link Runnable} are handled by the
    * {@link ActivityController#registerExceptionHandler(ActivityController.ExceptionHandler) exception handler}.</li>
    * </ul>
-   * <p/>
+   * <p>
    * <p>
    * This pool will be used by the framework, instead of creating new threads.
    * </p>

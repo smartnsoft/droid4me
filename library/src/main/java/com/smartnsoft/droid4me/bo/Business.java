@@ -211,7 +211,7 @@ public final class Business
 
     /**
      * A hook for creating an {@link ObjectInputStream} when attempting to deserialize the underlying object.
-     * <p/>
+     * <p>
      * <p>
      * This implementation just returns {@code new ObjectInputStream(inputStream)}.
      * </p>
@@ -229,7 +229,7 @@ public final class Business
 
     /**
      * A hook for creating an {@link ObjectOutputStream} when attempting to serialize the underlying object.
-     * <p/>
+     * <p>
      * <p>
      * This implementation just returns {@code new ObjectOutputStream(outputStream)}.
      * </p>
@@ -396,9 +396,10 @@ public final class Business
 
     /**
      * Is responsible for writing the provided data.
-     * <p/>
+     * <p>
      * <p>
      * The {@code returnStream} parameter enables to tune whether the implementation is supposed to return the provided input stream.
+     * throws {@link Throwable} if any problem occurs while persisting the data
      * </p>
      *
      * @param uri          the URI the data belongs to
@@ -408,7 +409,6 @@ public final class Business
      *                     ; if set to {@code false}, {@code null} must be returned
      * @return a valid input stream corresponding to the persisted data; it is not allowed to be {@code null} when the {@code returnStream} parameter
      * is {@code true}. Otherwise, {@code null} must be returned
-     * @throws Exception if any problem occurs while persisting the data
      */
     InputStream writeInputStream(UriType uri, Business.InputAtom inputAtom, boolean returnStream)
         throws ExceptionType;

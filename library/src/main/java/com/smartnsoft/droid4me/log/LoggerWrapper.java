@@ -25,7 +25,7 @@ import java.util.Set;
 
 /**
  * A class which enables to wrap a {@link Logger}, and to delegate all its interface methods to its underlying logger.
- * <p/>
+ * <p>
  * <p>
  * All instances of this class are recorded, so that it is possible to {@link LoggerWrapper#configure(LoggerFactory.LoggerConfigurator) configure}
  * them later on. This is especially useful, when it is required to change the implementation in the middle of an application.

@@ -175,7 +175,7 @@ public abstract class SmartAdapters
     }
 
     /**
-     * Should only be invoked once the {@link #setNewView(ActivityClass, View)} method has already been invoked.
+     * Should only be invoked once the {@link #setNewView(Activity, View)} method has already been invoked.
      *
      * @param view the {@code View} which holds the business object representation
      * @return the view attributes that have been attached to the provided view
@@ -405,7 +405,7 @@ public abstract class SmartAdapters
     }
 
     /**
-     * Is allowed to be invoked once the {@link #getView(ViewGroup, Activity, LayoutInflater)} or {@link #setView(ActivityClass, View)} method has been called.
+     * Is allowed to be invoked once the {@link #getView(ViewGroup, Activity, LayoutInflater)} or {@link #setView(Activity, View)} method has been called.
      *
      * @return the view which represents the underlying business object
      */
@@ -429,9 +429,9 @@ public abstract class SmartAdapters
 
     /**
      * This method should be called only once during the object life cycle.
-     * <p/>
      * <p>
-     * This will invoke the {@link BusinessViewWrapper#getNewView(ViewGroup, ActivityClass, LayoutInflaterClass)} method.
+     * <p>
+     * This will invoke the {@link BusinessViewWrapper#getNewView(ViewGroup, Activity, LayoutInflater)} method.
      * </p>
      *
      * @param activity the activity on which the business object is being rendered
@@ -458,9 +458,9 @@ public abstract class SmartAdapters
 
     /**
      * Synchronizes the rendering of the inner {@link View} with the state of the business object.
-     * <p/>
      * <p>
-     * This will invoke the {@link BusinessViewWrapper#updateView(ActivityClass, LayoutInflaterClass, View, int)} method with a <code>position</code> set to
+     * <p>
+     * This will invoke the {@link BusinessViewWrapper#updateView(Activity, LayoutInflater, View, int)} method with a <code>position</code> set to
      * 0.
      * </p>
      *

@@ -242,7 +242,7 @@ public final class DbPersistence
 
   /**
    * The file names of the instances database files.
-   * <p/>
+   * <p>
    * <p>
    * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
    * </p>
@@ -251,7 +251,7 @@ public final class DbPersistence
 
   /**
    * The table names of the instances database files.
-   * <p/>
+   * <p>
    * <p>
    * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
    * </p>
@@ -261,7 +261,7 @@ public final class DbPersistence
   /**
    * The fully qualified classes names of the {@link DbPersistence.DbCleanUpPolicy clean up policies} to use. Each array element may be {@code null},
    * and in that case, no policy is attached to the corresponding instance.
-   * <p/>
+   * <p>
    * <p>
    * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
    * </p>
@@ -418,7 +418,7 @@ public final class DbPersistence
 
   /**
    * Opens a new database if necessary, and updates the references.
-   * <p/>
+   * <p>
    * <p>
    * This enables to share the database instances when possible.
    * </p>
@@ -439,7 +439,7 @@ public final class DbPersistence
 
   /**
    * Closes the shared database if necessary, and updates the references.
-   * <p/>
+   * <p>
    * <p>
    * This enables to share the database instances when possible.
    * </p>

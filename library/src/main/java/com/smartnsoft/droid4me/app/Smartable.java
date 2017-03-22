@@ -19,8 +19,8 @@
 package com.smartnsoft.droid4me.app;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
-import android.support.v4.app.Fragment;
 
 import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.log.Logger;
@@ -28,26 +28,27 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * All {@link Activity activities} and {@link Fragment fragments} entities of the framework must at least implement this composite interface.
- * <p/>
+ * <p>
  * <p>
  * Any entity implementing this interface is considered as droid4me-ready (or droid4me-compliant) and benefit from all the framework features.
  * </p>
- * <p/>
+ * <p>
  * <p>
  * If the implementing entity also implements the {@link AppPublics.BroadcastListener}, or the {@link AppPublics.BroadcastListenerProvider} or the
  * {@link AppPublics.BroadcastListenersProvider} interface, the framework will register one or several {@link BroadcastReceiver broadcast receivers},
  * as explained in the {@link AppPublics.BroadcastListener}.
  * </p>
- * <p/>
+ * <p>
  * <p>
  * When it is required to have an existing {@link Activity} or {@link android.app.Fragment} implement this interface, you may use the
  * {@link Droid4mizer} on that purpose.
  * </p>
  *
  * @param <AggregateClass> the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
- * @author Édouard Mercier
  * @see SmartableActivity
  * @see Droid4mizer
+ *
+ * @author Édouard Mercier
  * @since 2011.03.04
  */
 public interface Smartable<AggregateClass>

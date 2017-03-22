@@ -326,9 +326,9 @@ public class DownloadInstructions
   /**
    * An implementation of the {@link Instructions}, which returns the <code>bitmapUid</code> as an URL, and which does not present any temporary nor
    * local bitmap.
-   * <p/>
    * <p>
-   * Caution: this implementation supposes that the provided {@View view} is actually an {@ImageView} in the
+   * <p>
+   * Caution: this implementation supposes that the provided {@link View view} is actually an {@link ImageView} in the
    * {@link DownloadInstructions.AbstractInstructions#onBindBitmap(boolean, View, Bitmap, String, Object)} method.
    * </p>
    */
@@ -377,7 +377,7 @@ public class DownloadInstructions
 
     /**
      * Is responsible for turning the provided input stream into a bitmap representation.
-     * <p/>
+     * <p>
      * <p>
      * The method measures the time taken for the conversion, and logs that duration. The technical part of the method is delegated to the
      * {@link #convertInputStreamToBitmap(InputStream, String, Object, String)} method.
@@ -429,7 +429,7 @@ public class DownloadInstructions
 
     /**
      * Actually converts the given {@link InputStream} into an Android {@link Bitmap}.
-     * <p/>
+     * <p>
      * <p>
      * The hereby implementation does not perform any scaling.
      * </p>

@@ -40,7 +40,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * * A basis class for making web service calls easier.
- * <p/>
+ * <p>
  * <p>
  * When invoking an HTTP method, the caller goes through the following workflow:
  * <ol>
@@ -214,7 +214,7 @@ public abstract class URLConnectionWebServiceCaller
 
   /**
    * Invoked on every call, in order to extract the input stream from the response.
-   * <p/>
+   * <p>
    * <p>
    * If the content type is gzipped, this is the ideal place for unzipping it.
    * </p>
@@ -327,7 +327,7 @@ public abstract class URLConnectionWebServiceCaller
 
   /**
    * Is responsible for returning an HTTP client instance, used for actually running the HTTP requests.
-   * <p/>
+   * <p>
    * <p>
    * The current implementation returns a {@link HttpURLConnection} instance.
    * </p>

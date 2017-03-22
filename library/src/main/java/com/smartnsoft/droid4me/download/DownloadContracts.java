@@ -35,7 +35,7 @@ public final class DownloadContracts
 
   /**
    * An abstraction of a {@link android.graphics.Bitmap} which makes possible the writing of unitary tests.
-   * <p/>
+   * <p>
    * <p>
    * Any implementing class is supposed to wrap a bitmap, i.e. the bytes that enable to create it.
    * </p>
@@ -57,7 +57,7 @@ public final class DownloadContracts
 
   /**
    * An abstraction of a {@link android.view.View} which makes possible the writing of unitary tests.
-   * <p/>
+   * <p>
    * <p>
    * Any implementing class is supposed to wrap a view, i.e. a graphical widget.
    * </p>
@@ -88,7 +88,7 @@ public final class DownloadContracts
 
   /**
    * An abstraction of a {@link android.os.Handler} which makes possible the writing of unitary tests.
-   * <p/>
+   * <p>
    * <p>
    * Any implementing class is supposed run a command in the User Interface thread.
    * </p>

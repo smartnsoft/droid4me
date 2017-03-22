@@ -1,5 +1,5 @@
-<!--
- * (C) Copyright 2009-2012 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
+/*
+ * (C) Copyright 2009-2017 Smart&Soft SAS (http://www.smartnsoft.com/) and contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,13 +12,14 @@
  * Lesser General Public License for more details.
  *
  * Contributors:
+ *     E2M - initial API and implementation
  *     Smart&Soft - initial API and implementation
- -->
- <html>
-  <head></head>
-  <body>
+ */
 
-Contains a compact framework for handling the process configuration.
-
-  </body>
-</html>
+/**
+ * Contains all the classes required for the support-v4 android compatibility library.
+ *
+ * @author Édouard Mercier
+ * @since 2010.07.10
+ */
+package com.smartnsoft.droid4me.support.v4;

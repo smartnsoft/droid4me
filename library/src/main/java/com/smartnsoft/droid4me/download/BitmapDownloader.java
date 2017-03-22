@@ -50,7 +50,7 @@ public class BitmapDownloader
 
   /**
    * A component which is able to display graphically the state of the {@link BitmapDownloader#getInstance(int) instances}.
-   * <p/>
+   * <p>
    * <p>
    * It is very handy for fine-tuning the {@link CoreBitmapDownloader#highLevelMemoryWaterMarkInBytes} and the
    * {@link CoreBitmapDownloader#lowLevelMemoryWaterMarkInBytes} parameters.
@@ -131,7 +131,7 @@ public class BitmapDownloader
     /**
      * Creates on the fly a new Android {@link ViewGroup} which is able to display the data exposed by an
      * {@link CoreBitmapDownloader.AnalyticsListener} implementation.
-     * <p/>
+     * <p>
      * <p>
      * The container widget displays as many jauges as declared through the {@link BitmapDownloader#INSTANCES_COUNT} attribute, each jauge supposed to
      * represent its underlying {@link CoreBitmapDownloader} state.
@@ -190,7 +190,7 @@ public class BitmapDownloader
 
   /**
    * The number of instances of {@link BitmapDownloader} that will be created. Defaults to {@code 1}.
-   * <p/>
+   * <p>
    * <p>
    * Set that parameter before invoking the {@link BitmapDownloader#get} method, because a later change has no effect.
    * </p>
@@ -205,7 +205,7 @@ public class BitmapDownloader
   /**
    * Indicates the upper limit of memory that each cache is allowed to reach. When that limit is reached, the instance cache memory is
    * {@link #cleanUpCache() cleaned up}.
-   * <p/>
+   * <p>
    * <p>
    * If not set, the {@link #DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES} value will be used for all instances.
    * </p>
@@ -219,7 +219,7 @@ public class BitmapDownloader
 
   /**
    * When the cache is being {@link #cleanUpCache() cleaned-up}, it indicates the lower limit of memory that each cache is allowed to reach.
-   * <p/>
+   * <p>
    * <p>
    * If not set, the {@link #DEFAULT_LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES} value will be used for all instances.
    * </p>
@@ -253,11 +253,11 @@ public class BitmapDownloader
 
   /**
    * Gives access to a "BitmapDownloader" instance.
-   * <p/>
+   * <p>
    * <p>
    * If no instance had been created at the time of the call, the instances will be created on the fly, which respects the lazy loading pattern.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * You may tune the actual implementation of {@link BitmapDownloader} to use by setting beforehand the {@link BitmapDownloader#IMPLEMENTATION_FQN}
    * attribute.

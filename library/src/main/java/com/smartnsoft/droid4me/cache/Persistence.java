@@ -62,7 +62,7 @@ public abstract class Persistence
 
   /**
    * The exception thrown when an error occurs during a persistence operation.
-   * <p/>
+   * <p>
    * <p>
    * For the time being, only the classes in the current package can create such exception.
    * </p>
@@ -252,7 +252,7 @@ public abstract class Persistence
 
   /**
    * The directory paths of the instances.
-   * <p/>
+   * <p>
    * <p>
    * The number of elements in this array must be equal to {@link Persistence#INSTANCES_COUNT}.
    * </p>
@@ -271,7 +271,7 @@ public abstract class Persistence
 
   /**
    * The maximum size, expressed in bytes, of the data associated to an URI.
-   * <p/>
+   * <p>
    * <p>
    * Think of tuning this parameter in case the application stores large data.
    * </p>
@@ -300,7 +300,7 @@ public abstract class Persistence
 
   /**
    * Indicates how the persisted URI are being accessed.
-   * <p/>
+   * <p>
    * <p>
    * All implementations are not required to update this field, it is just here to help.
    * </p>
@@ -309,7 +309,7 @@ public abstract class Persistence
 
   /**
    * Holds all the URIs which are currently being persisted.
-   * <p/>
+   * <p>
    * <p>
    * All implementations are not required to update this field, it is just here to help.
    * </p>
@@ -428,11 +428,11 @@ public abstract class Persistence
   /**
    * Enables to access the various persistence instances. The number of instantiated occurrences is defined by the {@link Persistence#INSTANCES_COUNT}
    * variable, which must have been set beforehand.
-   * <p/>
+   * <p>
    * <p>
    * This will cause the {@link Persistence#initialize()} method to be invoked for every instance.
    * </p>
-   * <p/>
+   * <p>
    * <p>
    * Note that the instantiation is lazy.
    * </p>
@@ -484,7 +484,7 @@ public abstract class Persistence
 
   /**
    * The unique constructor.
-   * <p/>
+   * <p>
    * <p>
    * The {@link #initialize()} method does not need to be explicitly invoked before using the instance, as long as the {@code XXXInstance} methods are
    * not invoked, because the other methods will invoke it.
@@ -531,7 +531,7 @@ public abstract class Persistence
 
   /**
    * Initializes the persistence instance. If the instance is already {@link #isInitialized() initialized}, the method does nothing.
-   * <p/>
+   * <p>
    * <p>
    * It will be lazily invoked when the object is used for the first time when using the {@link #getInstance(int)} method.
    * </p>
@@ -551,7 +551,7 @@ public abstract class Persistence
 
   /**
    * Is responsible for performing the {@link #initialize()} method job.
-   * <p/>
+   * <p>
    * <p>
    * The implementation must set the {@link #storageBackendAvailable} flag accordingly.
    * </p>
@@ -564,7 +564,7 @@ public abstract class Persistence
 
   /**
    * Enables to access all the stored URIs. Each persistent entry is represented by a a local URI, and this method returns all of them.
-   * <p/>
+   * <p>
    * <p>
    * Note that the ordering of the returned list is not guaranteed to be stable.
    * </p>
@@ -636,14 +636,14 @@ public abstract class Persistence
 
   /**
    * Is responsible for writing persistently the stream related to the given URI.
-   * <p/>
+   * <p>
    * <p>
    * Beware: the {@link Business.InputAtom#inputStream} of the provided parameter is consumed by the method!
    * </p>
    *
    * @param uri       the URI which identifies the stream to persist
    * @param inputAtom the wrapper which contains the stream to write
-   * @return a new stream wrapper, which is operational, and in particular not {@null}
+   * @return a new stream wrapper, which is operational, and in particular not null
    * @throws Persistence.PersistenceException if a problem occurred while persisting the data or if the storage back-end is not available
    * @see #flushInputStreamInstance(String, InputAtom)
    */
@@ -744,7 +744,7 @@ public abstract class Persistence
 
   /**
    * Enables to define the way the persistence cache clean up is performed.
-   * <p/>
+   * <p>
    * <p>
    * This method is supposed to be invoked by the {@link #cleanUpInstance(CleanUpPolicy)} method, when it attempts to determine the
    * {@link Persistence.CleanUpPolicy} to use.
@@ -757,13 +757,13 @@ public abstract class Persistence
 
   /**
    * Cleans-up the persistence.
-   * <p/>
+   * <p>
    * <p>
    * This will remove persistent entries depending on the provided {@code cleanUpPolicy}.
    * </p>
    *
    * @param cleanUpPolicy the policy to use for cleaning up the instance
-   * @throws if any problem occurs while cleaning up the instance
+   * @throws Persistence.PersistenceException if any problem occurs while cleaning up the instance
    * @see #cleanUp()
    */
   protected abstract <CleanUpPolicyClass extends Persistence.CleanUpPolicy> void cleanUpInstance(
@@ -772,12 +772,12 @@ public abstract class Persistence
 
   /**
    * Empties the persistence.
-   * <p/>
+   * <p>
    * <p>
    * Once called, the persistence storage will be emptied, but the instance can keep on being used as is.
    * </p>
    *
-   * @throws if any problem occurs while emptying the persistence
+   * @throws Persistence.PersistenceException if any problem occurs while emptying the persistence
    * @see #clear()
    */
   protected abstract void clearInstance()
@@ -785,12 +785,12 @@ public abstract class Persistence
 
   /**
    * Closes the persistence.
-   * <p/>
+   * <p>
    * <p>
    * Once called, the persistence will need to be {@link #initialize() initialized again}, before being used.
    * </p>
    *
-   * @throws if any problem occurs while closing the persistence
+   * @throws Persistence.PersistenceException if any problem occurs while closing the persistence
    * @see #close()
    */
   protected abstract void closeInstance()
@@ -800,13 +800,13 @@ public abstract class Persistence
    * Cleans up the cache related to the current instance. This will remove persistent entries depending on the computed
    * {@link #computeCleanUpPolicy()} : if this policy is {@code null}, nothing is done. The method will invoke the
    * {@link #computePolicyAndCleanUpInstance()} method.
-   * <p/>
+   * <p>
    * <p>
    * During this operation, the instance should not be accessed, and the implementation is not responsible for ensuring that: it is up to the caller
    * to make sure that no other instance method is being invoked during its execution!
    * </p>
    *
-   * @throws if any problem occurs while cleaning up the instance
+   * @throws Persistence.PersistenceException if any problem occurs while cleaning up the instance
    * @see #cleanUpInstance(CleanUpPolicy)
    * @see #clear()
    * @see #close()
@@ -844,12 +844,12 @@ public abstract class Persistence
   /**
    * Totally clears the cache related to the current instance. This will delete all the entries. The method will invoke the {@link #clearInstance()}
    * method.
-   * <p/>
+   * <p>
    * <p>
    * Once cleared, the current instance can be used as is.
    * </p>
    *
-   * @throws if any problem occurs while clearing the persistence
+   * @throws Persistence.PersistenceException if any problem occurs while clearing the persistence
    * @see #clearInstance()
    * @see #close()
    * @see #clearAll()
@@ -872,7 +872,7 @@ public abstract class Persistence
 
   /**
    * Closes the current instance. The method will invoke the {@link #closeInstance()} method.
-   * <p/>
+   * <p>
    * <p>
    * Once closed, the current instance cannot be used until an explicit {@link #initialize()} call is performed.
    * </p>

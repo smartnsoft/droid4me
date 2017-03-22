@@ -66,14 +66,14 @@ public abstract class ProgressHandler
 
   /**
    * Should be invoked when a progress event occurs.
-   * <p/>
+   * <p>
    * <p>
    * If the provided activity is {@link Activity#isFinishing() finishing}, it does nothing.
    * </p>
-   * <p/>
-   * <p/>
+   * <p>
+   * <p>
    * Caution: this method must be exclusively invoked from the GUI thread!
-   * <p/>
+   * <p>
    *
    * @param activity      the activity from which the progress event is triggered
    * @param inProgress    whether the progression is on or off

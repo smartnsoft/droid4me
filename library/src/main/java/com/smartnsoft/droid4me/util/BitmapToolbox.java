@@ -59,7 +59,7 @@ public final class BitmapToolbox
 
   /**
    * Flips the provided bitmap horizontally or vertically.
-   * <p/>
+   * <p>
    * <p>
    * Warning, the original bitmap is recycled and cannot be used after this call!
    * </p>
@@ -80,7 +80,7 @@ public final class BitmapToolbox
 
   /**
    * Merges a little bitmap to a larger one.
-   * <p/>
+   * <p>
    * <p>
    * Warning, the original bitmaps are recycled and cannot be used after this call!
    * </p>
@@ -108,7 +108,7 @@ public final class BitmapToolbox
 
   /**
    * Computes a new bitmap with a reflect at the bottom.
-   * <p/>
+   * <p>
    * <p>
    * Warning, the original bitmap is recycled and cannot be used after this call!
    * </p>
@@ -165,7 +165,7 @@ public final class BitmapToolbox
 
   /**
    * Resizes a bitmap so that it is filled with transparency in order to match the expected dimension. No scaling is performed.
-   * <p/>
+   * <p>
    * <p>
    * Warning, the original bitmap is recycled and cannot be used after this call; furthermore, it is supposed that the provided image is smaller in
    * both dimension that the provided dimensions!

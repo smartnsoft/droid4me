@@ -22,7 +22,7 @@ import android.util.Log;
 
 /**
  * The logger implementation for Android.
- * <p/>
+ * <p>
  * <p>
  * This implementation can only be used when the code integrating the library runs environment with the Android runtime.
  * </p>

@@ -34,7 +34,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * A class which enables to cache business objects.
- * <p/>
+ * <p>
  * <p>
  * The class is not thread-safe in the sense that if multiple threads attempts to modify or get the underlying cached object, no atomicity is granted.
  * </p>

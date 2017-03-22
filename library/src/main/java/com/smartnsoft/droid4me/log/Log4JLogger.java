@@ -21,9 +21,9 @@ import org.apache.log4j.Level;
 
 /**
  * The logger implementation for Log4J, which works with the "android-logging-log4j" library.
- * <p/>
  * <p>
- * When using this implementation (see {@link LoggerFactory.LoggerConfigurator}), the classpath should have {@code log4j.jar} and {@link android
+ * <p>
+ * When using this implementation (see {@code LoggerFactory.LoggerConfigurator}), the classpath should have {@code log4j.jar} and {@link android
  * -logging-log4j.jar} libraries.
  * </p>
  *
@@ -41,17 +41,17 @@ public class Log4JLogger
   {
     switch (logLevel)
     {
-    case android.util.Log.ASSERT:
-    default:
-      return Level.TRACE;
-    case android.util.Log.DEBUG:
-      return Level.DEBUG;
-    case android.util.Log.INFO:
-      return Level.INFO;
-    case android.util.Log.WARN:
-      return Level.WARN;
-    case android.util.Log.ERROR:
-      return Level.ERROR;
+      case android.util.Log.ASSERT:
+      default:
+        return Level.TRACE;
+      case android.util.Log.DEBUG:
+        return Level.DEBUG;
+      case android.util.Log.INFO:
+        return Level.INFO;
+      case android.util.Log.WARN:
+        return Level.WARN;
+      case android.util.Log.ERROR:
+        return Level.ERROR;
     }
   }
 

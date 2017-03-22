@@ -80,7 +80,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
     /**
      * Is invoked every time the underlying attached {@link CoreBitmapDownloader} internal state changes.
-     * <p/>
+     * <p>
      * <p>
      * In particular, this method will be invoked when the instance cache is {@link CoreBitmapDownloader#cleanUpCache() cleaned up}, or when an
      * {@link OutOfMemoryError} occurs.
@@ -289,7 +289,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * Holds the instance bitmap memory cache. The {@link Map} {@link String} entry if the
    * {@link BasisDownloadInstructions.Instructions#computeUrl(String, Object) URL} of a cached bitmap.
-   * <p/>
+   * <p>
    * <p>
    * A {@link HashMap} is used instead of a {@link java.util.Hashtable}, because we want to allow null values.
    * </p>
@@ -404,11 +404,11 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * This method will retrieve the bitmap corresponding to the provided identifier along with the provided instructions, and bind it to the provided
    * {@link View}. This instruction is considered as a download and binding job.
-   * <p/>
+   * <p>
    * <p>
    * Can be invoked from any thread, not only the GUI's! The method is non-blocking, which means that the job is done in an asynchronous way.
    * </p>
-   * <p/>
+   * <p>
    * Here are some noteworthy contracts that the component enforces:
    * <ul>
    * <li>The component ensures that any {@link OutOfMemoryError} exception thrown during the commands of the job are caught properly, so that the
@@ -433,7 +433,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * Provides the same feature as {@link #get(boolean, boolean, Viewable, String, Object, Handlerable, Instructions)}, except that it
    * may be called from the GUI thread and blocking.
-   * <p/>
+   * <p>
    * <p>
    * Invoking that method with the two {@code isPreBlocking} and {@code isDownloadBlocking} parameters set to {@code true} will execute the command
    * from the calling thread, which involves that the caller should be the UI thread, or that the provided {@code view} parameter is {@code null}.
@@ -453,7 +453,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * Empties the cache, so that no more bitmap is available in memory.
-   * <p/>
+   * <p>
    * <p>
    * All operations in progress should be canceled.
    * </p>
@@ -521,7 +521,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 
   /**
    * Is responsible for cleaning up the cache, until the low-level memory water mark is reached.
-   * <p/>
+   * <p>
    * <p>
    * If o clean-up is already {@link #cleanUpInProgress in progress}, the method returns immediately without processing anything.
    * </p>
@@ -562,7 +562,7 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   /**
    * This method is responsible for actually cleaning up the memory cache, by enforcing the {@link #highLevelMemoryWaterMarkInBytes} and
    * {@link #lowLevelMemoryWaterMarkInBytes} limits. This method is aimed at being overridden, so as to set up another clean up policy.
-   * <p/>
+   * <p>
    * <p>
    * It is responsible for cleaning up the {@link #cache} attribute and update the {@link #memoryConsumptionInBytes} attribute accordingly.
    * </p>
