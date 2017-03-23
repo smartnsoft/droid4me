@@ -896,7 +896,7 @@ public final class SmartCommands
   });
 
   /**
-   * Equivalent to invoking {@link SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(Runnable)}.
+   * Equivalent to invoking {@code SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(Runnable)}.
    *
    * @see #execute(SmartCommands.GuardedCommand)
    */
@@ -910,7 +910,7 @@ public final class SmartCommands
    * from the {@link ExceptionHandler} if the command triggers an exception.
    * <p>
    * <p>
-   * Equivalent to invoking {@link SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(Runnable)}.
+   * Equivalent to invoking {@code SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(Runnable)}.
    * </p>
    *
    * @param guardedCommand the command to be executed

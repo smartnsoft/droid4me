@@ -43,6 +43,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * <p>
  * <p>
  * When invoking an HTTP method, the caller goes through the following workflow:
+ * </p>
  * <ol>
  * <li>the {@link #isConnected()} method is checked: if the return value is set to {@code false}, no request will be attempted and a
  * {@link WebServiceCaller.CallException} exception will be thrown (embedding a {@link UnknownHostException} exception) ;</li>
@@ -53,7 +54,6 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * <li>if the status code of the HTTP response does not belong to the [{@link HttpURLConnection#HTTP_OK}, {@link HttpURLConnection#HTTP_MULT_CHOICE}] range, the
  * {@link #onStatusCodeNotOk(String, CallType, Map, String, HttpURLConnection, URL, int, String, int)} method will be invoked.</li>
  * </ol>
- * </p>
  *
  * @author Ludovic Roland
  * @since 2016.01.28

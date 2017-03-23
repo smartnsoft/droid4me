@@ -156,13 +156,13 @@ public interface LifeCycle
    * <p>
    * <p>
    * The method is invoked:
+   * </p>
    * <ul>
    * <li>for an {@link Activity}, during the {@code Activity.onCreate()} execution, after the parent {@code Activity.onCreate()} method has been
    * invoked ;</li>
    * <li>for an {@link Fragment}, during the {@code Fragment.onCreate()} execution, after the parent {@code Fragment.onCreate()} method has been
    * invoked.</li>
    * </ul>
-   * </p>
    * <p>
    * <p>
    * It is ensured that this method will be invoked from the UI thread!
@@ -187,12 +187,14 @@ public interface LifeCycle
    * <p>
    * When the method is invoked the first time, if the entity does not implement the {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy}
    * interface, its execution will occur:
+   * </p>
    * <ul>
    * <li>for an {@link Activity}, during the {@link Activity#onResume()} execution, after the parent {@link Activity#onResume()} method has been
    * invoked ;</li>
    * <li>for an {@link Fragment}, during the {@link Fragment#onResume()} execution, after the parent {@link Fragment#onResume()} method has been
    * invoked.</li>
    * </ul>
+   * <p>
    * When the method is invoked the first time, if the entity implements the {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy} interface,
    * it is ensured that this method will be invoked at least after the entity {@code onResume()} execution has started.
    * </p>
@@ -240,6 +242,7 @@ public interface LifeCycle
    * <li>{@link Activity#onResume()} execution for the {@link Activity}, after the parent {@link Activity#onResume()} method has been invoked,</li>
    * <li>{@link Fragment#onResume()} execution for the {@link Fragment}, after the parent {@link Fragment#onResume()} method has been invoked.</li>
    * </ol>
+   * <p>
    * If the entity implements the {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy} interface, this method will be invoked just after the
    * {@link #onRetrieveBusinessObjects()} method first invocation has successfully returned.
    * </p>
