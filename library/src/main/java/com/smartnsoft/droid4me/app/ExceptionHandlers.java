@@ -57,8 +57,6 @@ public final class ExceptionHandlers
       implements ActivityController.ExceptionHandler
   {
 
-    protected final static Logger log = LoggerFactory.getInstance("ExceptionHandler");
-
     /**
      * Defines how the framework should behave when an Internet connectivity problem has been detected.
      */
@@ -77,6 +75,8 @@ public final class ExceptionHandlers
        */
       Toast
     }
+
+    protected final static Logger log = LoggerFactory.getInstance("ExceptionHandler");
 
     protected final SmartApplication.I18N i18n;
 
@@ -515,7 +515,7 @@ public final class ExceptionHandlers
   }
 
   /**
-   * A extension implementation, which proposes to send an issue by e-mail.
+   * A default implementation.
    *
    * @since 2011.02.17
    */
@@ -556,6 +556,10 @@ public final class ExceptionHandlers
       {
         return sendLogs(activity);
       }
+    }
+
+    public void reportIssueIfNecessary(boolean isRecoverable, final Throwable throwable)
+    {
     }
 
     protected final boolean sendLogs(final Activity activity)
