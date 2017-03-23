@@ -26,7 +26,7 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 /**
  * Gathers in one place the handling of the "Android 2.0" title bar
  * 
- * @author Ãdouard Mercier
+ * @author Édouard Mercier
  * @since 2011.06.22
  */
 class TitleBar

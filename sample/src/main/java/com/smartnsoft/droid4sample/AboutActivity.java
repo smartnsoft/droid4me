@@ -3,23 +3,24 @@ package com.smartnsoft.droid4sample;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.http.protocol.HTTP;
-
+import android.util.Xml.Encoding;
 import android.webkit.WebView;
 
-import com.smartnsoft.droid4me.LifeCycle;
+import com.smartnsoft.droid4me.LifeCycle.BusinessObjectsRetrievalAsynchronousPolicyAnnotation;
 import com.smartnsoft.droid4me.app.SmartActivity;
-import com.smartnsoft.droid4me.ws.WebServiceCaller;
+
+import com.smartnsoft.droid4sample.ws.Droid4SampleServices;
 
 /**
  * The "about" screen.
- * 
- * @author Ãdouard Mercier
+ *
+ * @author Édouard Mercier
  * @since 2011.10.19
  */
+@BusinessObjectsRetrievalAsynchronousPolicyAnnotation
 public final class AboutActivity
     extends SmartActivity<TitleBar.TitleBarAggregate>
-    implements LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy, TitleBar.TitleBarShowHomeFeature
+    implements TitleBar.TitleBarShowHomeFeature
 {
 
   private String content;
@@ -41,7 +42,7 @@ public final class AboutActivity
     final InputStream inputStream = getResources().openRawResource(R.raw.about);
     try
     {
-      content = WebServiceCaller.getString(inputStream);
+      content = Droid4SampleServices.getInstance().getString(inputStream);
     }
     catch (IOException exception)
     {
@@ -51,7 +52,7 @@ public final class AboutActivity
 
   public void onFulfillDisplayObjects()
   {
-    webView.loadDataWithBaseURL("file:///android_asset/", content, "text/html", HTTP.UTF_8, null);
+    webView.loadDataWithBaseURL("file:///android_asset/", content, "text/html", Encoding.UTF_8.toString(), null);
   }
 
   public void onSynchronizeDisplayObjects()

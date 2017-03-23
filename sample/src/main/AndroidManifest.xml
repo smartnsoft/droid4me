@@ -2,8 +2,6 @@
 <manifest
   xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.smartnsoft.droid4sample"
-  android:versionCode="1"
-  android:versionName="0.1"
   android:installLocation="auto"
 >
 
@@ -38,9 +36,8 @@
     />
 
     <activity
-      android:name=".MainActivity"
-      android:configChanges="keyboardHidden|orientation"
-      android:screenOrientation="portrait"
+      android:name=".AboutActivity"
+      android:configChanges="orientation|keyboardHidden|screenLayout"
     >
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
@@ -56,11 +53,6 @@
         <category android:name="android.intent.category.PREFERENCE"/>
       </intent-filter>
     </activity>
-
-    <activity
-      android:name=".AboutActivity"
-      android:configChanges="keyboardHidden|orientation"
-    />
 
   </application>
 

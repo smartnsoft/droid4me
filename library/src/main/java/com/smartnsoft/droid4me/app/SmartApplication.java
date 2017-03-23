@@ -36,6 +36,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.WindowManager;
 
+import com.smartnsoft.droid4me.BuildConfig;
 import com.smartnsoft.droid4me.app.ActivityController.ExceptionHandler;
 import com.smartnsoft.droid4me.app.ExceptionHandlers.AbstractExceptionHandler;
 import com.smartnsoft.droid4me.app.ExceptionHandlers.DefaultExceptionHandler;
@@ -162,7 +163,7 @@ public abstract class SmartApplication
    */
   public static String getFrameworkVersionString()
   {
-    return "@DROID4ME_VERSION_NAME@";
+    return BuildConfig.VERSION_NAME;
   }
 
   /**

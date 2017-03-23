@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <!-- The "Android 2.0" title bar -->
-
-  <style
-    name="titleBar"
-    parent="android:WindowTitleBackground"
-  >
-    <item name="android:background">@color/title_bar_background</item>
-  </style>
-
   <style name="titleBarBackground">
     <item name="android:orientation">horizontal</item>
     <item name="android:layout_width">fill_parent</item>

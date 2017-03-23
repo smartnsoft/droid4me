@@ -4,12 +4,7 @@
   <style
     name="Theme.Droid4Sample"
     parent="android:Theme.Light"
-  >
-    <!-- The "Android 2.0" title bar -->
-    <item name="android:windowTitleBackgroundStyle">@style/titleBar</item>
-    <item name="android:windowTitleSize">@dimen/titleBarHeight</item>
-    <!--item name="android:tabWidgetStyle">@style/Widget.Button.Small.Droid4Sample</item-->
-  </style>
+  />
 
   <style
     name="Theme.Droid4Sample.NoTitle"

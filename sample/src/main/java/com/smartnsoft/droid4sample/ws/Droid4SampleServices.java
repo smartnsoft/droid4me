@@ -1,17 +1,17 @@
 package com.smartnsoft.droid4sample.ws;
 
-import com.smartnsoft.droid4sample.Constants;
+import com.smartnsoft.droid4me.ws.URLConnectionWebServiceCaller;
 
-import com.smartnsoft.droid4me.ws.WebServiceCaller;
+import com.smartnsoft.droid4sample.Constants;
 
 /**
  * A single point of access to the web services.
- * 
- * @author Ãdouard Mercier
+ *
+ * @author Édouard Mercier
  * @since 2011.10.19
  */
 public final class Droid4SampleServices
-    extends WebServiceCaller
+    extends URLConnectionWebServiceCaller
 {
 
   private static volatile Droid4SampleServices instance;
@@ -37,9 +37,26 @@ public final class Droid4SampleServices
   }
 
   @Override
+  protected int getReadTimeout()
+  {
+    return Constants.HTTP_CONNECTION_TIMEOUT_IN_MILLISECONDS;
+  }
+
+  @Override
+  protected int getConnectTimeout()
+  {
+    return Constants.HTTP_SOCKET_TIMEOUT_IN_MILLISECONDS;
+  }
+
+  @Override
+  protected String getContentEncoding()
+  {
+    return Constants.WEBSERVICES_CONTENT_ENCODING;
+  }
+
+  @Override
   protected String getUrlEncoding()
   {
     return Constants.WEBSERVICES_HTML_ENCODING;
   }
-
 }

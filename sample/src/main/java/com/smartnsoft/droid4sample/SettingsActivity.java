@@ -8,7 +8,7 @@ import com.smartnsoft.droid4me.app.SmartPreferenceActivity;
 /**
  * The activity which enables to tune the application.
  * 
- * @author Ãdouard Mercier
+ * @author Édouard Mercier
  * @since 2011.10.19
  */
 public final class SettingsActivity

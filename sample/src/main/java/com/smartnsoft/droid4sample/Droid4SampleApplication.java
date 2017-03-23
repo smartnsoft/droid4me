@@ -20,8 +20,8 @@ import com.smartnsoft.droid4me.download.DownloadInstructions;
 
 /**
  * The entry point of the application.
- * 
- * @author Ãdouard Mercier
+ *
+ * @author Édouard Mercier
  * @since 2011.10.19
  */
 public final class Droid4SampleApplication
@@ -33,7 +33,8 @@ public final class Droid4SampleApplication
   {
 
     @Override
-    public InputStream getInputStream(String imageUid, Object imageSpecs, String url, BasisDownloadInstructions.InputStreamDownloadInstructor downloadInstructor)
+    public InputStream getInputStream(String imageUid, Object imageSpecs, String url,
+        BasisDownloadInstructions.InputStreamDownloadInstructor downloadInstructor)
         throws IOException
     {
       final InputAtom inputAtom = Persistence.getInstance(1).extractInputStream(url);
@@ -52,24 +53,6 @@ public final class Droid4SampleApplication
   public final static DownloadInstructions.Instructions CACHE_IMAGE_INSTRUCTIONS = new Droid4SampleApplication.CacheInstructions();
 
   @Override
-  protected int getLogLevel()
-  {
-    return Constants.LOG_LEVEL;
-  }
-
-  @Override
-  protected SmartApplication.I18N getI18N()
-  {
-    return new SmartApplication.I18N(getText(R.string.problem), getText(R.string.unavailableItem), getText(R.string.unavailableService), getText(R.string.connectivityProblem), getText(R.string.connectivityProblemRetry), getText(R.string.unhandledProblem), getString(R.string.applicationName), getText(R.string.dialogButton_unhandledProblem), getString(R.string.progressDialogMessage_unhandledProblem));
-  }
-
-  @Override
-  protected String getLogReportRecipient()
-  {
-    return Constants.REPORT_LOG_RECIPIENT_EMAIL;
-  }
-
-  @Override
   public void onCreateCustom()
   {
     super.onCreateCustom();
@@ -86,10 +69,28 @@ public final class Droid4SampleApplication
     // We set the ImageDownloader instances
     BitmapDownloader.IMPLEMENTATION_FQN = BitmapDownloader.class.getName();
     BitmapDownloader.INSTANCES_COUNT = 1;
-    BitmapDownloader.MAX_MEMORY_IN_BYTES = new long[] { 3 * 1024 * 1024 };
+    BitmapDownloader.HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES = new long[] { 3 * 1024 * 1024 };
     BitmapDownloader.LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES = new long[] { 1 * 1024 * 1024 };
     BitmapDownloader.USE_REFERENCES = new boolean[] { false };
     BitmapDownloader.RECYCLE_BITMAP = new boolean[] { false };
+  }
+
+  @Override
+  protected int getLogLevel()
+  {
+    return Constants.LOG_LEVEL;
+  }
+
+  @Override
+  protected SmartApplication.I18N getI18N()
+  {
+    return new SmartApplication.I18N(getText(R.string.problem), getText(R.string.unavailableItem), getText(R.string.unavailableService), getText(R.string.connectivityProblem), getText(R.string.connectivityProblemRetry), getText(R.string.unhandledProblem), getString(R.string.applicationName), getText(R.string.dialogButton_unhandledProblem), getString(R.string.progressDialogMessage_unhandledProblem));
+  }
+
+  @Override
+  protected String getLogReportRecipient()
+  {
+    return Constants.REPORT_LOG_RECIPIENT_EMAIL;
   }
 
   @Override
@@ -117,23 +118,26 @@ public final class Droid4SampleApplication
   }
 
   @Override
-  protected ActivityController.Interceptor getActivityInterceptor()
+  protected ActivityController.ExceptionHandler getExceptionHandler()
   {
-    final Intent homeActivityIntent = new Intent(getApplicationContext(), MainActivity.class);
+    return super.getExceptionHandler();
+  }
+
+
+
+  @Override
+  protected ActivityController.Interceptor getInterceptor()
+  {
+    final Intent homeActivityIntent = new Intent(getApplicationContext(), AboutActivity.class);
     final TitleBar titleBar = new TitleBar(homeActivityIntent, R.drawable.title_bar_home, R.style.Theme_Droid4Sample);
     return new ActivityController.Interceptor()
     {
-      public void onLifeCycleEvent(Activity activity, Object component, ActivityController.Interceptor.InterceptorEvent event)
+      public void onLifeCycleEvent(Activity activity, Object component,
+          ActivityController.Interceptor.InterceptorEvent event)
       {
         titleBar.onLifeCycleEvent(activity, event);
       }
     };
-  }
-
-  @Override
-  protected ActivityController.ExceptionHandler getExceptionHandler()
-  {
-    return super.getExceptionHandler();
   }
 
 }
