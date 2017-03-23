@@ -18,8 +18,8 @@ android
     minSdkVersion 9
     targetSdkVersion 25
 
-    versionCode 16
-    versionName "2.5.0"
+    versionCode 17
+    versionName "2.5.1-SNAPSHOT"
   }
 
   buildTypes
@@ -37,6 +37,7 @@ dependencies
 {
   //Android
   compile("com.android.support:appcompat-v7:$appCompatVersion")
+  compile("com.android.support:preference-v7:$appCompatVersion")
 
   //Third party
   compile("de.mindpipe.android:android-logging-log4j:1.0.3")

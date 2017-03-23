@@ -39,7 +39,7 @@ public abstract class SmartPreferenceFragmentCompat<AggregateClass>
   public void onAttach(Activity activity)
   {
     super.onAttach(activity);
-    droid4mizer = new Droid4mizer<AggregateClass, SmartPreferenceFragmentCompat<AggregateClass>>(getActivity(), this, this, this);
+    droid4mizer = new Droid4mizer<>(getActivity(), this, this, this);
     droid4mizer.onAttached(activity);
   }
 
@@ -87,6 +87,14 @@ public abstract class SmartPreferenceFragmentCompat<AggregateClass>
   public boolean onOptionsItemSelected(MenuItem item)
   {
     return droid4mizer.onOptionsItemSelected(super.onOptionsItemSelected(item), item);
+  }
+
+  /**
+   * Own implementation.
+   */
+
+  public void onRetrieveDisplayObjects()
+  {
   }
 
   public void onRetrieveBusinessObjects()
@@ -248,14 +256,6 @@ public abstract class SmartPreferenceFragmentCompat<AggregateClass>
     return droid4mizer.shouldKeepOn();
   }
 
-  /**
-   * Own implementation.
-   */
-
-  public void onRetrieveDisplayObjects()
-  {
-  }
-
   public void onBusinessObjectsRetrieved()
   {
   }
@@ -265,7 +265,7 @@ public abstract class SmartPreferenceFragmentCompat<AggregateClass>
     refreshBusinessObjectsAndDisplay(true, null, false);
   }
 
-  /**
+  /*
    * Specific implementation.
    */
 
