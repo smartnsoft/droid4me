@@ -19,7 +19,7 @@ android
     targetSdkVersion 25
 
     versionCode 16
-    versionName "2.5"
+    versionName "2.5.0"
   }
 
   buildTypes
