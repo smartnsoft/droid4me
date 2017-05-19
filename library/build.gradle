@@ -39,16 +39,6 @@ dependencies
   compile("com.android.support:appcompat-v7:$appCompatVersion")
   compile("com.android.support:preference-v7:$appCompatVersion")
 
-  //Third party
-  compile("de.mindpipe.android:android-logging-log4j:1.0.3")
-  compile("log4j:log4j:1.2.15")
-  {
-    exclude group: "javax.mail", module: "mail"
-    exclude group: "javax.jms", module: "jms"
-    exclude group: "com.sun.jdmk", module: "jmxtools"
-    exclude group: "com.sun.jmx", module: "jmxri"
-  }
-
   testCompile("junit:junit:4.0")
   testCompile("org.json:json:20090211")
 }
