@@ -47,29 +47,6 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
 {
 
   /**
-   * Contains information about a {@link CoreBitmapDownloader} instance internal state.
-   *
-   * @since 2012.06.07
-   */
-  public static class CoreAnalyticsData
-  {
-
-    public final int bitmapsCount;
-
-    public final int cleanUpsCount;
-
-    public final int outOfMemoryOccurences;
-
-    protected CoreAnalyticsData(int bitmapsCount, int cleanUpsCount, int outOfMemoryOccurences)
-    {
-      this.bitmapsCount = bitmapsCount;
-      this.cleanUpsCount = cleanUpsCount;
-      this.outOfMemoryOccurences = outOfMemoryOccurences;
-    }
-
-  }
-
-  /**
    * When defining the {@link CoreBitmapDownloader#ANALYTICS_LISTENER} variable with an implementation of this interface, it will be notified as soon
    * as the cache internal state changes.
    *
@@ -95,135 +72,24 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   }
 
   /**
-   * Enables to remember the bound bitmaps.
+   * Contains information about a {@link CoreBitmapDownloader} instance internal state.
+   *
+   * @since 2012.06.07
    */
-  protected final class UsedBitmap
-      implements Comparable<UsedBitmap>
+  public static class CoreAnalyticsData
   {
 
-    private final Reference<BitmapClass> bitmapReference;
+    public final int bitmapsCount;
 
-    private BitmapClass bitmap;
+    public final int cleanUpsCount;
 
-    private final int memoryConsumption;
+    public final int outOfMemoryOccurences;
 
-    private int accessCount = 0;
-
-    private int bindingCount = 0;
-
-    /**
-     * Redundant but there for optimization reasons.
-     */
-    public final String url;
-
-    public UsedBitmap(BitmapClass bitmap, String url)
+    protected CoreAnalyticsData(int bitmapsCount, int cleanUpsCount, int outOfMemoryOccurences)
     {
-      if (useReferences == true)
-      {
-        // We use a soft reference, because we do not want our reference to be garbaged automatically at next garbage collection (which is the case
-        // with the WeakReference)
-        bitmapReference = new SoftReference<>(bitmap);
-        keepBitmap();
-      }
-      else
-      {
-        bitmapReference = null;
-        this.bitmap = bitmap;
-      }
-      this.url = url;
-      memoryConsumption = (bitmap == null ? 0 : bitmap.getSizeInBytes());
-    }
-
-    public BitmapClass getBitmap()
-    {
-      if (useReferences == true)
-      {
-        return bitmapReference.get();
-      }
-      else
-      {
-        return bitmap;
-      }
-    }
-
-    public void keepBitmap()
-    {
-      if (useReferences == true)
-      {
-        bitmap = bitmapReference.get();
-      }
-    }
-
-    public void forgetBitmap()
-    {
-      if (useReferences == true)
-      {
-        bitmap = null;
-      }
-    }
-
-    public void rememberBinding(ViewClass view)
-    {
-      if (recycleMap == false)
-      {
-        return;
-      }
-      @SuppressWarnings("unchecked") final UsedBitmap otherUsedBitmap = (UsedBitmap) view.getTag();
-      if (otherUsedBitmap != null)
-      {
-        otherUsedBitmap.bindingCount--;
-        if (IS_DEBUG_TRACE && log.isDebugEnabled())
-        {
-          log.debug("The bitmap corresponding to the URL '" + url + "' has not been bound for the first time with a view");
-        }
-      }
-      else
-      {
-        if (IS_DEBUG_TRACE && log.isDebugEnabled())
-        {
-          log.debug("The bitmap corresponding to the URL '" + url + "' is bound for the first time with an view");
-        }
-      }
-      bindingCount++;
-      view.setTag(this);
-    }
-
-    public void rememberAccessed()
-    {
-      accessCount++;
-    }
-
-    public void rememberAccessed(UsedBitmap otherUsedBitmap)
-    {
-      accessCount += otherUsedBitmap.accessCount;
-    }
-
-    public int compareTo(UsedBitmap another)
-    {
-      if (accessCount > another.accessCount)
-      {
-        return -1;
-      }
-      else if (accessCount < another.accessCount)
-      {
-        return 1;
-      }
-      return 0;
-    }
-
-    public int getMemoryConsumption()
-    {
-      return memoryConsumption;
-    }
-
-    protected int getAccessCount()
-    {
-      return accessCount;
-    }
-
-    protected int getBindingCount()
-    {
-      return bindingCount;
+      this.bitmapsCount = bitmapsCount;
+      this.cleanUpsCount = cleanUpsCount;
+      this.outOfMemoryOccurences = outOfMemoryOccurences;
     }
 
   }
@@ -270,16 +136,6 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   public final long lowLevelMemoryWaterMarkInBytes;
 
   /**
-   * A flag which states whether the instance is enabled: if not, the commands do nothing. Defaults to {@code true}.
-   */
-  private boolean isEnabled = true;
-
-  /**
-   * A flag which states whether the device currently has some Internet connectivity. Defaults to {@code true}.
-   */
-  private boolean isConnected = true;
-
-  /**
    * Indicates whether the instance should let the Java garbage collector handle bitmap soft references.
    */
   public final boolean useReferences;
@@ -297,16 +153,6 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   protected final Map<String, UsedBitmap> cache = new HashMap<String, UsedBitmap>();
 
   /**
-   * How much memory is currently used by the bitmap memory cache.
-   */
-  private long memoryConsumptionInBytes = 0;
-
-  /**
-   * Indicates whether a {@link #cleanUpCache() clean up} is already running.
-   */
-  private boolean cleanUpInProgress;
-
-  /**
    * The number of times the {@link #cleanUpCache()} method has actually cleaned up the cache.
    */
   protected int cleanUpsCount = 0;
@@ -315,6 +161,26 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * The number of times an {@link OutOfMemoryError} has occurred for this instance.
    */
   protected int outOfMemoryOccurences = 0;
+
+  /**
+   * A flag which states whether the instance is enabled: if not, the commands do nothing. Defaults to {@code true}.
+   */
+  private boolean isEnabled = true;
+
+  /**
+   * A flag which states whether the device currently has some Internet connectivity. Defaults to {@code true}.
+   */
+  private boolean isConnected = true;
+
+  /**
+   * How much memory is currently used by the bitmap memory cache.
+   */
+  private long memoryConsumptionInBytes = 0;
+
+  /**
+   * Indicates whether a {@link #cleanUpCache() clean up} is already running.
+   */
+  private boolean cleanUpInProgress;
 
   /**
    * @param instanceIndex                   the index of the current instance. When creating multiple instances, it is important to provide a unique index, so that the
@@ -459,6 +325,18 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
    * </p>
    */
   public abstract void clear();
+
+  /**
+   * Forces the BitmapDownloader to send its analytics. If the {@link CoreBitmapDownloader#ANALYTICS_LISTENER} is not {@code null}, it will be
+   * notified with the latest analytics.
+   */
+  public final void notifyAnalyticsListener()
+  {
+    if (CoreBitmapDownloader.ANALYTICS_LISTENER != null)
+    {
+      CoreBitmapDownloader.ANALYTICS_LISTENER.onAnalytics(this, computeAnalyticsData());
+    }
+  }
 
   protected final UsedBitmap getUsedBitmapFromCache(String url)
   {
@@ -633,23 +511,145 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
   }
 
   /**
-   * Forces the BitmapDownloader to send its analytics. If the {@link CoreBitmapDownloader#ANALYTICS_LISTENER} is not {@code null}, it will be
-   * notified with the latest analytics.
-   */
-  public final void notifyAnalyticsListener()
-  {
-    if (CoreBitmapDownloader.ANALYTICS_LISTENER != null)
-    {
-      CoreBitmapDownloader.ANALYTICS_LISTENER.onAnalytics(this, computeAnalyticsData());
-    }
-  }
-
-  /**
    * @return the analytics currently available
    */
   protected CoreAnalyticsData computeAnalyticsData()
   {
     return new CoreBitmapDownloader.CoreAnalyticsData(cache.size(), cleanUpsCount, outOfMemoryOccurences);
+  }
+
+  /**
+   * Enables to remember the bound bitmaps.
+   */
+  protected final class UsedBitmap
+      implements Comparable<UsedBitmap>
+  {
+
+    /**
+     * Redundant but there for optimization reasons.
+     */
+    public final String url;
+
+    private final Reference<BitmapClass> bitmapReference;
+
+    private final int memoryConsumption;
+
+    private BitmapClass bitmap;
+
+    private int accessCount = 0;
+
+    private int bindingCount = 0;
+
+    public UsedBitmap(BitmapClass bitmap, String url)
+    {
+      if (useReferences == true)
+      {
+        // We use a soft reference, because we do not want our reference to be garbaged automatically at next garbage collection (which is the case
+        // with the WeakReference)
+        bitmapReference = new SoftReference<>(bitmap);
+        keepBitmap();
+      }
+      else
+      {
+        bitmapReference = null;
+        this.bitmap = bitmap;
+      }
+      this.url = url;
+      memoryConsumption = (bitmap == null ? 0 : bitmap.getSizeInBytes());
+    }
+
+    public int compareTo(UsedBitmap another)
+    {
+      if (accessCount > another.accessCount)
+      {
+        return -1;
+      }
+      else if (accessCount < another.accessCount)
+      {
+        return 1;
+      }
+      return 0;
+    }
+
+    public BitmapClass getBitmap()
+    {
+      if (useReferences == true)
+      {
+        return bitmapReference.get();
+      }
+      else
+      {
+        return bitmap;
+      }
+    }
+
+    public void keepBitmap()
+    {
+      if (useReferences == true)
+      {
+        bitmap = bitmapReference.get();
+      }
+    }
+
+    public void forgetBitmap()
+    {
+      if (useReferences == true)
+      {
+        bitmap = null;
+      }
+    }
+
+    public void rememberBinding(ViewClass view)
+    {
+      if (recycleMap == false)
+      {
+        return;
+      }
+      @SuppressWarnings("unchecked") final UsedBitmap otherUsedBitmap = (UsedBitmap) view.getTag();
+      if (otherUsedBitmap != null)
+      {
+        otherUsedBitmap.bindingCount--;
+        if (IS_DEBUG_TRACE && log.isDebugEnabled())
+        {
+          log.debug("The bitmap corresponding to the URL '" + url + "' has not been bound for the first time with a view");
+        }
+      }
+      else
+      {
+        if (IS_DEBUG_TRACE && log.isDebugEnabled())
+        {
+          log.debug("The bitmap corresponding to the URL '" + url + "' is bound for the first time with an view");
+        }
+      }
+      bindingCount++;
+      view.setTag(this);
+    }
+
+    public void rememberAccessed()
+    {
+      accessCount++;
+    }
+
+    public void rememberAccessed(UsedBitmap otherUsedBitmap)
+    {
+      accessCount += otherUsedBitmap.accessCount;
+    }
+
+    public int getMemoryConsumption()
+    {
+      return memoryConsumption;
+    }
+
+    protected int getAccessCount()
+    {
+      return accessCount;
+    }
+
+    protected int getBindingCount()
+    {
+      return bindingCount;
+    }
+
   }
 
 }

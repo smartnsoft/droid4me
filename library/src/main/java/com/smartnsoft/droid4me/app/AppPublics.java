@@ -48,57 +48,6 @@ public final class AppPublics
 {
 
   /**
-   * A flag name which indicates the FQN name of the activity class concerned with the action.
-   */
-  public final static String EXTRA_ACTION_ACTIVITY = "activity";
-
-  /**
-   * A flag name which indicates the FQN name of the component class concerned with the action.
-   */
-  public final static String EXTRA_ACTION_COMPONENT = "component";
-
-  /**
-   * An extra which designates a business object.
-   */
-  public final static String EXTRA_BUSINESS_OBJECT = "businessObject";
-
-  /**
-   * Use this intent action when you need to indicate that something is being loaded. For indicating that the loading is over, attach the
-   * {@link AppPublics#EXTRA_UI_LOAD_ACTION_LOADING} key to the {@link Intent}.
-   */
-  public static String UI_LOAD_ACTION = "com.smartnsoft.droid4me.action.UI_LOADING";
-
-  /**
-   * A flag name which indicates whether the loading event is starting or ending.
-   */
-  public final static String EXTRA_UI_LOAD_ACTION_LOADING = "loading";
-
-  /**
-   * Use this intent action when you need to indicate that an activity should refresh its UI.
-   */
-  public static String UPDATE_ACTION = "com.smartnsoft.droid4me.action.UPDATE";
-
-  /**
-   * Use this intent action when you need to indicate that an activity should reload its business objects.
-   */
-  public static String RELOAD_ACTION = "com.smartnsoft.droid4me.action.RELOAD";
-
-  /**
-   * Defined in order to compute the default intent actions.
-   * <p>
-   * <p>
-   * Is invoked by the framework, at initialization time.
-   * </p>
-   */
-  static void initialize(Application application)
-  {
-    AppPublics.UI_LOAD_ACTION = application.getPackageName() + ".action.UI_LOADING";
-    AppPublics.UPDATE_ACTION = application.getPackageName() + ".action.UPDATE";
-    AppPublics.RELOAD_ACTION = application.getPackageName() + ".action.RELOAD";
-    AppPublics.MultiSelectionHandler.SELECTION_ACTION = application.getPackageName() + ".action.SELECTION";
-  }
-
-  /**
    * Because an Android {@link Activity}/{@link android.app.Fragment} entity can be destroyed and then recreated, following a configuration change (a
    * screen orientation change, for instance), this interface gives information about an entity life cycle.
    *
@@ -339,6 +288,149 @@ public final class AppPublics
   }
 
   /**
+   * A helper which receives multi-selection {@link Intent intents} with an action set to {@link MultiSelectionHandler#SELECTION_ACTION}, and which
+   * remembers and triggers event according to the current selection.
+   * <p>
+   * <p>
+   * The <code>BusinessObjectClass</code> "template" class must implement properly the {@link Object#equals(Object)} method, in order to ensure the
+   * unicity of business objects inside the {@link MultiSelectionHandler#getSelectedObjects() selected business objects}.
+   * </p>
+   *
+   * @since 2010.06.21
+   */
+  public static final class MultiSelectionHandler<BusinessObjectClass extends Serializable>
+  {
+
+    /**
+     * The interface which is invoked by the {@link MultiSelectionHandler} when a new selection event occurs.
+     */
+    public interface OnMultiSelectionChanged<BusinessObjectClass>
+    {
+
+      /**
+       * Invoked when the selection changes.
+       *
+       * @param previouslyAtLeastOneSelected the number of items selected before the event occurred
+       * @param atLeastOneSelected           the new number of items selected
+       * @param selectedObjects              the business objects that are currently selected
+       */
+      void onSelectionChanged(boolean previouslyAtLeastOneSelected, boolean atLeastOneSelected,
+          List<BusinessObjectClass> selectedObjects);
+    }
+
+    /**
+     * Used as a key in the {@link Intent#getExtras() intent bundle}, so as to indicate whether the event deals with a selection or deselection.
+     */
+    public final static String EXTRA_SELECTED = "selected";
+
+    /**
+     * Use this intent action when you need to indicate to the current activity that a business object has been selected or unselected.
+     * <p>
+     * see {@link MultiSelectionHandler#EXTRA_SELECTED} and {@link MultiSelectionHandler#EXTRA_BUSINESS_OBJECT} extra flags for indicated
+     * whether the business object is selected, and what business object this is about
+     *
+     * @see MultiSelectionHandler#EXTRA_SELECTED
+     * @see MultiSelectionHandler#EXTRA_BUSINESS_OBJECT
+     */
+    public static String SELECTION_ACTION = "com.smartnsoft.droid4me.action.SELECTION";
+
+    /**
+     * Keeps in memory all the selected objects list.
+     */
+    private final List<BusinessObjectClass> selectedObjects = new ArrayList<>();
+
+    private int selectedCount = 0;
+
+    /**
+     * @return the number of business objects currently selected
+     */
+    public final int getSelectedCount()
+    {
+      return selectedCount;
+    }
+
+    /**
+     * @return the currently selected business objects. Do not modify the returned list!
+     */
+    public final List<BusinessObjectClass> getSelectedObjects()
+    {
+      return selectedObjects;
+    }
+
+    /**
+     * Clears the selected objects.
+     */
+    public final void clearSelection()
+    {
+      selectedObjects.clear();
+      selectedCount = 0;
+    }
+
+    /**
+     * The method to invoke when the activity receives a {@link MultiSelectionHandler#SELECTION_ACTION intent}, due to as business object
+     * selection/unselection.
+     * <p>
+     * <p>
+     * Usually invoked from the {@link android.content.BroadcastReceiver} which is listening to business objects selection events}.
+     * </p>
+     *
+     * @param intent                  the received intent; if the action of the Intent is not the right one, no processing is done
+     * @param onMultiSelectionChanged the interface that will be callbacked (in the same thread as the calling method) depending on the overall multi-selection state; is
+     *                                allowed to be {@code null}
+     * @return {@code true} if the intent has been handled ; {@code false} otherwise
+     */
+    @SuppressWarnings({ "unchecked" })
+    public boolean onSelection(Intent intent,
+        @SuppressWarnings("rawtypes") MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
+    {
+      if (intent.getAction().equals(AppPublics.MultiSelectionHandler.SELECTION_ACTION) == false)
+      {
+        return false;
+      }
+      final boolean selected = intent.getBooleanExtra(MultiSelectionHandler.EXTRA_SELECTED, false) == true;
+      final int previousSelectedCount = selectedCount;
+      final BusinessObjectClass businessObject = (BusinessObjectClass) intent.getSerializableExtra(AppPublics.EXTRA_BUSINESS_OBJECT);
+      setSelection(businessObject, selected);
+      if (onMultiSelectionChanged != null)
+      {
+        onMultiSelectionChanged.onSelectionChanged(previousSelectedCount >= 1, selectedCount >= 1, selectedObjects);
+      }
+      return true;
+    }
+
+    /**
+     * Sets the selection state for a given business object.
+     * <p>
+     * <p>
+     * However, the call does not trigger the
+     * {@link AppPublics.MultiSelectionHandler.OnMultiSelectionChanged#onSelectionChanged(boolean, boolean, List)} callback.
+     * </p>
+     *
+     * @param businessObject the business object related to that selection event
+     * @param selected       whether the business object should be considered as selected
+     */
+    public void setSelection(BusinessObjectClass businessObject, boolean selected)
+    {
+      selectedCount += (selected == true ? 1 : -1);
+      if (businessObject != null)
+      {
+        if (selected == true)
+        {
+          if (selectedObjects.contains(businessObject) == false)
+          {
+            selectedObjects.add(businessObject);
+          }
+        }
+        else
+        {
+          selectedObjects.remove(businessObject);
+        }
+      }
+    }
+
+  }
+
+  /**
    * A broadcast listener which listens only to {@link AppPublics#UI_LOAD_ACTION} intents.
    * <p>
    * <p>
@@ -363,8 +455,6 @@ public final class AppPublics
 
     private final Object component;
 
-    protected abstract String getAction();
-
     /**
      * Same as {@link ComponentBroadcastListener#ComponentBroadcastListener(Activity, Object)} with second argument set to {@code activity}.
      */
@@ -377,11 +467,6 @@ public final class AppPublics
     {
       this.activity = activity;
       this.component = component;
-    }
-
-    protected final Activity getActivity()
-    {
-      return activity;
     }
 
     public IntentFilter getIntentFilter(boolean viaClass)
@@ -405,6 +490,13 @@ public final class AppPublics
         }
       }
       return intentFilter;
+    }
+
+    protected abstract String getAction();
+
+    protected final Activity getActivity()
+    {
+      return activity;
     }
 
     protected final boolean matchesIntent(Intent intent)
@@ -434,8 +526,6 @@ public final class AppPublics
   public static abstract class LoadingBroadcastListener
       extends AppPublics.ComponentBroadcastListener
   {
-
-    private int counter = 0;
 
     /**
      * Triggers a loading event through a {@linkplain LocalBroadcastManager#sendBroadcast(Intent)} broadcast intent action}.
@@ -485,6 +575,8 @@ public final class AppPublics
       LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
+    private int counter = 0;
+
     public LoadingBroadcastListener(Activity activity)
     {
       this(activity, activity);
@@ -493,12 +585,6 @@ public final class AppPublics
     public LoadingBroadcastListener(Activity activity, Object component)
     {
       super(activity, component);
-    }
-
-    @Override
-    protected String getAction()
-    {
-      return AppPublics.UI_LOAD_ACTION;
     }
 
     public IntentFilter getIntentFilter()
@@ -523,6 +609,12 @@ public final class AppPublics
           onLoading(isNowLoading);
         }
       }
+    }
+
+    @Override
+    protected String getAction()
+    {
+      return AppPublics.UI_LOAD_ACTION;
     }
 
     /**
@@ -626,12 +718,6 @@ public final class AppPublics
       super(activity, component);
     }
 
-    @Override
-    protected String getAction()
-    {
-      return AppPublics.RELOAD_ACTION;
-    }
-
     public IntentFilter getIntentFilter()
     {
       return getIntentFilter(true);
@@ -645,6 +731,12 @@ public final class AppPublics
       }
     }
 
+    @Override
+    protected String getAction()
+    {
+      return AppPublics.RELOAD_ACTION;
+    }
+
     /**
      * The callback that will be triggered if the {@link AppPublics#RELOAD_ACTION} action is caught for the provided {@link Activity} class.
      */
@@ -653,146 +745,54 @@ public final class AppPublics
   }
 
   /**
-   * A helper which receives multi-selection {@link Intent intents} with an action set to {@link MultiSelectionHandler#SELECTION_ACTION}, and which
-   * remembers and triggers event according to the current selection.
-   * <p>
-   * <p>
-   * The <code>BusinessObjectClass</code> "template" class must implement properly the {@link Object#equals(Object)} method, in order to ensure the
-   * unicity of business objects inside the {@link MultiSelectionHandler#getSelectedObjects() selected business objects}.
-   * </p>
-   *
-   * @since 2010.06.21
+   * A flag name which indicates the FQN name of the activity class concerned with the action.
    */
-  public static final class MultiSelectionHandler<BusinessObjectClass extends Serializable>
+  public final static String EXTRA_ACTION_ACTIVITY = "activity";
+
+  /**
+   * A flag name which indicates the FQN name of the component class concerned with the action.
+   */
+  public final static String EXTRA_ACTION_COMPONENT = "component";
+
+  /**
+   * An extra which designates a business object.
+   */
+  public final static String EXTRA_BUSINESS_OBJECT = "businessObject";
+
+  /**
+   * A flag name which indicates whether the loading event is starting or ending.
+   */
+  public final static String EXTRA_UI_LOAD_ACTION_LOADING = "loading";
+
+  /**
+   * Use this intent action when you need to indicate that something is being loaded. For indicating that the loading is over, attach the
+   * {@link AppPublics#EXTRA_UI_LOAD_ACTION_LOADING} key to the {@link Intent}.
+   */
+  public static String UI_LOAD_ACTION = "com.smartnsoft.droid4me.action.UI_LOADING";
+
+  /**
+   * Use this intent action when you need to indicate that an activity should refresh its UI.
+   */
+  public static String UPDATE_ACTION = "com.smartnsoft.droid4me.action.UPDATE";
+
+  /**
+   * Use this intent action when you need to indicate that an activity should reload its business objects.
+   */
+  public static String RELOAD_ACTION = "com.smartnsoft.droid4me.action.RELOAD";
+
+  /**
+   * Defined in order to compute the default intent actions.
+   * <p>
+   * <p>
+   * Is invoked by the framework, at initialization time.
+   * </p>
+   */
+  static void initialize(Application application)
   {
-
-    /**
-     * The interface which is invoked by the {@link MultiSelectionHandler} when a new selection event occurs.
-     */
-    public interface OnMultiSelectionChanged<BusinessObjectClass>
-    {
-
-      /**
-       * Invoked when the selection changes.
-       *
-       * @param previouslyAtLeastOneSelected the number of items selected before the event occurred
-       * @param atLeastOneSelected           the new number of items selected
-       * @param selectedObjects              the business objects that are currently selected
-       */
-      void onSelectionChanged(boolean previouslyAtLeastOneSelected, boolean atLeastOneSelected,
-          List<BusinessObjectClass> selectedObjects);
-    }
-
-    /**
-     * Use this intent action when you need to indicate to the current activity that a business object has been selected or unselected.
-     * <p>
-     * see {@link MultiSelectionHandler#EXTRA_SELECTED} and {@link MultiSelectionHandler#EXTRA_BUSINESS_OBJECT} extra flags for indicated
-     * whether the business object is selected, and what business object this is about
-     *
-     * @see MultiSelectionHandler#EXTRA_SELECTED
-     * @see MultiSelectionHandler#EXTRA_BUSINESS_OBJECT
-     */
-    public static String SELECTION_ACTION = "com.smartnsoft.droid4me.action.SELECTION";
-
-    /**
-     * Used as a key in the {@link Intent#getExtras() intent bundle}, so as to indicate whether the event deals with a selection or deselection.
-     */
-    public final static String EXTRA_SELECTED = "selected";
-
-    private int selectedCount = 0;
-
-    /**
-     * Keeps in memory all the selected objects list.
-     */
-    private final List<BusinessObjectClass> selectedObjects = new ArrayList<>();
-
-    /**
-     * @return the number of business objects currently selected
-     */
-    public final int getSelectedCount()
-    {
-      return selectedCount;
-    }
-
-    /**
-     * @return the currently selected business objects. Do not modify the returned list!
-     */
-    public final List<BusinessObjectClass> getSelectedObjects()
-    {
-      return selectedObjects;
-    }
-
-    /**
-     * Clears the selected objects.
-     */
-    public final void clearSelection()
-    {
-      selectedObjects.clear();
-      selectedCount = 0;
-    }
-
-    /**
-     * The method to invoke when the activity receives a {@link MultiSelectionHandler#SELECTION_ACTION intent}, due to as business object
-     * selection/unselection.
-     * <p>
-     * <p>
-     * Usually invoked from the {@link android.content.BroadcastReceiver} which is listening to business objects selection events}.
-     * </p>
-     *
-     * @param intent                  the received intent; if the action of the Intent is not the right one, no processing is done
-     * @param onMultiSelectionChanged the interface that will be callbacked (in the same thread as the calling method) depending on the overall multi-selection state; is
-     *                                allowed to be {@code null}
-     * @return {@code true} if the intent has been handled ; {@code false} otherwise
-     */
-    @SuppressWarnings({ "unchecked" })
-    public boolean onSelection(Intent intent,
-        @SuppressWarnings("rawtypes") MultiSelectionHandler.OnMultiSelectionChanged onMultiSelectionChanged)
-    {
-      if (intent.getAction().equals(AppPublics.MultiSelectionHandler.SELECTION_ACTION) == false)
-      {
-        return false;
-      }
-      final boolean selected = intent.getBooleanExtra(MultiSelectionHandler.EXTRA_SELECTED, false) == true;
-      final int previousSelectedCount = selectedCount;
-      final BusinessObjectClass businessObject = (BusinessObjectClass) intent.getSerializableExtra(AppPublics.EXTRA_BUSINESS_OBJECT);
-      setSelection(businessObject, selected);
-      if (onMultiSelectionChanged != null)
-      {
-        onMultiSelectionChanged.onSelectionChanged(previousSelectedCount >= 1, selectedCount >= 1, selectedObjects);
-      }
-      return true;
-    }
-
-    /**
-     * Sets the selection state for a given business object.
-     * <p>
-     * <p>
-     * However, the call does not trigger the
-     * {@link AppPublics.MultiSelectionHandler.OnMultiSelectionChanged#onSelectionChanged(boolean, boolean, List)} callback.
-     * </p>
-     *
-     * @param businessObject the business object related to that selection event
-     * @param selected       whether the business object should be considered as selected
-     */
-    public void setSelection(BusinessObjectClass businessObject, boolean selected)
-    {
-      selectedCount += (selected == true ? 1 : -1);
-      if (businessObject != null)
-      {
-        if (selected == true)
-        {
-          if (selectedObjects.contains(businessObject) == false)
-          {
-            selectedObjects.add(businessObject);
-          }
-        }
-        else
-        {
-          selectedObjects.remove(businessObject);
-        }
-      }
-    }
-
+    AppPublics.UI_LOAD_ACTION = application.getPackageName() + ".action.UI_LOADING";
+    AppPublics.UPDATE_ACTION = application.getPackageName() + ".action.UPDATE";
+    AppPublics.RELOAD_ACTION = application.getPackageName() + ".action.RELOAD";
+    AppPublics.MultiSelectionHandler.SELECTION_ACTION = application.getPackageName() + ".action.SELECTION";
   }
 
   /**

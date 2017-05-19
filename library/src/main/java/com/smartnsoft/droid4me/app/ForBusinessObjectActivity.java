@@ -49,6 +49,12 @@ public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectCl
 
   };
 
+  public void onRetrieveBusinessObjects()
+      throws BusinessObjectUnavailableException
+  {
+    forBusinessObjectImplementation.retrieveBusinessObjects();
+  }
+
   public final BusinessObjectClass getBusinessObject()
   {
     try
@@ -65,12 +71,6 @@ public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectCl
   public final boolean isBusinessObject()
   {
     return forBusinessObjectImplementation.isBusinessObject();
-  }
-
-  public void onRetrieveBusinessObjects()
-      throws BusinessObjectUnavailableException
-  {
-    forBusinessObjectImplementation.retrieveBusinessObjects();
   }
 
 }

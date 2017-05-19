@@ -50,11 +50,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     implements LifeCycle
 {
 
-  /**
-   * Useful when {@link Context#sendBroadcast(android.content.Intent) sending broadcast} which need to indicate the position of a row.
-   */
-  public final static String LIST_VIEW_POSITION = "listViewPosition";
-
   public interface OnEventObjectListener<BusinessObjectClass>
   {
 
@@ -240,20 +235,12 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     }
   }
 
+  /**
+   * Useful when {@link Context#sendBroadcast(android.content.Intent) sending broadcast} which need to indicate the position of a row.
+   */
+  public final static String LIST_VIEW_POSITION = "listViewPosition";
+
   protected final static Logger log = LoggerFactory.getInstance(WrappedListView.class);
-
-  private BusinessObjectClass selectedObject;
-
-  // Just there in order to ensure the consistency of the business objects for the adapter
-  private List<? extends BusinessObjectClass> prevousObjects;
-
-  private List<? extends BusinessObjectClass> objects;
-
-  private List<? extends BusinessObjectClass> filteredObjects;
-
-  private String filterText;
-
-  private final Activity activity;
 
   protected OnEventObjectListener<BusinessObjectClass> onEventObjectListener;
 
@@ -277,15 +264,63 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   protected LinearLayout listWrapperLayout;
 
-  protected abstract ForList<BusinessObjectClass, ViewClass> getForListProvider();
+  private final Activity activity;
 
-  /**
-   * Is responsible for creating the {@link ListViewClass} widget.
-   *
-   * @param activity the activity creating the list view
-   * @return a valid list view widget
-   */
-  protected abstract ListViewClass computeListView(Activity activity);
+  private BusinessObjectClass selectedObject;
+
+  // Just there in order to ensure the consistency of the business objects for the adapter
+  private List<? extends BusinessObjectClass> prevousObjects;
+
+  private List<? extends BusinessObjectClass> objects;
+
+  private List<? extends BusinessObjectClass> filteredObjects;
+
+  private String filterText;
+
+  public WrappedListView(Activity activity)
+  {
+    this.activity = activity;
+  }
+
+  public void onRetrieveDisplayObjects()
+  {
+  }
+
+  public void onRetrieveBusinessObjects()
+      throws BusinessObjectUnavailableException
+  {
+    prevousObjects = objects;
+    // We can safely retrieve the business objects
+    objects = getForListProvider().retrieveBusinessObjectsList();
+
+    if (objects == null)
+    {
+      // If the returned business objects is null, we consider it as an empty list
+      objects = new ArrayList<>();
+    }
+
+    // Only now, we apply the filter
+    recomputeFilterObjectsList();
+  }
+
+  public void onFulfillDisplayObjects()
+  {
+    // And now that the objects have been retrieved, we can provide our tailored list adaptor
+    setAdapter();
+  }
+
+  public void onSynchronizeDisplayObjects()
+  {
+    prevousObjects = null;
+  }
+
+  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
+  {
+  }
+
+  public void onBusinessObjectsRetrieved()
+  {
+  }
 
   /**
    * @return underlying list view
@@ -320,26 +355,9 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
   public abstract void setAdapter(BaseAdapter adapter);
 
-  /**
-   * The method is supposed to associate the adapter to the list view, and register for all selection and click events.
-   */
-  protected abstract void setAdapter();
-
-  protected abstract void setSelected(int position);
-
-  public WrappedListView(Activity activity)
-  {
-    this.activity = activity;
-  }
-
   public LinearLayout getListWrapperLayout()
   {
     return listWrapperLayout;
-  }
-
-  protected final void setFilterText(String text)
-  {
-    filterText = text;
   }
 
   /**
@@ -372,6 +390,79 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
 
     return wrapperLayout;
   }
+
+  public void onPause()
+  {
+  }
+
+  public void onStop()
+  {
+  }
+
+  public final void filterHasChanged(boolean recomputeFilteredObjects)
+  {
+    if (recomputeFilteredObjects == true)
+    {
+      recomputeFilterObjectsList();
+    }
+    // We need to indicate the list adapter that the underlying data have changed
+    notifyDataSetChanged(!recomputeFilteredObjects);
+  }
+
+  public BusinessObjectClass getSelectedObject()
+  {
+    return selectedObject;
+  }
+
+  protected void setSelectedObject(BusinessObjectClass selectedObject)
+  {
+    this.selectedObject = selectedObject;
+  }
+
+  public void setOnEventObjectListener(OnEventObjectListener<BusinessObjectClass> onEventObjectListener)
+  {
+    this.onEventObjectListener = onEventObjectListener;
+  }
+
+  public List<? extends BusinessObjectClass> getFilteredObjects()
+  {
+    return prevousObjects != null ? prevousObjects : filteredObjects;
+  }
+
+  public Activity getActivity()
+  {
+    return activity;
+  }
+
+  /**
+   * May return {@code null} if no filter text is currently active.
+   */
+  public String getFilterText()
+  {
+    return filterText;
+  }
+
+  protected final void setFilterText(String text)
+  {
+    filterText = text;
+  }
+
+  protected abstract ForList<BusinessObjectClass, ViewClass> getForListProvider();
+
+  /**
+   * Is responsible for creating the {@link ListViewClass} widget.
+   *
+   * @param activity the activity creating the list view
+   * @return a valid list view widget
+   */
+  protected abstract ListViewClass computeListView(Activity activity);
+
+  /**
+   * The method is supposed to associate the adapter to the list view, and register for all selection and click events.
+   */
+  protected abstract void setAdapter();
+
+  protected abstract void setSelected(int position);
 
   protected final void initializeHeader()
   {
@@ -409,97 +500,6 @@ public abstract class WrappedListView<BusinessObjectClass, ListViewClass extends
     // rightLayout.addView(new View(wrapperLayout.getContext()), new LinearLayout.LayoutParams(0, 0));
     // }
     listWrapperLayout.addView(rightLayout, 1 + (leftAdded == true ? 1 : 0), new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-  }
-
-  public void onFulfillDisplayObjects()
-  {
-    // And now that the objects have been retrieved, we can provide our tailored list adaptor
-    setAdapter();
-  }
-
-  public void onSynchronizeDisplayObjects()
-  {
-    prevousObjects = null;
-  }
-
-  public void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects, Runnable onOver, boolean immediately)
-  {
-  }
-
-  public void onPause()
-  {
-  }
-
-  public void onStop()
-  {
-  }
-
-  public void onRetrieveBusinessObjects()
-      throws BusinessObjectUnavailableException
-  {
-    prevousObjects = objects;
-    // We can safely retrieve the business objects
-    objects = getForListProvider().retrieveBusinessObjectsList();
-
-    if (objects == null)
-    {
-      // If the returned business objects is null, we consider it as an empty list
-      objects = new ArrayList<>();
-    }
-
-    // Only now, we apply the filter
-    recomputeFilterObjectsList();
-  }
-
-  public void onBusinessObjectsRetrieved()
-  {
-  }
-
-  public final void filterHasChanged(boolean recomputeFilteredObjects)
-  {
-    if (recomputeFilteredObjects == true)
-    {
-      recomputeFilterObjectsList();
-    }
-    // We need to indicate the list adapter that the underlying data have changed
-    notifyDataSetChanged(!recomputeFilteredObjects);
-  }
-
-  public void onRetrieveDisplayObjects()
-  {
-  }
-
-  public BusinessObjectClass getSelectedObject()
-  {
-    return selectedObject;
-  }
-
-  protected void setSelectedObject(BusinessObjectClass selectedObject)
-  {
-    this.selectedObject = selectedObject;
-  }
-
-  public void setOnEventObjectListener(OnEventObjectListener<BusinessObjectClass> onEventObjectListener)
-  {
-    this.onEventObjectListener = onEventObjectListener;
-  }
-
-  public List<? extends BusinessObjectClass> getFilteredObjects()
-  {
-    return prevousObjects != null ? prevousObjects : filteredObjects;
-  }
-
-  public Activity getActivity()
-  {
-    return activity;
-  }
-
-  /**
-   * May return {@code null} if no filter text is currently active.
-   */
-  public String getFilterText()
-  {
-    return filterText;
   }
 
   protected final void recomputeFilterObjectsList()

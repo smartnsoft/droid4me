@@ -81,6 +81,9 @@ public class LoggerFactory
     AndroidLogger, NativeLogger, Other
   }
 
+  // Used for a synchronization purpose.
+  private static final Object synchronizationObject = new Object();
+
   /**
    * Tunes the logging system verbosity. The {@code Logger#isXXXEnabled()} method return values will depend on this trigger level. Defaults to
    * {@code Log.WARN}.
@@ -100,9 +103,6 @@ public class LoggerFactory
    * Remembers the {@link LoggerFactory.LoggerConfigurator} that will be used to instantiate {@link Logger} instances.
    */
   private static LoggerConfigurator loggerConfigurator;
-
-  // Used for a synchronization purpose.
-  private static final Object synchronizationObject = new Object();
 
   /**
    * @param category the category used for logging

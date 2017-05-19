@@ -47,11 +47,6 @@ public class NativeLogger
     this.prefix = "[" + category + "] ";
   }
 
-  protected final String getPrefix()
-  {
-    return "[" + System.currentTimeMillis() + "] " + prefix + " [" + Thread.currentThread().getName() + "] ";
-  }
-
   public boolean isDebugEnabled()
   {
     return LoggerFactory.logLevel <= Log.DEBUG;
@@ -130,6 +125,11 @@ public class NativeLogger
   {
     System.out.println(getPrefix() + "[W] " + message);
     throwable.printStackTrace(System.out);
+  }
+
+  protected final String getPrefix()
+  {
+    return "[" + System.currentTimeMillis() + "] " + prefix + " [" + Thread.currentThread().getName() + "] ";
   }
 
 }

@@ -102,11 +102,6 @@ public abstract class Persistence
   {
 
     /**
-     * How many times the URI has been accessed.
-     */
-    private int accessCount = 0;
-
-    /**
      * If applicable, the file path of the persisted data.
      */
     public final String storageFilePath;
@@ -116,30 +111,15 @@ public abstract class Persistence
      */
     public final String uri;
 
+    /**
+     * How many times the URI has been accessed.
+     */
+    private int accessCount = 0;
+
     protected UriUsage(String storageFilePath, String uri)
     {
       this.storageFilePath = storageFilePath;
       this.uri = uri;
-    }
-
-    /**
-     * @return how many times the underlying URI has been accessed. Starts from {@code 0}
-     * @see #accessed()
-     */
-    protected final int getAccessCount()
-    {
-      return accessCount;
-    }
-
-    /**
-     * Indicates that the underlying URI has been accessed once again.
-     *
-     * @return how many time the URI has been accessing, including the current call
-     * @see #getAccessCount()
-     */
-    public int accessed()
-    {
-      return ++accessCount;
     }
 
     @Override
@@ -154,6 +134,26 @@ public abstract class Persistence
         return 1;
       }
       return 0;
+    }
+
+    /**
+     * Indicates that the underlying URI has been accessed once again.
+     *
+     * @return how many time the URI has been accessing, including the current call
+     * @see #getAccessCount()
+     */
+    public int accessed()
+    {
+      return ++accessCount;
+    }
+
+    /**
+     * @return how many times the underlying URI has been accessed. Starts from {@code 0}
+     * @see #accessed()
+     */
+    protected final int getAccessCount()
+    {
+      return accessCount;
     }
 
   }
@@ -246,11 +246,6 @@ public abstract class Persistence
   protected final static Logger log = LoggerFactory.getInstance(Persistence.class);
 
   /**
-   * All the {@link Persistence} instances which have been creating once the {@link Persistence#getInstance(int)} method has been invoked.
-   */
-  private static volatile Persistence[] instances;
-
-  /**
    * The directory paths of the instances.
    * <p>
    * <p>
@@ -279,42 +274,9 @@ public abstract class Persistence
   public static int MAXIMUM_URI_CONTENTS_SIZE_IN_BYTES = 512 * 1024;
 
   /**
-   * Remembers whether the instance is currently initialized.
+   * All the {@link Persistence} instances which have been creating once the {@link Persistence#getInstance(int)} method has been invoked.
    */
-  private boolean isInitialized;
-
-  /**
-   * Remembers whether the storage back-end is currently available.
-   */
-  private boolean storageBackendAvailable;
-
-  /**
-   * The location of the folder where the data are being persisted, if applicable.
-   */
-  private final String storageDirectoryPath;
-
-  /**
-   * The persistence index among all instances.
-   */
-  protected final int instanceIndex;
-
-  /**
-   * Indicates how the persisted URI are being accessed.
-   * <p>
-   * <p>
-   * All implementations are not required to update this field, it is just here to help.
-   * </p>
-   */
-  protected final UriUsages uriUsages = new UriUsages();
-
-  /**
-   * Holds all the URIs which are currently being persisted.
-   * <p>
-   * <p>
-   * All implementations are not required to update this field, it is just here to help.
-   * </p>
-   */
-  protected final Set<String> beingProcessed = new HashSet<>();
+  private static volatile Persistence[] instances;
 
   /**
    * @param outputStream it is closed by this method
@@ -483,6 +445,92 @@ public abstract class Persistence
   }
 
   /**
+   * Cleans up all persistence instances. The method will invoke the {@link #cleanUp()} method on each instance.
+   */
+  public static synchronized void cleanUpAll()
+      throws Persistence.PersistenceException
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Cleaning up all persistence instances");
+    }
+    for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
+    {
+      Persistence.getInstance(index).cleanUp();
+    }
+  }
+
+  /**
+   * Clears all persistence instances. The method will invoke the {@link #clear()} method on each instance.
+   */
+  public static synchronized void clearAll()
+      throws Persistence.PersistenceException
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Clearing all persistence instances");
+    }
+    for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
+    {
+      Persistence.getInstance(index).clear();
+    }
+  }
+
+  /**
+   * Closes all persistence instances. The method will invoke the {@link #close()} method on each instance.
+   */
+  public static synchronized void closeAll()
+      throws Persistence.PersistenceException
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Closing all persistence instances");
+    }
+    for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
+    {
+      Persistence.getInstance(index).close();
+    }
+  }
+
+  /**
+   * The persistence index among all instances.
+   */
+  protected final int instanceIndex;
+
+  /**
+   * Indicates how the persisted URI are being accessed.
+   * <p>
+   * <p>
+   * All implementations are not required to update this field, it is just here to help.
+   * </p>
+   */
+  protected final UriUsages uriUsages = new UriUsages();
+
+  /**
+   * Holds all the URIs which are currently being persisted.
+   * <p>
+   * <p>
+   * All implementations are not required to update this field, it is just here to help.
+   * </p>
+   */
+  protected final Set<String> beingProcessed = new HashSet<>();
+
+  /**
+   * The location of the folder where the data are being persisted, if applicable.
+   */
+  private final String storageDirectoryPath;
+
+  /**
+   * Remembers whether the instance is currently initialized.
+   */
+  private boolean isInitialized;
+
+  /**
+   * Remembers whether the storage back-end is currently available.
+   */
+  private boolean storageBackendAvailable;
+
+  /**
    * The unique constructor.
    * <p>
    * <p>
@@ -501,13 +549,54 @@ public abstract class Persistence
   }
 
   /**
-   * Indicates whether the underlying back-end storage is available.
+   * Indicates the latest update timestamp corresponding to an URI persistent entry.
    *
-   * @param storageBackendAvailable {@code true} if and only if the back-end storage is available
+   * @return the date when the underlying persistent entry has been updated ; {@code null} if no persistent entry exists for the provided URI
+   * @throws Persistence.PersistenceException in case an error occurred while processing the request or if the storage back-end is not available
+   * @see #getLastUpdateInstance(String)
    */
-  protected final void setStorageBackendAvailable(boolean storageBackendAvailable)
+  @Override
+  public final Date getLastUpdate(String uri)
+      throws Persistence.PersistenceException
   {
-    this.storageBackendAvailable = storageBackendAvailable;
+    checkAndInitializeIfNecessary();
+    return getLastUpdateInstance(uri);
+  }
+
+  /**
+   * @throws Persistence.PersistenceException if a problem occurred while reading the data or if the storage back-end is not available
+   * @see #readInputStreamInstance(String)
+   */
+  @Override
+  public final Business.InputAtom readInputStream(String uri)
+      throws Persistence.PersistenceException
+  {
+    checkAndInitializeIfNecessary();
+    return readInputStreamInstance(uri);
+  }
+
+  /**
+   * @throws Persistence.PersistenceException if a problem occurred while writing the data or if the storage back-end is not available
+   * @see #writeInputStreamInstance(String, InputAtom, boolean)
+   */
+  @Override
+  public final InputStream writeInputStream(String uri, Business.InputAtom inputAtom, boolean returnStream)
+      throws Persistence.PersistenceException
+  {
+    checkAndInitializeIfNecessary();
+    return writeInputStreamInstance(uri, inputAtom, returnStream);
+  }
+
+  /**
+   * @throws Persistence.PersistenceException if a problem occurred while erasing the data or if the storage back-end is not available
+   * @see #removeInstance(String)
+   */
+  @Override
+  public final void remove(String uri)
+      throws Persistence.PersistenceException
+  {
+    checkAndInitializeIfNecessary();
+    removeInstance(uri);
   }
 
   /**
@@ -550,19 +639,6 @@ public abstract class Persistence
   }
 
   /**
-   * Is responsible for performing the {@link #initialize()} method job.
-   * <p>
-   * <p>
-   * The implementation must set the {@link #storageBackendAvailable} flag accordingly.
-   * </p>
-   *
-   * @throws Persistence.PersistenceException if something went wrong during the initialization
-   * @see #isInitialized
-   */
-  protected abstract void initializeInstance()
-      throws Persistence.PersistenceException;
-
-  /**
    * Enables to access all the stored URIs. Each persistent entry is represented by a a local URI, and this method returns all of them.
    * <p>
    * <p>
@@ -579,42 +655,6 @@ public abstract class Persistence
     checkAndInitializeIfNecessary();
     return getUrisInstance();
   }
-
-  /**
-   * Is responsible for performing the {@link #getUris()} method job.
-   *
-   * @return the list of the stored URIs stored in the persistence instance
-   * @throws Persistence.PersistenceException in case an error occurred while computing the URIs
-   * @see #getUris()
-   */
-  protected abstract List<String> getUrisInstance()
-      throws Persistence.PersistenceException;
-
-  /**
-   * Indicates the latest update timestamp corresponding to an URI persistent entry.
-   *
-   * @return the date when the underlying persistent entry has been updated ; {@code null} if no persistent entry exists for the provided URI
-   * @throws Persistence.PersistenceException in case an error occurred while processing the request or if the storage back-end is not available
-   * @see #getLastUpdateInstance(String)
-   */
-  @Override
-  public final Date getLastUpdate(String uri)
-      throws Persistence.PersistenceException
-  {
-    checkAndInitializeIfNecessary();
-    return getLastUpdateInstance(uri);
-  }
-
-  /**
-   * Is responsible for performing the {@code getLastUpdate()}} method job.
-   *
-   * @return the date when the underlying persistent entry has been updated ; {@code null} if no persistent entry exists for the provided URI
-   * @throws Persistence.PersistenceException in case an error occurred while processing the request
-   * @see #getLastUpdate(String)
-   * @see #getLastUpdate(Object)
-   */
-  protected abstract Date getLastUpdateInstance(String uri)
-      throws Persistence.PersistenceException;
 
   /**
    * Is responsible for extracting an input stream from the persistence related to the provided URI.
@@ -655,6 +695,143 @@ public abstract class Persistence
   }
 
   /**
+   * Cleans up the cache related to the current instance. This will remove persistent entries depending on the computed
+   * {@link #computeCleanUpPolicy()} : if this policy is {@code null}, nothing is done. The method will invoke the
+   * {@link #computePolicyAndCleanUpInstance()} method.
+   * <p>
+   * <p>
+   * During this operation, the instance should not be accessed, and the implementation is not responsible for ensuring that: it is up to the caller
+   * to make sure that no other instance method is being invoked during its execution!
+   * </p>
+   *
+   * @throws Persistence.PersistenceException if any problem occurs while cleaning up the instance
+   * @see #cleanUpInstance(CleanUpPolicy)
+   * @see #clear()
+   * @see #close()
+   */
+  public final synchronized void cleanUp()
+      throws Persistence.PersistenceException
+  {
+    final long start = System.currentTimeMillis();
+    if (log.isInfoEnabled())
+    {
+      log.info("Cleaning up the persistence instance " + instanceIndex);
+    }
+    checkAndInitializeIfNecessary();
+    if (storageBackendAvailable == true)
+    {
+      computePolicyAndCleanUpInstance();
+    }
+    uriUsages.clear();
+    beingProcessed.clear();
+    if (log.isInfoEnabled())
+    {
+      log.info("Cleaning up the persistence instance " + instanceIndex + " took " + (System.currentTimeMillis() - start) + " ms");
+    }
+  }
+
+  /**
+   * Totally clears the cache related to the current instance. This will delete all the entries. The method will invoke the {@link #clearInstance()}
+   * method.
+   * <p>
+   * <p>
+   * Once cleared, the current instance can be used as is.
+   * </p>
+   *
+   * @throws Persistence.PersistenceException if any problem occurs while clearing the persistence
+   * @see #clearInstance()
+   * @see #close()
+   * @see #clearAll()
+   */
+  public final synchronized void clear()
+      throws Persistence.PersistenceException
+  {
+    if (log.isInfoEnabled())
+    {
+      log.info("Emptying the persistence instance " + instanceIndex);
+    }
+    checkAndInitializeIfNecessary();
+    if (storageBackendAvailable == true)
+    {
+      clearInstance();
+    }
+    uriUsages.clear();
+    beingProcessed.clear();
+  }
+
+  /**
+   * Closes the current instance. The method will invoke the {@link #closeInstance()} method.
+   * <p>
+   * <p>
+   * Once closed, the current instance cannot be used until an explicit {@link #initialize()} call is performed.
+   * </p>
+   *
+   * @see #closeInstance()
+   * @see #clear()
+   * @see #closeAll()
+   */
+  public final synchronized void close()
+      throws Persistence.PersistenceException
+  {
+    if (log.isInfoEnabled())
+    {
+      log.info("Closing the persistence instance " + instanceIndex);
+    }
+    if (storageBackendAvailable == true)
+    {
+      closeInstance();
+    }
+    uriUsages.clear();
+    beingProcessed.clear();
+    storageBackendAvailable = false;
+    isInitialized = false;
+  }
+
+  /**
+   * Indicates whether the underlying back-end storage is available.
+   *
+   * @param storageBackendAvailable {@code true} if and only if the back-end storage is available
+   */
+  protected final void setStorageBackendAvailable(boolean storageBackendAvailable)
+  {
+    this.storageBackendAvailable = storageBackendAvailable;
+  }
+
+  /**
+   * Is responsible for performing the {@link #initialize()} method job.
+   * <p>
+   * <p>
+   * The implementation must set the {@link #storageBackendAvailable} flag accordingly.
+   * </p>
+   *
+   * @throws Persistence.PersistenceException if something went wrong during the initialization
+   * @see #isInitialized
+   */
+  protected abstract void initializeInstance()
+      throws Persistence.PersistenceException;
+
+  /**
+   * Is responsible for performing the {@link #getUris()} method job.
+   *
+   * @return the list of the stored URIs stored in the persistence instance
+   * @throws Persistence.PersistenceException in case an error occurred while computing the URIs
+   * @see #getUris()
+   */
+  protected abstract List<String> getUrisInstance()
+      throws Persistence.PersistenceException;
+
+  /**
+   * Is responsible for performing the {@code getLastUpdate()}} method job.
+   *
+   * @return the date when the underlying persistent entry has been updated ; {@code null} if no persistent entry exists for the provided URI
+   * @throws Persistence.PersistenceException in case an error occurred while processing the request
+   * @see #getLastUpdate(String)
+   * @see #getLastUpdate(Object)
+   */
+  protected abstract Date getLastUpdateInstance(String uri)
+      throws Persistence.PersistenceException;
+
+  /**
    * Is responsible for performing the {@link #flushInputStream(String, InputAtom)}} method job.
    *
    * @param uri       the URI which identifies the stream to persist
@@ -667,18 +844,6 @@ public abstract class Persistence
       throws Persistence.PersistenceException;
 
   /**
-   * @throws Persistence.PersistenceException if a problem occurred while reading the data or if the storage back-end is not available
-   * @see #readInputStreamInstance(String)
-   */
-  @Override
-  public final Business.InputAtom readInputStream(String uri)
-      throws Persistence.PersistenceException
-  {
-    checkAndInitializeIfNecessary();
-    return readInputStreamInstance(uri);
-  }
-
-  /**
    * Is responsible for performing the {@code readInputStream()} method job.
    *
    * @param uri the URI which identifies the stream to persist
@@ -689,18 +854,6 @@ public abstract class Persistence
    */
   protected abstract Business.InputAtom readInputStreamInstance(String uri)
       throws Persistence.PersistenceException;
-
-  /**
-   * @throws Persistence.PersistenceException if a problem occurred while writing the data or if the storage back-end is not available
-   * @see #writeInputStreamInstance(String, InputAtom, boolean)
-   */
-  @Override
-  public final InputStream writeInputStream(String uri, Business.InputAtom inputAtom, boolean returnStream)
-      throws Persistence.PersistenceException
-  {
-    checkAndInitializeIfNecessary();
-    return writeInputStreamInstance(uri, inputAtom, returnStream);
-  }
 
   /**
    * Is responsible for performing the {@code writeInputStream()} method job.
@@ -718,18 +871,6 @@ public abstract class Persistence
   protected abstract InputStream writeInputStreamInstance(String uri, Business.InputAtom inputAtom,
       boolean returnStream)
       throws Persistence.PersistenceException;
-
-  /**
-   * @throws Persistence.PersistenceException if a problem occurred while erasing the data or if the storage back-end is not available
-   * @see #removeInstance(String)
-   */
-  @Override
-  public final void remove(String uri)
-      throws Persistence.PersistenceException
-  {
-    checkAndInitializeIfNecessary();
-    removeInstance(uri);
-  }
 
   /**
    * Is responsible for performing the {@code remove()} method job.
@@ -797,42 +938,6 @@ public abstract class Persistence
       throws Persistence.PersistenceException;
 
   /**
-   * Cleans up the cache related to the current instance. This will remove persistent entries depending on the computed
-   * {@link #computeCleanUpPolicy()} : if this policy is {@code null}, nothing is done. The method will invoke the
-   * {@link #computePolicyAndCleanUpInstance()} method.
-   * <p>
-   * <p>
-   * During this operation, the instance should not be accessed, and the implementation is not responsible for ensuring that: it is up to the caller
-   * to make sure that no other instance method is being invoked during its execution!
-   * </p>
-   *
-   * @throws Persistence.PersistenceException if any problem occurs while cleaning up the instance
-   * @see #cleanUpInstance(CleanUpPolicy)
-   * @see #clear()
-   * @see #close()
-   */
-  public final synchronized void cleanUp()
-      throws Persistence.PersistenceException
-  {
-    final long start = System.currentTimeMillis();
-    if (log.isInfoEnabled())
-    {
-      log.info("Cleaning up the persistence instance " + instanceIndex);
-    }
-    checkAndInitializeIfNecessary();
-    if (storageBackendAvailable == true)
-    {
-      computePolicyAndCleanUpInstance();
-    }
-    uriUsages.clear();
-    beingProcessed.clear();
-    if (log.isInfoEnabled())
-    {
-      log.info("Cleaning up the persistence instance " + instanceIndex + " took " + (System.currentTimeMillis() - start) + " ms");
-    }
-  }
-
-  /**
    * Is responsible for invoking the {@link #computeCleanUpPolicy()} and then, if the returned value not {@code null}, invoke the
    * {@link #cleanUpInstance(CleanUpPolicy)} method.
    *
@@ -840,111 +945,6 @@ public abstract class Persistence
    */
   protected abstract void computePolicyAndCleanUpInstance()
       throws Persistence.PersistenceException;
-
-  /**
-   * Totally clears the cache related to the current instance. This will delete all the entries. The method will invoke the {@link #clearInstance()}
-   * method.
-   * <p>
-   * <p>
-   * Once cleared, the current instance can be used as is.
-   * </p>
-   *
-   * @throws Persistence.PersistenceException if any problem occurs while clearing the persistence
-   * @see #clearInstance()
-   * @see #close()
-   * @see #clearAll()
-   */
-  public final synchronized void clear()
-      throws Persistence.PersistenceException
-  {
-    if (log.isInfoEnabled())
-    {
-      log.info("Emptying the persistence instance " + instanceIndex);
-    }
-    checkAndInitializeIfNecessary();
-    if (storageBackendAvailable == true)
-    {
-      clearInstance();
-    }
-    uriUsages.clear();
-    beingProcessed.clear();
-  }
-
-  /**
-   * Closes the current instance. The method will invoke the {@link #closeInstance()} method.
-   * <p>
-   * <p>
-   * Once closed, the current instance cannot be used until an explicit {@link #initialize()} call is performed.
-   * </p>
-   *
-   * @see #closeInstance()
-   * @see #clear()
-   * @see #closeAll()
-   */
-  public final synchronized void close()
-      throws Persistence.PersistenceException
-  {
-    if (log.isInfoEnabled())
-    {
-      log.info("Closing the persistence instance " + instanceIndex);
-    }
-    if (storageBackendAvailable == true)
-    {
-      closeInstance();
-    }
-    uriUsages.clear();
-    beingProcessed.clear();
-    storageBackendAvailable = false;
-    isInitialized = false;
-  }
-
-  /**
-   * Cleans up all persistence instances. The method will invoke the {@link #cleanUp()} method on each instance.
-   */
-  public static synchronized void cleanUpAll()
-      throws Persistence.PersistenceException
-  {
-    if (log.isDebugEnabled())
-    {
-      log.debug("Cleaning up all persistence instances");
-    }
-    for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
-    {
-      Persistence.getInstance(index).cleanUp();
-    }
-  }
-
-  /**
-   * Clears all persistence instances. The method will invoke the {@link #clear()} method on each instance.
-   */
-  public static synchronized void clearAll()
-      throws Persistence.PersistenceException
-  {
-    if (log.isDebugEnabled())
-    {
-      log.debug("Clearing all persistence instances");
-    }
-    for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
-    {
-      Persistence.getInstance(index).clear();
-    }
-  }
-
-  /**
-   * Closes all persistence instances. The method will invoke the {@link #close()} method on each instance.
-   */
-  public static synchronized void closeAll()
-      throws Persistence.PersistenceException
-  {
-    if (log.isDebugEnabled())
-    {
-      log.debug("Closing all persistence instances");
-    }
-    for (int index = 0; index < Persistence.INSTANCES_COUNT; index++)
-    {
-      Persistence.getInstance(index).close();
-    }
-  }
 
   private void checkAndInitializeIfNecessary()
       throws Persistence.PersistenceException

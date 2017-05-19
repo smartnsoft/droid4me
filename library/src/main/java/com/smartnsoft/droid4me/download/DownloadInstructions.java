@@ -76,14 +76,6 @@ public class DownloadInstructions
       this.bitmap = bitmap;
     }
 
-    /**
-     * @return the wrapped bitmap
-     */
-    public Bitmap getBitmap()
-    {
-      return bitmap;
-    }
-
     public int getSizeInBytes()
     {
       if (bitmap == null)
@@ -109,6 +101,14 @@ public class DownloadInstructions
       }
     }
 
+    /**
+     * @return the wrapped bitmap
+     */
+    public Bitmap getBitmap()
+    {
+      return bitmap;
+    }
+
   }
 
   /**
@@ -128,14 +128,6 @@ public class DownloadInstructions
     public ViewableView(View view)
     {
       this.view = view;
-    }
-
-    /**
-     * @return the wrapped Android view
-     */
-    public View getView()
-    {
-      return view;
     }
 
     public int getId()
@@ -184,6 +176,14 @@ public class DownloadInstructions
       return view == other.view;
     }
 
+    /**
+     * @return the wrapped Android view
+     */
+    public View getView()
+    {
+      return view;
+    }
+
   }
 
   /**
@@ -205,17 +205,17 @@ public class DownloadInstructions
       this.handler = handler;
     }
 
+    public boolean post(Runnable runnnable)
+    {
+      return handler.post(runnnable);
+    }
+
     /**
      * @return the wrapped Android handler
      */
     public Handler getHandler()
     {
       return handler;
-    }
-
-    public boolean post(Runnable runnnable)
-    {
-      return handler.post(runnnable);
     }
 
   }
@@ -228,22 +228,6 @@ public class DownloadInstructions
   public static abstract class Instructions
       implements BasisDownloadInstructions.Instructions<DownloadInstructions.BitmapableBitmap, DownloadInstructions.ViewableView>
   {
-
-    protected abstract Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs);
-
-    protected abstract void onBindLocalBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
-
-    protected abstract Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs);
-
-    protected abstract void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
-
-    protected abstract void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid,
-        Object imageSpecs);
-
-    protected abstract boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid,
-        Object imageSpecs);
-
-    protected abstract void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
 
     @Override
     public final BitmapableBitmap hasLocalBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
@@ -291,6 +275,22 @@ public class DownloadInstructions
     {
       onBitmapBound(result, view != null ? view.getView() : null, bitmapUid, imageSpecs);
     }
+
+    protected abstract Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs);
+
+    protected abstract void onBindLocalBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+
+    protected abstract Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs);
+
+    protected abstract void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+
+    protected abstract void onBitmapReady(boolean allright, View view, Bitmap bitmap, String bitmapUid,
+        Object imageSpecs);
+
+    protected abstract boolean onBindBitmap(boolean downloaded, View view, Bitmap bitmap, String bitmapUid,
+        Object imageSpecs);
+
+    protected abstract void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
 
   }
 

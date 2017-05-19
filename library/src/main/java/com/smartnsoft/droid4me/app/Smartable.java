@@ -45,10 +45,9 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  * </p>
  *
  * @param <AggregateClass> the aggregate class accessible though the {@link #setAggregate(Object)} and {@link #getAggregate()} methods
+ * @author Édouard Mercier
  * @see SmartableActivity
  * @see Droid4mizer
- *
- * @author Édouard Mercier
  * @since 2011.03.04
  */
 public interface Smartable<AggregateClass>

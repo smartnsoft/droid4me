@@ -27,13 +27,6 @@ public final class DownloadContracts
 {
 
   /**
-   * We want no one to instantiate that class, which is a container.
-   */
-  private DownloadContracts()
-  {
-  }
-
-  /**
    * An abstraction of a {@link android.graphics.Bitmap} which makes possible the writing of unitary tests.
    * <p>
    * <p>
@@ -104,6 +97,13 @@ public final class DownloadContracts
      */
     boolean post(Runnable runnnable);
 
+  }
+
+  /**
+   * We want no one to instantiate that class, which is a container.
+   */
+  private DownloadContracts()
+  {
   }
 
 }

@@ -44,11 +44,6 @@ public final class BasicBitmapDrawable
     bitmap = bitamp;
   }
 
-  public Bitmap getBitmap()
-  {
-    return bitmap;
-  }
-
   @Override
   public void draw(Canvas canvas)
   {
@@ -93,6 +88,11 @@ public final class BasicBitmapDrawable
   public int getMinimumHeight()
   {
     return bitmap.getHeight();
+  }
+
+  public Bitmap getBitmap()
+  {
+    return bitmap;
   }
 
 }

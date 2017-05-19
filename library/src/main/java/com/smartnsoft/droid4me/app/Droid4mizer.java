@@ -109,12 +109,25 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    * The {@link Smarted} methods.
    */
 
-  @Override
-  protected void finalize()
-      throws Throwable
+  public void onRetrieveDisplayObjects()
   {
-    Droid4mizer.aliveCount--;
-    super.finalize();
+    smartable.onRetrieveDisplayObjects();
+  }
+
+  public void onRetrieveBusinessObjects()
+      throws BusinessObjectUnavailableException
+  {
+    smartable.onRetrieveBusinessObjects();
+  }
+
+  public void onFulfillDisplayObjects()
+  {
+    smartable.onFulfillDisplayObjects();
+  }
+
+  public void onSynchronizeDisplayObjects()
+  {
+    smartable.onSynchronizeDisplayObjects();
   }
 
   public AggregateClass getAggregate()
@@ -147,25 +160,9 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     smartable.onBusinessObjectsRetrieved();
   }
 
-  /**
-   * Same as invoking {@code refreshBusinessObjectsAndDisplay(true, null, false)}.
-   *
-   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
+  /*
+   * The {@link AppPublics.LifeCyclePublic} methods.
    */
-  public void refreshBusinessObjectsAndDisplay()
-  {
-    refreshBusinessObjectsAndDisplay(true, null, false);
-  }
-
-  /**
-   * Same as invoking {@code refreshBusinessObjectsAndDisplay(boolean, null, false)}.
-   *
-   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
-   */
-  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
-  {
-    refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null, false);
-  }
 
   @SuppressWarnings("deprecation")
   public void refreshBusinessObjectsAndDisplay(final boolean retrieveBusinessObjects, final Runnable onOver,
@@ -227,10 +224,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
   }
 
-  /*
-   * The {@link AppPublics.LifeCyclePublic} methods.
-   */
-
   public boolean isRefreshingBusinessObjectsAndDisplay()
   {
     return stateContainer.isRefreshingBusinessObjectsAndDisplay();
@@ -248,6 +241,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   {
     return stateContainer.getOnSynchronizeDisplayObjectsCount();
   }
+
   /*
    * Indicates whether the entity has been restarted due to a configuruation change, or being restored from a saved state.
    *
@@ -261,10 +255,15 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   {
     return stateContainer.isFirstLifeCycle();
   }
+
   public final boolean isInteracting()
   {
     return stateContainer.isInteracting();
   }
+
+  /*
+   * The {@link AppInternals.LifeCycleInternals} methods.
+   */
 
   public final boolean isAlive()
   {
@@ -272,7 +271,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
   }
 
   /*
-   * The {@link AppInternals.LifeCycleInternals} methods.
+   * The {@link Activity}/{@link android.app.Fragment} methods.
    */
 
   public boolean shouldKeepOn()
@@ -280,9 +279,38 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     return stateContainer.shouldKeepOn();
   }
 
-  /*
-   * The {@link Activity}/{@link android.app.Fragment} methods.
+  public SharedPreferences getPreferences()
+  {
+    return stateContainer.getPreferences(activity);
+  }
+
+  @Override
+  protected void finalize()
+      throws Throwable
+  {
+    Droid4mizer.aliveCount--;
+    super.finalize();
+  }
+
+  /**
+   * Same as invoking {@code refreshBusinessObjectsAndDisplay(true, null, false)}.
+   *
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
    */
+  public void refreshBusinessObjectsAndDisplay()
+  {
+    refreshBusinessObjectsAndDisplay(true, null, false);
+  }
+
+  /**
+   * Same as invoking {@code refreshBusinessObjectsAndDisplay(boolean, null, false)}.
+   *
+   * @see #refreshBusinessObjectsAndDisplay(boolean, Runnable, boolean)
+   */
+  public final void refreshBusinessObjectsAndDisplay(boolean retrieveBusinessObjects)
+  {
+    refreshBusinessObjectsAndDisplay(retrieveBusinessObjects, null, false);
+  }
 
   public void onAttached(Activity activity)
   {
@@ -493,6 +521,10 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
   }
 
+  /*
+   * The LifeCycle interface implementation.
+   */
+
   public boolean onCreateOptionsMenu(boolean superResult, Menu menu)
   {
     if (Droid4mizer.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled())
@@ -535,36 +567,6 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     {
       log.debug("Droid4mizer::onActivityResult");
     }
-  }
-
-  /*
-   * The LifeCycle interface implementation.
-   */
-
-  public void onFulfillDisplayObjects()
-  {
-    smartable.onFulfillDisplayObjects();
-  }
-
-  public void onRetrieveBusinessObjects()
-      throws BusinessObjectUnavailableException
-  {
-    smartable.onRetrieveBusinessObjects();
-  }
-
-  public void onRetrieveDisplayObjects()
-  {
-    smartable.onRetrieveDisplayObjects();
-  }
-
-  public void onSynchronizeDisplayObjects()
-  {
-    smartable.onSynchronizeDisplayObjects();
-  }
-
-  public SharedPreferences getPreferences()
-  {
-    return stateContainer.getPreferences(activity);
   }
 
   /*

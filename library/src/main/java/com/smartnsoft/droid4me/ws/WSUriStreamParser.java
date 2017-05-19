@@ -50,6 +50,23 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   }
 
   /**
+   * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#UriStreamer} source,
+   * i.e. through a {#link {@link Business.UriStreamParser}.
+   * <p>
+   * <p>
+   * Indicates the type of HTTP request and the underlying HTTP body and URL.
+   * </p>
+   *
+   * @param <ParameterType> the kind of parameters that will be used to identify and generate the business object URI
+   * @since 2011.10.06
+   */
+  public interface UriStreamerSourceKey<ParameterType>
+      extends WSUriStreamParser.SourceKey<WebServiceClient.HttpCallTypeAndBody, ParameterType>
+  {
+
+  }
+
+  /**
    * A {@link WSUriStreamParser.SourceKey} aggregator, which redirects the computing of a business object entity URI depending on the
    * {@link Business.Source} it is asked for.
    *
@@ -129,23 +146,6 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   }
 
   /**
-   * A source key which is able to define a specific URI for a business entity when it is searched on an {@link Business.Source#UriStreamer} source,
-   * i.e. through a {#link {@link Business.UriStreamParser}.
-   * <p>
-   * <p>
-   * Indicates the type of HTTP request and the underlying HTTP body and URL.
-   * </p>
-   *
-   * @param <ParameterType> the kind of parameters that will be used to identify and generate the business object URI
-   * @since 2011.10.06
-   */
-  public interface UriStreamerSourceKey<ParameterType>
-      extends WSUriStreamParser.SourceKey<WebServiceClient.HttpCallTypeAndBody, ParameterType>
-  {
-
-  }
-
-  /**
    * A basic implementation of the {@link WSUriStreamParser.UriStreamerSourceKey}.
    *
    * @param <ParameterType> the kind of parameters that will be used to identify and generate the business object URI
@@ -185,12 +185,13 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
     this.webServiceClient = webServiceClient;
   }
 
-  /**
-   * A helper method which just wraps the {@link WebServiceCaller#computeUri(String, String, Map)} method.
-   */
-  protected String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
+  public final Business.InputAtom getInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
+      throws WebServiceCaller.CallException
   {
-    return webServiceClient.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
+    final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
+    final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
+    final HttpResponse httpResponse = webServiceClient.runRequest(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.headers, httpCallTypeAndBody.parameters, httpCallTypeAndBody.body, httpCallTypeAndBody.files);
+    return new Business.InputAtom(new Date(), httpResponse.headers, httpResponse.inputStream, null);
   }
 
   // TODO: think on how to set that back
@@ -206,15 +207,6 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
   // {
   // return new WSUriStreamParser.SimpleUriStreamerSourceKey<ParameterType>(httpCallTypeAndBody);
   // }
-
-  public final Business.InputAtom getInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
-      throws WebServiceCaller.CallException
-  {
-    final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
-    final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
-    final HttpResponse httpResponse = webServiceClient.runRequest(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.headers, httpCallTypeAndBody.parameters, httpCallTypeAndBody.body, httpCallTypeAndBody.files);
-    return new Business.InputAtom(new Date(), httpResponse.headers, httpResponse.inputStream, null);
-  }
 
   public final BusinessObjectType rawGetValue(ParameterType parameter)
       throws ParseExceptionType, WebServiceCaller.CallException
@@ -239,6 +231,14 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
       }
       throw new WebServiceCaller.CallException(exception);
     }
+  }
+
+  /**
+   * A helper method which just wraps the {@link WebServiceCaller#computeUri(String, String, Map)} method.
+   */
+  protected String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
+  {
+    return webServiceClient.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
   }
 
 }

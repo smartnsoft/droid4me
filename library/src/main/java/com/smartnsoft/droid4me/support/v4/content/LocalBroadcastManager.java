@@ -88,21 +88,11 @@ public class LocalBroadcastManager
     }
   }
 
+  static final int MSG_EXEC_PENDING_BROADCASTS = 1;
+
   private static final String TAG = "LocalBroadcastManager";
 
   private static final boolean DEBUG = false;
-
-  private final Context mAppContext;
-
-  private final HashMap<BroadcastReceiver, ArrayList<IntentFilter>> mReceivers = new HashMap<>();
-
-  private final HashMap<String, ArrayList<ReceiverRecord>> mActions = new HashMap<>();
-
-  private final ArrayList<BroadcastRecord> mPendingBroadcasts = new ArrayList<>();
-
-  static final int MSG_EXEC_PENDING_BROADCASTS = 1;
-
-  private final Handler mHandler;
 
   private static final Object mLock = new Object();
 
@@ -120,6 +110,16 @@ public class LocalBroadcastManager
     }
   }
 
+  private final Context mAppContext;
+
+  private final HashMap<BroadcastReceiver, ArrayList<IntentFilter>> mReceivers = new HashMap<>();
+
+  private final HashMap<String, ArrayList<ReceiverRecord>> mActions = new HashMap<>();
+
+  private final ArrayList<BroadcastRecord> mPendingBroadcasts = new ArrayList<>();
+
+  private final Handler mHandler;
+
   private LocalBroadcastManager(Context context)
   {
     mAppContext = context;
@@ -131,11 +131,11 @@ public class LocalBroadcastManager
       {
         switch (msg.what)
         {
-        case MSG_EXEC_PENDING_BROADCASTS:
-          executePendingBroadcasts();
-          break;
-        default:
-          super.handleMessage(msg);
+          case MSG_EXEC_PENDING_BROADCASTS:
+            executePendingBroadcasts();
+            break;
+          default:
+            super.handleMessage(msg);
         }
       }
     };
@@ -290,21 +290,21 @@ public class LocalBroadcastManager
               String reason;
               switch (match)
               {
-              case IntentFilter.NO_MATCH_ACTION:
-                reason = "action";
-                break;
-              case IntentFilter.NO_MATCH_CATEGORY:
-                reason = "category";
-                break;
-              case IntentFilter.NO_MATCH_DATA:
-                reason = "data";
-                break;
-              case IntentFilter.NO_MATCH_TYPE:
-                reason = "type";
-                break;
-              default:
-                reason = "unknown reason";
-                break;
+                case IntentFilter.NO_MATCH_ACTION:
+                  reason = "action";
+                  break;
+                case IntentFilter.NO_MATCH_CATEGORY:
+                  reason = "category";
+                  break;
+                case IntentFilter.NO_MATCH_DATA:
+                  reason = "data";
+                  break;
+                case IntentFilter.NO_MATCH_TYPE:
+                  reason = "type";
+                  break;
+                default:
+                  reason = "unknown reason";
+                  break;
               }
               Log.v(TAG, "  Filter did not match: " + reason);
             }

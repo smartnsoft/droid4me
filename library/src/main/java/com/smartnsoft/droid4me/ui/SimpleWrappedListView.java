@@ -46,104 +46,17 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
     extends WrappedListView<BusinessObjectClass, ListView, ViewClass>
 {
 
-  // Inspired from http://groups.google.com/group/android-developers/browse_thread/thread/59dbe46cfbc5672f/e3a5e21754a7a725?lnk=raot
-  private final class TheListView
-      extends ListView
-      implements OnGestureListener
-  {
-
-    private final GestureDetector gestureDetector;
-
-    public TheListView(Context context)
-    {
-      super(context);
-      setId(android.R.id.list);
-      gestureDetector = new GestureDetector(context, this);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
-      // log.debug("onTouchEvent(" + event + ")");
-      if (gestureDetector.onTouchEvent(event) == true)
-      {
-        // log.debug("onTouchEvent() returns true");
-        return true;
-      }
-      return super.onTouchEvent(event);
-    }
-
-    public boolean onDown(MotionEvent event)
-    {
-      return false;
-    }
-
-    public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY)
-    {
-      // log.debug("onFling(" + event1 + "," + event2 + "," + velocityX + "," + velocityY + ")");
-      if (getListView().isEnabled() == true && Math.abs(velocityX) > 1500 && onEventObjectListener != null && event1 != null)
-      {
-        final int position = listView.pointToPosition((int) event1.getX(), (int) event1.getY());
-        if (position >= 0)
-        {
-          // This is the only that could be found in order to find back the associated view
-          final BusinessObjectClass businessObject = getFilteredObjects().get(position);
-          for (int index = 0; index < listView.getChildCount(); index++)
-          {
-            final int positionForView = listView.getPositionForView(listView.getChildAt(index));
-            if (positionForView == position)
-            {
-              return onEventObjectListener.onWipedObject(listView.getChildAt(index), businessObject, velocityX > 0, position);
-            }
-          }
-        }
-      }
-      return false;
-    }
-
-    public void onLongPress(MotionEvent event)
-    {
-    }
-
-    public boolean onScroll(MotionEvent event1, MotionEvent event2, float distanceX, float distanceY)
-    {
-      return false;
-    }
-
-    public void onShowPress(MotionEvent event)
-    {
-    }
-
-    public boolean onSingleTapUp(MotionEvent event)
-    {
-      return false;
-    }
-
-  }
-
   private final ListView listView;
 
-  private BaseAdapter adapter;
-
   private final ForList<BusinessObjectClass, ViewClass> forListProvider;
+
+  private BaseAdapter adapter;
 
   public SimpleWrappedListView(Activity activity, ForList<BusinessObjectClass, ViewClass> forListProvider)
   {
     super(activity);
     this.forListProvider = forListProvider;
     listView = computeListView(activity);
-  }
-
-  @Override
-  protected ListView computeListView(Activity activity)
-  {
-    return new TheListView(activity);
-  }
-
-  @Override
-  protected final ForList<BusinessObjectClass, ViewClass> getForListProvider()
-  {
-    return forListProvider;
   }
 
   @Override
@@ -248,6 +161,31 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
   }
 
   @Override
+  public final void notifyDataSetChanged(boolean businessObjectCountAndSortingUnchanged)
+  {
+    if (businessObjectCountAndSortingUnchanged == false)
+    {
+      adapter.notifyDataSetInvalidated();
+    }
+    else
+    {
+      adapter.notifyDataSetChanged();
+    }
+  }
+
+  @Override
+  protected ListView computeListView(Activity activity)
+  {
+    return new TheListView(activity);
+  }
+
+  @Override
+  protected final ForList<BusinessObjectClass, ViewClass> getForListProvider()
+  {
+    return forListProvider;
+  }
+
+  @Override
   protected final void setAdapter()
   {
     listView.setOnItemLongClickListener(new OnItemLongClickListener()
@@ -338,22 +276,84 @@ public class SimpleWrappedListView<BusinessObjectClass, ViewClass extends View>
   }
 
   @Override
-  public final void notifyDataSetChanged(boolean businessObjectCountAndSortingUnchanged)
-  {
-    if (businessObjectCountAndSortingUnchanged == false)
-    {
-      adapter.notifyDataSetInvalidated();
-    }
-    else
-    {
-      adapter.notifyDataSetChanged();
-    }
-  }
-
-  @Override
   protected final void setSelected(int position)
   {
     listView.setSelection(position + listView.getHeaderViewsCount());
+  }
+
+  // Inspired from http://groups.google.com/group/android-developers/browse_thread/thread/59dbe46cfbc5672f/e3a5e21754a7a725?lnk=raot
+  private final class TheListView
+      extends ListView
+      implements OnGestureListener
+  {
+
+    private final GestureDetector gestureDetector;
+
+    public TheListView(Context context)
+    {
+      super(context);
+      setId(android.R.id.list);
+      gestureDetector = new GestureDetector(context, this);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+      // log.debug("onTouchEvent(" + event + ")");
+      if (gestureDetector.onTouchEvent(event) == true)
+      {
+        // log.debug("onTouchEvent() returns true");
+        return true;
+      }
+      return super.onTouchEvent(event);
+    }
+
+    public boolean onDown(MotionEvent event)
+    {
+      return false;
+    }
+
+    public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY)
+    {
+      // log.debug("onFling(" + event1 + "," + event2 + "," + velocityX + "," + velocityY + ")");
+      if (getListView().isEnabled() == true && Math.abs(velocityX) > 1500 && onEventObjectListener != null && event1 != null)
+      {
+        final int position = listView.pointToPosition((int) event1.getX(), (int) event1.getY());
+        if (position >= 0)
+        {
+          // This is the only that could be found in order to find back the associated view
+          final BusinessObjectClass businessObject = getFilteredObjects().get(position);
+          for (int index = 0; index < listView.getChildCount(); index++)
+          {
+            final int positionForView = listView.getPositionForView(listView.getChildAt(index));
+            if (positionForView == position)
+            {
+              return onEventObjectListener.onWipedObject(listView.getChildAt(index), businessObject, velocityX > 0, position);
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    public void onLongPress(MotionEvent event)
+    {
+    }
+
+    public boolean onScroll(MotionEvent event1, MotionEvent event2, float distanceX, float distanceY)
+    {
+      return false;
+    }
+
+    public void onShowPress(MotionEvent event)
+    {
+    }
+
+    public boolean onSingleTapUp(MotionEvent event)
+    {
+      return false;
+    }
+
   }
 
 }

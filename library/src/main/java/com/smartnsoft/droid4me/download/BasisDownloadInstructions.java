@@ -42,7 +42,7 @@ public class BasisDownloadInstructions
   public interface Instructions<BitmapClass extends Bitmapable, ViewClass extends Viewable>
   {
 
-    /**
+    /**s
      * The method will be invoked, so as to known whether the bitmap could not be extracted locally, i.e. from the application .apk, or a static local
      * resource.
      * <p>
@@ -254,6 +254,29 @@ public class BasisDownloadInstructions
 
   }
 
+  /**
+   * When the input stream related to an bitmap needs to be downloaded asynchronously, this interface enables to indicate it, and to notify the owner
+   * when the input stream has been actually downloaded.
+   *
+   * @since 2010.05.01
+   */
+  public interface InputStreamDownloadInstructor
+  {
+
+    /**
+     * Indicates that the input stream should be asynchronous.
+     */
+    void setAsynchronous();
+
+    /**
+     * Should be called when the input stream has just been downloaded.
+     *
+     * @param inputStream should not be {@code null}
+     */
+    void onDownloaded(InputStream inputStream);
+
+  }
+
   public static abstract class SimpleInstructions<BitmapClass extends Bitmapable, ViewClass extends Viewable>
       implements Instructions<BitmapClass, ViewClass>
   {
@@ -347,29 +370,6 @@ public class BasisDownloadInstructions
     public void onOver(boolean aborted, ViewClass view, String bitmapUid, Object imageSpecs)
     {
     }
-
-  }
-
-  /**
-   * When the input stream related to an bitmap needs to be downloaded asynchronously, this interface enables to indicate it, and to notify the owner
-   * when the input stream has been actually downloaded.
-   *
-   * @since 2010.05.01
-   */
-  public interface InputStreamDownloadInstructor
-  {
-
-    /**
-     * Indicates that the input stream should be asynchronous.
-     */
-    void setAsynchronous();
-
-    /**
-     * Should be called when the input stream has just been downloaded.
-     *
-     * @param inputStream should not be {@code null}
-     */
-    void onDownloaded(InputStream inputStream);
 
   }
 

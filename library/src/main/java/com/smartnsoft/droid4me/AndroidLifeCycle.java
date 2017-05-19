@@ -3,7 +3,6 @@ package com.smartnsoft.droid4me;
 import android.os.Bundle;
 
 /**
- * 
  * @author Édouard Mercier
  * @since 2012.06.21
  */

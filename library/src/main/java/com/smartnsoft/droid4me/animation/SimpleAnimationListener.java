@@ -15,22 +15,28 @@ public abstract class SimpleAnimationListener
   /**
    * Does nothing.
    */
-  public void onAnimationEnd(Animation animation)
-  {
-  }
-
-  /**
-   * Does nothing.
-   */
-  public void onAnimationRepeat(Animation animation)
-  {
-  }
-
-  /**
-   * Does nothing.
-   */
+  @Override
   public void onAnimationStart(Animation animation)
   {
+
+  }
+
+  /**
+   * Does nothing.
+   */
+  @Override
+  public void onAnimationEnd(Animation animation)
+  {
+
+  }
+
+  /**
+   * Does nothing.
+   */
+  @Override
+  public void onAnimationRepeat(Animation animation)
+  {
+
   }
 
 }

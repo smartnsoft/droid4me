@@ -47,16 +47,22 @@ public class MemoryCacher<BusinessObjectType, ParameterType, ParseExceptionType 
   }
 
   @Override
+  public Values.Info<BusinessObjectType> getCachedValue(ParameterType parameter)
+  {
+    return cache.get(computeUri(parameter));
+  }
+
+  @Override
+  public synchronized void setValue(ParameterType parameter, Values.Info<BusinessObjectType> info)
+  {
+    cache.put(computeUri(parameter), info);
+  }
+
+  @Override
   protected synchronized Date getCacheLastUpdate(ParameterType parameter, String uri)
   {
     final Values.Info<BusinessObjectType> cachedValue = cache.get(uri);
     return cachedValue != null ? cachedValue.timestamp : null;
-  }
-
-  @Override
-  public Values.Info<BusinessObjectType> getCachedValue(ParameterType parameter)
-  {
-    return cache.get(computeUri(parameter));
   }
 
   @Override
@@ -70,12 +76,6 @@ public class MemoryCacher<BusinessObjectType, ParameterType, ParseExceptionType 
       boolean returnStream)
   {
     return returnStream == false ? null : atom.inputStream;
-  }
-
-  @Override
-  public synchronized void setValue(ParameterType parameter, Values.Info<BusinessObjectType> info)
-  {
-    cache.put(computeUri(parameter), info);
   }
 
 }

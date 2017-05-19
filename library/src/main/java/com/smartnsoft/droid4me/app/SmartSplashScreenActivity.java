@@ -45,6 +45,18 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
     implements AppPublics.BroadcastListener
 {
 
+  private static final String BUSINESS_OBJECTS_LOADED_ACTION = "com.smartnsoft.droid4me.action.BUSINESS_OBJECTS_LOADED";
+
+  private static final Map<String, Date> initialized = new HashMap<>();
+
+  private static boolean onRetrieveBusinessObjectsCustomStarted;
+
+  private static boolean onRetrieveBusinessObjectsCustomOver;
+
+  private static boolean onRetrieveBusinessObjectsCustomOverInvoked;
+
+  private static Object businessObject;
+
   /**
    * Indicates whether an {@link Activity} is marked as initialized.
    *
@@ -82,18 +94,6 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
     }
   }
 
-  private static final String BUSINESS_OBJECTS_LOADED_ACTION = "com.smartnsoft.droid4me.action.BUSINESS_OBJECTS_LOADED";
-
-  private static final Map<String, Date> initialized = new HashMap<>();
-
-  private static boolean onRetrieveBusinessObjectsCustomStarted;
-
-  private static boolean onRetrieveBusinessObjectsCustomOver;
-
-  private static boolean onRetrieveBusinessObjectsCustomOverInvoked;
-
-  private static Object businessObject;
-
   private boolean stopActivity;
 
   private boolean pauseActivity;
@@ -101,14 +101,6 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
   private boolean hasStopped;
 
   private Runnable onStartRunnable;
-
-  /**
-   * This method is run internally, once the application has been totally initialized and is ready for use.
-   */
-  private final void markAsInitialized()
-  {
-    SmartSplashScreenActivity.markAsInitialized(getClass(), true);
-  }
 
   @Override
   protected void onStart()
@@ -130,6 +122,73 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
     }
   }
 
+  public final void onRetrieveDisplayObjects()
+  {
+    // We test whether the SD card is available
+    if (requiresExternalStorage() == true && canWriteOnExternalStorage() == false)
+    {
+      stopActivity = true;
+      onNoExternalStorage();
+      return;
+    }
+    onRetrieveDisplayObjectsCustom();
+  }
+
+  public final void onRetrieveBusinessObjects()
+      throws BusinessObjectUnavailableException
+  {
+    if (stopActivity == true)
+    {
+      return;
+    }
+    // We check whether another activity instance is already running the business objects retrieval
+    if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted == false)
+    {
+      SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted = true;
+      boolean onRetrieveBusinessObjectsCustomSuccess = false;
+      try
+      {
+        SmartSplashScreenActivity.businessObject = onRetrieveBusinessObjectsCustom();
+        onRetrieveBusinessObjectsCustomSuccess = true;
+      }
+      finally
+      {
+        // If the retrieval of the business objects is a failure, we assume as if it had not been started
+        if (onRetrieveBusinessObjectsCustomSuccess == false)
+        {
+          SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted = false;
+        }
+      }
+      SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver = true;
+      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
+    }
+    else if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver == true)
+    {
+      // A previous activity instance has already completed the business objects retrieval, but the current instance was not active at this time
+      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
+    }
+  }
+
+  /**
+   * Redirects to the initial activity when a redirection is ongoing. The activity finishes anyway if has not been {@link #stopActivity stopped} nor
+   * {@link #pauseActivity paused}.
+   */
+  public void onFulfillDisplayObjects()
+  {
+    if (stopActivity == true)
+    {
+      return;
+    }
+  }
+
+  public void onSynchronizeDisplayObjects()
+  {
+    if (stopActivity == true)
+    {
+      return;
+    }
+  }
+
   @Override
   protected void onStop()
   {
@@ -144,6 +203,39 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
     finally
     {
       super.onStop();
+    }
+  }
+
+  public IntentFilter getIntentFilter()
+  {
+    final IntentFilter intentFilter = new IntentFilter(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION);
+    intentFilter.addCategory(getPackageName());
+    return intentFilter;
+  }
+
+  @SuppressWarnings("unchecked")
+  public void onReceive(Intent intent)
+  {
+    if (SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION.equals(intent.getAction()) == true)
+    {
+      markAsInitialized();
+      if (isFinishing() == false)
+      {
+        // We do not take into account the event on the activity instance which is over
+        if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked == false)
+        {
+          onRetrieveBusinessObjectsCustomOver((BusinessObjectClass) SmartSplashScreenActivity.businessObject, new Runnable()
+          {
+            public void run()
+            {
+              SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked = true;
+              finishActivity();
+              // We release the shared business object
+              SmartSplashScreenActivity.businessObject = null;
+            }
+          });
+        }
+      }
     }
   }
 
@@ -274,104 +366,49 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
     finishActivity();
   }
 
-  public IntentFilter getIntentFilter()
+  /**
+   * Is invoked when the splash screen is bound to complete successfully, and that it has been started with a
+   * {@link ActivityController#CALLING_INTENT calling intent}. Should start the {@link Activity} calling intent.
+   */
+  protected void startCallingIntent()
   {
-    final IntentFilter intentFilter = new IntentFilter(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION);
-    intentFilter.addCategory(getPackageName());
-    return intentFilter;
-  }
-
-  @SuppressWarnings("unchecked")
-  public void onReceive(Intent intent)
-  {
-    if (SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION.equals(intent.getAction()) == true)
+    final Intent callingIntent = ActivityController.extractCallingIntent(this);
+    if (log.isDebugEnabled())
     {
-      markAsInitialized();
-      if (isFinishing() == false)
+      log.debug("Redirecting to the initial activity for the component with class '" + callingIntent.getComponent().getClassName() + "'");
+    }
+    // This is essential, in order for the activity to be displayed
+    callingIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    try
+    {
+      startActivity(callingIntent);
+    }
+    catch (Throwable throwable)
+    {
+      if (log.isErrorEnabled())
       {
-        // We do not take into account the event on the activity instance which is over
-        if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked == false)
-        {
-          onRetrieveBusinessObjectsCustomOver((BusinessObjectClass) SmartSplashScreenActivity.businessObject, new Runnable()
-          {
-            public void run()
-            {
-              SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOverInvoked = true;
-              finishActivity();
-              // We release the shared business object
-              SmartSplashScreenActivity.businessObject = null;
-            }
-          });
-        }
+        log.error("Cannot start the Activity with Intent '" + callingIntent + "'", throwable);
       }
-    }
-  }
-
-  public final void onRetrieveDisplayObjects()
-  {
-    // We test whether the SD card is available
-    if (requiresExternalStorage() == true && canWriteOnExternalStorage() == false)
-    {
-      stopActivity = true;
-      onNoExternalStorage();
-      return;
-    }
-    onRetrieveDisplayObjectsCustom();
-  }
-
-  public final void onRetrieveBusinessObjects()
-      throws BusinessObjectUnavailableException
-  {
-    if (stopActivity == true)
-    {
-      return;
-    }
-    // We check whether another activity instance is already running the business objects retrieval
-    if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted == false)
-    {
-      SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted = true;
-      boolean onRetrieveBusinessObjectsCustomSuccess = false;
-      try
-      {
-        SmartSplashScreenActivity.businessObject = onRetrieveBusinessObjectsCustom();
-        onRetrieveBusinessObjectsCustomSuccess = true;
-      }
-      finally
-      {
-        // If the retrieval of the business objects is a failure, we assume as if it had not been started
-        if (onRetrieveBusinessObjectsCustomSuccess == false)
-        {
-          SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomStarted = false;
-        }
-      }
-      SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver = true;
-      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
-    }
-    else if (SmartSplashScreenActivity.onRetrieveBusinessObjectsCustomOver == true)
-    {
-      // A previous activity instance has already completed the business objects retrieval, but the current instance was not active at this time
-      LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(new Intent(SmartSplashScreenActivity.BUSINESS_OBJECTS_LOADED_ACTION).addCategory(getPackageName()));
     }
   }
 
   /**
-   * Redirects to the initial activity when a redirection is ongoing. The activity finishes anyway if has not been {@link #stopActivity stopped} nor
-   * {@link #pauseActivity paused}.
+   * Invoked when the splash screen is bound to complete successfully, and that it has not been started with a
+   * {@link ActivityController#CALLING_INTENT calling intent}.
+   *
+   * @return the intent that will be started next
    */
-  public void onFulfillDisplayObjects()
+  protected Intent computeNextIntent()
   {
-    if (stopActivity == true)
-    {
-      return;
-    }
+    return new Intent(getApplicationContext(), getNextActivity());
   }
 
-  public void onSynchronizeDisplayObjects()
+  /**
+   * This method is run internally, once the application has been totally initialized and is ready for use.
+   */
+  private final void markAsInitialized()
   {
-    if (stopActivity == true)
-    {
-      return;
-    }
+    SmartSplashScreenActivity.markAsInitialized(getClass(), true);
   }
 
   private boolean canWriteOnExternalStorage()
@@ -435,43 +472,6 @@ public abstract class SmartSplashScreenActivity<AggregateClass, BusinessObjectCl
         log.debug("Gives up the starting the activity which follows the splash screen, because the splash screen is finishing or has been stopped");
       }
     }
-  }
-
-  /**
-   * Is invoked when the splash screen is bound to complete successfully, and that it has been started with a
-   * {@link ActivityController#CALLING_INTENT calling intent}. Should start the {@link Activity} calling intent.
-   */
-  protected void startCallingIntent()
-  {
-    final Intent callingIntent = ActivityController.extractCallingIntent(this);
-    if (log.isDebugEnabled())
-    {
-      log.debug("Redirecting to the initial activity for the component with class '" + callingIntent.getComponent().getClassName() + "'");
-    }
-    // This is essential, in order for the activity to be displayed
-    callingIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    try
-    {
-      startActivity(callingIntent);
-    }
-    catch (Throwable throwable)
-    {
-      if (log.isErrorEnabled())
-      {
-        log.error("Cannot start the Activity with Intent '" + callingIntent + "'", throwable);
-      }
-    }
-  }
-
-  /**
-   * Invoked when the splash screen is bound to complete successfully, and that it has not been started with a
-   * {@link ActivityController#CALLING_INTENT calling intent}.
-   *
-   * @return the intent that will be started next
-   */
-  protected Intent computeNextIntent()
-  {
-    return new Intent(getApplicationContext(), getNextActivity());
   }
 
 }

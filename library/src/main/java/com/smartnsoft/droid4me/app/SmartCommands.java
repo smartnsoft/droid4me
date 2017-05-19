@@ -47,8 +47,6 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public final class SmartCommands
 {
 
-  private final static Logger log = LoggerFactory.getInstance(SmartCommands.class);
-
   /**
    * Defines a single contract which enables to turn an exception into another one.
    *
@@ -64,6 +62,166 @@ public final class SmartCommands
      * @return {@code null} if and only if the method has handled the exception itself, and that it should not be propagated by the caller
      */
     Throwable onThrowable(Throwable throwable);
+
+  }
+
+  /**
+   * Defined as a wrapper over the built-in {@link Thread.UncaughtExceptionHandler uncaught exception handlers}.
+   *
+   * @since 2010.07.21
+   */
+  static final class SmartUncaughtExceptionHandler
+      implements Thread.UncaughtExceptionHandler
+  {
+
+    /**
+     * The context in which the exception handler lives.
+     */
+    private final Context context;
+
+    /**
+     * The previous exception handler.
+     */
+    private final Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler;
+
+    /**
+     * @param context                         the context which will be used to handle the exception via the {@link ActivityController#handleException(boolean, Context, Object, Throwable)}
+     *                                        method
+     * @param builtinUncaughtExceptionHandler the built-in uncaught exception handler that will be invoked eventually
+     */
+    public SmartUncaughtExceptionHandler(Context context,
+        Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler)
+    {
+      this.context = context;
+      this.builtinUncaughtExceptionHandler = builtinUncaughtExceptionHandler;
+    }
+
+    @Override
+    public final void uncaughtException(Thread thread, Throwable throwable)
+    {
+      try
+      {
+        ActivityController.getInstance().handleException(false, context, null, throwable);
+      }
+      finally
+      {
+        if (builtinUncaughtExceptionHandler != null)
+        {
+          if (SmartApplication.log.isDebugEnabled())
+          {
+            SmartApplication.log.debug("Resorting to the built-in uncaught exception handler");
+          }
+          builtinUncaughtExceptionHandler.uncaughtException(thread, throwable);
+        }
+      }
+    }
+
+  }
+
+  /**
+   * Introduced so as to be able to catch the exceptions thrown in the framework thread pools.
+   *
+   * @since 2010.03.02
+   */
+  public static final class SmartThreadPoolExecutor
+      extends ThreadPoolExecutor
+  {
+
+    /**
+     * A flag which indicates whether the hereby {@code SmartThreadPoolExecutor} internal logs should be enabled. Logs will report execution durations
+     * statistics. The default value is {@code false}.
+     *
+     * @see #getExecutionDurationSumInNanoseconds()
+     */
+    public static boolean ARE_DEBUG_LOG_ENABLED = false;
+
+    /**
+     * Records the sum of the durations of all command executions for this instance. Only fulfilled if {@link #ARE_DEBUG_LOG_ENABLED} is set to
+     * {@code true}.
+     */
+    private long executionDurationSumInNanoseconds;
+
+    /**
+     * {@inheritDoc}
+     */
+    public SmartThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit,
+        BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory)
+    {
+      super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
+    }
+
+    /**
+     * This method does the same thing as its parent {@link ThreadPoolExecutor#execute(Runnable)} super method}.
+     */
+    @Override
+    public void execute(Runnable command)
+    {
+      super.execute(command);
+    }
+
+    @Override
+    protected void beforeExecute(Thread thread, Runnable runnable)
+    {
+      if (SmartThreadPoolExecutor.ARE_DEBUG_LOG_ENABLED == true)
+      {
+        new ThreadLocal<Long>().set(System.nanoTime());
+      }
+      super.beforeExecute(thread, runnable);
+    }
+
+    @Override
+    protected void afterExecute(Runnable runnable, Throwable throwable)
+    {
+      super.afterExecute(runnable, throwable);
+      if (SmartThreadPoolExecutor.ARE_DEBUG_LOG_ENABLED == true)
+      {
+        final Long startInNanoseconds = new ThreadLocal<Long>().get();
+        final long durationInNanoseconds = System.nanoTime() - startInNanoseconds;
+        executionDurationSumInNanoseconds += durationInNanoseconds;
+        if (log.isDebugEnabled())
+        {
+          log.debug("A command has just end-up its execution and has lasted " + durationInNanoseconds + " ns.");
+        }
+      }
+    }
+
+    /**
+     * Available for statistics.
+     * <p>
+     * <p>
+     * Warning: this method will return valid data only if {@link #ARE_DEBUG_LOG_ENABLED} is set to {@code true}.
+     * </p>
+     *
+     * @return the sum of the durations of all command executions for this instance
+     * @see #ARE_DEBUG_LOG_ENABLED
+     */
+    public long getExecutionDurationSumInNanoseconds()
+    {
+      return executionDurationSumInNanoseconds;
+    }
+
+    /**
+     * Executes the given command. Should be used when the {@link Runnable} may throw an {@link Exception}.
+     *
+     * @param guardedCommand the command to run
+     * @see #submit(GuardedCommand)
+     */
+    public void execute(SmartCommands.GuardedCommand<?> guardedCommand)
+    {
+      super.execute(guardedCommand);
+    }
+
+    /**
+     * Executes the given command. Should be used when the {@link Runnable} may throw an {@link Exception}.
+     *
+     * @param guardedCommand the command to run
+     * @return the reference which enables to query the command execution status
+     * @see #execute(GuardedCommand)
+     */
+    public Future<?> submit(SmartCommands.GuardedCommand<?> guardedCommand)
+    {
+      return super.submit(guardedCommand);
+    }
 
   }
 
@@ -156,44 +314,6 @@ public final class SmartCommands
     }
 
     /**
-     * @return the context which will be used for reporting a potential exception
-     */
-    protected final ContextClass getContext()
-    {
-      return context;
-    }
-
-    /**
-     * @return the delegate to which the {@link #onThrowable(Throwable)} method implementation will be redirected to ; may be {@code null}
-     */
-    protected final SmartCommands.GuardedHandler getDelegate()
-    {
-      return delegate;
-    }
-
-    /**
-     * Sets the delegate that will be used in case of exception thrown during the command execution.
-     *
-     * @param delegate the exception handler which will be invoked when an exception is thrown during the command execution, via the
-     *                 {@link #onThrowable(Throwable)} method; if {@code null}, no delegating mecanism will be involved
-     * @return the current instance, so as to ease its usage
-     */
-    public SmartCommands.GuardedCommand<ContextClass> setDelegate(SmartCommands.GuardedHandler delegate)
-    {
-      this.delegate = delegate;
-      return this;
-    }
-
-    /**
-     * The body of the command execution.
-     *
-     * @throws Exception the method allows an exception to be thrown, and will be appropriately caught by the
-     *                   {@link ActivityController#handleException(boolean, Context, Object, Throwable)}} method
-     */
-    protected abstract void runGuarded()
-        throws Exception;
-
-    /**
      * A fallback method which will be triggered if a {@link Throwable} is thrown during the {@link #runGuarded()} method, so as to let the caller a
      * chance to handle locally the exception.
      * <p>
@@ -232,6 +352,44 @@ public final class SmartCommands
         ActivityController.getInstance().handleException(true, context, component, modifiedThrowable);
       }
     }
+
+    /**
+     * @return the context which will be used for reporting a potential exception
+     */
+    protected final ContextClass getContext()
+    {
+      return context;
+    }
+
+    /**
+     * @return the delegate to which the {@link #onThrowable(Throwable)} method implementation will be redirected to ; may be {@code null}
+     */
+    protected final SmartCommands.GuardedHandler getDelegate()
+    {
+      return delegate;
+    }
+
+    /**
+     * Sets the delegate that will be used in case of exception thrown during the command execution.
+     *
+     * @param delegate the exception handler which will be invoked when an exception is thrown during the command execution, via the
+     *                 {@link #onThrowable(Throwable)} method; if {@code null}, no delegating mecanism will be involved
+     * @return the current instance, so as to ease its usage
+     */
+    public SmartCommands.GuardedCommand<ContextClass> setDelegate(SmartCommands.GuardedHandler delegate)
+    {
+      this.delegate = delegate;
+      return this;
+    }
+
+    /**
+     * The body of the command execution.
+     *
+     * @throws Exception the method allows an exception to be thrown, and will be appropriately caught by the
+     *                   {@link ActivityController#handleException(boolean, Context, Object, Throwable)}} method
+     */
+    protected abstract void runGuarded()
+        throws Exception;
 
   }
 
@@ -277,14 +435,6 @@ public final class SmartCommands
       this.message = message;
     }
 
-    /**
-     * The commands to execute during the task.
-     *
-     * @throws Exception any thrown exception will be properly handled
-     */
-    protected abstract void runGuardedProgress()
-        throws Exception;
-
     @Override
     protected final void runGuarded()
         throws Exception
@@ -299,6 +449,14 @@ public final class SmartCommands
         progressHandler.onProgress(getContext(), false, null, false);
       }
     }
+
+    /**
+     * The commands to execute during the task.
+     *
+     * @throws Exception any thrown exception will be properly handled
+     */
+    protected abstract void runGuardedProgress()
+        throws Exception;
 
   }
 
@@ -466,6 +624,31 @@ public final class SmartCommands
   {
 
     /**
+     * Method pointed out by Benoît Lubek, taken from the {@link Dialog} source code, because it is {@code private}.
+     *
+     * @return The activity associated with this dialog, or null if there is no associated activity.
+     * @since 2012.09.08
+     */
+    private static Activity getAssociatedActivity(Dialog dialog)
+    {
+      Activity activity = dialog.getOwnerActivity();
+      Context context = dialog.getContext();
+      while (activity == null && context != null)
+      {
+        if (context instanceof Activity)
+        {
+          activity = (Activity) context; // found it!
+        }
+        else
+        {
+          context = context instanceof ContextWrapper ? ((ContextWrapper) context).getBaseContext() : // unwrap one level
+              null; // done
+        }
+      }
+      return activity;
+    }
+
+    /**
      * The dialog box which will be dismissed by the current command.
      */
     protected final Dialog dialog;
@@ -512,14 +695,6 @@ public final class SmartCommands
     }
 
     /**
-     * The actual command method to implement.
-     *
-     * @throws Exception if something wrong happened during the command execution
-     */
-    protected abstract void runGuardedDialog()
-        throws Exception;
-
-    /**
      * The implementation will invoke the {@link #runGuardedDialog()} method, and will eventually dismiss the {@link #dialog} if necessary, whatever
      * happens.
      *
@@ -553,29 +728,12 @@ public final class SmartCommands
     }
 
     /**
-     * Method pointed out by Benoît Lubek, taken from the {@link Dialog} source code, because it is {@code private}.
+     * The actual command method to implement.
      *
-     * @return The activity associated with this dialog, or null if there is no associated activity.
-     * @since 2012.09.08
+     * @throws Exception if something wrong happened during the command execution
      */
-    private static Activity getAssociatedActivity(Dialog dialog)
-    {
-      Activity activity = dialog.getOwnerActivity();
-      Context context = dialog.getContext();
-      while (activity == null && context != null)
-      {
-        if (context instanceof Activity)
-        {
-          activity = (Activity) context; // found it!
-        }
-        else
-        {
-          context = context instanceof ContextWrapper ? ((ContextWrapper) context).getBaseContext() : // unwrap one level
-              null; // done
-        }
-      }
-      return activity;
-    }
+    protected abstract void runGuardedDialog()
+        throws Exception;
 
   }
 
@@ -650,16 +808,16 @@ public final class SmartCommands
       SmartCommands.execute(new SmartCommands.GuardedCommand<Context>(context)
       {
         @Override
+        public Throwable onThrowable(Throwable throwable)
+        {
+          return GuardedViewClickListener.this.onThrowable(throwable);
+        }
+
+        @Override
         protected void runGuarded()
             throws Exception
         {
           GuardedViewClickListener.this.runGuarded(view);
-        }
-
-        @Override
-        public Throwable onThrowable(Throwable throwable)
-        {
-          return GuardedViewClickListener.this.onThrowable(throwable);
         }
 
       });
@@ -686,166 +844,6 @@ public final class SmartCommands
     protected Throwable onThrowable(Throwable throwable)
     {
       return throwable;
-    }
-
-  }
-
-  /**
-   * Defined as a wrapper over the built-in {@link Thread.UncaughtExceptionHandler uncaught exception handlers}.
-   *
-   * @since 2010.07.21
-   */
-  static final class SmartUncaughtExceptionHandler
-      implements Thread.UncaughtExceptionHandler
-  {
-
-    /**
-     * The context in which the exception handler lives.
-     */
-    private final Context context;
-
-    /**
-     * The previous exception handler.
-     */
-    private final Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler;
-
-    /**
-     * @param context                         the context which will be used to handle the exception via the {@link ActivityController#handleException(boolean, Context, Object, Throwable)}
-     *                                        method
-     * @param builtinUncaughtExceptionHandler the built-in uncaught exception handler that will be invoked eventually
-     */
-    public SmartUncaughtExceptionHandler(Context context,
-        Thread.UncaughtExceptionHandler builtinUncaughtExceptionHandler)
-    {
-      this.context = context;
-      this.builtinUncaughtExceptionHandler = builtinUncaughtExceptionHandler;
-    }
-
-    @Override
-    public final void uncaughtException(Thread thread, Throwable throwable)
-    {
-      try
-      {
-        ActivityController.getInstance().handleException(false, context, null, throwable);
-      }
-      finally
-      {
-        if (builtinUncaughtExceptionHandler != null)
-        {
-          if (SmartApplication.log.isDebugEnabled())
-          {
-            SmartApplication.log.debug("Resorting to the built-in uncaught exception handler");
-          }
-          builtinUncaughtExceptionHandler.uncaughtException(thread, throwable);
-        }
-      }
-    }
-
-  }
-
-  /**
-   * Introduced so as to be able to catch the exceptions thrown in the framework thread pools.
-   *
-   * @since 2010.03.02
-   */
-  public static final class SmartThreadPoolExecutor
-      extends ThreadPoolExecutor
-  {
-
-    /**
-     * A flag which indicates whether the hereby {@code SmartThreadPoolExecutor} internal logs should be enabled. Logs will report execution durations
-     * statistics. The default value is {@code false}.
-     *
-     * @see #getExecutionDurationSumInNanoseconds()
-     */
-    public static boolean ARE_DEBUG_LOG_ENABLED = false;
-
-    /**
-     * Records the sum of the durations of all command executions for this instance. Only fulfilled if {@link #ARE_DEBUG_LOG_ENABLED} is set to
-     * {@code true}.
-     */
-    private long executionDurationSumInNanoseconds;
-
-    /**
-     * {@inheritDoc}
-     */
-    public SmartThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit,
-        BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory)
-    {
-      super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
-    }
-
-    /**
-     * Available for statistics.
-     * <p>
-     * <p>
-     * Warning: this method will return valid data only if {@link #ARE_DEBUG_LOG_ENABLED} is set to {@code true}.
-     * </p>
-     *
-     * @return the sum of the durations of all command executions for this instance
-     * @see #ARE_DEBUG_LOG_ENABLED
-     */
-    public long getExecutionDurationSumInNanoseconds()
-    {
-      return executionDurationSumInNanoseconds;
-    }
-
-    /**
-     * Executes the given command. Should be used when the {@link Runnable} may throw an {@link Exception}.
-     *
-     * @param guardedCommand the command to run
-     * @see #submit(GuardedCommand)
-     */
-    public void execute(SmartCommands.GuardedCommand<?> guardedCommand)
-    {
-      super.execute(guardedCommand);
-    }
-
-    /**
-     * Executes the given command. Should be used when the {@link Runnable} may throw an {@link Exception}.
-     *
-     * @param guardedCommand the command to run
-     * @return the reference which enables to query the command execution status
-     * @see #execute(GuardedCommand)
-     */
-    public Future<?> submit(SmartCommands.GuardedCommand<?> guardedCommand)
-    {
-      return super.submit(guardedCommand);
-    }
-
-    /**
-     * This method does the same thing as its parent {@link ThreadPoolExecutor#execute(Runnable)} super method}.
-     */
-    @Override
-    public void execute(Runnable command)
-    {
-      super.execute(command);
-    }
-
-    @Override
-    protected void beforeExecute(Thread thread, Runnable runnable)
-    {
-      if (SmartThreadPoolExecutor.ARE_DEBUG_LOG_ENABLED == true)
-      {
-        new ThreadLocal<Long>().set(System.nanoTime());
-      }
-      super.beforeExecute(thread, runnable);
-    }
-
-    @Override
-    protected void afterExecute(Runnable runnable, Throwable throwable)
-    {
-      super.afterExecute(runnable, throwable);
-      if (SmartThreadPoolExecutor.ARE_DEBUG_LOG_ENABLED == true)
-      {
-        final Long startInNanoseconds = new ThreadLocal<Long>().get();
-        final long durationInNanoseconds = System.nanoTime() - startInNanoseconds;
-        executionDurationSumInNanoseconds += durationInNanoseconds;
-        if (log.isDebugEnabled())
-        {
-          log.debug("A command has just end-up its execution and has lasted " + durationInNanoseconds + " ns.");
-        }
-      }
     }
 
   }
@@ -894,6 +892,8 @@ public final class SmartCommands
     }
 
   });
+
+  private final static Logger log = LoggerFactory.getInstance(SmartCommands.class);
 
   /**
    * Equivalent to invoking {@code SmartCommands#LOW_PRIORITY_THREAD_POOL#execute(Runnable)}.

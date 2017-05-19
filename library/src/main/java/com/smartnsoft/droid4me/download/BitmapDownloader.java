@@ -66,12 +66,6 @@ public class BitmapDownloader
         extends View
     {
 
-      private CoreBitmapDownloader.CoreAnalyticsData analyticsData;
-
-      private float jaugeLevel;
-
-      private float jaugeWaterLevel;
-
       private final Paint jaugePaint;
 
       private final Paint markPaint;
@@ -83,6 +77,12 @@ public class BitmapDownloader
       private final Paint errorTextPaint;
 
       private final String label;
+
+      private CoreBitmapDownloader.CoreAnalyticsData analyticsData;
+
+      private float jaugeLevel;
+
+      private float jaugeWaterLevel;
 
       public JaugeView(Context context, String label)
       {
@@ -127,6 +127,15 @@ public class BitmapDownloader
     }
 
     protected JaugeView[] jauges;
+
+    public void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader,
+        CoreBitmapDownloader.CoreAnalyticsData analyticsData)
+    {
+      jauges[coreBitmapDownloader.instanceIndex].jaugeLevel = (float) coreBitmapDownloader.getMemoryConsumptionInBytes() / (float) coreBitmapDownloader.highLevelMemoryWaterMarkInBytes;
+      jauges[coreBitmapDownloader.instanceIndex].jaugeWaterLevel = (float) coreBitmapDownloader.lowLevelMemoryWaterMarkInBytes / (float) coreBitmapDownloader.highLevelMemoryWaterMarkInBytes;
+      jauges[coreBitmapDownloader.instanceIndex].analyticsData = analyticsData;
+      jauges[coreBitmapDownloader.instanceIndex].postInvalidate();
+    }
 
     /**
      * Creates on the fly a new Android {@link ViewGroup} which is able to display the data exposed by an
@@ -177,16 +186,17 @@ public class BitmapDownloader
       }
     }
 
-    public void onAnalytics(CoreBitmapDownloader<?, ?, ?> coreBitmapDownloader,
-        CoreBitmapDownloader.CoreAnalyticsData analyticsData)
-    {
-      jauges[coreBitmapDownloader.instanceIndex].jaugeLevel = (float) coreBitmapDownloader.getMemoryConsumptionInBytes() / (float) coreBitmapDownloader.highLevelMemoryWaterMarkInBytes;
-      jauges[coreBitmapDownloader.instanceIndex].jaugeWaterLevel = (float) coreBitmapDownloader.lowLevelMemoryWaterMarkInBytes / (float) coreBitmapDownloader.highLevelMemoryWaterMarkInBytes;
-      jauges[coreBitmapDownloader.instanceIndex].analyticsData = analyticsData;
-      jauges[coreBitmapDownloader.instanceIndex].postInvalidate();
-    }
-
   }
+
+  /**
+   * Indicates the default upper limit of memory that each cache is allowed to reach.
+   */
+  public static final long DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 3l * 1024l * 1024l;
+
+  /**
+   * Indicates the default lower limit of memory that each cache is allowed to reach.
+   */
+  public static final long DEFAULT_LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 1l * 1024l * 1024l;
 
   /**
    * The number of instances of {@link BitmapDownloader} that will be created. Defaults to {@code 1}.
@@ -213,11 +223,6 @@ public class BitmapDownloader
   public static long[] HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES;
 
   /**
-   * Indicates the default upper limit of memory that each cache is allowed to reach.
-   */
-  public static final long DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 3l * 1024l * 1024l;
-
-  /**
    * When the cache is being {@link #cleanUpCache() cleaned-up}, it indicates the lower limit of memory that each cache is allowed to reach.
    * <p>
    * <p>
@@ -225,11 +230,6 @@ public class BitmapDownloader
    * </p>
    */
   public static long[] LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES;
-
-  /**
-   * Indicates the default lower limit of memory that each cache is allowed to reach.
-   */
-  public static final long DEFAULT_LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 1l * 1024l * 1024l;
 
   /**
    * Indicates whether the instances should let the Java garbage collector handle bitmap soft references.
@@ -311,6 +311,23 @@ public class BitmapDownloader
     return BitmapDownloader.instances[index];
   }
 
+  /**
+   * Totally clears all instances memory caches.
+   *
+   * @see #clear()
+   */
+  public static synchronized void clearAll()
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Clearing all BitmapDownloader instances");
+    }
+    for (int index = 0; index < BitmapDownloader.INSTANCES_COUNT; index++)
+    {
+      BitmapDownloader.getInstance(index).clear();
+    }
+  }
+
   protected BitmapDownloader(int instanceIndex, String name, long maxMemoryInBytes, long lowLevelMemoryWaterMarkInBytes,
       boolean useReferences, boolean recycleMap)
   {
@@ -327,23 +344,6 @@ public class BitmapDownloader
       Object imageSpecs, Handler handler, DownloadInstructions.Instructions instructions)
   {
     get(isPreBlocking, isDownloadBlocking, view != null ? new ViewableView(view) : null, bitmapUid, imageSpecs, handler != null ? new HandlerableHander(handler) : null, instructions);
-  }
-
-  /**
-   * Totally clears all instances memory caches.
-   *
-   * @see #clear()
-   */
-  public static synchronized void clearAll()
-  {
-    if (log.isDebugEnabled())
-    {
-      log.debug("Clearing all BitmapDownloader instances");
-    }
-    for (int index = 0; index < BitmapDownloader.INSTANCES_COUNT; index++)
-    {
-      BitmapDownloader.getInstance(index).clear();
-    }
   }
 
 }

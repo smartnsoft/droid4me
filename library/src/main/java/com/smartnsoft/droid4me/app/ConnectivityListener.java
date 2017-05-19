@@ -52,8 +52,8 @@ import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
  * which states the current application connectivity status.
  * </p>
  * <p>
- * This component should be created during the {@link com.smartnsoft.droid4me.app.SmartApplication#onCreateCustom()} method, and it should be enrolled
- * to all the hosting application {@link Activity activities}, during the {@link com.smartnsoft.droid4me.app.SmartApplication#getInterceptor()} when
+ * This component should be created during the {@link SmartApplication#onCreateCustom()} method, and it should be enrolled
+ * to all the hosting application {@link Activity activities}, during the {@link SmartApplication#getInterceptor()} when
  * receiving the {@link ActivityController.Interceptor.InterceptorEvent#onCreate} and {@link ActivityController.Interceptor.InterceptorEvent#onResume}
  * events.
  * </p>
@@ -65,8 +65,6 @@ public abstract class ConnectivityListener
     implements Interceptor
 {
 
-  protected final static Logger log = LoggerFactory.getInstance(ConnectivityListener.class);
-
   /**
    * The action that will used to notify via a broadcast {@link Intent} when the hosting application Internet connectivity changes.
    */
@@ -76,6 +74,8 @@ public abstract class ConnectivityListener
    * A broadcast {@link Intent} boolean flag which indicates the hosting application Internet connectivity status.
    */
   public static final String EXTRA_HAS_CONNECTIVITY = "hasConnectivity";
+
+  protected final static Logger log = LoggerFactory.getInstance(ConnectivityListener.class);
 
   private final Context context;
 
@@ -111,6 +111,36 @@ public abstract class ConnectivityListener
   }
 
   /**
+   * This method should be invoked during the {@link ActivityController.Interceptor#onLifeCycleEvent(Activity, Object, InterceptorEvent)} method, and
+   * it will handle everything.
+   */
+  @Override
+  public void onLifeCycleEvent(Activity activity, Object component, InterceptorEvent event)
+  {
+    if (event == ActivityController.Interceptor.InterceptorEvent.onCreate)
+    {
+      // We listen to the network connection potential issues: we do not want child activities to also register for the connectivity change events
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
+      {
+        registerBroadcastListenerOnCreate(activity, component);
+      }
+      else
+      {
+        registerBroadcastListenerOnCreateLollipopAndAbove(activity, component);
+      }
+      // We transmit the connectivity status
+      updateActivityOnCreate(activity, component);
+    }
+    else if (event == InterceptorEvent.onDestroy)
+    {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+      {
+        unregisterBroadcastListenerLollipopAndAbove(activity, component);
+      }
+    }
+  }
+
+  /**
    * @return whether the device has Internet connectivity
    */
   public boolean hasConnectivity()
@@ -125,7 +155,6 @@ public abstract class ConnectivityListener
   {
     return getConnectivityManager().getActiveNetworkInfo();
   }
-
 
   /**
    * This method should be invoked during the {@link Activity#onResume()} or {android.app.Fragment#onResume()} methods.
@@ -183,37 +212,6 @@ public abstract class ConnectivityListener
    * @param smartedActivity the {@link Smarted} {@link Activity} that should be updated graphically
    */
   protected abstract void updateActivity(final Smarted<?> smartedActivity);
-
-
-  /**
-   * This method should be invoked during the {@link ActivityController.Interceptor#onLifeCycleEvent(Activity, Object, InterceptorEvent)} method, and
-   * it will handle everything.
-   */
-  @Override
-  public void onLifeCycleEvent(Activity activity, Object component, InterceptorEvent event)
-  {
-    if (event == ActivityController.Interceptor.InterceptorEvent.onCreate)
-    {
-      // We listen to the network connection potential issues: we do not want child activities to also register for the connectivity change events
-      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
-      {
-        registerBroadcastListenerOnCreate(activity, component);
-      }
-      else
-      {
-        registerBroadcastListenerOnCreateLollipopAndAbove(activity, component);
-      }
-      // We transmit the connectivity status
-      updateActivityOnCreate(activity, component);
-    }
-    else if (event == InterceptorEvent.onDestroy)
-    {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-      {
-        unregisterBroadcastListenerLollipopAndAbove(activity, component);
-      }
-    }
-  }
 
   /**
    * @return the Android {@link ConnectivityManager} which may be requested to get the network connexion status, for instance

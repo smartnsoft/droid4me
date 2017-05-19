@@ -58,24 +58,6 @@ public final class WithCacheWSUriStreamParser
   {
 
     /**
-     * The URI to use to locate the business object entity when it needs to be located on a {@link Business.IOStreamer}.
-     */
-    public final String ioStreamerUri;
-
-    /**
-     * @param ioStreamerUri the business object entity {@link Business.IOStreamer} URI
-     */
-    public SimpleIOStreamerSourceKey(String ioStreamerUri)
-    {
-      this.ioStreamerUri = ioStreamerUri;
-    }
-
-    public String computeUri(ParameterType parameter)
-    {
-      return ioStreamerUri;
-    }
-
-    /**
      * A helper method, which enables to build both an {@link Business.Source#UriStreamer} and {@link Business.Source#IOStreamer} keys aggregator from
      * an HTTP request expression.
      *
@@ -96,6 +78,24 @@ public final class WithCacheWSUriStreamParser
           return uriStreamerSourceKey.computeUri(parameter).url;
         }
       });
+    }
+
+    /**
+     * The URI to use to locate the business object entity when it needs to be located on a {@link Business.IOStreamer}.
+     */
+    public final String ioStreamerUri;
+
+    /**
+     * @param ioStreamerUri the business object entity {@link Business.IOStreamer} URI
+     */
+    public SimpleIOStreamerSourceKey(String ioStreamerUri)
+    {
+      this.ioStreamerUri = ioStreamerUri;
+    }
+
+    public String computeUri(ParameterType parameter)
+    {
+      return ioStreamerUri;
     }
 
     @Override
@@ -172,11 +172,6 @@ public final class WithCacheWSUriStreamParser
       this.webServiceClient = webServiceClient;
     }
 
-    protected String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
-    {
-      return webServiceClient.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
-    }
-
     public Business.InputAtom getInputStream(WSUriStreamParser.KeysAggregator<ParameterType> uri)
         throws WebServiceClient.CallException
     {
@@ -185,31 +180,6 @@ public final class WithCacheWSUriStreamParser
       final HttpResponse httpResponse = webServiceClient.runRequest(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.headers, httpCallTypeAndBody.parameters, httpCallTypeAndBody.body, httpCallTypeAndBody.files);
       return new Business.InputAtom(new Date(), httpResponse.headers, httpResponse.inputStream, null);
 
-    }
-
-    public final BusinessObjectType rawGetValue(ParameterType parameter)
-        throws ParseExceptionType, WebServiceClient.CallException, Business.BusinessException
-    {
-      final InputAtom inputAtom = getInputStream(computeUri(parameter));
-      return parse(parameter, inputAtom.headers, inputAtom.inputStream);
-    }
-
-    public final BusinessObjectType getValue(ParameterType parameter)
-        throws WebServiceClient.CallException
-    {
-      try
-      {
-        final InputAtom inputStream = getInputStream(computeUri(parameter));
-        return parse(parameter, inputStream.headers, inputStream.inputStream);
-      }
-      catch (Exception exception)
-      {
-        if (exception instanceof WebServiceClient.CallException)
-        {
-          throw (WebServiceClient.CallException) exception;
-        }
-        throw new WebServiceClient.CallException(exception);
-      }
     }
 
     public final Date getLastUpdate(WSUriStreamParser.KeysAggregator<ParameterType> uri)
@@ -238,6 +208,36 @@ public final class WithCacheWSUriStreamParser
     {
       final WithCacheWSUriStreamParser.IOStreamerSourceKey<ParameterType> ioSourceKey = uri.getSourceLocator(Business.Source.IOStreamer);
       removeUri(ioSourceKey.computeUri(uri.getParameter()));
+    }
+
+    public final BusinessObjectType rawGetValue(ParameterType parameter)
+        throws ParseExceptionType, WebServiceClient.CallException, Business.BusinessException
+    {
+      final InputAtom inputAtom = getInputStream(computeUri(parameter));
+      return parse(parameter, inputAtom.headers, inputAtom.inputStream);
+    }
+
+    public final BusinessObjectType getValue(ParameterType parameter)
+        throws WebServiceClient.CallException
+    {
+      try
+      {
+        final InputAtom inputStream = getInputStream(computeUri(parameter));
+        return parse(parameter, inputStream.headers, inputStream.inputStream);
+      }
+      catch (Exception exception)
+      {
+        if (exception instanceof WebServiceClient.CallException)
+        {
+          throw (WebServiceClient.CallException) exception;
+        }
+        throw new WebServiceClient.CallException(exception);
+      }
+    }
+
+    protected String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
+    {
+      return webServiceClient.computeUri(methodUriPrefix, methodUriSuffix, uriParameters);
     }
 
   }

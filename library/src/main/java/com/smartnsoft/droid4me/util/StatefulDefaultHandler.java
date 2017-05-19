@@ -45,11 +45,6 @@ public abstract class StatefulDefaultHandler
 
     private String value;
 
-    private void set(String value)
-    {
-      this.value = value;
-    }
-
     public String get()
     {
       if (value == null)
@@ -59,6 +54,11 @@ public abstract class StatefulDefaultHandler
       final String duplicatedValue = new String(value);
       value = null;
       return duplicatedValue;
+    }
+
+    private void set(String value)
+    {
+      this.value = value;
     }
 
   }
@@ -87,22 +87,18 @@ public abstract class StatefulDefaultHandler
 
   }
 
+  // The maximum XML document depth is set to 32
+  private final String[] path = new String[32];
+
+  private final Map<Integer, List<Expectation>> expectations = new HashMap<>();
+
   private boolean active = true;
 
   private int level = 0;
 
-  // The maximum XML document depth is set to 32
-  private final String[] path = new String[32];
-
   private StringBuffer characters;
 
   private boolean rememberCharacters;
-
-  private final Map<Integer, List<Expectation>> expectations = new HashMap<>();
-
-  protected abstract void onStartElement(String localName, Attributes attributes);
-
-  protected abstract void onEndElement(String localName);
 
   @Override
   public final void startElement(String uri, String localName, String qName, Attributes attributes)
@@ -158,6 +154,10 @@ public abstract class StatefulDefaultHandler
       }
     }
   }
+
+  protected abstract void onStartElement(String localName, Attributes attributes);
+
+  protected abstract void onEndElement(String localName);
 
   protected final boolean isLevel(int expectedLevel)
   {
@@ -230,6 +230,22 @@ public abstract class StatefulDefaultHandler
     return false;
   }
 
+  protected final String getCharactersAndForget()
+  {
+    rememberCharacters = false;
+    final String value;
+    if (characters != null)
+    {
+      value = characters.toString();
+      characters = null;
+    }
+    else
+    {
+      value = null;
+    }
+    return value;
+  }
+
   private boolean catchExpectations(String localName)
   {
     final List<Expectation> levelExpectations = expectations.get(level);
@@ -249,22 +265,6 @@ public abstract class StatefulDefaultHandler
       index++;
     }
     return false;
-  }
-
-  protected final String getCharactersAndForget()
-  {
-    rememberCharacters = false;
-    final String value;
-    if (characters != null)
-    {
-      value = characters.toString();
-      characters = null;
-    }
-    else
-    {
-      value = null;
-    }
-    return value;
   }
 
   private boolean isParent(String localName)

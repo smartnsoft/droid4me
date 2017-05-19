@@ -111,6 +111,11 @@ public abstract class SmartApplication
   protected final static Logger log = LoggerFactory.getInstance(SmartApplication.class);
 
   /**
+   * A flag which enables to remember when the @link {@link Application#onCreate()} method invocation is over.
+   */
+  private static boolean isOnCreatedDone;
+
+  /**
    * Enables to know whether the {@link #onCreateCustom()} method has been invoked.
    *
    * @return {@code true} if and only if the {@link #onCreateCustom()} method has been invoked and its executio is over
@@ -118,44 +123,6 @@ public abstract class SmartApplication
   public static boolean isOnCreatedDone()
   {
     return SmartApplication.isOnCreatedDone;
-  }
-
-  /**
-   * A flag which enables to remember when the @link {@link Application#onCreate()} method invocation is over.
-   */
-  private static boolean isOnCreatedDone;
-
-  /**
-   * The application preferences.
-   */
-  private SharedPreferences preferences;
-
-  /**
-   * Indicates whether the {@link #onCreate()} method has already been invoked.
-   */
-  private boolean onCreateInvoked;
-
-  /**
-   * If the application uses an {@link DefaultExceptionHandler} as an {@link ActivityController.ExceptionHandler}, when a managed
-   * exception is detected, and is not handled, a dialog box is submitted to the end-user, in order to propose to send the bug cause by inspecting the
-   * Android {@code logcat}. In that case, do not forget to declare the {@code android.permission.READ_LOGS} permission in the
-   * {@code AndroidManifest.xml}.
-   *
-   * @return the e-mail address that will be used when submitting an error log message ; if it returns {@code null}, the application will not propose
-   * to send the bug cause
-   */
-  protected abstract String getLogReportRecipient();
-
-  /**
-   * <p>
-   * Caution: this method will return {@code null} as long as the parent {@link Application#onCreate()} has not been invoked.
-   * </p>
-   *
-   * @return the shared preferences of the application
-   */
-  protected final SharedPreferences getPreferences()
-  {
-    return preferences;
   }
 
   /**
@@ -167,106 +134,14 @@ public abstract class SmartApplication
   }
 
   /**
-   * A callback method which enables to indicate whether the process newly created should use the default {@link SmartApplication} workflow.
-   * <p>
-   * <p>
-   * It is useful when having multiple processes for the same application, and that some of the processes should not use the framework.
-   * </p>
-   *
-   * @return {@code true} if and only if you want the framework to be ignored for the process. Returns {@code false} by default
-   * @see #onCreateCustomSilent()
+   * The application preferences.
    */
-  protected boolean shouldBeSilent()
-  {
-    return false;
-  }
+  private SharedPreferences preferences;
 
   /**
-   * This callback will be invoked by the application instance, in order to get a reference on the application
-   * {@link ActivityController.SystemServiceProvider}: this method is responsible for creating an implementation of this component interface. Override
-   * this method, in order to override the system services which are provided by default by an {@link Activity}.
-   * <p>
-   * <p>
-   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
-   * {@link Application#onCreate()} method execution.
-   * </p>
-   *
-   * @return an instance which enables to override or provide additional system services. If {@code null}, the {@link Activity} default system
-   * services will be returned
-   * @see ActivityController#registerSystemServiceProvider(ActivityController.SystemServiceProvider)
+   * Indicates whether the {@link #onCreate()} method has already been invoked.
    */
-  protected ActivityController.SystemServiceProvider getSystemServiceProvider()
-  {
-    return null;
-  }
-
-  /**
-   * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Redirector}:
-   * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the redirection
-   * mechanism.
-   * <p>
-   * <p>
-   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
-   * {@link Application#onCreate()} method execution.
-   * </p>
-   *
-   * @return an instance which indicates how to redirect {@link Activity activities} if necessary. If {@code null}, this means that no redirection is
-   * handled. Returns {@code null} by default
-   * @see ActivityController#registerRedirector(ActivityController.Redirector)
-   */
-  protected ActivityController.Redirector getActivityRedirector()
-  {
-    return null;
-  }
-
-  /**
-   * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Interceptor}:
-   * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the interception
-   * mechanism.
-   * <p>
-   * <p>
-   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
-   * {@link Application#onCreate()} method execution.
-   * </p>
-   *
-   * @return an instance which will be invoked on every {@link Activity} life-cycle event. IF {@code null}, this means that no interception is
-   * handled. Returns {@code null} by default
-   * @see ActivityController#registerInterceptor(ActivityController.Interceptor)
-   */
-  protected ActivityController.Interceptor getInterceptor()
-  {
-    return null;
-  }
-
-  /**
-   * This callback will be invoked by the application instance, in order to get a reference on the application
-   * {@link ActivityController.ExceptionHandler}: this method is responsible for creating an implementation of this component interface. Override this
-   * method, in order to handle more specifically some application-specific exceptions.
-   * <p>
-   * <p>
-   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which should not be the case), during the
-   * {@link Application#onCreate()} method execution.
-   * </p>
-   *
-   * @return an instance which will be invoked when an exception occurs during the application, provided the exception is handled by the framework ;
-   * may be {@code null}, if no {@link ActivityController.ExceptionHandler} should be used by the application. Returns a new instance of
-   * {@link ExceptionHandler} by default
-   * @see ActivityController#registerExceptionHandler(ExceptionHandler)
-   */
-  protected ActivityController.ExceptionHandler getExceptionHandler()
-  {
-    return new ExceptionHandlers.DefaultExceptionHandler(getI18N(), null, getLogReportRecipient());
-  }
-
-  /**
-   * This method will be invoked by the {@link #getExceptionHandler()} method when building an {@link AbstractExceptionHandler}
-   * instance. This internationalization instance will be used to populate default dialog boxes texts popped-up by this default
-   * {@link ActivityController.ExceptionHandler}. Hence, the method will be invoked at the application start-up.
-   *
-   * @return an instance which contains the internationalized text strings for some built-in error {@link Dialog dialog boxes}. You need to define
-   * that method.
-   */
-  protected abstract SmartApplication.I18N getI18N();
+  private boolean onCreateInvoked;
 
   /**
    * The method will invoke the {@link SmartApplication#onCreateCustom()} method, provided the {@link #shouldBeSilent() method} returns {@code false},
@@ -380,21 +255,182 @@ public abstract class SmartApplication
     }
   }
 
-  private void setupDefaultExceptionHandlers()
+  /**
+   * In addition to the default behavior, this event will be logged, and the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL} and
+   * {@link AppInternals#THREAD_POOL} thread pools shut down.
+   */
+  @Override
+  public void onTerminate()
   {
-    // We let the overidding application register its exception handlers
-    onSetupExceptionHandlers();
-
-    ActivityController.getInstance().registerExceptionHandler(getExceptionHandler());
-    // We make sure that all uncaught exceptions will be intercepted and handled
-    final UncaughtExceptionHandler builtinUuncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-    final SmartCommands.SmartUncaughtExceptionHandler uncaughtExceptionHandler = new SmartCommands.SmartUncaughtExceptionHandler(getApplicationContext(), builtinUuncaughtExceptionHandler);
-    if (log.isDebugEnabled())
+    try
     {
-      log.debug("The application with package name '" + getPackageName() + "' " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
+      if (shouldBeSilent() == true)
+      {
+        return;
+      }
+
+      if (log.isDebugEnabled())
+      {
+        log.debug("Application terminating");
+      }
+      // We stop the threads pools
+      SmartCommands.LOW_PRIORITY_THREAD_POOL.shutdown();
+      AppInternals.THREAD_POOL.shutdown();
     }
-    Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
+    finally
+    {
+      super.onTerminate();
+    }
   }
+
+  /**
+   * In addition to the default behavior, this event will be logged.
+   */
+  @Override
+  public void onLowMemory()
+  {
+    try
+    {
+      if (shouldBeSilent() == true)
+      {
+        return;
+      }
+
+      if (log.isWarnEnabled())
+      {
+        log.warn("Application low memory");
+      }
+    }
+    finally
+    {
+      super.onLowMemory();
+    }
+  }
+
+  /**
+   * If the application uses an {@link DefaultExceptionHandler} as an {@link ActivityController.ExceptionHandler}, when a managed
+   * exception is detected, and is not handled, a dialog box is submitted to the end-user, in order to propose to send the bug cause by inspecting the
+   * Android {@code logcat}. In that case, do not forget to declare the {@code android.permission.READ_LOGS} permission in the
+   * {@code AndroidManifest.xml}.
+   *
+   * @return the e-mail address that will be used when submitting an error log message ; if it returns {@code null}, the application will not propose
+   * to send the bug cause
+   */
+  protected abstract String getLogReportRecipient();
+
+  /**
+   * <p>
+   * Caution: this method will return {@code null} as long as the parent {@link Application#onCreate()} has not been invoked.
+   * </p>
+   *
+   * @return the shared preferences of the application
+   */
+  protected final SharedPreferences getPreferences()
+  {
+    return preferences;
+  }
+
+  /**
+   * A callback method which enables to indicate whether the process newly created should use the default {@link SmartApplication} workflow.
+   * <p>
+   * <p>
+   * It is useful when having multiple processes for the same application, and that some of the processes should not use the framework.
+   * </p>
+   *
+   * @return {@code true} if and only if you want the framework to be ignored for the process. Returns {@code false} by default
+   * @see #onCreateCustomSilent()
+   */
+  protected boolean shouldBeSilent()
+  {
+    return false;
+  }
+
+  /**
+   * This callback will be invoked by the application instance, in order to get a reference on the application
+   * {@link ActivityController.SystemServiceProvider}: this method is responsible for creating an implementation of this component interface. Override
+   * this method, in order to override the system services which are provided by default by an {@link Activity}.
+   * <p>
+   * <p>
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
+   * {@link Application#onCreate()} method execution.
+   * </p>
+   *
+   * @return an instance which enables to override or provide additional system services. If {@code null}, the {@link Activity} default system
+   * services will be returned
+   * @see ActivityController#registerSystemServiceProvider(ActivityController.SystemServiceProvider)
+   */
+  protected ActivityController.SystemServiceProvider getSystemServiceProvider()
+  {
+    return null;
+  }
+
+  /**
+   * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Redirector}:
+   * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the redirection
+   * mechanism.
+   * <p>
+   * <p>
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
+   * {@link Application#onCreate()} method execution.
+   * </p>
+   *
+   * @return an instance which indicates how to redirect {@link Activity activities} if necessary. If {@code null}, this means that no redirection is
+   * handled. Returns {@code null} by default
+   * @see ActivityController#registerRedirector(ActivityController.Redirector)
+   */
+  protected ActivityController.Redirector getActivityRedirector()
+  {
+    return null;
+  }
+
+  /**
+   * This callback will be invoked by the application instance, in order to get a reference on the application {@link ActivityController.Interceptor}:
+   * this method is responsible for creating an implementation of this component interface. Override this method, in order to control the interception
+   * mechanism.
+   * <p>
+   * <p>
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which you should not), during the
+   * {@link Application#onCreate()} method execution.
+   * </p>
+   *
+   * @return an instance which will be invoked on every {@link Activity} life-cycle event. IF {@code null}, this means that no interception is
+   * handled. Returns {@code null} by default
+   * @see ActivityController#registerInterceptor(ActivityController.Interceptor)
+   */
+  protected ActivityController.Interceptor getInterceptor()
+  {
+    return null;
+  }
+
+  /**
+   * This callback will be invoked by the application instance, in order to get a reference on the application
+   * {@link ActivityController.ExceptionHandler}: this method is responsible for creating an implementation of this component interface. Override this
+   * method, in order to handle more specifically some application-specific exceptions.
+   * <p>
+   * <p>
+   * It is ensured that the framework will only call once this method (unless you explicitly invoke it, which should not be the case), during the
+   * {@link Application#onCreate()} method execution.
+   * </p>
+   *
+   * @return an instance which will be invoked when an exception occurs during the application, provided the exception is handled by the framework ;
+   * may be {@code null}, if no {@link ActivityController.ExceptionHandler} should be used by the application. Returns a new instance of
+   * {@link ExceptionHandler} by default
+   * @see ActivityController#registerExceptionHandler(ExceptionHandler)
+   */
+  protected ActivityController.ExceptionHandler getExceptionHandler()
+  {
+    return new ExceptionHandlers.DefaultExceptionHandler(getI18N(), null, getLogReportRecipient());
+  }
+
+  /**
+   * This method will be invoked by the {@link #getExceptionHandler()} method when building an {@link AbstractExceptionHandler}
+   * instance. This internationalization instance will be used to populate default dialog boxes texts popped-up by this default
+   * {@link ActivityController.ExceptionHandler}. Hence, the method will be invoked at the application start-up.
+   *
+   * @return an instance which contains the internationalized text strings for some built-in error {@link Dialog dialog boxes}. You need to define
+   * that method.
+   */
+  protected abstract SmartApplication.I18N getI18N();
 
   /**
    * This is the place where to register other {@link UncaughtExceptionHandler default exception handlers} like <a
@@ -482,58 +518,6 @@ public abstract class SmartApplication
   }
 
   /**
-   * In addition to the default behavior, this event will be logged, and the {@link SmartCommands#LOW_PRIORITY_THREAD_POOL} and
-   * {@link AppInternals#THREAD_POOL} thread pools shut down.
-   */
-  @Override
-  public void onTerminate()
-  {
-    try
-    {
-      if (shouldBeSilent() == true)
-      {
-        return;
-      }
-
-      if (log.isDebugEnabled())
-      {
-        log.debug("Application terminating");
-      }
-      // We stop the threads pools
-      SmartCommands.LOW_PRIORITY_THREAD_POOL.shutdown();
-      AppInternals.THREAD_POOL.shutdown();
-    }
-    finally
-    {
-      super.onTerminate();
-    }
-  }
-
-  /**
-   * In addition to the default behavior, this event will be logged.
-   */
-  @Override
-  public void onLowMemory()
-  {
-    try
-    {
-      if (shouldBeSilent() == true)
-      {
-        return;
-      }
-
-      if (log.isWarnEnabled())
-      {
-        log.warn("Application low memory");
-      }
-    }
-    finally
-    {
-      super.onLowMemory();
-    }
-  }
-
-  /**
    * Logs in {@link Log#INFO} verbosity the hosting device information, such as its model, density, screen size.
    */
   protected void logDeviceInformation()
@@ -546,23 +530,39 @@ public abstract class SmartApplication
       final String screenLayoutString;
       switch (screenLayout)
       {
-      case Configuration.SCREENLAYOUT_SIZE_SMALL:
-        screenLayoutString = "small";
-        break;
-      case Configuration.SCREENLAYOUT_SIZE_NORMAL:
-        screenLayoutString = "normal";
-        break;
-      case Configuration.SCREENLAYOUT_SIZE_LARGE:
-        screenLayoutString = "large";
-        break;
-      case 4:
-        screenLayoutString = "xlarge";
-        break;
-      default:
-        screenLayoutString = "unknown: " + screenLayout;
+        case Configuration.SCREENLAYOUT_SIZE_SMALL:
+          screenLayoutString = "small";
+          break;
+        case Configuration.SCREENLAYOUT_SIZE_NORMAL:
+          screenLayoutString = "normal";
+          break;
+        case Configuration.SCREENLAYOUT_SIZE_LARGE:
+          screenLayoutString = "large";
+          break;
+        case 4:
+          screenLayoutString = "xlarge";
+          break;
+        default:
+          screenLayoutString = "unknown: " + screenLayout;
       }
       log.info("The application with package name '" + getPackageName() + "' is running on the device '" + Build.MODEL + "', running Android API level " + VERSION.SDK_INT + " (v" + VERSION.RELEASE + ") with density in dpi '" + displayMetrics.densityDpi + "', density '" + displayMetrics.density + "', screen size '" + screenLayoutString + "' (" + displayMetrics.widthPixels + "x" + displayMetrics.heightPixels + ")");
     }
+  }
+
+  private void setupDefaultExceptionHandlers()
+  {
+    // We let the overidding application register its exception handlers
+    onSetupExceptionHandlers();
+
+    ActivityController.getInstance().registerExceptionHandler(getExceptionHandler());
+    // We make sure that all uncaught exceptions will be intercepted and handled
+    final UncaughtExceptionHandler builtinUuncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+    final SmartCommands.SmartUncaughtExceptionHandler uncaughtExceptionHandler = new SmartCommands.SmartUncaughtExceptionHandler(getApplicationContext(), builtinUuncaughtExceptionHandler);
+    if (log.isDebugEnabled())
+    {
+      log.debug("The application with package name '" + getPackageName() + "' " + (builtinUuncaughtExceptionHandler == null ? "does not have" : "has") + " a built-in default uncaught exception handler");
+    }
+    Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
   }
 
 }

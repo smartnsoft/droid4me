@@ -22,13 +22,15 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.smartnsoft.droid4me.support.v7.widget.SmartAppCompatImageView;
+
 /**
  * An extension of its parent {@link View} class, which offers the {@link SmartViewExtension} features.
  *
  * @author Édouard Mercier, Willy Noel
  * @see SmartRelativeLayout
  * @see SmartLinearLayout
- * @see SmartImageView
+ * @see SmartAppCompatImageView
  * @since 2011.03.11
  */
 public class SmartFrameLayout

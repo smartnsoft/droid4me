@@ -47,24 +47,6 @@ public abstract class ProgressHandler
   }
 
   /**
-   * Should be implemented so as to indicate to the end-user that some operation is under progress.
-   *
-   * @param activity      the activity that originated a progress event
-   * @param progressExtra the free object that has been passed when declaring the progress event
-   * @see #onProgress(Activity, boolean, Object)
-   */
-  protected abstract void show(Activity activity, Object progressExtra);
-
-  /**
-   * Should be implemented so as to indicate to the end-user that no more operation is under progress.
-   *
-   * @param activity      the activity that originated a progress event
-   * @param progressExtra the free object that has been passed when declaring the progress event
-   * @see #onProgress(Activity, boolean, Object)
-   */
-  protected abstract void dismiss(Activity activity, Object progressExtra);
-
-  /**
    * Should be invoked when a progress event occurs.
    * <p>
    * <p>
@@ -119,5 +101,23 @@ public abstract class ProgressHandler
       });
     }
   }
+
+  /**
+   * Should be implemented so as to indicate to the end-user that some operation is under progress.
+   *
+   * @param activity      the activity that originated a progress event
+   * @param progressExtra the free object that has been passed when declaring the progress event
+   * @see #onProgress(Activity, boolean, Object)
+   */
+  protected abstract void show(Activity activity, Object progressExtra);
+
+  /**
+   * Should be implemented so as to indicate to the end-user that no more operation is under progress.
+   *
+   * @param activity      the activity that originated a progress event
+   * @param progressExtra the free object that has been passed when declaring the progress event
+   * @see #onProgress(Activity, boolean, Object)
+   */
+  protected abstract void dismiss(Activity activity, Object progressExtra);
 
 }

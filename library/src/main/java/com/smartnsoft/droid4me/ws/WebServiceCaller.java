@@ -84,6 +84,8 @@ public abstract class WebServiceCaller
 
   }
 
+  protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
+
   /**
    * A flag which indicates whether the hereby {@code WebServiceCaller} internal logs should be enabled. Logs will report useful {@code curl}
    * equivalent commands, for instance.
@@ -100,58 +102,6 @@ public abstract class WebServiceCaller
    * request body size is beyond that limit, it will not be logged, for performance reasons.
    */
   public static long BODY_MAXIMUM_SIZE_LOGGED_IN_BYTES = 8192;
-
-  protected final static Logger log = LoggerFactory.getInstance(WebServiceCaller.class);
-
-  protected boolean isConnected = true;
-
-  /**
-   * @return the charset to use for encoding the URI parameters
-   */
-  protected abstract String getUrlEncoding();
-
-  /**
-   * This method will be invoked when the instance reads a web service result body.
-   *
-   * @return the charset to use for decoding the web service requests content
-   * @see #getString(InputStream)
-   * @see #getString(InputStream, String)
-   * @see #getJson(InputStream)
-   * @see #getJson(InputStream, String)
-   */
-  protected abstract String getContentEncoding();
-
-  /**
-   * @return the value previously set by the {@link #setConnected(boolean)} method
-   */
-  public boolean isConnected()
-  {
-    return isConnected;
-  }
-
-  /**
-   * Enables to indicate that no Internet connectivity is available, or that the connectivity has been restored. The initial value is {@code true}.
-   */
-  public void setConnected(boolean isConnected)
-  {
-    if (log.isDebugEnabled())
-    {
-      log.debug("Setting the connectivity to " + isConnected);
-    }
-    this.isConnected = isConnected;
-  }
-
-  /**
-   * Equivalent to {@code WebServiceCaller.getString(inputStream, getContentEncoding())}.
-   *
-   * @see #getString(InputStream, String)
-   * @see #getJson(InputStream)
-   */
-  public final String getString(InputStream inputStream)
-      throws IOException
-  {
-    return WebServiceCaller.getString(inputStream, getContentEncoding());
-  }
 
   /**
    * Turns the provided {@link InputStream} into a {@link String}, using the provided encoding.
@@ -181,19 +131,6 @@ public abstract class WebServiceCaller
   }
 
   /**
-   * Equivalent to {@code WebServiceCaller.getJson(inputStream, getContentEncoding())}.
-   *
-   * @throws JSONException
-   * @see #getJson(InputStream, String)
-   * @see #getString(InputStream, String)
-   */
-  public final String getJson(InputStream inputStream)
-      throws JSONException
-  {
-    return WebServiceCaller.getJson(inputStream, getContentEncoding());
-  }
-
-  /**
    * Invokes the {@link #getString(InputStream, String)} method, but just turn the potential {@link IOException} into a {@link JSONException}.
    *
    * @see #getString(InputStream)
@@ -210,24 +147,6 @@ public abstract class WebServiceCaller
     {
       throw new JSONException(exception.getMessage());
     }
-  }
-
-  /**
-   * Just invokes {@code #computeUri(String, String, Map, boolean)}, with {@code false} as last parameter.
-   */
-  @Override
-  public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
-  {
-    return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, false, getUrlEncoding());
-  }
-
-  /**
-   * Just invokes {@code #encodeUri(String, String, Map, boolean, String)}, with {@code #getUrlEncoding()} as last parameter.
-   */
-  public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters,
-      boolean alreadyContainsQuestionMark)
-  {
-    return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, alreadyContainsQuestionMark, getUrlEncoding());
   }
 
   /**
@@ -301,5 +220,86 @@ public abstract class WebServiceCaller
     final String uri = buffer.toString();
     return uri;
   }
+
+  protected boolean isConnected = true;
+
+  /**
+   * Just invokes {@code #computeUri(String, String, Map, boolean)}, with {@code false} as last parameter.
+   */
+  @Override
+  public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters)
+  {
+    return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, false, getUrlEncoding());
+  }
+
+  /**
+   * @return the value previously set by the {@link #setConnected(boolean)} method
+   */
+  public boolean isConnected()
+  {
+    return isConnected;
+  }
+
+  /**
+   * Enables to indicate that no Internet connectivity is available, or that the connectivity has been restored. The initial value is {@code true}.
+   */
+  public void setConnected(boolean isConnected)
+  {
+    if (log.isDebugEnabled())
+    {
+      log.debug("Setting the connectivity to " + isConnected);
+    }
+    this.isConnected = isConnected;
+  }
+
+  /**
+   * Equivalent to {@code WebServiceCaller.getString(inputStream, getContentEncoding())}.
+   *
+   * @see #getString(InputStream, String)
+   * @see #getJson(InputStream)
+   */
+  public final String getString(InputStream inputStream)
+      throws IOException
+  {
+    return WebServiceCaller.getString(inputStream, getContentEncoding());
+  }
+
+  /**
+   * Equivalent to {@code WebServiceCaller.getJson(inputStream, getContentEncoding())}.
+   *
+   * @throws JSONException
+   * @see #getJson(InputStream, String)
+   * @see #getString(InputStream, String)
+   */
+  public final String getJson(InputStream inputStream)
+      throws JSONException
+  {
+    return WebServiceCaller.getJson(inputStream, getContentEncoding());
+  }
+
+  /**
+   * Just invokes {@code #encodeUri(String, String, Map, boolean, String)}, with {@code #getUrlEncoding()} as last parameter.
+   */
+  public final String computeUri(String methodUriPrefix, String methodUriSuffix, Map<String, String> uriParameters,
+      boolean alreadyContainsQuestionMark)
+  {
+    return WebServiceCaller.encodeUri(methodUriPrefix, methodUriSuffix, uriParameters, alreadyContainsQuestionMark, getUrlEncoding());
+  }
+
+  /**
+   * @return the charset to use for encoding the URI parameters
+   */
+  protected abstract String getUrlEncoding();
+
+  /**
+   * This method will be invoked when the instance reads a web service result body.
+   *
+   * @return the charset to use for decoding the web service requests content
+   * @see #getString(InputStream)
+   * @see #getString(InputStream, String)
+   * @see #getJson(InputStream)
+   * @see #getJson(InputStream, String)
+   */
+  protected abstract String getContentEncoding();
 
 }

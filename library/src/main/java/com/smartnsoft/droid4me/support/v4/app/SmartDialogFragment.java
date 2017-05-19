@@ -54,6 +54,13 @@ public abstract class SmartDialogFragment<AggregateClass>
   private Droid4mizer<AggregateClass, SmartDialogFragment<AggregateClass>> droid4mizer;
 
   @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data)
+  {
+    super.onActivityResult(requestCode, resultCode, data);
+    droid4mizer.onActivityResult(requestCode, resultCode, data);
+  }
+
+  @Override
   public void onAttach(Activity activity)
   {
     super.onAttach(activity);
@@ -74,6 +81,13 @@ public abstract class SmartDialogFragment<AggregateClass>
   }
 
   @Override
+  public void onStart()
+  {
+    super.onStart();
+    droid4mizer.onStart();
+  }
+
+  @Override
   public void onResume()
   {
     super.onResume();
@@ -81,24 +95,44 @@ public abstract class SmartDialogFragment<AggregateClass>
   }
 
   @Override
-  public void onConfigurationChanged(Configuration newConfig)
+  public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater)
   {
-    super.onConfigurationChanged(newConfig);
-    droid4mizer.onConfigurationChanged(newConfig);
+    super.onCreateOptionsMenu(menu, menuInflater);
+    droid4mizer.onCreateOptionsMenu(true, menu);
   }
 
   @Override
-  public void onSaveInstanceState(Bundle outState)
+  public void onPrepareOptionsMenu(Menu menu)
   {
-    super.onSaveInstanceState(outState);
-    droid4mizer.onSaveInstanceState(outState);
+    super.onPrepareOptionsMenu(menu);
+    droid4mizer.onPrepareOptionsMenu(true, menu);
   }
 
   @Override
-  public void onStart()
+  public boolean onOptionsItemSelected(MenuItem item)
   {
-    super.onStart();
-    droid4mizer.onStart();
+    return droid4mizer.onOptionsItemSelected(super.onOptionsItemSelected(item), item);
+  }
+
+  /**
+   * Own implementation.
+   */
+
+  public void onRetrieveDisplayObjects()
+  {
+  }
+
+  public void onRetrieveBusinessObjects()
+      throws BusinessObjectUnavailableException
+  {
+  }
+
+  public void onFulfillDisplayObjects()
+  {
+  }
+
+  public void onSynchronizeDisplayObjects()
+  {
   }
 
   @Override
@@ -141,36 +175,23 @@ public abstract class SmartDialogFragment<AggregateClass>
   }
 
   @Override
-  public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater)
+  public void onConfigurationChanged(Configuration newConfig)
   {
-    super.onCreateOptionsMenu(menu, menuInflater);
-    droid4mizer.onCreateOptionsMenu(true, menu);
+    super.onConfigurationChanged(newConfig);
+    droid4mizer.onConfigurationChanged(newConfig);
   }
 
   @Override
-  public void onPrepareOptionsMenu(Menu menu)
+  public void onSaveInstanceState(Bundle outState)
   {
-    super.onPrepareOptionsMenu(menu);
-    droid4mizer.onPrepareOptionsMenu(true, menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item)
-  {
-    return droid4mizer.onOptionsItemSelected(super.onOptionsItemSelected(item), item);
+    super.onSaveInstanceState(outState);
+    droid4mizer.onSaveInstanceState(outState);
   }
 
   @Override
   public boolean onContextItemSelected(MenuItem item)
   {
     return droid4mizer.onContextItemSelected(super.onContextItemSelected(item), item);
-  }
-
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent data)
-  {
-    super.onActivityResult(requestCode, resultCode, data);
-    droid4mizer.onActivityResult(requestCode, resultCode, data);
   }
 
   /**
@@ -246,28 +267,7 @@ public abstract class SmartDialogFragment<AggregateClass>
     return droid4mizer.shouldKeepOn();
   }
 
-  /**
-   * Own implementation.
-   */
-
-  public void onRetrieveDisplayObjects()
-  {
-  }
-
-  public void onRetrieveBusinessObjects()
-      throws BusinessObjectUnavailableException
-  {
-  }
-
   public void onBusinessObjectsRetrieved()
-  {
-  }
-
-  public void onFulfillDisplayObjects()
-  {
-  }
-
-  public void onSynchronizeDisplayObjects()
   {
   }
 

@@ -45,29 +45,10 @@ public abstract class SmartAppCompatActivity<AggregateClass>
   private final Droid4mizer<AggregateClass, SmartAppCompatActivity<AggregateClass>> droid4mizer = new Droid4mizer<>(this, this, this, null);
 
   @Override
-  public LayoutInflater getLayoutInflater()
+  protected void onActivityResult(int requestCode, int resultCode, Intent data)
   {
-    return (LayoutInflater) droid4mizer.getSystemService(Context.LAYOUT_INFLATER_SERVICE, super.getLayoutInflater());
-  }
-
-  @Override
-  public Object getSystemService(String name)
-  {
-    if (Context.LAYOUT_INFLATER_SERVICE.equals(name) == true && getWindow() != null)
-    {
-      return droid4mizer.getSystemService(name, getWindow().getLayoutInflater());
-    }
-    else
-    {
-      return droid4mizer.getSystemService(name, super.getSystemService(name));
-    }
-  }
-
-  @Override
-  public void onAttachedToWindow()
-  {
-    super.onAttachedToWindow();
-    droid4mizer.onAttached(this);
+    super.onActivityResult(requestCode, resultCode, data);
+    droid4mizer.onActivityResult(requestCode, resultCode, data);
   }
 
   @Override
@@ -84,17 +65,30 @@ public abstract class SmartAppCompatActivity<AggregateClass>
   }
 
   @Override
-  protected void onPostCreate(Bundle savedInstanceState)
+  protected void onStart()
   {
-    super.onPostCreate(savedInstanceState);
-    droid4mizer.onPostCreate(savedInstanceState);
+    super.onStart();
+    droid4mizer.onStart();
   }
 
   @Override
-  protected void onNewIntent(Intent intent)
+  protected void onResume()
   {
-    super.onNewIntent(intent);
-    droid4mizer.onNewIntent(intent);
+    super.onResume();
+    droid4mizer.onResume();
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu)
+  {
+    // Taken from http://www.londatiga.net/it/android-coding-tips-how-to-create-options-menu-on-child-activity-inside-an-activitygroup/
+    return droid4mizer.onCreateOptionsMenu(getParent() == null ? super.onCreateOptionsMenu(menu) : true, menu);
+  }
+
+  @Override
+  public boolean onPrepareOptionsMenu(Menu menu)
+  {
+    return droid4mizer.onPrepareOptionsMenu(getParent() == null ? super.onPrepareOptionsMenu(menu) : true, menu);
   }
 
   // @Override
@@ -105,45 +99,9 @@ public abstract class SmartAppCompatActivity<AggregateClass>
   // }
 
   @Override
-  protected void onResume()
+  public boolean onOptionsItemSelected(MenuItem item)
   {
-    super.onResume();
-    droid4mizer.onResume();
-  }
-
-  @Override
-  protected void onPostResume()
-  {
-    super.onPostResume();
-    droid4mizer.onPostResume();
-  }
-
-  @Override
-  public void onConfigurationChanged(Configuration newConfig)
-  {
-    super.onConfigurationChanged(newConfig);
-    droid4mizer.onConfigurationChanged(newConfig);
-  }
-
-  @Override
-  protected void onSaveInstanceState(Bundle outState)
-  {
-    super.onSaveInstanceState(outState);
-    droid4mizer.onSaveInstanceState(outState);
-  }
-
-  @Override
-  protected void onStart()
-  {
-    super.onStart();
-    droid4mizer.onStart();
-  }
-
-  @Override
-  protected void onRestart()
-  {
-    super.onRestart();
-    droid4mizer.onRestart();
+    return droid4mizer.onOptionsItemSelected(getParent() == null ? super.onOptionsItemSelected(item) : true, item);
   }
 
   @Override
@@ -186,6 +144,39 @@ public abstract class SmartAppCompatActivity<AggregateClass>
   }
 
   @Override
+  public LayoutInflater getLayoutInflater()
+  {
+    return (LayoutInflater) droid4mizer.getSystemService(Context.LAYOUT_INFLATER_SERVICE, super.getLayoutInflater());
+  }
+
+  @Override
+  public Object getSystemService(String name)
+  {
+    if (Context.LAYOUT_INFLATER_SERVICE.equals(name) == true && getWindow() != null)
+    {
+      return droid4mizer.getSystemService(name, getWindow().getLayoutInflater());
+    }
+    else
+    {
+      return droid4mizer.getSystemService(name, super.getSystemService(name));
+    }
+  }
+
+  @Override
+  public void onAttachedToWindow()
+  {
+    super.onAttachedToWindow();
+    droid4mizer.onAttached(this);
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig)
+  {
+    super.onConfigurationChanged(newConfig);
+    droid4mizer.onConfigurationChanged(newConfig);
+  }
+
+  @Override
   public void onDetachedFromWindow()
   {
     try
@@ -199,40 +190,10 @@ public abstract class SmartAppCompatActivity<AggregateClass>
   }
 
   @Override
-  public boolean onCreateOptionsMenu(Menu menu)
-  {
-    // Taken from http://www.londatiga.net/it/android-coding-tips-how-to-create-options-menu-on-child-activity-inside-an-activitygroup/
-    return droid4mizer.onCreateOptionsMenu(getParent() == null ? super.onCreateOptionsMenu(menu) : true, menu);
-  }
-
-  @Override
-  public boolean onPrepareOptionsMenu(Menu menu)
-  {
-    return droid4mizer.onPrepareOptionsMenu(getParent() == null ? super.onPrepareOptionsMenu(menu) : true, menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item)
-  {
-    return droid4mizer.onOptionsItemSelected(getParent() == null ? super.onOptionsItemSelected(item) : true, item);
-  }
-
-  @Override
   public boolean onContextItemSelected(MenuItem item)
   {
     return droid4mizer.onContextItemSelected(getParent() == null ? super.onContextItemSelected(item) : true, item);
   }
-
-  @Override
-  protected void onActivityResult(int requestCode, int resultCode, Intent data)
-  {
-    super.onActivityResult(requestCode, resultCode, data);
-    droid4mizer.onActivityResult(requestCode, resultCode, data);
-  }
-
-  /**
-   * SmartableActivity implementation.
-   */
 
   /**
    * Smartable implementation.
@@ -267,6 +228,10 @@ public abstract class SmartAppCompatActivity<AggregateClass>
   {
     droid4mizer.onException(throwable, fromGuiThread);
   }
+
+  /**
+   * SmartableActivity implementation.
+   */
 
   @Override
   public void registerBroadcastListeners(BroadcastListener[] broadcastListeners)
@@ -327,6 +292,41 @@ public abstract class SmartAppCompatActivity<AggregateClass>
   @Override
   public void onBusinessObjectsRetrieved()
   {
+  }
+
+  @Override
+  protected void onPostCreate(Bundle savedInstanceState)
+  {
+    super.onPostCreate(savedInstanceState);
+    droid4mizer.onPostCreate(savedInstanceState);
+  }
+
+  @Override
+  protected void onNewIntent(Intent intent)
+  {
+    super.onNewIntent(intent);
+    droid4mizer.onNewIntent(intent);
+  }
+
+  @Override
+  protected void onPostResume()
+  {
+    super.onPostResume();
+    droid4mizer.onPostResume();
+  }
+
+  @Override
+  protected void onSaveInstanceState(Bundle outState)
+  {
+    super.onSaveInstanceState(outState);
+    droid4mizer.onSaveInstanceState(outState);
+  }
+
+  @Override
+  protected void onRestart()
+  {
+    super.onRestart();
+    droid4mizer.onRestart();
   }
 
   /**

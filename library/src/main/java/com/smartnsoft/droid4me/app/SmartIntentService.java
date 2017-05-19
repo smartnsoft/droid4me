@@ -39,14 +39,6 @@ public abstract class SmartIntentService
 
   private SharedPreferences preferences;
 
-  /**
-   * @return the preferences of the application
-   */
-  protected final SharedPreferences getPreferences()
-  {
-    return preferences;
-  }
-
   public SmartIntentService()
   {
     this(null);
@@ -65,6 +57,14 @@ public abstract class SmartIntentService
   {
     super.onCreate();
     preferences = PreferenceManager.getDefaultSharedPreferences(this);
+  }
+
+  /**
+   * @return the preferences of the application
+   */
+  protected final SharedPreferences getPreferences()
+  {
+    return preferences;
   }
 
 }

@@ -524,8 +524,6 @@ public class ActivityController
 
   }
 
-  private static final Logger log = LoggerFactory.getInstance(ActivityController.class);
-
   /**
    * When a new activity is {@link Context#startActivity(Intent) started} because of a redirection, the newly started activity will receive the
    * initial activity {@link Intent} through this {@link Parcelable} key.
@@ -534,6 +532,8 @@ public class ActivityController
    * @see #registerInterceptor(Interceptor)
    */
   public static final String CALLING_INTENT = "com.smartnsoft.droid4me.callingIntent";
+
+  private static final Logger log = LoggerFactory.getInstance(ActivityController.class);
 
   /**
    * A singleton pattern is available for the moment.
@@ -559,21 +559,6 @@ public class ActivityController
     return ActivityController.instance;
   }
 
-  private ActivityController.Redirector redirector;
-
-  private ActivityController.SystemServiceProvider systemServiceProvider;
-
-  private ActivityController.Interceptor interceptor;
-
-  private ActivityController.ExceptionHandler exceptionHandler;
-
-  /**
-   * No one else than the framework should create such an instance.
-   */
-  private ActivityController()
-  {
-  }
-
   /**
    * Attempts to decode from the provided {@code activity} the original {@code Intent} that was
    *
@@ -587,6 +572,21 @@ public class ActivityController
   public static Intent extractCallingIntent(Activity activity)
   {
     return activity.getIntent().getParcelableExtra(ActivityController.CALLING_INTENT);
+  }
+
+  private ActivityController.Redirector redirector;
+
+  private ActivityController.SystemServiceProvider systemServiceProvider;
+
+  private ActivityController.Interceptor interceptor;
+
+  private ActivityController.ExceptionHandler exceptionHandler;
+
+  /**
+   * No one else than the framework should create such an instance.
+   */
+  private ActivityController()
+  {
   }
 
   /**

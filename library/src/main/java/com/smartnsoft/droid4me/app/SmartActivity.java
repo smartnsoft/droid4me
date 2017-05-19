@@ -45,16 +45,10 @@ public abstract class SmartActivity<AggregateClass>
   private final Droid4mizer<AggregateClass, SmartActivity<AggregateClass>> droid4mizer = new Droid4mizer<>(this, this, this, null);
 
   @Override
-  public Object getSystemService(String name)
+  protected void onActivityResult(int requestCode, int resultCode, Intent data)
   {
-    return droid4mizer.getSystemService(name, super.getSystemService(name));
-  }
-
-  @Override
-  public void onAttachedToWindow()
-  {
-    super.onAttachedToWindow();
-    droid4mizer.onAttached(this);
+    super.onActivityResult(requestCode, resultCode, data);
+    droid4mizer.onActivityResult(requestCode, resultCode, data);
   }
 
   @Override
@@ -70,24 +64,10 @@ public abstract class SmartActivity<AggregateClass>
   }
 
   @Override
-  protected void onPostCreate(Bundle savedInstanceState)
+  protected void onStart()
   {
-    super.onPostCreate(savedInstanceState);
-    droid4mizer.onPostCreate(savedInstanceState);
-  }
-
-  @Override
-  protected void onNewIntent(Intent intent)
-  {
-    super.onNewIntent(intent);
-    droid4mizer.onNewIntent(intent);
-  }
-
-  @Override
-  public void onContentChanged()
-  {
-    super.onContentChanged();
-    droid4mizer.onContentChanged();
+    super.onStart();
+    droid4mizer.onStart();
   }
 
   @Override
@@ -98,38 +78,22 @@ public abstract class SmartActivity<AggregateClass>
   }
 
   @Override
-  protected void onPostResume()
+  public boolean onCreateOptionsMenu(Menu menu)
   {
-    super.onPostResume();
-    droid4mizer.onPostResume();
+    // Taken from http://www.londatiga.net/it/android-coding-tips-how-to-create-options-menu-on-child-activity-inside-an-activitygroup/
+    return droid4mizer.onCreateOptionsMenu(getParent() == null ? super.onCreateOptionsMenu(menu) : true, menu);
   }
 
   @Override
-  public void onConfigurationChanged(Configuration newConfig)
+  public boolean onPrepareOptionsMenu(Menu menu)
   {
-    super.onConfigurationChanged(newConfig);
-    droid4mizer.onConfigurationChanged(newConfig);
+    return droid4mizer.onPrepareOptionsMenu(getParent() == null ? super.onPrepareOptionsMenu(menu) : true, menu);
   }
 
   @Override
-  protected void onSaveInstanceState(Bundle outState)
+  public boolean onOptionsItemSelected(MenuItem item)
   {
-    super.onSaveInstanceState(outState);
-    droid4mizer.onSaveInstanceState(outState);
-  }
-
-  @Override
-  protected void onStart()
-  {
-    super.onStart();
-    droid4mizer.onStart();
-  }
-
-  @Override
-  protected void onRestart()
-  {
-    super.onRestart();
-    droid4mizer.onRestart();
+    return droid4mizer.onOptionsItemSelected(getParent() == null ? super.onOptionsItemSelected(item) : true, item);
   }
 
   @Override
@@ -172,6 +136,33 @@ public abstract class SmartActivity<AggregateClass>
   }
 
   @Override
+  public Object getSystemService(String name)
+  {
+    return droid4mizer.getSystemService(name, super.getSystemService(name));
+  }
+
+  @Override
+  public void onAttachedToWindow()
+  {
+    super.onAttachedToWindow();
+    droid4mizer.onAttached(this);
+  }
+
+  @Override
+  public void onContentChanged()
+  {
+    super.onContentChanged();
+    droid4mizer.onContentChanged();
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig)
+  {
+    super.onConfigurationChanged(newConfig);
+    droid4mizer.onConfigurationChanged(newConfig);
+  }
+
+  @Override
   public void onDetachedFromWindow()
   {
     try
@@ -185,40 +176,10 @@ public abstract class SmartActivity<AggregateClass>
   }
 
   @Override
-  public boolean onCreateOptionsMenu(Menu menu)
-  {
-    // Taken from http://www.londatiga.net/it/android-coding-tips-how-to-create-options-menu-on-child-activity-inside-an-activitygroup/
-    return droid4mizer.onCreateOptionsMenu(getParent() == null ? super.onCreateOptionsMenu(menu) : true, menu);
-  }
-
-  @Override
-  public boolean onPrepareOptionsMenu(Menu menu)
-  {
-    return droid4mizer.onPrepareOptionsMenu(getParent() == null ? super.onPrepareOptionsMenu(menu) : true, menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item)
-  {
-    return droid4mizer.onOptionsItemSelected(getParent() == null ? super.onOptionsItemSelected(item) : true, item);
-  }
-
-  @Override
   public boolean onContextItemSelected(MenuItem item)
   {
     return droid4mizer.onContextItemSelected(getParent() == null ? super.onContextItemSelected(item) : true, item);
   }
-
-  @Override
-  protected void onActivityResult(int requestCode, int resultCode, Intent data)
-  {
-    super.onActivityResult(requestCode, resultCode, data);
-    droid4mizer.onActivityResult(requestCode, resultCode, data);
-  }
-
-  /**
-   * SmartableActivity implementation.
-   */
 
   /**
    * Smartable implementation.
@@ -248,6 +209,10 @@ public abstract class SmartActivity<AggregateClass>
   {
     droid4mizer.onException(throwable, fromGuiThread);
   }
+
+  /**
+   * SmartableActivity implementation.
+   */
 
   public void registerBroadcastListeners(BroadcastListener[] broadcastListeners)
   {
@@ -300,6 +265,41 @@ public abstract class SmartActivity<AggregateClass>
 
   public void onBusinessObjectsRetrieved()
   {
+  }
+
+  @Override
+  protected void onPostCreate(Bundle savedInstanceState)
+  {
+    super.onPostCreate(savedInstanceState);
+    droid4mizer.onPostCreate(savedInstanceState);
+  }
+
+  @Override
+  protected void onNewIntent(Intent intent)
+  {
+    super.onNewIntent(intent);
+    droid4mizer.onNewIntent(intent);
+  }
+
+  @Override
+  protected void onPostResume()
+  {
+    super.onPostResume();
+    droid4mizer.onPostResume();
+  }
+
+  @Override
+  protected void onSaveInstanceState(Bundle outState)
+  {
+    super.onSaveInstanceState(outState);
+    droid4mizer.onSaveInstanceState(outState);
+  }
+
+  @Override
+  protected void onRestart()
+  {
+    super.onRestart();
+    droid4mizer.onRestart();
   }
 
   /**

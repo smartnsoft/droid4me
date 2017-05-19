@@ -32,6 +32,12 @@ public abstract class ForBusinessObjectImplementation<BusinessObjectClass>
 
   private BusinessObjectClass businessObject;
 
+  public final BusinessObjectClass getBusinessObject()
+      throws LifeCycle.BusinessObjectUnavailableException
+  {
+    return businessObject;
+  }
+
   public final void discardBusinessObject()
   {
     businessObject = null;
@@ -50,12 +56,6 @@ public abstract class ForBusinessObjectImplementation<BusinessObjectClass>
       // There was a problem and the business object could not be retrieved
       throw new LifeCycle.BusinessObjectUnavailableException("Business object null");
     }
-  }
-
-  public final BusinessObjectClass getBusinessObject()
-      throws LifeCycle.BusinessObjectUnavailableException
-  {
-    return businessObject;
   }
 
   public final boolean isBusinessObject()

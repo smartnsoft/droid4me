@@ -55,11 +55,27 @@ public final class FilePersistence
    */
   public static String CACHE_INDEX_FILE_NAME = "index";
 
+  private static InputStream storeInputStreamToFile(String filePath, Business.InputAtom inputAtom, boolean closeInput)
+  {
+    try
+    {
+      return Persistence.storeInputStream(new FileOutputStream(filePath), inputAtom.inputStream, closeInput, " corresponding to the file '" + filePath + "'");
+    }
+    catch (FileNotFoundException exception)
+    {
+      if (log.isWarnEnabled())
+      {
+        log.warn("Could not access to the file '" + filePath + "' for writing", exception);
+      }
+      return null;
+    }
+  }
+
+  private final int storageLimitFilesCount;
+
   private Properties properties;
 
   private File indexFile;
-
-  private final int storageLimitFilesCount;
 
   private boolean fileIndexNeedsSaving;
 
@@ -70,11 +86,6 @@ public final class FilePersistence
   {
     super(storageDirectoryPath, instanceIndex);
     this.storageLimitFilesCount = FilePersistence.CACHE_FILE_COUNT_LIMITS[instanceIndex];
-  }
-
-  private boolean isStorageLimited()
-  {
-    return storageLimitFilesCount != Integer.MAX_VALUE;
   }
 
   @Override
@@ -146,55 +157,6 @@ public final class FilePersistence
       }
     }
     setStorageBackendAvailable(true);
-  }
-
-  private synchronized void saveIndexFileIfNecessary()
-  {
-    if (fileIndexNeedsSaving == false)
-    {
-      return;
-    }
-    final File indexFile = getIndexFile();
-    try
-    {
-      final FileOutputStream outputStream = new FileOutputStream(indexFile);
-      try
-      {
-        properties.setProperty(FilePersistence.INDEX_KEY, Integer.toString(uriUsages.getIndex()));
-        properties.store(outputStream, "The cache index file");
-        fileIndexNeedsSaving = false;
-        if (log.isDebugEnabled())
-        {
-          log.debug("Saved the index file");
-        }
-      }
-      finally
-      {
-        try
-        {
-          outputStream.close();
-        }
-        catch (IOException exception)
-        {
-          if (log.isWarnEnabled())
-          {
-            log.warn("Could not properly close the file index output stream while saving ", exception);
-          }
-        }
-      }
-    }
-    catch (Exception exception)
-    {
-      if (log.isErrorEnabled())
-      {
-        log.error("Cannot write the cache index file at '" + indexFile + "'", exception);
-      }
-    }
-  }
-
-  private File getIndexFile()
-  {
-    return indexFile;
   }
 
   @Override
@@ -434,20 +396,58 @@ public final class FilePersistence
     }
   }
 
-  private static InputStream storeInputStreamToFile(String filePath, Business.InputAtom inputAtom, boolean closeInput)
+  private boolean isStorageLimited()
   {
+    return storageLimitFilesCount != Integer.MAX_VALUE;
+  }
+
+  private synchronized void saveIndexFileIfNecessary()
+  {
+    if (fileIndexNeedsSaving == false)
+    {
+      return;
+    }
+    final File indexFile = getIndexFile();
     try
     {
-      return Persistence.storeInputStream(new FileOutputStream(filePath), inputAtom.inputStream, closeInput, " corresponding to the file '" + filePath + "'");
-    }
-    catch (FileNotFoundException exception)
-    {
-      if (log.isWarnEnabled())
+      final FileOutputStream outputStream = new FileOutputStream(indexFile);
+      try
       {
-        log.warn("Could not access to the file '" + filePath + "' for writing", exception);
+        properties.setProperty(FilePersistence.INDEX_KEY, Integer.toString(uriUsages.getIndex()));
+        properties.store(outputStream, "The cache index file");
+        fileIndexNeedsSaving = false;
+        if (log.isDebugEnabled())
+        {
+          log.debug("Saved the index file");
+        }
       }
-      return null;
+      finally
+      {
+        try
+        {
+          outputStream.close();
+        }
+        catch (IOException exception)
+        {
+          if (log.isWarnEnabled())
+          {
+            log.warn("Could not properly close the file index output stream while saving ", exception);
+          }
+        }
+      }
     }
+    catch (Exception exception)
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("Cannot write the cache index file at '" + indexFile + "'", exception);
+      }
+    }
+  }
+
+  private File getIndexFile()
+  {
+    return indexFile;
   }
 
   private void registerUri(String uri, String filePath)

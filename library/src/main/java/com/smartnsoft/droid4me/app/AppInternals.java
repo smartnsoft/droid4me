@@ -118,6 +118,11 @@ final class AppInternals
 
     private static final Logger log = LoggerFactory.getInstance(StateContainer.class);
 
+    static boolean isFirstCycle(Bundle savedInstanceState)
+    {
+      return (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true);
+    }
+
     /**
      * The activity this container has been created for in case of an {@link Activity}, or the hosting {@link Activity} in case of a
      * {@link android.app.Fragment}.
@@ -128,6 +133,11 @@ final class AppInternals
      * The component this container has been created for.
      */
     private final ComponentClass component;
+
+    /**
+     * Contains all the commands which have been registered.
+     */
+    private final List<Future<?>> futures = new ArrayList<>();
 
     private boolean resumedForTheFirstTime = true;
 
@@ -172,16 +182,6 @@ final class AppInternals
     private AppInternals.StateContainer.RefreshBusinessObjectsAndDisplay refreshBusinessObjectsAndDisplayPending;
 
     /**
-     * Contains all the commands which have been registered.
-     */
-    private final List<Future<?>> futures = new ArrayList<>();
-
-    static boolean isFirstCycle(Bundle savedInstanceState)
-    {
-      return (savedInstanceState != null && savedInstanceState.containsKey(AppInternals.ALREADY_STARTED) == true);
-    }
-
-    /**
      * Should only be created by classes in the same package.
      *
      * @param activity  the activity this container has been created for
@@ -191,6 +191,135 @@ final class AppInternals
     {
       this.activity = activity;
       this.component = component;
+    }
+
+    private void registerBroadcastListeners(int index, final AppPublics.BroadcastListener broadcastListener)
+    {
+      if (broadcastListener == null)
+      {
+        throw new NullPointerException("Cannot register a null 'broadcastListener'!");
+      }
+      if (index == 0 && log.isDebugEnabled())
+      {
+        log.debug("Registering for listening to intent broadcasts");
+      }
+      final BroadcastReceiver broadcastReceiver;
+      final Method method;
+      try
+      {
+        method = broadcastListener.getClass().getMethod("getIntentFilter");
+      }
+      catch (Exception exception)
+      {
+        if (log.isFatalEnabled())
+        {
+          log.fatal("droid4me internal error!", exception);
+        }
+        return;
+      }
+      final boolean useNativeBroadcast = method.isAnnotationPresent(UseNativeBroadcast.class);
+      if (useNativeBroadcast == false)
+      {
+        broadcastReceiver = new BroadcastReceiver()
+        {
+          public void onReceive(Context context, Intent intent)
+          {
+            try
+            {
+              broadcastListener.onReceive(intent);
+            }
+            catch (Throwable throwable)
+            {
+              if (log.isErrorEnabled())
+              {
+                log.error("An exception occurred while handling a broadcast intent!", throwable);
+              }
+            }
+          }
+        };
+      }
+      else
+      {
+        broadcastReceiver = new NativeBroadcastReceiver()
+        {
+          public void onReceive(Context context, Intent intent)
+          {
+            try
+            {
+              broadcastListener.onReceive(intent);
+            }
+            catch (Throwable throwable)
+            {
+              if (log.isErrorEnabled())
+              {
+                log.error("An exception occurred while handling a broadcast intent!", throwable);
+              }
+            }
+          }
+        };
+      }
+      broadcastReceivers[index] = broadcastReceiver;
+      final IntentFilter intentFilter;
+      try
+      {
+        intentFilter = broadcastListener.getIntentFilter();
+      }
+      catch (Throwable throwable)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("An exception occurred while computing the intent filter; it will not be registered!", throwable);
+        }
+        return;
+      }
+      if (intentFilter == null)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("The 'AppPublics.BroadcastListener.getIntentFilter()' method is not allowed to return 'null'; it will not be registered!");
+        }
+        return;
+      }
+      if (useNativeBroadcast == false)
+      {
+        LocalBroadcastManager.getInstance(activity.getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
+      }
+      else
+      {
+        activity.registerReceiver(broadcastReceiver, intentFilter);
+      }
+      // if (log.isDebugEnabled())
+      // {
+      // log.debug("Registered a " + (useNativeBroadcast == true ? "native" : "local") + " broadcast receiver");
+      // }
+    }
+
+    private int enrichBroadcastListeners(int count)
+    {
+      final int newIndex;
+      if (broadcastReceivers == null)
+      {
+        newIndex = 0;
+        broadcastReceivers = new BroadcastReceiver[count];
+      }
+      else
+      {
+        newIndex = broadcastReceivers.length;
+        final BroadcastReceiver[] newBroadcastReceivers = new BroadcastReceiver[count + broadcastReceivers.length];
+        // Only available from Android v9, a.k.a. GingerBread
+        // broadcastReceivers = Arrays.copyOf(broadcastReceivers, count + broadcastReceivers.length);
+        for (int index = 0; index < broadcastReceivers.length; index++)
+        {
+          newBroadcastReceivers[index] = broadcastReceivers[index];
+        }
+        broadcastReceivers = newBroadcastReceivers;
+      }
+
+      if (log.isDebugEnabled())
+      {
+        log.debug("The entity is now able to welcome " + broadcastReceivers.length + " broadcast receiver(s)");
+      }
+      return newIndex;
     }
 
     AggregateClass getAggregate()
@@ -321,135 +450,6 @@ final class AppInternals
       {
         registerBroadcastListeners(index + startIndex, broadcastListeners[index]);
       }
-    }
-
-    private void registerBroadcastListeners(int index, final AppPublics.BroadcastListener broadcastListener)
-    {
-      if (broadcastListener == null)
-      {
-        throw new NullPointerException("Cannot register a null 'broadcastListener'!");
-      }
-      if (index == 0 && log.isDebugEnabled())
-      {
-        log.debug("Registering for listening to intent broadcasts");
-      }
-      final BroadcastReceiver broadcastReceiver;
-      final Method method;
-      try
-      {
-        method = broadcastListener.getClass().getMethod("getIntentFilter");
-      }
-      catch (Exception exception)
-      {
-        if (log.isFatalEnabled())
-        {
-          log.fatal("droid4me internal error!", exception);
-        }
-        return;
-      }
-      final boolean useNativeBroadcast = method.isAnnotationPresent(UseNativeBroadcast.class);
-      if (useNativeBroadcast == false)
-      {
-        broadcastReceiver = new BroadcastReceiver()
-        {
-          public void onReceive(Context context, Intent intent)
-          {
-            try
-            {
-              broadcastListener.onReceive(intent);
-            }
-            catch (Throwable throwable)
-            {
-              if (log.isErrorEnabled())
-              {
-                log.error("An exception occurred while handling a broadcast intent!", throwable);
-              }
-            }
-          }
-        };
-      }
-      else
-      {
-        broadcastReceiver = new NativeBroadcastReceiver()
-        {
-          public void onReceive(Context context, Intent intent)
-          {
-            try
-            {
-              broadcastListener.onReceive(intent);
-            }
-            catch (Throwable throwable)
-            {
-              if (log.isErrorEnabled())
-              {
-                log.error("An exception occurred while handling a broadcast intent!", throwable);
-              }
-            }
-          }
-        };
-      }
-      broadcastReceivers[index] = broadcastReceiver;
-      final IntentFilter intentFilter;
-      try
-      {
-        intentFilter = broadcastListener.getIntentFilter();
-      }
-      catch (Throwable throwable)
-      {
-        if (log.isErrorEnabled())
-        {
-          log.error("An exception occurred while computing the intent filter; it will not be registered!", throwable);
-        }
-        return;
-      }
-      if (intentFilter == null)
-      {
-        if (log.isErrorEnabled())
-        {
-          log.error("The 'AppPublics.BroadcastListener.getIntentFilter()' method is not allowed to return 'null'; it will not be registered!");
-        }
-        return;
-      }
-      if (useNativeBroadcast == false)
-      {
-        LocalBroadcastManager.getInstance(activity.getApplicationContext()).registerReceiver(broadcastReceiver, intentFilter);
-      }
-      else
-      {
-        activity.registerReceiver(broadcastReceiver, intentFilter);
-      }
-      // if (log.isDebugEnabled())
-      // {
-      // log.debug("Registered a " + (useNativeBroadcast == true ? "native" : "local") + " broadcast receiver");
-      // }
-    }
-
-    private int enrichBroadcastListeners(int count)
-    {
-      final int newIndex;
-      if (broadcastReceivers == null)
-      {
-        newIndex = 0;
-        broadcastReceivers = new BroadcastReceiver[count];
-      }
-      else
-      {
-        newIndex = broadcastReceivers.length;
-        final BroadcastReceiver[] newBroadcastReceivers = new BroadcastReceiver[count + broadcastReceivers.length];
-        // Only available from Android v9, a.k.a. GingerBread
-        // broadcastReceivers = Arrays.copyOf(broadcastReceivers, count + broadcastReceivers.length);
-        for (int index = 0; index < broadcastReceivers.length; index++)
-        {
-          newBroadcastReceivers[index] = broadcastReceivers[index];
-        }
-        broadcastReceivers = newBroadcastReceivers;
-      }
-
-      if (log.isDebugEnabled())
-      {
-        log.debug("The entity is now able to welcome " + broadcastReceivers.length + " broadcast receiver(s)");
-      }
-      return newIndex;
     }
 
     /**
@@ -754,11 +754,6 @@ final class AppInternals
   }
 
   /**
-   * An internal key, which enables to determine whether an activity has already been started.
-   */
-  private final static String ALREADY_STARTED = "com.smartnsoft.droid4me.alreadyStarted";
-
-  /**
    * This threads pool is used internally, in order to prevent from new thread creation, for an optimization purpose.
    * <p>
    * <ul>
@@ -786,6 +781,11 @@ final class AppInternals
     }
 
   });
+
+  /**
+   * An internal key, which enables to determine whether an activity has already been started.
+   */
+  private final static String ALREADY_STARTED = "com.smartnsoft.droid4me.alreadyStarted";
 
   private AppInternals()
   {

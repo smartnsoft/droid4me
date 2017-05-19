@@ -80,6 +80,39 @@ public final class DbPersistence
   }
 
   /**
+   * Defined in order to set up the database columns.
+   */
+  public static final class CacheColumns
+      implements BaseColumns
+  {
+
+    /**
+     * The URI corresponding to the data. This is a {@code String}.
+     */
+    public static final String URI = "uri";
+
+    /**
+     * The data themselves. This is a {@code blob}.
+     */
+    public static final String CONTENTS = "contents";
+
+    /**
+     * The timestamp corresponding to the data last update. This is a {@code long}.
+     */
+    public static final String LAST_UPDATE = "lastUpdate";
+
+    /**
+     * The context (which is free) associated with the data. This is a {@code blob}.
+     */
+    public static final String CONTEXT = "context";
+
+    private CacheColumns()
+    {
+    }
+
+  }
+
+  /**
    * A simple clean up strategy, which removes the entries older that a certain of time, which is customizable through the
    * {@link LastUpdateDbCleanUpPolicy#RETENTION_DURATION_IN_MILLISECONDS} field.
    *
@@ -198,39 +231,6 @@ public final class DbPersistence
   }
 
   /**
-   * Defined in order to set up the database columns.
-   */
-  public static final class CacheColumns
-      implements BaseColumns
-  {
-
-    /**
-     * The URI corresponding to the data. This is a {@code String}.
-     */
-    public static final String URI = "uri";
-
-    /**
-     * The data themselves. This is a {@code blob}.
-     */
-    public static final String CONTENTS = "contents";
-
-    /**
-     * The timestamp corresponding to the data last update. This is a {@code long}.
-     */
-    public static final String LAST_UPDATE = "lastUpdate";
-
-    /**
-     * The context (which is free) associated with the data. This is a {@code blob}.
-     */
-    public static final String CONTEXT = "context";
-
-    private CacheColumns()
-    {
-    }
-
-  }
-
-  /**
    * The default name of the database file.
    */
   public final static String DEFAULT_FILE_NAME = "cache.db";
@@ -239,6 +239,25 @@ public final class DbPersistence
    * The default name of the database table.
    */
   public final static String DEFAULT_TABLE_NAME = "cache";
+
+  /**
+   * The number of simultaneous available threads in the pool.
+   */
+  private static final int THREAD_POOL_DEFAULT_SIZE = 3;
+
+  private final static ThreadPoolExecutor THREAD_POOL = new ThreadPoolExecutor(1, DbPersistence.THREAD_POOL_DEFAULT_SIZE, 5l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory()
+  {
+
+    private final AtomicInteger threadCount = new AtomicInteger(1);
+
+    public Thread newThread(Runnable runnable)
+    {
+      final Thread thread = new Thread(runnable);
+      thread.setName("droid4me-dbpersistence-thread #" + threadCount.getAndIncrement());
+      return thread;
+    }
+
+  });
 
   /**
    * The file names of the instances database files.
@@ -269,25 +288,6 @@ public final class DbPersistence
   public static String[] CLEAN_UP_POLICY_FQN = new String[] { null };
 
   /**
-   * The number of simultaneous available threads in the pool.
-   */
-  private static final int THREAD_POOL_DEFAULT_SIZE = 3;
-
-  private final static ThreadPoolExecutor THREAD_POOL = new ThreadPoolExecutor(1, DbPersistence.THREAD_POOL_DEFAULT_SIZE, 5l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory()
-  {
-
-    private final AtomicInteger threadCount = new AtomicInteger(1);
-
-    public Thread newThread(Runnable runnable)
-    {
-      final Thread thread = new Thread(runnable);
-      thread.setName("droid4me-dbpersistence-thread #" + threadCount.getAndIncrement());
-      return thread;
-    }
-
-  });
-
-  /**
    * In order to put in common the databases connections.
    */
   private static Map<String, SQLiteDatabase> writeableDatabases = new HashMap<>();
@@ -296,125 +296,6 @@ public final class DbPersistence
    * In order to put in common the databases connections.
    */
   private static Map<String, Integer> writeableDatabaseCounts = new HashMap<>();
-
-  private final String fileName;
-
-  private final String tableName;
-
-  private SQLiteDatabase writeableDatabase;
-
-  /**
-   * Defined in order to make the {@link #readInputStream(String)} method more optimized when computing its underlying SQL query.
-   */
-  private final String readInputStreamQuery;
-
-  /**
-   * Defined in order to make the {@link #writeInputStream(String, InputAtom, boolean)} method more optimized when determining whether to insert or update.
-   */
-  private SQLiteStatement writeInputStreamExistsStatement;
-
-  private final Object writeInputStatementSyncObject = new Object();
-
-  /**
-   * Defined in order to make the {@link #getLastUpdate(String)} method more optimized.
-   */
-  private SQLiteStatement getLastUpdateStreamExistsStatement;
-
-  private final Object getLastUpdateStatementSyncObject = new Object();
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see #DbPersistence(String, int, String, String)
-   */
-  public DbPersistence(String storageDirectoryPath, int instanceIndex)
-  {
-    this(storageDirectoryPath, instanceIndex, DbPersistence.FILE_NAMES[instanceIndex], DbPersistence.TABLE_NAMES[instanceIndex]);
-  }
-
-  /**
-   * Creates a persistence instance with all the necessary information to indicate its location.
-   *
-   * @param storageDirectoryPath the directory path where the persistence database should be created
-   * @param instanceIndex        the ordinal of the instance which is bound to be created. Starts with {@code 0}
-   * @param fileName             the name of the database file
-   * @param tableName            the name of the table which will handle the persistence
-   * @see #DbPersistence(String, int)
-   */
-  public DbPersistence(String storageDirectoryPath, int instanceIndex, String fileName, String tableName)
-  {
-    super(storageDirectoryPath, instanceIndex);
-    this.fileName = fileName;
-    this.tableName = tableName;
-    readInputStreamQuery = new StringBuilder("SELECT ").append(DbPersistence.CacheColumns.CONTENTS).append(", ").append(DbPersistence.CacheColumns.LAST_UPDATE).append(", ").append(DbPersistence.CacheColumns.CONTEXT).append(" FROM ").append(tableName).append(" WHERE ").append(DbPersistence.CacheColumns.URI).append(" = ?").toString();
-  }
-
-  @Override
-  protected void initializeInstance()
-      throws Persistence.PersistenceException
-  {
-    final String dbFilePath = computeFilePath();
-    if (log.isDebugEnabled())
-    {
-      log.debug("Initializing the database located at '" + dbFilePath + "' for the table '" + tableName + "'");
-    }
-    final File databaseFile = new File(dbFilePath);
-    try
-    {
-      databaseFile.getParentFile().mkdirs();
-      DbPersistence.ensureDatabaseAvailability(dbFilePath, tableName);
-      if (log.isDebugEnabled())
-      {
-        log.debug("The database located at '" + dbFilePath + "' for the table '" + tableName + "' has been initialized");
-      }
-    }
-    catch (SQLiteException exception)
-    {
-      if (log.isInfoEnabled())
-      {
-        log.info("The cache database located at '" + dbFilePath + "' seems to be unexisting, unavailable or corrupted: it is now re-initialized");
-      }
-      try
-      {
-        databaseFile.delete();
-        DbPersistence.ensureDatabaseAvailability(dbFilePath, tableName);
-      }
-      catch (Throwable otherThrowable)
-      {
-        if (log.isErrorEnabled())
-        {
-          log.error("Cannot properly initialize the database located at '" + dbFilePath + "': no database is available!", otherThrowable);
-        }
-        if (otherThrowable instanceof Persistence.PersistenceException)
-        {
-          throw (Persistence.PersistenceException) otherThrowable;
-        }
-        throw new Persistence.PersistenceException("Cannot initialize properly the database located at '" + dbFilePath + "'", exception);
-      }
-    }
-    try
-    {
-      writeableDatabase = DbPersistence.obtainDatabase(dbFilePath);
-      // Ideally, this compiled statement should be computed here, but when the table is created, it seems that the calling method returns before the
-      // work is done.
-      // Hence, we perform some lazy instantiation
-      // writeInputStreamExistsStatement = writeableDb.compileStatement("SELECT COUNT(1) FROM " + tableName + " WHERE " +
-      // DbPersistence.CacheColumns.URI + " = ?");
-    }
-    catch (SQLiteException exception)
-    {
-      if (log.isErrorEnabled())
-      {
-        log.error("Cannot properly open the cache database: no database caching is available!", exception);
-      }
-      throw new Persistence.PersistenceException("Cannot initialize properly", exception);
-    }
-    setStorageBackendAvailable(true);
-    if (log.isInfoEnabled())
-    {
-      log.info("The database located at '" + dbFilePath + "' for the table '" + tableName + "' is now ready to be used");
-    }
-  }
 
   /**
    * Opens a new database if necessary, and updates the references.
@@ -533,6 +414,125 @@ public final class DbPersistence
     finally
     {
       database.close();
+    }
+  }
+
+  private final String fileName;
+
+  private final String tableName;
+
+  /**
+   * Defined in order to make the {@link #readInputStream(String)} method more optimized when computing its underlying SQL query.
+   */
+  private final String readInputStreamQuery;
+
+  private final Object writeInputStatementSyncObject = new Object();
+
+  private final Object getLastUpdateStatementSyncObject = new Object();
+
+  private SQLiteDatabase writeableDatabase;
+
+  /**
+   * Defined in order to make the {@link #writeInputStream(String, InputAtom, boolean)} method more optimized when determining whether to insert or update.
+   */
+  private SQLiteStatement writeInputStreamExistsStatement;
+
+  /**
+   * Defined in order to make the {@link #getLastUpdate(String)} method more optimized.
+   */
+  private SQLiteStatement getLastUpdateStreamExistsStatement;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see #DbPersistence(String, int, String, String)
+   */
+  public DbPersistence(String storageDirectoryPath, int instanceIndex)
+  {
+    this(storageDirectoryPath, instanceIndex, DbPersistence.FILE_NAMES[instanceIndex], DbPersistence.TABLE_NAMES[instanceIndex]);
+  }
+
+  /**
+   * Creates a persistence instance with all the necessary information to indicate its location.
+   *
+   * @param storageDirectoryPath the directory path where the persistence database should be created
+   * @param instanceIndex        the ordinal of the instance which is bound to be created. Starts with {@code 0}
+   * @param fileName             the name of the database file
+   * @param tableName            the name of the table which will handle the persistence
+   * @see #DbPersistence(String, int)
+   */
+  public DbPersistence(String storageDirectoryPath, int instanceIndex, String fileName, String tableName)
+  {
+    super(storageDirectoryPath, instanceIndex);
+    this.fileName = fileName;
+    this.tableName = tableName;
+    readInputStreamQuery = new StringBuilder("SELECT ").append(DbPersistence.CacheColumns.CONTENTS).append(", ").append(DbPersistence.CacheColumns.LAST_UPDATE).append(", ").append(DbPersistence.CacheColumns.CONTEXT).append(" FROM ").append(tableName).append(" WHERE ").append(DbPersistence.CacheColumns.URI).append(" = ?").toString();
+  }
+
+  @Override
+  protected void initializeInstance()
+      throws Persistence.PersistenceException
+  {
+    final String dbFilePath = computeFilePath();
+    if (log.isDebugEnabled())
+    {
+      log.debug("Initializing the database located at '" + dbFilePath + "' for the table '" + tableName + "'");
+    }
+    final File databaseFile = new File(dbFilePath);
+    try
+    {
+      databaseFile.getParentFile().mkdirs();
+      DbPersistence.ensureDatabaseAvailability(dbFilePath, tableName);
+      if (log.isDebugEnabled())
+      {
+        log.debug("The database located at '" + dbFilePath + "' for the table '" + tableName + "' has been initialized");
+      }
+    }
+    catch (SQLiteException exception)
+    {
+      if (log.isInfoEnabled())
+      {
+        log.info("The cache database located at '" + dbFilePath + "' seems to be unexisting, unavailable or corrupted: it is now re-initialized");
+      }
+      try
+      {
+        databaseFile.delete();
+        DbPersistence.ensureDatabaseAvailability(dbFilePath, tableName);
+      }
+      catch (Throwable otherThrowable)
+      {
+        if (log.isErrorEnabled())
+        {
+          log.error("Cannot properly initialize the database located at '" + dbFilePath + "': no database is available!", otherThrowable);
+        }
+        if (otherThrowable instanceof Persistence.PersistenceException)
+        {
+          throw (Persistence.PersistenceException) otherThrowable;
+        }
+        throw new Persistence.PersistenceException("Cannot initialize properly the database located at '" + dbFilePath + "'", exception);
+      }
+    }
+    try
+    {
+      writeableDatabase = DbPersistence.obtainDatabase(dbFilePath);
+      // Ideally, this compiled statement should be computed here, but when the table is created, it seems that the calling method returns before the
+      // work is done.
+      // Hence, we perform some lazy instantiation
+      // writeInputStreamExistsStatement = writeableDb.compileStatement("SELECT COUNT(1) FROM " + tableName + " WHERE " +
+      // DbPersistence.CacheColumns.URI + " = ?");
+    }
+    catch (SQLiteException exception)
+    {
+      if (log.isErrorEnabled())
+      {
+        log.error("Cannot properly open the cache database: no database caching is available!", exception);
+      }
+      throw new Persistence.PersistenceException("Cannot initialize properly", exception);
+    }
+    setStorageBackendAvailable(true);
+    if (log.isInfoEnabled())
+    {
+      log.info("The database located at '" + dbFilePath + "' for the table '" + tableName + "' is now ready to be used");
     }
   }
 

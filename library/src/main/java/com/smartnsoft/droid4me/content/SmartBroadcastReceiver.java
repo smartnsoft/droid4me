@@ -42,20 +42,20 @@ public abstract class SmartBroadcastReceiver
   private SharedPreferences preferences;
 
   /**
-   * @return the preferences of the application
-   */
-  protected final SharedPreferences getPreferences()
-  {
-    return preferences;
-  }
-
-  /**
    * Should always be invoked first by the derived classes.
    */
   @Override
   public void onReceive(Context context, Intent intent)
   {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
+  }
+
+  /**
+   * @return the preferences of the application
+   */
+  protected final SharedPreferences getPreferences()
+  {
+    return preferences;
   }
 
 }

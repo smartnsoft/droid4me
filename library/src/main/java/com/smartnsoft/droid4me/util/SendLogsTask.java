@@ -52,6 +52,8 @@ public final class SendLogsTask
 
   private final static Logger log = LoggerFactory.getInstance(SendLogsTask.class);
 
+  public static int MAX_LOG_LENGTH_IN_BYTES = 50 * 1024;
+
   private final Activity activity;
 
   private final String progressMessage;
@@ -59,8 +61,6 @@ public final class SendLogsTask
   private final String emailSubjectFormat;
 
   private final String emailRecipient;
-
-  public static int MAX_LOG_LENGTH_IN_BYTES = 50 * 1024;
 
   private final String lineSeparator = System.getProperty("line.separator");
 

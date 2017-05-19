@@ -40,9 +40,9 @@ public interface SmartViewExtension<ViewClass extends View>
       implements SmartViewExtension<ViewClass>
   {
 
-    private final SmartViewExtension<ViewClass> smartViewExtension;
-
     public boolean newGeneration = true;
+
+    private final SmartViewExtension<ViewClass> smartViewExtension;
 
     /**
      * The interface which will be invoked if the widget size changes.
@@ -72,11 +72,6 @@ public interface SmartViewExtension<ViewClass extends View>
     public ViewExtensionDelegate(SmartViewExtension<ViewClass> smartViewExtension)
     {
       this.smartViewExtension = smartViewExtension;
-    }
-
-    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-    {
-      onSuperMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -277,6 +272,11 @@ public interface SmartViewExtension<ViewClass extends View>
     public void setSelfMeasuredDimension(int measuredWidth, int measuredHeight)
     {
       smartViewExtension.setSelfMeasuredDimension(measuredWidth, measuredHeight);
+    }
+
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+    {
+      onSuperMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     public void onSizeChanged(ViewClass view, int newWidth, int newHeight, int oldWidth, int oldHeight)

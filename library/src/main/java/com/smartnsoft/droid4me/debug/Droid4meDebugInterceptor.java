@@ -124,109 +124,6 @@ public class Droid4meDebugInterceptor
     }
   }
 
-  protected final class DebugAggregate
-  {
-
-    private AnalyticsDisplayer analyticsDisplayer;
-
-    private Droi4mizerAnalyticsDisplayer droi4mizerAnalyticsDisplayer;
-
-    private PopupWindow popupWindow;
-
-    public PopupWindow getPopupWindow(final Context context, boolean createIfNecessary, AtomicBoolean hasBeenCreated)
-    {
-      if (popupWindow == null && createIfNecessary == true)
-      {
-        popupWindow = new PopupWindow(context);
-
-        analyticsDisplayer = new AnalyticsDisplayer();
-        final View view1 = this.analyticsDisplayer.getView(context);
-
-        droi4mizerAnalyticsDisplayer = new Droi4mizerAnalyticsDisplayer();
-        final View view2 = droi4mizerAnalyticsDisplayer.getView(context);
-
-        final LinearLayout container = new LinearLayout(context);
-        container.setOrientation(LinearLayout.HORIZONTAL);
-        addView(container, "Droid4mizer", view2);
-        addView(container, "BitmapDownloader", view1);
-
-        popupWindow.setContentView(container);
-        popupWindow.setWidth(panelWidth);
-        popupWindow.setHeight(panelHeight);
-        addTouchEvent(container);
-        if (hasBeenCreated != null)
-        {
-          hasBeenCreated.set(true);
-        }
-      }
-      return popupWindow;
-    }
-
-    public void onResume()
-    {
-      analyticsDisplayer.plug();
-      droi4mizerAnalyticsDisplayer.updateView();
-    }
-
-    public void onDestroy()
-    {
-      if (analyticsDisplayer != null)
-      {
-        analyticsDisplayer.unplug();
-      }
-    }
-
-    private void addTouchEvent(LinearLayout container)
-    {
-      container.setOnTouchListener(new OnTouchListener()
-      {
-
-        int x0 = 0;
-
-        int y0 = 0;
-
-        @Override
-        public boolean onTouch(View view, MotionEvent event)
-        {
-          int action = event.getAction();
-
-          switch (action)
-          {
-          case MotionEvent.ACTION_DOWN:
-            x0 = (int) event.getX();
-            y0 = (int) event.getY();
-            break;
-
-          case MotionEvent.ACTION_MOVE:
-            popupWindow.update((int) event.getRawX() - x0, (int) event.getRawY() - y0, -1, -1, true);
-            break;
-          }
-          return true;
-        }
-      });
-    }
-
-    private void addView(ViewGroup container, String groupTitle, View view)
-    {
-      final LinearLayout intermediateContainer = new LinearLayout(container.getContext());
-      intermediateContainer.setOrientation(LinearLayout.VERTICAL);
-      {
-        final TextView title = new TextView(container.getContext());
-        title.setGravity(Gravity.CENTER_HORIZONTAL);
-        title.setTextColor(Color.WHITE);
-        title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 8f);
-        title.setText(groupTitle);
-        intermediateContainer.addView(title);
-      }
-      intermediateContainer.addView(view);
-
-      final ViewGroup.MarginLayoutParams marginLayoutParams = new ViewGroup.MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-      marginLayoutParams.leftMargin = 10;
-      marginLayoutParams.rightMargin = 10;
-      container.addView(intermediateContainer, marginLayoutParams);
-    }
-  }
-
   public static final String DISPLAY_BITMAP_DOWNLOADER_EXTRA = "displayBitmapDownloaderWindowExtra";
 
   private static final Map<Activity, DebugAggregate> debugAggregates = new HashMap<>();
@@ -320,6 +217,109 @@ public class Droid4meDebugInterceptor
   protected void discardDebugAggregate(Activity activity)
   {
     Droid4meDebugInterceptor.debugAggregates.remove(activity);
+  }
+
+  protected final class DebugAggregate
+  {
+
+    private AnalyticsDisplayer analyticsDisplayer;
+
+    private Droi4mizerAnalyticsDisplayer droi4mizerAnalyticsDisplayer;
+
+    private PopupWindow popupWindow;
+
+    public PopupWindow getPopupWindow(final Context context, boolean createIfNecessary, AtomicBoolean hasBeenCreated)
+    {
+      if (popupWindow == null && createIfNecessary == true)
+      {
+        popupWindow = new PopupWindow(context);
+
+        analyticsDisplayer = new AnalyticsDisplayer();
+        final View view1 = this.analyticsDisplayer.getView(context);
+
+        droi4mizerAnalyticsDisplayer = new Droi4mizerAnalyticsDisplayer();
+        final View view2 = droi4mizerAnalyticsDisplayer.getView(context);
+
+        final LinearLayout container = new LinearLayout(context);
+        container.setOrientation(LinearLayout.HORIZONTAL);
+        addView(container, "Droid4mizer", view2);
+        addView(container, "BitmapDownloader", view1);
+
+        popupWindow.setContentView(container);
+        popupWindow.setWidth(panelWidth);
+        popupWindow.setHeight(panelHeight);
+        addTouchEvent(container);
+        if (hasBeenCreated != null)
+        {
+          hasBeenCreated.set(true);
+        }
+      }
+      return popupWindow;
+    }
+
+    public void onResume()
+    {
+      analyticsDisplayer.plug();
+      droi4mizerAnalyticsDisplayer.updateView();
+    }
+
+    public void onDestroy()
+    {
+      if (analyticsDisplayer != null)
+      {
+        analyticsDisplayer.unplug();
+      }
+    }
+
+    private void addTouchEvent(LinearLayout container)
+    {
+      container.setOnTouchListener(new OnTouchListener()
+      {
+
+        int x0 = 0;
+
+        int y0 = 0;
+
+        @Override
+        public boolean onTouch(View view, MotionEvent event)
+        {
+          int action = event.getAction();
+
+          switch (action)
+          {
+            case MotionEvent.ACTION_DOWN:
+              x0 = (int) event.getX();
+              y0 = (int) event.getY();
+              break;
+
+            case MotionEvent.ACTION_MOVE:
+              popupWindow.update((int) event.getRawX() - x0, (int) event.getRawY() - y0, -1, -1, true);
+              break;
+          }
+          return true;
+        }
+      });
+    }
+
+    private void addView(ViewGroup container, String groupTitle, View view)
+    {
+      final LinearLayout intermediateContainer = new LinearLayout(container.getContext());
+      intermediateContainer.setOrientation(LinearLayout.VERTICAL);
+      {
+        final TextView title = new TextView(container.getContext());
+        title.setGravity(Gravity.CENTER_HORIZONTAL);
+        title.setTextColor(Color.WHITE);
+        title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 8f);
+        title.setText(groupTitle);
+        intermediateContainer.addView(title);
+      }
+      intermediateContainer.addView(view);
+
+      final ViewGroup.MarginLayoutParams marginLayoutParams = new ViewGroup.MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+      marginLayoutParams.leftMargin = 10;
+      marginLayoutParams.rightMargin = 10;
+      container.addView(intermediateContainer, marginLayoutParams);
+    }
   }
 
 }

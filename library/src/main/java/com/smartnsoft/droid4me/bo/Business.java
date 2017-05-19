@@ -45,103 +45,6 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public final class Business
 {
 
-  private final static Logger log = LoggerFactory.getInstance(Business.class);
-
-  public static class BusinessException
-      extends Exception
-  {
-
-    private static final long serialVersionUID = -4702275606866556704L;
-
-    public BusinessException(Throwable cause)
-    {
-      super(cause);
-    }
-
-    public BusinessException(String message, Throwable cause)
-    {
-      super(message, cause);
-    }
-
-  }
-
-  /**
-   * Indicates the origin of a business object.
-   */
-  public enum Source
-  {
-    Memory, IOStreamer, UriStreamer
-  }
-
-  /**
-   * Associates a time stamp to an object.
-   *
-   * @since 2009.08.31
-   */
-  public static abstract class Atom
-  {
-
-    public final Date timestamp;
-
-    public Atom(Date timestamp)
-    {
-      this.timestamp = timestamp;
-    }
-
-  }
-
-  /**
-   * Associates a time stamp to an input stream.
-   */
-  public static final class InputAtom
-      extends Business.Atom
-  {
-
-    public final Map<String, List<String>> headers;
-
-    public final InputStream inputStream;
-
-    public final Serializable context;
-
-    public InputAtom(Date timestamp, InputStream inputStream)
-    {
-      this(timestamp, inputStream, null);
-    }
-
-    public InputAtom(Date timestamp, InputStream inputStream, Serializable context)
-    {
-      this(timestamp, null, inputStream, context);
-    }
-
-    public InputAtom(Date timestamp, Map<String, List<String>> headers, InputStream inputStream, Serializable context)
-    {
-      super(timestamp);
-      this.headers = headers;
-      this.inputStream = inputStream;
-      this.context = context;
-    }
-
-  }
-
-  /**
-   * Associates a time stamp to an output stream.
-   *
-   * @since 2009.08.31
-   */
-  public static final class OutputAtom
-      extends Business.Atom
-  {
-
-    public final OutputStream outputStream;
-
-    public OutputAtom(Date timestamp, OutputStream outputStream)
-    {
-      super(timestamp);
-      this.outputStream = outputStream;
-    }
-
-  }
-
   /**
    * Enables to define the way to reach a business object entity depending on its source.
    *
@@ -197,143 +100,6 @@ public final class Business
   public interface UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception>
       extends Business.UriStreamParser<BusinessObjectType, UriType, ParameterType, ExceptionType>, Business.UriStreamSerializer<BusinessObjectType, UriType, ParameterType, ExceptionType>
   {
-
-  }
-
-  /**
-   * Serializes and parses the underlying business object via the native Java mechanism.
-   *
-   * @since 2009.08.31
-   */
-  public static abstract class ObjectUriStreamSerializer<BusinessObjectType extends Serializable, UriType, ParameterType>
-      implements Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, Business.BusinessException>
-  {
-
-    /**
-     * A hook for creating an {@link ObjectInputStream} when attempting to deserialize the underlying object.
-     * <p>
-     * <p>
-     * This implementation just returns {@code new ObjectInputStream(inputStream)}.
-     * </p>
-     *
-     * @param inputStream the stream which holds the object representation
-     * @return a valid object input stream, which will be used when deserializing the object
-     * @throws StreamCorruptedException
-     * @throws IOException
-     */
-    protected ObjectInputStream createObjectInputStream(InputStream inputStream)
-        throws StreamCorruptedException, IOException
-    {
-      return new ObjectInputStream(inputStream);
-    }
-
-    /**
-     * A hook for creating an {@link ObjectOutputStream} when attempting to serialize the underlying object.
-     * <p>
-     * <p>
-     * This implementation just returns {@code new ObjectOutputStream(outputStream)}.
-     * </p>
-     *
-     * @param outputStream the stream which will hold the object representation
-     * @return a valid object object stream, which will be used when serializing the object
-     * @throws IOException
-     */
-    protected ObjectOutputStream createObjectOutputStream(OutputStream outputStream)
-        throws IOException
-    {
-      return new ObjectOutputStream(outputStream);
-    }
-
-    @SuppressWarnings("unchecked")
-    public final BusinessObjectType parse(ParameterType parameter, Map<String, List<String>> headers,
-        InputStream inputStream)
-        throws Business.BusinessException
-    {
-      final long start = System.currentTimeMillis();
-      try
-      {
-        final ObjectInputStream objectInputStream = createObjectInputStream(inputStream);
-        try
-        {
-          final BusinessObjectType object = (BusinessObjectType) objectInputStream.readObject();
-          if (log.isDebugEnabled())
-          {
-            log.debug("Deserialized the object corresponding to the parameter '" + parameter + "' in " + (System.currentTimeMillis() - start) + " ms");
-          }
-          return object;
-        }
-        finally
-        {
-          try
-          {
-            objectInputStream.close();
-          }
-          catch (IOException exception)
-          {
-            // Does not matter
-          }
-        }
-      }
-      catch (EOFException exception)
-      {
-        // The input stream seems to be empty
-        return null;
-      }
-      catch (Exception exception)
-      {
-        throw new Business.BusinessException("Could not extract the object", exception);
-      }
-    }
-
-    public final InputStream serialize(ParameterType parameter, BusinessObjectType businessObject)
-        throws Business.BusinessException
-    {
-      final long start = System.currentTimeMillis();
-      final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      try
-      {
-        try
-        {
-          final ObjectOutputStream objectOutputStream = createObjectOutputStream(byteArrayOutputStream);
-          try
-          {
-            objectOutputStream.writeObject(businessObject);
-          }
-          finally
-          {
-            try
-            {
-              objectOutputStream.close();
-            }
-            catch (IOException exception)
-            {
-              // Does not matter
-            }
-          }
-        }
-        catch (IOException exception)
-        {
-          throw new Business.BusinessException("Could not serialize the object", exception);
-        }
-        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-        if (log.isDebugEnabled())
-        {
-          log.debug("Serialized the object corresponding to the parameter '" + parameter + "' in " + (System.currentTimeMillis() - start) + " ms");
-        }
-        return byteArrayInputStream;
-      }
-      finally
-      {
-        try
-        {
-          byteArrayOutputStream.close();
-        }
-        catch (IOException exception)
-        {
-          // Does not matter
-        }
-      }
-    }
 
   }
 
@@ -443,6 +209,264 @@ public final class Business
   }
 
   /**
+   * Is supposed to retrieve the input stream and its underlying object time stamp remotely.
+   *
+   * @since 2009.08.31
+   */
+  public interface NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception, NullExceptionType extends Exception>
+      extends Business.UriInputStreamer<UriType, ExceptionType>
+  {
+
+    BusinessObjectType onNullInputStream(ParameterType parameter, UriType uri)
+        throws NullExceptionType;
+
+  }
+
+  /**
+   * Indicates the origin of a business object.
+   */
+  public enum Source
+  {
+    Memory, IOStreamer, UriStreamer
+  }
+
+  /**
+   * Associates a time stamp to an input stream.
+   */
+  public static final class InputAtom
+      extends Business.Atom
+  {
+
+    public final Map<String, List<String>> headers;
+
+    public final InputStream inputStream;
+
+    public final Serializable context;
+
+    public InputAtom(Date timestamp, InputStream inputStream)
+    {
+      this(timestamp, inputStream, null);
+    }
+
+    public InputAtom(Date timestamp, InputStream inputStream, Serializable context)
+    {
+      this(timestamp, null, inputStream, context);
+    }
+
+    public InputAtom(Date timestamp, Map<String, List<String>> headers, InputStream inputStream, Serializable context)
+    {
+      super(timestamp);
+      this.headers = headers;
+      this.inputStream = inputStream;
+      this.context = context;
+    }
+
+  }
+
+  /**
+   * Associates a time stamp to an output stream.
+   *
+   * @since 2009.08.31
+   */
+  public static final class OutputAtom
+      extends Business.Atom
+  {
+
+    public final OutputStream outputStream;
+
+    public OutputAtom(Date timestamp, OutputStream outputStream)
+    {
+      super(timestamp);
+      this.outputStream = outputStream;
+    }
+
+  }
+
+  /**
+   * Indicates that no exception can be triggered by the {@link Business.InputStreamer} interface.
+   *
+   * @since 2009.12.29
+   */
+  public final static class NoUriInputStreamerException
+      extends Exception
+  {
+
+    private static final long serialVersionUID = 5759991468469326796L;
+  }
+
+  public static class BusinessException
+      extends Exception
+  {
+
+    private static final long serialVersionUID = -4702275606866556704L;
+
+    public BusinessException(Throwable cause)
+    {
+      super(cause);
+    }
+
+    public BusinessException(String message, Throwable cause)
+    {
+      super(message, cause);
+    }
+
+  }
+
+  /**
+   * Associates a time stamp to an object.
+   *
+   * @since 2009.08.31
+   */
+  public static abstract class Atom
+  {
+
+    public final Date timestamp;
+
+    public Atom(Date timestamp)
+    {
+      this.timestamp = timestamp;
+    }
+
+  }
+
+  /**
+   * Serializes and parses the underlying business object via the native Java mechanism.
+   *
+   * @since 2009.08.31
+   */
+  public static abstract class ObjectUriStreamSerializer<BusinessObjectType extends Serializable, UriType, ParameterType>
+      implements Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, Business.BusinessException>
+  {
+
+    @SuppressWarnings("unchecked")
+    public final BusinessObjectType parse(ParameterType parameter, Map<String, List<String>> headers,
+        InputStream inputStream)
+        throws Business.BusinessException
+    {
+      final long start = System.currentTimeMillis();
+      try
+      {
+        final ObjectInputStream objectInputStream = createObjectInputStream(inputStream);
+        try
+        {
+          final BusinessObjectType object = (BusinessObjectType) objectInputStream.readObject();
+          if (log.isDebugEnabled())
+          {
+            log.debug("Deserialized the object corresponding to the parameter '" + parameter + "' in " + (System.currentTimeMillis() - start) + " ms");
+          }
+          return object;
+        }
+        finally
+        {
+          try
+          {
+            objectInputStream.close();
+          }
+          catch (IOException exception)
+          {
+            // Does not matter
+          }
+        }
+      }
+      catch (EOFException exception)
+      {
+        // The input stream seems to be empty
+        return null;
+      }
+      catch (Exception exception)
+      {
+        throw new Business.BusinessException("Could not extract the object", exception);
+      }
+    }
+
+    public final InputStream serialize(ParameterType parameter, BusinessObjectType businessObject)
+        throws Business.BusinessException
+    {
+      final long start = System.currentTimeMillis();
+      final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      try
+      {
+        try
+        {
+          final ObjectOutputStream objectOutputStream = createObjectOutputStream(byteArrayOutputStream);
+          try
+          {
+            objectOutputStream.writeObject(businessObject);
+          }
+          finally
+          {
+            try
+            {
+              objectOutputStream.close();
+            }
+            catch (IOException exception)
+            {
+              // Does not matter
+            }
+          }
+        }
+        catch (IOException exception)
+        {
+          throw new Business.BusinessException("Could not serialize the object", exception);
+        }
+        final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        if (log.isDebugEnabled())
+        {
+          log.debug("Serialized the object corresponding to the parameter '" + parameter + "' in " + (System.currentTimeMillis() - start) + " ms");
+        }
+        return byteArrayInputStream;
+      }
+      finally
+      {
+        try
+        {
+          byteArrayOutputStream.close();
+        }
+        catch (IOException exception)
+        {
+          // Does not matter
+        }
+      }
+    }
+
+    /**
+     * A hook for creating an {@link ObjectInputStream} when attempting to deserialize the underlying object.
+     * <p>
+     * <p>
+     * This implementation just returns {@code new ObjectInputStream(inputStream)}.
+     * </p>
+     *
+     * @param inputStream the stream which holds the object representation
+     * @return a valid object input stream, which will be used when deserializing the object
+     * @throws StreamCorruptedException
+     * @throws IOException
+     */
+    protected ObjectInputStream createObjectInputStream(InputStream inputStream)
+        throws StreamCorruptedException, IOException
+    {
+      return new ObjectInputStream(inputStream);
+    }
+
+    /**
+     * A hook for creating an {@link ObjectOutputStream} when attempting to serialize the underlying object.
+     * <p>
+     * <p>
+     * This implementation just returns {@code new ObjectOutputStream(outputStream)}.
+     * </p>
+     *
+     * @param outputStream the stream which will hold the object representation
+     * @return a valid object object stream, which will be used when serializing the object
+     * @throws IOException
+     */
+    protected ObjectOutputStream createObjectOutputStream(OutputStream outputStream)
+        throws IOException
+    {
+      return new ObjectOutputStream(outputStream);
+    }
+
+  }
+
+  /**
    * @since 2009.08.31
    */
   public static abstract class Cached<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
@@ -479,32 +503,6 @@ public final class Business
       ioStreamer.remove(uri);
     }
 
-  }
-
-  /**
-   * Is supposed to retrieve the input stream and its underlying object time stamp remotely.
-   *
-   * @since 2009.08.31
-   */
-  public interface NullableUriInputStreamer<BusinessObjectType, UriType, ParameterType, ExceptionType extends Exception, NullExceptionType extends Exception>
-      extends Business.UriInputStreamer<UriType, ExceptionType>
-  {
-
-    BusinessObjectType onNullInputStream(ParameterType parameter, UriType uri)
-        throws NullExceptionType;
-
-  }
-
-  /**
-   * Indicates that no exception can be triggered by the {@link Business.InputStreamer} interface.
-   *
-   * @since 2009.12.29
-   */
-  public final static class NoUriInputStreamerException
-      extends Exception
-  {
-
-    private static final long serialVersionUID = 5759991468469326796L;
   }
 
   /**
@@ -557,5 +555,7 @@ public final class Business
     }
 
   }
+
+  private final static Logger log = LoggerFactory.getInstance(Business.class);
 
 }

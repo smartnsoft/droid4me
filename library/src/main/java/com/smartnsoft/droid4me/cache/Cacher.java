@@ -46,17 +46,6 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
 {
 
   /**
-   * Defines some common statuses.
-   *
-   * @since 2011.07.31
-   */
-  public enum Status
-  {
-    Attempt, Success
-    /* , Failure */
-  }
-
-  /**
    * Indicates whether the current cached data should be taken from the cache.
    */
   public interface Instructions
@@ -96,6 +85,17 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
 
   }
 
+  /**
+   * Defines some common statuses.
+   *
+   * @since 2011.07.31
+   */
+  public enum Status
+  {
+    Attempt, Success
+    /* , Failure */
+  }
+
   protected final static Logger log = LoggerFactory.getInstance(Cacher.class);
 
   protected final Business.UriStreamParser<BusinessObjectType, UriType, ParameterType, ParseExceptionType> uriStreamParser;
@@ -118,20 +118,6 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     this.uriStreamParser = uriStreamParser;
     this.ioStreamer = ioStreamer;
     this.uriInputStreamer = uriInputStreamer;
-  }
-
-  protected void onNewBusinessObject(UriType uri, Values.Info<BusinessObjectType> info)
-  {
-  }
-
-  protected Date getCacheLastUpdate(ParameterType parameter, UriType uri)
-  {
-    return ioStreamer.getLastUpdate(uri);
-  }
-
-  protected final UriType computeUri(ParameterType parameter)
-  {
-    return uriStreamParser.computeUri(parameter);
   }
 
   /**
@@ -241,6 +227,73 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
       throws InputExceptionType, StreamerExceptionType, ParseExceptionType
   {
     return fetchValueFromUriStreamParser(null, parameter, uriStreamParser.computeUri(parameter));
+  }
+
+  /**
+   * If the cacher underlying {@link UriStreamParser} is actually a {@link UriStreamParserSerializer}, serializes persistently the business object and
+   * its associated time stamp.
+   */
+  public void setValue(ParameterType parameter, Values.Info<BusinessObjectType> info)
+      throws StreamerExceptionType, ParseExceptionType
+  {
+    if (uriStreamParser instanceof Business.UriStreamParserSerializer<?, ?, ?, ?>)
+    {
+      final UriType uri = computeUri(parameter);
+      ioStreamer.writeInputStream(uri, new Business.InputAtom(info.timestamp, ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(parameter, info.value)), true);
+    }
+    else
+    {
+      if (log.isWarnEnabled())
+      {
+        log.warn("The call to persist the business object corresponding to the parameter '" + parameter + "' failed, because we do not know how to serialize the business object");
+      }
+    }
+  }
+
+  /**
+   * Retrieves the business object from the persistence layer only, without attempting to refresh it from the {@link IOStreamer}.
+   */
+  public Values.Info<BusinessObjectType> getCachedValue(ParameterType parameter)
+      throws StreamerExceptionType, ParseExceptionType
+  {
+    final UriType uri = computeUri(parameter);
+    final Business.InputAtom atom = ioStreamer.readInputStream(uri);
+    if (atom != null)
+    {
+      // If the input stream is null but not the atom, we return a null business object
+      return new Values.Info<>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.headers, atom.inputStream), atom.timestamp, Business.Source.IOStreamer);
+    }
+    return null;
+  }
+
+  /**
+   * Removes the business object from the persistence layer.
+   */
+  public void remove(ParameterType parameter)
+      throws StreamerExceptionType
+  {
+    ioStreamer.remove(computeUri(parameter));
+  }
+
+  protected void onNewBusinessObject(UriType uri, Values.Info<BusinessObjectType> info)
+  {
+  }
+
+  protected Date getCacheLastUpdate(ParameterType parameter, UriType uri)
+  {
+    return ioStreamer.getLastUpdate(uri);
+  }
+
+  protected final UriType computeUri(ParameterType parameter)
+  {
+    return uriStreamParser.computeUri(parameter);
+  }
+
+  protected InputStream onNewInputStream(ParameterType parameter, UriType uri, Business.InputAtom atom,
+      boolean returnStream)
+      throws StreamerExceptionType
+  {
+    return ioStreamer.writeInputStream(uri, atom, returnStream);
   }
 
   private Values.Info<BusinessObjectType> fetchValueFromUriStreamParser(Cacher.Instructions instructions,
@@ -358,59 +411,6 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     }
 
     return new Values.Info<>(businessObject, atom.timestamp, Business.Source.UriStreamer);
-  }
-
-  /**
-   * If the cacher underlying {@link UriStreamParser} is actually a {@link UriStreamParserSerializer}, serializes persistently the business object and
-   * its associated time stamp.
-   */
-  public void setValue(ParameterType parameter, Values.Info<BusinessObjectType> info)
-      throws StreamerExceptionType, ParseExceptionType
-  {
-    if (uriStreamParser instanceof Business.UriStreamParserSerializer<?, ?, ?, ?>)
-    {
-      final UriType uri = computeUri(parameter);
-      ioStreamer.writeInputStream(uri, new Business.InputAtom(info.timestamp, ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(parameter, info.value)), true);
-    }
-    else
-    {
-      if (log.isWarnEnabled())
-      {
-        log.warn("The call to persist the business object corresponding to the parameter '" + parameter + "' failed, because we do not know how to serialize the business object");
-      }
-    }
-  }
-
-  /**
-   * Retrieves the business object from the persistence layer only, without attempting to refresh it from the {@link IOStreamer}.
-   */
-  public Values.Info<BusinessObjectType> getCachedValue(ParameterType parameter)
-      throws StreamerExceptionType, ParseExceptionType
-  {
-    final UriType uri = computeUri(parameter);
-    final Business.InputAtom atom = ioStreamer.readInputStream(uri);
-    if (atom != null)
-    {
-      // If the input stream is null but not the atom, we return a null business object
-      return new Values.Info<>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.headers, atom.inputStream), atom.timestamp, Business.Source.IOStreamer);
-    }
-    return null;
-  }
-
-  /**
-   * Removes the business object from the persistence layer.
-   */
-  public void remove(ParameterType parameter)
-      throws StreamerExceptionType
-  {
-    ioStreamer.remove(computeUri(parameter));
-  }
-
-  protected InputStream onNewInputStream(ParameterType parameter, UriType uri, Business.InputAtom atom,
-      boolean returnStream)
-      throws StreamerExceptionType
-  {
-    return ioStreamer.writeInputStream(uri, atom, returnStream);
   }
 
 }

@@ -52,6 +52,25 @@ public interface WebServiceClient
   {
 
     /**
+     * The call code when not defined.
+     */
+    public final static int NO_CALL_CODE = -1;
+
+    public final static WebServiceClient.CallType Get = new WebServiceClient.CallType(WebServiceClient.Verb.Get, WebServiceClient.CallType.NO_CALL_CODE);
+
+    public final static WebServiceClient.CallType Post = new WebServiceClient.CallType(WebServiceClient.Verb.Post, WebServiceClient.CallType.NO_CALL_CODE);
+
+    public final static WebServiceClient.CallType Put = new WebServiceClient.CallType(WebServiceClient.Verb.Put, WebServiceClient.CallType.NO_CALL_CODE);
+
+    public final static WebServiceClient.CallType Delete = new WebServiceClient.CallType(WebServiceClient.Verb.Delete, WebServiceClient.CallType.NO_CALL_CODE);
+
+    public final static WebServiceClient.CallType Patch = new WebServiceClient.CallType(Verb.Patch, WebServiceClient.CallType.NO_CALL_CODE);
+
+    public final static WebServiceClient.CallType Head = new WebServiceClient.CallType(WebServiceClient.Verb.Head, WebServiceClient.CallType.NO_CALL_CODE);
+
+    public final static WebServiceClient.CallType Options = new WebServiceClient.CallType(WebServiceClient.Verb.Options, WebServiceClient.CallType.NO_CALL_CODE);
+
+    /**
      * Turns a string into a {@link CallType}.
      *
      * @param string may be {@code null} ; the recognized values (case insensitive) are: {@code GET}, {@code POST}, {@code PUT} and {@code DELETE}
@@ -96,25 +115,6 @@ public interface WebServiceClient
     }
 
     /**
-     * The call code when not defined.
-     */
-    public final static int NO_CALL_CODE = -1;
-
-    public final static WebServiceClient.CallType Get = new WebServiceClient.CallType(WebServiceClient.Verb.Get, WebServiceClient.CallType.NO_CALL_CODE);
-
-    public final static WebServiceClient.CallType Post = new WebServiceClient.CallType(WebServiceClient.Verb.Post, WebServiceClient.CallType.NO_CALL_CODE);
-
-    public final static WebServiceClient.CallType Put = new WebServiceClient.CallType(WebServiceClient.Verb.Put, WebServiceClient.CallType.NO_CALL_CODE);
-
-    public final static WebServiceClient.CallType Delete = new WebServiceClient.CallType(WebServiceClient.Verb.Delete, WebServiceClient.CallType.NO_CALL_CODE);
-
-    public final static WebServiceClient.CallType Patch = new WebServiceClient.CallType(Verb.Patch, WebServiceClient.CallType.NO_CALL_CODE);
-
-    public final static WebServiceClient.CallType Head = new WebServiceClient.CallType(WebServiceClient.Verb.Head, WebServiceClient.CallType.NO_CALL_CODE);
-
-    public final static WebServiceClient.CallType Options = new WebServiceClient.CallType(WebServiceClient.Verb.Options, WebServiceClient.CallType.NO_CALL_CODE);
-
-    /**
      * The HTTP method.
      */
     public final WebServiceClient.Verb verb;
@@ -134,86 +134,6 @@ public interface WebServiceClient
     public String toString()
     {
       return verb.toString();
-    }
-
-  }
-
-  /**
-   * The exception that will be thrown if any problem occurs during a web service call.
-   */
-  class CallException
-      extends Exception
-  {
-
-    private static final long serialVersionUID = 4869741128441615773L;
-
-    private int statusCode;
-
-    public CallException(String message, Throwable throwable)
-    {
-      super(message, throwable);
-    }
-
-    public CallException(String message)
-    {
-      super(message);
-    }
-
-    public CallException(Throwable throwable)
-    {
-      super(throwable);
-    }
-
-    public CallException(String message, int statusCode)
-    {
-      this(message, null, statusCode);
-    }
-
-    public CallException(Throwable throwable, int statusCode)
-    {
-      this(null, throwable, statusCode);
-    }
-
-    public CallException(String message, Throwable throwable, int statusCode)
-    {
-      super(message, throwable);
-      this.statusCode = statusCode;
-    }
-
-    public int getStatusCode()
-    {
-      return statusCode;
-    }
-
-    /**
-     * @return {@code true} is the current exception is linked to a connectivity problem with Internet.
-     * @see #isConnectivityProblem(Throwable)
-     */
-    public final boolean isConnectivityProblem()
-    {
-      return WebServiceClient.CallException.isConnectivityProblem(this);
-    }
-
-    /**
-     * Indicates whether the cause of the provided exception is due to a connectivity problem.
-     *
-     * @param throwable the exception to test
-     * @return {@code true} if the {@link Throwable} was triggered because of a connectivity problem with Internet
-     */
-    public static boolean isConnectivityProblem(Throwable throwable)
-    {
-      Throwable cause;
-      Throwable newThrowable = throwable;
-      // We investigate over the whole cause stack
-      while ((cause = newThrowable.getCause()) != null)
-      {
-        if (cause instanceof UnknownHostException || cause instanceof SocketException || cause instanceof SocketTimeoutException || cause instanceof InterruptedIOException || cause instanceof SSLException)
-        {
-          return true;
-        }
-        newThrowable = cause;
-      }
-      return false;
     }
 
   }
@@ -312,6 +232,86 @@ public interface WebServiceClient
     public String toString()
     {
       return "(" + callType + ") " + url;
+    }
+
+  }
+
+  /**
+   * The exception that will be thrown if any problem occurs during a web service call.
+   */
+  class CallException
+      extends Exception
+  {
+
+    private static final long serialVersionUID = 4869741128441615773L;
+
+    /**
+     * Indicates whether the cause of the provided exception is due to a connectivity problem.
+     *
+     * @param throwable the exception to test
+     * @return {@code true} if the {@link Throwable} was triggered because of a connectivity problem with Internet
+     */
+    public static boolean isConnectivityProblem(Throwable throwable)
+    {
+      Throwable cause;
+      Throwable newThrowable = throwable;
+      // We investigate over the whole cause stack
+      while ((cause = newThrowable.getCause()) != null)
+      {
+        if (cause instanceof UnknownHostException || cause instanceof SocketException || cause instanceof SocketTimeoutException || cause instanceof InterruptedIOException || cause instanceof SSLException)
+        {
+          return true;
+        }
+        newThrowable = cause;
+      }
+      return false;
+    }
+
+    private int statusCode;
+
+    public CallException(String message, Throwable throwable)
+    {
+      super(message, throwable);
+    }
+
+    public CallException(String message)
+    {
+      super(message);
+    }
+
+    public CallException(Throwable throwable)
+    {
+      super(throwable);
+    }
+
+    public CallException(String message, int statusCode)
+    {
+      this(message, null, statusCode);
+    }
+
+    public CallException(Throwable throwable, int statusCode)
+    {
+      this(null, throwable, statusCode);
+    }
+
+    public CallException(String message, Throwable throwable, int statusCode)
+    {
+      super(message, throwable);
+      this.statusCode = statusCode;
+    }
+
+    public int getStatusCode()
+    {
+      return statusCode;
+    }
+
+    /**
+     * @return {@code true} is the current exception is linked to a connectivity problem with Internet.
+     * @see #isConnectivityProblem(Throwable)
+     */
+    public final boolean isConnectivityProblem()
+    {
+      return WebServiceClient.CallException.isConnectivityProblem(this);
     }
 
   }

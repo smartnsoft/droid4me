@@ -40,34 +40,6 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
 public final class Values
 {
 
-  private final static Logger log = LoggerFactory.getInstance(Values.class);
-
-  /**
-   * Gathers a business object and its time stamp.
-   */
-  public static class Info<BusinessObjectType>
-  {
-
-    public final BusinessObjectType value;
-
-    public final Date timestamp;
-
-    private Business.Source source;
-
-    public Info(BusinessObjectType value, Date timestamp, Business.Source source)
-    {
-      this.value = value;
-      this.timestamp = timestamp;
-      this.source = source;
-    }
-
-    public Business.Source getSource()
-    {
-      return source;
-    }
-
-  }
-
   /**
    * Used when requesting a {@link Values.CacheableValue} or a {@link CachedMap} for retrieving a business object, depending on the current workflow.
    *
@@ -139,19 +111,6 @@ public final class Values
 
   }
 
-  public static final class InstructionsException
-      extends Exception
-  {
-
-    private static final long serialVersionUID = 1724469505270150039L;
-
-    private InstructionsException(String message)
-    {
-      super(message);
-    }
-
-  }
-
   /**
    * Defines a basic contract which enables to cache a business object in memory, know when it has been cached, and have a dynamic strategy for
    * refreshing the object.
@@ -175,6 +134,318 @@ public final class Values
 
   }
 
+  public static final class InstructionsException
+      extends Exception
+  {
+
+    private static final long serialVersionUID = 1724469505270150039L;
+
+    private InstructionsException(String message)
+    {
+      super(message);
+    }
+
+  }
+
+  /**
+   * The exception which may be triggered to indicate that a caching method has failed.
+   */
+  public static final class CacheException
+      extends Business.BusinessException
+  {
+
+    private static final long serialVersionUID = -2742319642305884562L;
+
+    public CacheException(String message, Throwable cause)
+    {
+      super(message, cause);
+    }
+
+    public CacheException(Throwable cause)
+    {
+      super(cause);
+    }
+
+  }
+
+  /**
+   * Enables to cache in memory and on persistent cache a map of business objects.
+   *
+   * @since 2009.09.09
+   */
+  public static final class BackedCachedMap<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
+      extends Values.CachedMap<BusinessObjectType, ParameterType, Values.CacheException>
+
+  {
+
+    public final Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher;
+
+    public BackedCachedMap(
+        Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher)
+    {
+      this.cacher = cacher;
+    }
+
+    /**
+     * If two setting and getting methods are called concurrently, the consistency of the results are not granted!
+     */
+    // TODO: why is this method overloaded?
+    @Override
+    public final BusinessObjectType getValue(
+        Values.Instructions<BusinessObjectType, Values.CacheException, Values.CacheException> instructions,
+        Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      final boolean toAdd;
+      Values.CachedValue<BusinessObjectType, Values.CacheException> cachedValue = map.get(parameter);
+      if (cachedValue == null)
+      {
+        toAdd = true;
+        cachedValue = new Values.CachedValue<>();
+      }
+      else
+      {
+        toAdd = false;
+      }
+      final BusinessObjectType businessObject = cachedValue.getValue(instructions, cachingEvent);
+      if (businessObject != null && toAdd == true)
+      {
+        map.put(parameter, cachedValue);
+      }
+      return businessObject;
+    }
+
+    public final BusinessObjectType getValue(boolean fromCache, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getValue(true, fromCache, cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType getValue(boolean fromMemory, final boolean fromCache,
+        Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getValue(new Values.MemoryAndCacheInstructions<>(cacher, parameter, fromMemory, fromCache), cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType safeGet(Values.CachingEvent cachingEvent, ParameterType parameter)
+    {
+      return safeGet(true, true, cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType safeGet(boolean fromCache, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+    {
+      return safeGet(fromCache, true, cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType safeGet(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+    {
+      try
+      {
+        return getValue(fromMemory, fromCache, cachingEvent, parameter);
+      }
+      catch (Values.CacheException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Ignoring the failed reading of the business object with parameter '" + parameter + "': returning the cached value if any", exception);
+        }
+        return getLoadedValue(parameter);
+      }
+    }
+
+    public final BusinessObjectType getLoadedValue(ParameterType parameter)
+    {
+      final Values.CachedValue<BusinessObjectType, Values.CacheException> cachedValue;
+      cachedValue = map.get(parameter);
+      if (cachedValue != null)
+      {
+        return cachedValue.getLoadedValue();
+      }
+      return null;
+    }
+
+    public final void remove(ParameterType parameter)
+        throws Values.CacheException
+    {
+      try
+      {
+        cacher.remove(parameter);
+      }
+      catch (Throwable throwable)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Could not remove from the persistent cache te business object with parameter '" + parameter + "'", throwable);
+          throw new Values.CacheException(throwable);
+        }
+      }
+      // We clean-up the memory cache, only provided the IO streamer has been cleaned-up
+      map.remove(parameter);
+    }
+
+    public final void safeRemove(ParameterType parameter)
+    {
+      try
+      {
+        remove(parameter);
+      }
+      catch (Values.CacheException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Ignoring the failed removing of the business object with URI '" + parameter + "'", exception);
+        }
+      }
+    }
+
+    public final void setValue(ParameterType parameter, BusinessObjectType businessObject)
+        throws Values.CacheException
+    {
+      final Values.Info<BusinessObjectType> info = new Values.Info<>(businessObject, new Date(), Business.Source.Memory);
+      // We modify the memory first, so as to make sure that it is actually modified
+      setLoadedValue(parameter, info);
+      try
+      {
+        cacher.setValue(parameter, info);
+      }
+      catch (Throwable throwable)
+      {
+        throw new Values.CacheException(throwable);
+      }
+    }
+
+    public final void safeSet(ParameterType parameter, BusinessObjectType businessObject)
+    {
+      try
+      {
+        setValue(parameter, businessObject);
+      }
+      catch (Values.CacheException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Failed to save to the cache the business object with parameter '" + parameter + "': only taken into account in memory!", exception);
+        }
+      }
+    }
+
+    public final Values.Info<BusinessObjectType> getOnlyFromCacheInfoValue(boolean fromMemory,
+        Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(new Values.OnlyFromCacheInstructions<>(cacher, parameter, fromMemory), cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType getOnlyFromCacheValue(boolean fromMemory, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      final Values.Info<BusinessObjectType> infoValue = getOnlyFromCacheInfoValue(fromMemory, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getSessionInfoValue(Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(new Values.SessionInstructions<>(cacher, parameter), cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType getSessionValue(Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      final Values.Info<BusinessObjectType> infoValue = getSessionInfoValue(cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromCache, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(new Values.MemoryInstructions<>(cacher, parameter, fromCache), cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType getMemoryValue(boolean fromCache, Values.CachingEvent cachingEvent,
+        ParameterType parameter)
+        throws Values.CacheException
+    {
+      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromCache, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromMemory, boolean fromCache,
+        Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(new Values.MemoryAndCacheInstructions<>(cacher, parameter, fromMemory, fromCache), cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType getMemoryValue(boolean fromMemory, boolean fromCache,
+        Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromMemory, fromCache, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    public final Values.Info<BusinessObjectType> getRetentionInfoValue(boolean fromCache,
+        long cachingPeriodInMilliseconds, Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      return getInfoValue(new Values.RetentionInstructions<>(cacher, parameter, fromCache, cachingPeriodInMilliseconds), cachingEvent, parameter);
+    }
+
+    public final BusinessObjectType getRetentionValue(boolean fromCache, long cachingPeriodInMilliseconds,
+        Values.CachingEvent cachingEvent, ParameterType parameter)
+        throws Values.CacheException
+    {
+      final Values.Info<BusinessObjectType> infoValue = getRetentionInfoValue(fromCache, cachingPeriodInMilliseconds, cachingEvent, parameter);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    private void setLoadedValue(ParameterType parameter, Values.Info<BusinessObjectType> info)
+    {
+      Values.CachedValue<BusinessObjectType, Values.CacheException> cachedValue = map.get(parameter);
+      if (cachedValue == null)
+      {
+        cachedValue = new Values.CachedValue<>();
+        map.put(parameter, cachedValue);
+      }
+      cachedValue.setLoadedInfoValue(info);
+    }
+
+  }
+
+  /**
+   * Gathers a business object and its time stamp.
+   */
+  public static class Info<BusinessObjectType>
+  {
+
+    public final BusinessObjectType value;
+
+    public final Date timestamp;
+
+    private Business.Source source;
+
+    public Info(BusinessObjectType value, Date timestamp, Business.Source source)
+    {
+      this.value = value;
+      this.timestamp = timestamp;
+      this.source = source;
+    }
+
+    public Business.Source getSource()
+    {
+      return source;
+    }
+
+  }
+
   /**
    * Defines a common class for all "cacheables", i.e. {@link CacheableValue} and {@link BackedCachedMap}, so that we can register them.
    *
@@ -184,16 +455,6 @@ public final class Values
   {
 
     private final static List<Values.Caching> instances = new ArrayList<>();
-
-    protected Caching()
-    {
-      Caching.instances.add(this);
-    }
-
-    /**
-     * Is supposed to empty the underlying cached value(s).
-     */
-    public abstract void empty();
 
     /**
      * Empties all {@link Values.Caching} instances.
@@ -205,6 +466,16 @@ public final class Values
         caching.empty();
       }
     }
+
+    protected Caching()
+    {
+      Caching.instances.add(this);
+    }
+
+    /**
+     * Is supposed to empty the underlying cached value(s).
+     */
+    public abstract void empty();
 
   }
 
@@ -225,11 +496,6 @@ public final class Values
       return info == null;
     }
 
-    public final Values.Info<BusinessObjectType> getLoadedInfoValue()
-    {
-      return info;
-    }
-
     public final BusinessObjectType getLoadedValue()
     {
       if (info == null)
@@ -237,6 +503,26 @@ public final class Values
         return null;
       }
       return info.value;
+    }
+
+    public final BusinessObjectType getValue(
+        Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> instructions,
+        Values.CachingEvent cachingEvent)
+        throws ExceptionType
+    {
+      final Info<BusinessObjectType> infoValue = getInfoValue(instructions, cachingEvent);
+      return infoValue == null ? null : infoValue.value;
+    }
+
+    @Override
+    public final void empty()
+    {
+      info = null;
+    }
+
+    public final Values.Info<BusinessObjectType> getLoadedInfoValue()
+    {
+      return info;
     }
 
     public final void setLoadedInfoValue(Values.Info<BusinessObjectType> info)
@@ -282,42 +568,6 @@ public final class Values
         }
       }
       throw instructions.onUnaccessible(new Values.InstructionsException("Cannot access to the live business object when the data should not be taken from the cache!"));
-    }
-
-    public final BusinessObjectType getValue(
-        Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> instructions,
-        Values.CachingEvent cachingEvent)
-        throws ExceptionType
-    {
-      final Info<BusinessObjectType> infoValue = getInfoValue(instructions, cachingEvent);
-      return infoValue == null ? null : infoValue.value;
-    }
-
-    @Override
-    public final void empty()
-    {
-      info = null;
-    }
-
-  }
-
-  /**
-   * The exception which may be triggered to indicate that a caching method has failed.
-   */
-  public static final class CacheException
-      extends Business.BusinessException
-  {
-
-    private static final long serialVersionUID = -2742319642305884562L;
-
-    public CacheException(String message, Throwable cause)
-    {
-      super(message, cause);
-    }
-
-    public CacheException(Throwable cause)
-    {
-      super(cause);
     }
 
   }
@@ -840,6 +1090,17 @@ public final class Values
 
     protected final Map<KeyType, Values.CachedValue<BusinessObjectType, ExceptionType>> map = new ConcurrentHashMap<>();
 
+    /**
+     * This implementation does not empty the {@link Values.CacheableValue} values.
+     *
+     * @see Values.Caching#empty()
+     */
+    @Override
+    public final void empty()
+    {
+      map.clear();
+    }
+
     public Values.Info<BusinessObjectType> getInfoValue(
         Values.Instructions<BusinessObjectType, ExceptionType, ExceptionType> ifValueNotCached,
         Values.CachingEvent cachingEvent, KeyType key)
@@ -867,269 +1128,8 @@ public final class Values
       return infoValue == null ? null : infoValue.value;
     }
 
-    /**
-     * This implementation does not empty the {@link Values.CacheableValue} values.
-     *
-     * @see Values.Caching#empty()
-     */
-    @Override
-    public final void empty()
-    {
-      map.clear();
-    }
-
   }
 
-  /**
-   * Enables to cache in memory and on persistent cache a map of business objects.
-   *
-   * @since 2009.09.09
-   */
-  public static final class BackedCachedMap<BusinessObjectType, UriType, ParameterType, ParseExceptionType extends Exception, StreamerExceptionType extends Throwable, InputExceptionType extends Exception>
-      extends Values.CachedMap<BusinessObjectType, ParameterType, Values.CacheException>
-
-  {
-
-    public final Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher;
-
-    public BackedCachedMap(
-        Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionType, StreamerExceptionType, InputExceptionType> cacher)
-    {
-      this.cacher = cacher;
-    }
-
-    /**
-     * If two setting and getting methods are called concurrently, the consistency of the results are not granted!
-     */
-    // TODO: why is this method overloaded?
-    @Override
-    public final BusinessObjectType getValue(
-        Values.Instructions<BusinessObjectType, Values.CacheException, Values.CacheException> instructions,
-        Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      final boolean toAdd;
-      Values.CachedValue<BusinessObjectType, Values.CacheException> cachedValue = map.get(parameter);
-      if (cachedValue == null)
-      {
-        toAdd = true;
-        cachedValue = new Values.CachedValue<>();
-      }
-      else
-      {
-        toAdd = false;
-      }
-      final BusinessObjectType businessObject = cachedValue.getValue(instructions, cachingEvent);
-      if (businessObject != null && toAdd == true)
-      {
-        map.put(parameter, cachedValue);
-      }
-      return businessObject;
-    }
-
-    public final BusinessObjectType getValue(boolean fromCache, Values.CachingEvent cachingEvent,
-        ParameterType parameter)
-        throws Values.CacheException
-    {
-      return getValue(true, fromCache, cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType getValue(boolean fromMemory, final boolean fromCache,
-        Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      return getValue(new Values.MemoryAndCacheInstructions<>(cacher, parameter, fromMemory, fromCache), cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType safeGet(Values.CachingEvent cachingEvent, ParameterType parameter)
-    {
-      return safeGet(true, true, cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType safeGet(boolean fromCache, Values.CachingEvent cachingEvent,
-        ParameterType parameter)
-    {
-      return safeGet(fromCache, true, cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType safeGet(boolean fromMemory, boolean fromCache, Values.CachingEvent cachingEvent,
-        ParameterType parameter)
-    {
-      try
-      {
-        return getValue(fromMemory, fromCache, cachingEvent, parameter);
-      }
-      catch (Values.CacheException exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.warn("Ignoring the failed reading of the business object with parameter '" + parameter + "': returning the cached value if any", exception);
-        }
-        return getLoadedValue(parameter);
-      }
-    }
-
-    public final BusinessObjectType getLoadedValue(ParameterType parameter)
-    {
-      final Values.CachedValue<BusinessObjectType, Values.CacheException> cachedValue;
-      cachedValue = map.get(parameter);
-      if (cachedValue != null)
-      {
-        return cachedValue.getLoadedValue();
-      }
-      return null;
-    }
-
-    public final void remove(ParameterType parameter)
-        throws Values.CacheException
-    {
-      try
-      {
-        cacher.remove(parameter);
-      }
-      catch (Throwable throwable)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.warn("Could not remove from the persistent cache te business object with parameter '" + parameter + "'", throwable);
-          throw new Values.CacheException(throwable);
-        }
-      }
-      // We clean-up the memory cache, only provided the IO streamer has been cleaned-up
-      map.remove(parameter);
-    }
-
-    public final void safeRemove(ParameterType parameter)
-    {
-      try
-      {
-        remove(parameter);
-      }
-      catch (Values.CacheException exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.warn("Ignoring the failed removing of the business object with URI '" + parameter + "'", exception);
-        }
-      }
-    }
-
-    public final void setValue(ParameterType parameter, BusinessObjectType businessObject)
-        throws Values.CacheException
-    {
-      final Values.Info<BusinessObjectType> info = new Values.Info<>(businessObject, new Date(), Business.Source.Memory);
-      // We modify the memory first, so as to make sure that it is actually modified
-      setLoadedValue(parameter, info);
-      try
-      {
-        cacher.setValue(parameter, info);
-      }
-      catch (Throwable throwable)
-      {
-        throw new Values.CacheException(throwable);
-      }
-    }
-
-    public final void safeSet(ParameterType parameter, BusinessObjectType businessObject)
-    {
-      try
-      {
-        setValue(parameter, businessObject);
-      }
-      catch (Values.CacheException exception)
-      {
-        if (log.isWarnEnabled())
-        {
-          log.warn("Failed to save to the cache the business object with parameter '" + parameter + "': only taken into account in memory!", exception);
-        }
-      }
-    }
-
-    private void setLoadedValue(ParameterType parameter, Values.Info<BusinessObjectType> info)
-    {
-      Values.CachedValue<BusinessObjectType, Values.CacheException> cachedValue = map.get(parameter);
-      if (cachedValue == null)
-      {
-        cachedValue = new Values.CachedValue<>();
-        map.put(parameter, cachedValue);
-      }
-      cachedValue.setLoadedInfoValue(info);
-    }
-
-    public final Values.Info<BusinessObjectType> getOnlyFromCacheInfoValue(boolean fromMemory,
-        Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      return getInfoValue(new Values.OnlyFromCacheInstructions<>(cacher, parameter, fromMemory), cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType getOnlyFromCacheValue(boolean fromMemory, Values.CachingEvent cachingEvent,
-        ParameterType parameter)
-        throws Values.CacheException
-    {
-      final Values.Info<BusinessObjectType> infoValue = getOnlyFromCacheInfoValue(fromMemory, cachingEvent, parameter);
-      return infoValue == null ? null : infoValue.value;
-    }
-
-    public final Values.Info<BusinessObjectType> getSessionInfoValue(Values.CachingEvent cachingEvent,
-        ParameterType parameter)
-        throws Values.CacheException
-    {
-      return getInfoValue(new Values.SessionInstructions<>(cacher, parameter), cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType getSessionValue(Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      final Values.Info<BusinessObjectType> infoValue = getSessionInfoValue(cachingEvent, parameter);
-      return infoValue == null ? null : infoValue.value;
-    }
-
-    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromCache, Values.CachingEvent cachingEvent,
-        ParameterType parameter)
-        throws Values.CacheException
-    {
-      return getInfoValue(new Values.MemoryInstructions<>(cacher, parameter, fromCache), cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType getMemoryValue(boolean fromCache, Values.CachingEvent cachingEvent,
-        ParameterType parameter)
-        throws Values.CacheException
-    {
-      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromCache, cachingEvent, parameter);
-      return infoValue == null ? null : infoValue.value;
-    }
-
-    public final Values.Info<BusinessObjectType> getMemoryInfoValue(boolean fromMemory, boolean fromCache,
-        Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      return getInfoValue(new Values.MemoryAndCacheInstructions<>(cacher, parameter, fromMemory, fromCache), cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType getMemoryValue(boolean fromMemory, boolean fromCache,
-        Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      final Values.Info<BusinessObjectType> infoValue = getMemoryInfoValue(fromMemory, fromCache, cachingEvent, parameter);
-      return infoValue == null ? null : infoValue.value;
-    }
-
-    public final Values.Info<BusinessObjectType> getRetentionInfoValue(boolean fromCache,
-        long cachingPeriodInMilliseconds, Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      return getInfoValue(new Values.RetentionInstructions<>(cacher, parameter, fromCache, cachingPeriodInMilliseconds), cachingEvent, parameter);
-    }
-
-    public final BusinessObjectType getRetentionValue(boolean fromCache, long cachingPeriodInMilliseconds,
-        Values.CachingEvent cachingEvent, ParameterType parameter)
-        throws Values.CacheException
-    {
-      final Values.Info<BusinessObjectType> infoValue = getRetentionInfoValue(fromCache, cachingPeriodInMilliseconds, cachingEvent, parameter);
-      return infoValue == null ? null : infoValue.value;
-    }
-
-  }
+  private final static Logger log = LoggerFactory.getInstance(Values.class);
 
 }
