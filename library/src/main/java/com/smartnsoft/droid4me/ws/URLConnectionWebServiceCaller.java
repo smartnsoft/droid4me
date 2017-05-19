@@ -34,6 +34,9 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.GZIPInputStream;
+
+import android.support.annotation.Nullable;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -69,6 +72,20 @@ public abstract class URLConnectionWebServiceCaller
   private final static String HYPHEN_HYPHEN = "--";
 
   private final static String NEW_LINE = "\r\n";
+
+  private final int readTimeOutInMilliseconds;
+
+  private final int connectTimeOutInMilliseconds;
+
+  private final boolean acceptGzip;
+
+  protected URLConnectionWebServiceCaller(int readTimeOutInMilliseconds, int connectTimeOutInMilliseconds,
+      boolean acceptGzip)
+  {
+    this.readTimeOutInMilliseconds = readTimeOutInMilliseconds;
+    this.connectTimeOutInMilliseconds = connectTimeOutInMilliseconds;
+    this.acceptGzip = acceptGzip;
+  }
 
   /**
    * Equivalent to calling {@link #runRequest(String, CallType, Map, String)} with {@code callType} parameter set to
@@ -148,9 +165,15 @@ public abstract class URLConnectionWebServiceCaller
     }
   }
 
-  protected abstract int getReadTimeout();
+  protected int getReadTimeout()
+  {
+    return readTimeOutInMilliseconds;
+  }
 
-  protected abstract int getConnectTimeout();
+  protected int getConnectTimeout()
+  {
+    return connectTimeOutInMilliseconds;
+  }
 
   /**
    * Invoked when the result of the HTTP request is not <code>20X</code>. The default implementation logs the problem and throws an exception.
@@ -210,6 +233,10 @@ public abstract class URLConnectionWebServiceCaller
   protected void onBeforeHttpRequestExecution(URL url, HttpURLConnection httpURLConnection, CallType callType)
       throws CallException
   {
+    if (acceptGzip == true)
+    {
+      httpURLConnection.setRequestProperty("Accept-Encoding", "gzip");
+    }
   }
 
   /**
@@ -226,6 +253,20 @@ public abstract class URLConnectionWebServiceCaller
    * @throws IOException if some exception occurred while extracting the content of the response
    */
   protected InputStream getContent(String uri, CallType callType, HttpURLConnection urlConnection)
+      throws IOException
+  {
+    final String encoding = urlConnection.getHeaderField("Content-Encoding");
+
+    if ("gzip".equals(encoding) == true)
+    {
+      return getGzipContent(uri, callType, urlConnection);
+    }
+
+    return getNotGzipContent(uri, callType, urlConnection);
+  }
+
+  @Nullable
+  protected InputStream getNotGzipContent(String uri, CallType callType, HttpURLConnection urlConnection)
       throws IOException
   {
     if (callType.verb != Verb.Head)
@@ -316,6 +357,94 @@ public abstract class URLConnectionWebServiceCaller
     }
 
     return null;
+  }
+
+  @Nullable
+  protected InputStream getGzipContent(String uri, CallType callType, HttpURLConnection urlConnection)
+      throws IOException
+  {
+    final GZIPInputStream gzipInputStream = new GZIPInputStream(urlConnection.getInputStream());
+    final InputStream markedContent;
+    int length = 0;
+
+    if (gzipInputStream.markSupported() == true)
+    {
+      markedContent = gzipInputStream;
+      length = urlConnection.getContentLength();
+    }
+    else
+    {
+      final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      final byte[] buffer = new byte[8192];
+      int bufferLength = 0;
+
+      try
+      {
+        while ((bufferLength = gzipInputStream.read(buffer)) > 0)
+        {
+          length += bufferLength;
+          outputStream.write(buffer, 0, bufferLength);
+        }
+      }
+      catch (IndexOutOfBoundsException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.error("Could not copy the input stream corresponding to the HTTP response contentHtml", exception);
+        }
+
+        return gzipInputStream;
+      }
+
+      try
+      {
+        gzipInputStream.close();
+      }
+      catch (IOException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.error("Could not close the input stream corresponding to the HTTP response contentHtml", exception);
+        }
+      }
+
+      try
+      {
+        outputStream.close();
+      }
+      catch (IOException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.error("Could not close the input stream corresponding to the copy of the HTTP response contentHtml", exception);
+        }
+      }
+
+      markedContent = new ByteArrayInputStream(outputStream.toByteArray());
+    }
+
+    if (WebServiceCaller.ARE_DEBUG_LOG_ENABLED == true && log.isDebugEnabled() == true)
+    {
+      try
+      {
+        markedContent.mark(length);
+        final String bodyAsString = getString(markedContent);
+        log.debug("The body of the HTTP response corresponding to the URI '" + uri + "' is : '" + bodyAsString + "'");
+      }
+      catch (IOException exception)
+      {
+        if (log.isWarnEnabled())
+        {
+          log.warn("Cannot log the HTTP body of the response", exception);
+        }
+      }
+      finally
+      {
+        markedContent.reset();
+      }
+    }
+
+    return markedContent;
   }
 
   protected HttpURLConnection performHttpRequest(String uri, CallType callType, Map<String, String> headers,
