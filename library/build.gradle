@@ -5,21 +5,21 @@ apply plugin: "maven-publish"
 
 ext
 {
-  appCompatVersion="25.3.0"
+  appCompatVersion="25.3.1"
 }
 
 android
 {
   compileSdkVersion 25
-  buildToolsVersion "25.0.2"
+  buildToolsVersion "25.0.3"
 
   defaultConfig
   {
     minSdkVersion 9
     targetSdkVersion 25
 
-    versionCode 17
-    versionName "2.5.1-SNAPSHOT"
+    versionCode 18
+    versionName "2.5.1"
   }
 
   buildTypes
