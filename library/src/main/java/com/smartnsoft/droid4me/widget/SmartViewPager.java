@@ -6,7 +6,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 /**
- * An extension of its parent {@link android.support.v4.view.ViewPager} class, which offers the possibility to wrap_content.
+ * An extension of its parent {@code ViewPager} class, which offers the possibility to wrap_content.
  *
  * @author Ludovic Roland
  * @since 2017.05.19
