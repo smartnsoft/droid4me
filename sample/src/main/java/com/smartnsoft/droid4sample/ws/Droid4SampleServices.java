@@ -34,6 +34,7 @@ public final class Droid4SampleServices
 
   private Droid4SampleServices()
   {
+    super(readTimeOutInMilliseconds, connectTimeOutInMilliseconds, acceptGzip);
   }
 
   @Override

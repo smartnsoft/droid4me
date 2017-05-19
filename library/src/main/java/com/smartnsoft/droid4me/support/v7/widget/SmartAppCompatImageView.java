@@ -16,11 +16,18 @@
  *     Smart&Soft - initial API and implementation
  */
 
-package com.smartnsoft.droid4me.widget;
+package com.smartnsoft.droid4me.support.v7.widget;
 
 import android.content.Context;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import com.smartnsoft.droid4me.widget.OnSizeChangedListener;
+import com.smartnsoft.droid4me.widget.SmartFrameLayout;
+import com.smartnsoft.droid4me.widget.SmartLinearLayout;
+import com.smartnsoft.droid4me.widget.SmartRelativeLayout;
+import com.smartnsoft.droid4me.widget.SmartViewExtension;
 
 /**
  * Enables to receive an event when the {@link ImageView} size has changed, set an automatic ratio between its width and its height, and discard the
@@ -30,30 +37,30 @@ import android.widget.ImageView;
  * This is especially useful when an image width is set to a specific width policy and that the height should be set accordingly, and vice-versa.
  * </p>
  *
- * @author Édouard Mercier
+ * @author Ludovic Roland
  * @see SmartFrameLayout
  * @see SmartRelativeLayout
  * @see SmartLinearLayout
  * @since 2010.02.27
  */
-public class SmartImageView
-    extends ImageView
-    implements SmartViewExtension<SmartImageView>
+public class SmartAppCompatImageView
+    extends AppCompatImageView
+    implements SmartViewExtension<SmartAppCompatImageView>
 {
 
-  private SmartViewExtension.ViewExtensionDelegate<SmartImageView> viewExtensionDelegate;
+  private ViewExtensionDelegate<SmartAppCompatImageView> viewExtensionDelegate;
 
-  public SmartImageView(Context context)
+  public SmartAppCompatImageView(Context context)
   {
     this(context, null);
   }
 
-  public SmartImageView(Context context, AttributeSet attrs)
+  public SmartAppCompatImageView(Context context, AttributeSet attrs)
   {
     this(context, attrs, 0);
   }
 
-  public SmartImageView(Context context, AttributeSet attrs, int defStyle)
+  public SmartAppCompatImageView(Context context, AttributeSet attrs, int defStyle)
   {
     super(context, attrs, defStyle);
     initializeViewExtensionDelegateIfNecessary();
@@ -89,13 +96,13 @@ public class SmartImageView
   }
 
   @Override
-  public final OnSizeChangedListener<SmartImageView> getOnSizeChangedListener()
+  public final OnSizeChangedListener<SmartAppCompatImageView> getOnSizeChangedListener()
   {
     return viewExtensionDelegate.getOnSizeChangedListener();
   }
 
   @Override
-  public final void setOnSizeChangedListener(OnSizeChangedListener<SmartImageView> onSizeChangedListener)
+  public final void setOnSizeChangedListener(OnSizeChangedListener<SmartAppCompatImageView> onSizeChangedListener)
   {
     viewExtensionDelegate.setOnSizeChangedListener(onSizeChangedListener);
   }
@@ -220,7 +227,7 @@ public class SmartImageView
   {
     if (viewExtensionDelegate == null)
     {
-      viewExtensionDelegate = new SmartViewExtension.ViewExtensionDelegate<>(this);
+      viewExtensionDelegate = new ViewExtensionDelegate<>(this);
     }
   }
 
