@@ -151,6 +151,12 @@ public final class ExceptionHandlers
       return onExceptionFallback(isRecoverable, throwable);
     }
 
+    @Override
+    public void reportIssueIfNecessary(boolean isRecoverable, Throwable throwable)
+    {
+
+    }
+
     /**
      * This method will be invoked by the {@link #onBusinessObjectAvailableException(Activity, Object, BusinessObjectUnavailableException)} method, as a fallback if the provided exception has not been
      * handled neither by the {@link #handleCommonCauses(Activity, Object, Throwable, ConnectivityUIExperience)} nor the {@link #handleOtherCauses(Activity, Object, Throwable)} methods.
@@ -556,10 +562,6 @@ public final class ExceptionHandlers
       {
         return sendLogs(activity);
       }
-    }
-
-    public void reportIssueIfNecessary(boolean isRecoverable, final Throwable throwable)
-    {
     }
 
     protected final boolean sendLogs(final Activity activity)

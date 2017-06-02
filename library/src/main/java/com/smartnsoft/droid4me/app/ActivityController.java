@@ -361,6 +361,7 @@ public class ActivityController
      */
     boolean onException(boolean isRecoverable, Throwable throwable);
 
+    void reportIssueIfNecessary(boolean isRecoverable, final Throwable throwable);
   }
 
   /**
