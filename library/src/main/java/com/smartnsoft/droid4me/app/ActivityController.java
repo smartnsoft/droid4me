@@ -371,6 +371,28 @@ public class ActivityController
   public static abstract class IssueAnalyzer
   {
 
+    /**
+     * A default implementation.
+     *
+     * @since 2017.06.02
+     */
+    public static final class DefaultIssueAnalyzer
+        extends IssueAnalyzer
+    {
+
+      public DefaultIssueAnalyzer(Context context)
+      {
+        super(context);
+      }
+
+      @Override
+      public boolean handleIssue(Throwable throwable)
+      {
+        return false;
+      }
+
+    }
+
     public static final class IssueContext
     {
 
