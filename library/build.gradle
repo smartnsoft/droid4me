@@ -18,8 +18,8 @@ android
     minSdkVersion 9
     targetSdkVersion 25
 
-    versionCode 18
-    versionName "2.5.1"
+    versionCode 19
+    versionName "2.5.2"
   }
 
   buildTypes
@@ -59,6 +59,7 @@ task javadoc(type: Javadoc) {
   options.links = ["http://docs.oracle.com/javase/7/docs/api/", "http://d.android.com/reference/"]
 
   classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
+  failOnError = false
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
