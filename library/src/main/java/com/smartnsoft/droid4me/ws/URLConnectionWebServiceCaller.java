@@ -148,9 +148,20 @@ public abstract class URLConnectionWebServiceCaller
       httpURLConnection = performHttpRequest(uri, callType, headers, parameters, body, files);
       final Map<String, List<String>> headerFields = httpURLConnection.getHeaderFields();
       final int statusCode = httpURLConnection.getResponseCode();
-      final InputStream inputStream = getContent(uri, callType, httpURLConnection);
 
-      return new HttpResponse(headerFields, statusCode, inputStream);
+      InputStream inputStream = null;
+      InputStream errorInputStream = null;
+
+      if (shouldTryToConsumeErrorInputstream(uri, callType, headers, parameters, body, files) == true)
+      {
+        errorInputStream = getContent(uri, callType, httpURLConnection, true);
+      }
+      else
+      {
+        inputStream = getContent(uri, callType, httpURLConnection, false);
+      }
+
+      return new HttpResponse(headerFields, statusCode, inputStream, errorInputStream);
     }
     catch (CallException exception)
     {
@@ -256,26 +267,28 @@ public abstract class URLConnectionWebServiceCaller
    * @return the (decoded) input stream of the response or null if the {@link CallType} <code>Verb.Head</code>
    * @throws IOException if some exception occurred while extracting the content of the response
    */
-  protected InputStream getContent(String uri, CallType callType, HttpURLConnection urlConnection)
+  protected InputStream getContent(String uri, CallType callType, HttpURLConnection urlConnection,
+      boolean consumeErrorInputStream)
       throws IOException
   {
     final String encoding = urlConnection.getHeaderField("Content-Encoding");
 
     if ("gzip".equals(encoding) == true)
     {
-      return getGzipContent(uri, callType, urlConnection);
+      return getGzipContent(uri, callType, urlConnection, consumeErrorInputStream);
     }
 
-    return getNotGzipContent(uri, callType, urlConnection);
+    return getNotGzipContent(uri, callType, urlConnection, consumeErrorInputStream);
   }
 
   @Nullable
-  protected InputStream getNotGzipContent(String uri, CallType callType, HttpURLConnection urlConnection)
+  protected InputStream getNotGzipContent(String uri, CallType callType, HttpURLConnection urlConnection,
+      boolean consumeErrorInputStream)
       throws IOException
   {
     if (callType.verb != Verb.Head)
     {
-      final InputStream content = urlConnection.getInputStream();
+      final InputStream content = consumeErrorInputStream == false ? urlConnection.getInputStream() : urlConnection.getErrorStream();
       final InputStream markedContent;
       int length = 0;
 
@@ -364,10 +377,11 @@ public abstract class URLConnectionWebServiceCaller
   }
 
   @Nullable
-  protected InputStream getGzipContent(String uri, CallType callType, HttpURLConnection urlConnection)
+  protected InputStream getGzipContent(String uri, CallType callType, HttpURLConnection urlConnection,
+      boolean consumeErrorInputStream)
       throws IOException
   {
-    final GZIPInputStream gzipInputStream = new GZIPInputStream(urlConnection.getInputStream());
+    final GZIPInputStream gzipInputStream = new GZIPInputStream(consumeErrorInputStream == false ? urlConnection.getInputStream() : urlConnection.getErrorStream());
     final InputStream markedContent;
     int length = 0;
 
@@ -456,6 +470,12 @@ public abstract class URLConnectionWebServiceCaller
       throws IOException, CallException
   {
     return performHttpRequest(uri, callType, headers, parameters, body, files, 0);
+  }
+
+  protected boolean shouldTryToConsumeErrorInputstream(String uri, CallType callType, Map<String, String> headers,
+      Map<String, String> parameters, String body, List<MultipartFile> files)
+  {
+    return false;
   }
 
   /**
