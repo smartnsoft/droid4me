@@ -19,7 +19,7 @@ android
     targetSdkVersion 25
 
     versionCode 20
-    versionName "2.5.3.001-SNAPSHOT"
+    versionName "2.5.3.002-SNAPSHOT"
   }
 
   buildTypes

@@ -152,7 +152,7 @@ public abstract class URLConnectionWebServiceCaller
       InputStream inputStream = null;
       InputStream errorInputStream = null;
 
-      if (shouldTryToConsumeErrorInputstream(uri, callType, headers, parameters, body, files) == true)
+      if (shouldTryToConsumeErrorInputstream(statusCode, uri, callType, headers, parameters, body, files) == true)
       {
         errorInputStream = getContent(uri, callType, httpURLConnection, true);
       }
@@ -472,7 +472,7 @@ public abstract class URLConnectionWebServiceCaller
     return performHttpRequest(uri, callType, headers, parameters, body, files, 0);
   }
 
-  protected boolean shouldTryToConsumeErrorInputstream(String uri, CallType callType, Map<String, String> headers,
+  protected boolean shouldTryToConsumeErrorInputstream(int statusCode, String uri, CallType callType, Map<String, String> headers,
       Map<String, String> parameters, String body, List<MultipartFile> files)
   {
     return false;
