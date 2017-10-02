@@ -28,7 +28,7 @@ import java.io.InputStream;
 import android.util.Xml.Encoding;
 import android.webkit.WebView;
 
-import com.smartnsoft.droid4me.LifeCycle.BusinessObjectsRetrievalAsynchronousPolicyAnnotation;
+import com.smartnsoft.droid4me.LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy;
 import com.smartnsoft.droid4me.app.SmartActivity;
 
 import com.smartnsoft.droid4sample.ws.Droid4SampleServices;
@@ -39,7 +39,7 @@ import com.smartnsoft.droid4sample.ws.Droid4SampleServices;
  * @author Édouard Mercier
  * @since 2011.10.19
  */
-@BusinessObjectsRetrievalAsynchronousPolicyAnnotation
+@BusinessObjectsRetrievalAsynchronousPolicy
 public final class AboutActivity
     extends SmartActivity<TitleBar.TitleBarAggregate>
     implements TitleBar.TitleBarShowHomeFeature

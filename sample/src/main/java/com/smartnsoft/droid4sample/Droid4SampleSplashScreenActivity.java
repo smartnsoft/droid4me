@@ -25,7 +25,7 @@ package com.smartnsoft.droid4sample;
 import android.app.Activity;
 import android.view.LayoutInflater;
 
-import com.smartnsoft.droid4me.LifeCycle.BusinessObjectsRetrievalAsynchronousPolicyAnnotation;
+import com.smartnsoft.droid4me.LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy;
 import com.smartnsoft.droid4me.app.SmartSplashScreenActivity;
 
 /**
@@ -34,7 +34,7 @@ import com.smartnsoft.droid4me.app.SmartSplashScreenActivity;
  * @author Édouard Mercier
  * @since 2011.10.19
  */
-@BusinessObjectsRetrievalAsynchronousPolicyAnnotation
+@BusinessObjectsRetrievalAsynchronousPolicy
 public final class Droid4SampleSplashScreenActivity
     extends SmartSplashScreenActivity<TitleBar.TitleBarAggregate, Void>
     implements TitleBar.TitleBarDiscarded

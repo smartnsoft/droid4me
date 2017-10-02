@@ -33,7 +33,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.smartnsoft.droid4me.LifeCycle.BusinessObjectsRetrievalAsynchronousPolicyAnnotation;
+import com.smartnsoft.droid4me.LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 import com.smartnsoft.droid4me.app.Droid4mizer;
 import com.smartnsoft.droid4me.app.Smartable;
@@ -45,7 +45,7 @@ import com.smartnsoft.droid4me.app.Smartable;
  * @author Adrien Vitti
  * @since 2016.08.11
  */
-@BusinessObjectsRetrievalAsynchronousPolicyAnnotation
+@BusinessObjectsRetrievalAsynchronousPolicy
 public abstract class SmartPreferenceFragmentCompat<AggregateClass>
     extends PreferenceFragmentCompat
     implements Smartable<AggregateClass>

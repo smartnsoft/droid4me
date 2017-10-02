@@ -35,7 +35,6 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.smartnsoft.droid4me.LifeCycle;
 import com.smartnsoft.droid4me.app.AppInternals.StateContainer;
 import com.smartnsoft.droid4me.app.AppPublics.BroadcastListener;
 
@@ -189,7 +188,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
     }
     stateContainer.onRefreshingBusinessObjectsAndDisplayStart();
     // We can safely retrieve the business objects
-    if (component.getClass().getAnnotation(BusinessObjectsRetrievalAsynchronousPolicyAnnotation.class) != null || component instanceof LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy == true)
+    if (component.getClass().getAnnotation(BusinessObjectsRetrievalAsynchronousPolicy.class) != null)
     {
       // We call that routine asynchronously in a background thread
       stateContainer.execute(activity, component, new Runnable()

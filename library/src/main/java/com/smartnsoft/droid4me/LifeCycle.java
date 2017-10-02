@@ -71,28 +71,15 @@ public interface LifeCycle
 {
 
   /**
-   * An empty interface (a kind of Java annotation) which indicates the way (synchronously or asynchronously) the {@link #onRetrieveBusinessObjects()
+   * An annotation which indicates the way (synchronously or asynchronously) the {@link #onRetrieveBusinessObjects()
    * business objects should be retrieved}.
    *
-   * @see LifeCycle.BusinessObjectsRetrievalAsynchronousPolicyAnnotation
-   * @since 2009.02.19
-   * @deprecated use {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicyAnnotation} instead
-   */
-  interface BusinessObjectsRetrievalAsynchronousPolicy
-  {
-
-  }
-
-  /**
-   * Same concept as {@link LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy}, but through an annotation.
-   *
-   * @see LifeCycle.BusinessObjectsRetrievalAsynchronousPolicy
    * @since 2013.04.12
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
   @Inherited
-  @interface BusinessObjectsRetrievalAsynchronousPolicyAnnotation
+  @interface BusinessObjectsRetrievalAsynchronousPolicy
   {
 
   }
