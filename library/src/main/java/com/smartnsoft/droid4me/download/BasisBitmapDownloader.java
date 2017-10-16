@@ -22,6 +22,8 @@
 
 package com.smartnsoft.droid4me.download;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
@@ -643,6 +645,47 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
 
   }
 
+  protected final boolean checkIfInpustreamIsAGif(InputStream inputStream)
+  {
+    final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    int nRead;
+    boolean ok = false;
+    final byte[] data = new byte[16384];
+
+    try
+    {
+      while ((nRead = inputStream.read(data, 0, data.length)) != -1)
+      {
+        buffer.write(data, 0, nRead);
+      }
+      buffer.flush();
+
+      int index = 0;
+      while (index < 3)
+      {
+        if (data[index] == 46 || data[index] == 47 || data[index] == 49)
+        {
+          ok = true;
+          index++;
+        }
+        else
+        {
+          ok = false;
+          break;
+        }
+      }
+    }
+    catch (IOException exception)
+    {
+      if (log.isWarnEnabled() == true)
+      {
+        log.warn("Problem occured with the inputsream", exception);
+      }
+    }
+
+    return ok;
+  }
+
   // TODO: define a pool of Command objects, so as to minimize GC, if possible
   private final class PreCommand
       extends BasisCommand
@@ -1084,8 +1127,11 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
         if (bitmap == null)
         {
-          onBitmapReady(false, null);
-          return;
+          if (checkIfInpustreamIsAGif(inputStream) == false)
+          {
+            onBitmapReady(false, null);
+            return;
+          }
         }
 
         // We put in cache the bitmap

@@ -117,6 +117,21 @@ public class DownloadInstructions
 
   }
 
+  public final static class BitamapleGif
+      implements Bitmapable
+  {
+
+    public int getSizeInBytes()
+    {
+      return 0;
+    }
+
+    public void recycle()
+    {
+
+    }
+  }
+
   /**
    * An implementation of the {@link Viewable} interface specific to the Android platform.
    */
@@ -465,6 +480,20 @@ public class DownloadInstructions
       return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
+  }
+
+  /**
+   * Return the downloaded InputStream
+   *
+   * @param inputStream
+   * @param bitmaUid
+   * @param imageSpecs
+   * @param url
+   * @return
+   */
+  protected InputStream rawInputStream(InputStream inputStream, String bitmaUid, Object imageSpecs, String url)
+  {
+    return inputStream;
   }
 
   /**
