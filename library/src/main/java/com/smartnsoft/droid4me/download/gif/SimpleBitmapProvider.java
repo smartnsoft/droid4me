@@ -1,0 +1,54 @@
+package com.smartnsoft.droid4me.download.gif;
+
+import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
+
+/**
+ * @author Antoine Gerard
+ * @since 2017.10.18
+ */
+
+/**
+ * Util class for creating a Bitmap
+ */
+public final class SimpleBitmapProvider
+    implements GifDecoder.BitmapProvider
+{
+
+  @NonNull
+  @Override
+  public Bitmap obtain(int width, int height, Bitmap.Config config)
+  {
+    return Bitmap.createBitmap(width, height, config);
+  }
+
+  @Override
+  public void release(Bitmap bitmap)
+  {
+    bitmap.recycle();
+  }
+
+  @Override
+  public byte[] obtainByteArray(int size)
+  {
+    return new byte[size];
+  }
+
+  @Override
+  public void release(byte[] bytes)
+  {
+    // no-op
+  }
+
+  @Override
+  public int[] obtainIntArray(int size)
+  {
+    return new int[size];
+  }
+
+  @Override
+  public void release(int[] array)
+  {
+    // no-op
+  }
+}

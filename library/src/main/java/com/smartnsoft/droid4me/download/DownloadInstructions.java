@@ -40,9 +40,12 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
+import com.smartnsoft.droid4me.download.gif.Gif;
+import com.smartnsoft.droid4me.download.gif.GifEngine;
 
 /**
  * Gathers in one place the download instructions contracts used by {@link BitmapDownloader}.
@@ -117,13 +120,24 @@ public class DownloadInstructions
 
   }
 
-  public final static class BitamapleGif
+  public final static class BitmapableGif
       implements Bitmapable
   {
 
+    private final Gif gif;
+
+    public BitmapableGif(Gif gif)
+    {
+      this.gif = gif;
+    }
+
     public int getSizeInBytes()
     {
-      return 0;
+      if (gif == null)
+      {
+        return 0;
+      }
+      return gif.getHeight() * gif.getWidth() * gif.getFramesCount();
     }
 
     public void recycle()
@@ -344,6 +358,108 @@ public class DownloadInstructions
 
   }
 
+  public static abstract class GifInstructions
+      implements BasisDownloadInstructions.Instructions<DownloadInstructions.BitmapableGif, DownloadInstructions.ViewableView>
+  {
+
+    @Override
+    public BitmapableGif hasLocalBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
+    {
+      return null;
+    }
+
+    @Override
+    public void onBindLocalBitmap(ViewableView view, BitmapableGif bitmap, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    @Override
+    public String computeUrl(String bitmapUid, Object imageSpecs)
+    {
+      return bitmapUid;
+    }
+
+    @Override
+    public BitmapableGif hasTemporaryBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
+    {
+      return null;
+    }
+
+    @Override
+    public void onBindTemporaryBitmap(ViewableView view, BitmapableGif bitmap, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    @Override
+    public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
+        throws IOException
+    {
+      return new URL(url).openStream();
+    }
+
+    @Override
+    public BitmapableGif convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
+    {
+
+      return null;
+    }
+
+    @Override
+    public void onBitmapReady(boolean allright, ViewableView view, BitmapableGif bitmap, String bitmapUid,
+        Object imageSpecs)
+    {
+
+    }
+
+    @Override
+    public boolean onBindBitmap(boolean downloaded, ViewableView view, BitmapableGif bitmap, String bitmapUid,
+        Object imageSpecs)
+    {
+      return true;
+    }
+
+    @Override
+    public void onBitmapBound(boolean result, ViewableView view, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    @Override
+    public void onOver(boolean aborted, ViewableView view, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    @Override
+    public InputStream getInputStream(String imageUid, Object imageSpecs, String url,
+        BasisDownloadInstructions.InputStreamDownloadInstructor downloadInstructor)
+        throws IOException
+    {
+      return null;
+    }
+
+    @Override
+    public InputStream onInputStreamDownloaded(String imageUid, Object imageSpecs, String url, InputStream inputStream)
+    {
+      return null;
+    }
+
+    protected abstract Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs);
+
+    protected abstract void onBindLocalGif(View view, Gif gif, String bitmapUid, Object imageSpecs);
+
+    protected abstract Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs);
+
+    protected abstract void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+
+    protected abstract void onGifReady(boolean allright, View view, Gif bitmap, String bitmapUid,
+        Object imageSpecs);
+
+    protected abstract boolean onBindGif(boolean downloaded, View view, Gif bitmap, String bitmapUid,
+        Object imageSpecs);
+
+    protected abstract void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
+
+  }
+
   /**
    * An implementation of the {@link Instructions}, which returns the <code>bitmapUid</code> as an URL, and which does not present any temporary nor
    * local bitmap.
@@ -480,6 +596,86 @@ public class DownloadInstructions
       return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
+  }
+
+
+  public static class GifAbstractInstructions
+      extends GifInstructions
+  {
+
+    @Override
+    public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
+        throws IOException
+    {
+      final URL aURL = new URL(url);
+      final URLConnection connection = aURL.openConnection();
+      connection.connect();
+      final InputStream inputStream = connection.getInputStream();
+      return inputStream;
+    }
+
+    @Override
+    public BitmapableGif convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
+    {
+      final long start = System.currentTimeMillis();
+      final Gif theGif = convertInputStreamToGif(inputStream, url);
+      if (theGif != null)
+      {
+        if (CoreBitmapDownloader.IS_DEBUG_TRACE && CoreBitmapDownloader.log.isDebugEnabled())
+        {
+          final long stop = System.currentTimeMillis();
+          CoreBitmapDownloader.log.debug("The thread '" + Thread.currentThread().getName() + "' decoded in " + (stop - start) + " relative to the URL '" + url + "'");
+        }
+      }
+      return theGif == null ? null : new BitmapableGif(theGif);
+    }
+
+    @Override
+    protected Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs)
+    {
+      return null;
+    }
+
+    @Override
+    protected void onBindLocalGif(View view, Gif gif, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    @Override
+    protected Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs)
+    {
+      return null;
+    }
+
+    @Override
+    protected void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
+    {
+
+    }
+
+    @Override
+    protected void onGifReady(boolean allright, View view, Gif bitmap, String bitmapUid, Object imageSpecs)
+    {
+
+    }
+
+    @Override
+    protected boolean onBindGif(boolean downloaded, View view, Gif gif, String bitmapUid, Object imageSpecs)
+    {
+      final GifEngine engine = new GifEngine(((ImageView) (view)), gif);
+      return true;
+    }
+
+    @Override
+    protected void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs)
+    {
+
+    }
+
+    protected Gif convertInputStreamToGif(InputStream inputStream, String url)
+    {
+      return new Gif(inputStream, url);
+    }
   }
 
   /**

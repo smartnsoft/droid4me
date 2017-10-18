@@ -33,6 +33,8 @@ import com.smartnsoft.droid4me.widget.SmartLinearLayout;
 import com.smartnsoft.droid4me.widget.SmartRelativeLayout;
 import com.smartnsoft.droid4me.widget.SmartViewExtension;
 
+import static android.support.v7.appcompat.R.styleable.AppCompatImageView;
+
 /**
  * Enables to receive an event when the {@link ImageView} size has changed, set an automatic ratio between its width and its height, and discard the
  * layout requests.

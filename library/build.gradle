@@ -1,5 +1,5 @@
 apply plugin: "com.android.library"
-apply plugin: "com.jfrog.bintray"
+//apply plugin: "com.jfrog.bintray"
 apply plugin: "maven"
 apply plugin: "maven-publish"
 
@@ -11,7 +11,7 @@ ext
 android
 {
   compileSdkVersion 25
-  buildToolsVersion "25.0.3"
+  buildToolsVersion '26.0.2'
 
   defaultConfig
   {
@@ -127,31 +127,31 @@ publishing.publications.all
   }
 }
 
-bintray
-{
-  user = bintrayUsername
-  key = bintrayKey
-
-  publications = ["ReleasePublication"]
-
-  pkg
-  {
-    repo = "maven"
-    name = "droid4me"
-    userOrg = "smartnsoft"
-    licenses = ["LGPL-2.1"]
-    vcsUrl = "https://github.com/smartnsoft/droid4me.git"
-    publish = true
-
-    version
-    {
-      name = android.defaultConfig.versionName
-      desc = "droid4me is a framework library dedicated to the development of Android applications"
-      released = new Date()
-      vcsTag = "droid4me-" + android.defaultConfig.versionName
-    }
-  }
-}
+//bintray
+//{
+//  user = bintrayUsername
+//  key = bintrayKey
+//
+//  publications = ["ReleasePublication"]
+//
+//  pkg
+//  {
+//    repo = "maven"
+//    name = "droid4me"
+//    userOrg = "smartnsoft"
+//    licenses = ["LGPL-2.1"]
+//    vcsUrl = "https://github.com/smartnsoft/droid4me.git"
+//    publish = true
+//
+//    version
+//    {
+//      name = android.defaultConfig.versionName
+//      desc = "droid4me is a framework library dedicated to the development of Android applications"
+//      released = new Date()
+//      vcsTag = "droid4me-" + android.defaultConfig.versionName
+//    }
+//  }
+//}
 
 uploadArchives
 {
