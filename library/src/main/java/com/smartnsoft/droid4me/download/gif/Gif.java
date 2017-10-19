@@ -25,6 +25,8 @@ public final class Gif
 
   public final List<Bitmap> bitmaps;
 
+  private int duration;
+
   public Gif(InputStream inputStream, String url)
   {
     this.bitmaps = new ArrayList<Bitmap>();
@@ -53,6 +55,7 @@ public final class Gif
         gifDecoder.advance();
         final Bitmap nextBitmap = gifDecoder.getNextFrame();
         // We need to deep copy the bitmap
+        duration += gifDecoder.getDelay(gifDecoder.getCurrentFrameIndex());
         final Bitmap bitmap = nextBitmap.copy(nextBitmap.getConfig(), true);
         if (bitmap == null)
         {
@@ -86,5 +89,10 @@ public final class Gif
   public Bitmap getBitmap(int index)
   {
     return bitmaps.get(index);
+  }
+
+  public int getDuration()
+  {
+    return duration;
   }
 }

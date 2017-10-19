@@ -36,16 +36,19 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
 import com.smartnsoft.droid4me.download.gif.Gif;
 import com.smartnsoft.droid4me.download.gif.GifEngine;
+import com.smartnsoft.droid4me.log.Logger;
+import com.smartnsoft.droid4me.log.LoggerFactory;
 
 /**
  * Gathers in one place the download instructions contracts used by {@link BitmapDownloader}.
@@ -56,6 +59,8 @@ import com.smartnsoft.droid4me.download.gif.GifEngine;
 public class DownloadInstructions
     extends BasisDownloadInstructions
 {
+
+  private static final Logger log = LoggerFactory.getInstance(DownloadInstructions.class);
 
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
@@ -663,6 +668,17 @@ public class DownloadInstructions
     protected boolean onBindGif(boolean downloaded, View view, Gif gif, String bitmapUid, Object imageSpecs)
     {
       final GifEngine engine = new GifEngine(((ImageView) (view)), gif);
+      if (VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB)
+      {
+        engine.animate();
+      }
+      else
+      {
+        if (log.isInfoEnabled() == true)
+        {
+          log.info("Gif animation is available from API 11");
+        }
+      }
       return true;
     }
 
