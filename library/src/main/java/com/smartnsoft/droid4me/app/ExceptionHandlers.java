@@ -38,7 +38,6 @@ import com.smartnsoft.droid4me.app.ActivityController.IssueAnalyzer;
 import com.smartnsoft.droid4me.app.SmartApplication.I18N;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
-import com.smartnsoft.droid4me.util.SendLogsTask;
 
 /**
  * A wrapper class which holds {@link ActivityController.ExceptionHandler} implementations.
@@ -534,66 +533,9 @@ public final class ExceptionHandlers
       extends ExceptionHandlers.AbstractExceptionHandler
   {
 
-    private final String logReportRecipients;
-
-    public DefaultExceptionHandler(I18N i18n, IssueAnalyzer issueAnalyzer, String logReportRecipients)
+    public DefaultExceptionHandler(I18N i18n, IssueAnalyzer issueAnalyzer)
     {
       super(i18n, issueAnalyzer);
-      this.logReportRecipients = logReportRecipients;
-    }
-
-    @Override
-    protected boolean onBusinessObjectAvailableExceptionFallback(Activity activity, Object component,
-        BusinessObjectUnavailableException exception)
-    {
-      if (logReportRecipients == null)
-      {
-        return super.onBusinessObjectAvailableExceptionFallback(activity, component, exception);
-      }
-      else
-      {
-        return sendLogs(activity);
-      }
-    }
-
-    @Override
-    protected boolean onActivityExceptionFallback(Activity activity, Object component, Throwable throwable)
-    {
-      if (logReportRecipients == null)
-      {
-        return super.onActivityExceptionFallback(activity, component, throwable);
-      }
-      else
-      {
-        return sendLogs(activity);
-      }
-    }
-
-    protected final boolean sendLogs(final Activity activity)
-    {
-      // If the logger recipient is not set, no e-mail submission is proposed
-      showDialog(activity, i18n.dialogBoxErrorTitle, i18n.otherProblemHint, i18n.reportButtonLabel, new OnClickListener()
-      {
-        public void onClick(DialogInterface dialogInterface, int which)
-        {
-          new SendLogsTask(activity, i18n.retrievingLogProgressMessage, "[" + i18n.applicationName + "] Error log - v%1s", logReportRecipients).execute(null, null);
-        }
-      }, activity.getString(android.R.string.cancel), new OnClickListener()
-      {
-        public void onClick(DialogInterface dialogInterface, int which)
-        {
-          // We leave the activity, because we cannot go any further
-          activity.finish();
-        }
-      }, new DialogInterface.OnCancelListener()
-      {
-        public void onCancel(DialogInterface dialog)
-        {
-          // We leave the activity, because we cannot go any further
-          activity.finish();
-        }
-      });
-      return true;
     }
 
   }

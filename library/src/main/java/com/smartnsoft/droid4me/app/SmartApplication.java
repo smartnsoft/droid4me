@@ -43,7 +43,6 @@ import android.view.WindowManager;
 import com.smartnsoft.droid4me.BuildConfig;
 import com.smartnsoft.droid4me.app.ActivityController.ExceptionHandler;
 import com.smartnsoft.droid4me.app.ExceptionHandlers.AbstractExceptionHandler;
-import com.smartnsoft.droid4me.app.ExceptionHandlers.DefaultExceptionHandler;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
@@ -312,17 +311,6 @@ public abstract class SmartApplication
   }
 
   /**
-   * If the application uses an {@link DefaultExceptionHandler} as an {@link ActivityController.ExceptionHandler}, when a managed
-   * exception is detected, and is not handled, a dialog box is submitted to the end-user, in order to propose to send the bug cause by inspecting the
-   * Android {@code logcat}. In that case, do not forget to declare the {@code android.permission.READ_LOGS} permission in the
-   * {@code AndroidManifest.xml}.
-   *
-   * @return the e-mail address that will be used when submitting an error log message ; if it returns {@code null}, the application will not propose
-   * to send the bug cause
-   */
-  protected abstract String getLogReportRecipient();
-
-  /**
    * <p>
    * Caution: this method will return {@code null} as long as the parent {@link Application#onCreate()} has not been invoked.
    * </p>
@@ -423,7 +411,7 @@ public abstract class SmartApplication
    */
   protected ActivityController.ExceptionHandler getExceptionHandler()
   {
-    return new ExceptionHandlers.DefaultExceptionHandler(getI18N(), null, getLogReportRecipient());
+    return new ExceptionHandlers.DefaultExceptionHandler(getI18N(), null);
   }
 
   /**

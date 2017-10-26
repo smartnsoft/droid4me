@@ -30,6 +30,7 @@ import com.smartnsoft.droid4me.LifeCycle;
  * @author Édouard Mercier
  * @since 2008.06.11
  */
+@Deprecated
 public interface BusinessObjectLifeCycle<BusinessObjectClass>
 {
 

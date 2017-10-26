@@ -32,6 +32,7 @@ import com.smartnsoft.droid4me.framework.ForBusinessObjectImplementation;
  * @author Édouard Mercier
  * @since 2008.04.13
  */
+@Deprecated
 public abstract class ForBusinessObjectActivity<AggregateClass, BusinessObjectClass>
     extends SmartActivity<AggregateClass>
     implements BusinessObjectLifeCycle<BusinessObjectClass>

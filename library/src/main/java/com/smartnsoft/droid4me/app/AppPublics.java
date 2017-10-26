@@ -266,21 +266,8 @@ public final class AppPublics
   /**
    * When an {@link Activity} implements that interface, it will send broadcast intents while loading and once the loading is over.
    *
-   * @see AppPublics.SendLoadingIntentAnnotation
    * @see AppPublics.BroadcastListener
    * @see AppPublics.BroadcastListenerProvider
-   * @since 2010.02.04
-   * @deprecated use {@link AppPublics.SendLoadingIntentAnnotation} instead
-   */
-  public interface SendLoadingIntent
-  {
-
-  }
-
-  /**
-   * Same concept as {@link AppPublics.SendLoadingIntent}, but through an annotation.
-   *
-   * @see AppPublics.SendLoadingIntent
    * @since 2013.04.12
    */
   @Retention(RetentionPolicy.RUNTIME)

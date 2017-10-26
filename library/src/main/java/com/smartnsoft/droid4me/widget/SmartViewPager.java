@@ -61,8 +61,8 @@ public class SmartViewPager
       {
         final View child = getChildAt(index);
         child.measure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-        int measuredHeight = child.getMeasuredHeight();
 
+        final int measuredHeight = child.getMeasuredHeight();
         if (measuredHeight > height)
         {
           height = measuredHeight;

@@ -501,10 +501,9 @@ final class AppInternals
      * Should be invoked during the {@link Droid4mizer#onBeforeRefreshBusinessObjectsAndDisplay()} method: is responsible for triggering a loading
      * broadcast intent if required, in order to indicate that the activity is loading.
      */
-    @SuppressWarnings("deprecation")
     void onStartLoading()
     {
-      if (component.getClass().getAnnotation(AppPublics.SendLoadingIntentAnnotation.class) != null || component instanceof AppPublics.SendLoadingIntent)
+      if (component.getClass().getAnnotation(AppPublics.SendLoadingIntentAnnotation.class) != null)
       {
         // We indicate the activity which is loading, in order to filter the loading events
         AppPublics.LoadingBroadcastListener.broadcastLoading(activity, System.identityHashCode(activity), System.identityHashCode(component), true);
@@ -515,10 +514,9 @@ final class AppInternals
      * Should be invoked just after the {@link SmartActivity#onSynchronizeDisplayObjects()} method: is responsible for triggering a loading broadcast
      * intent if required, in order to indicate that the activity has stopped loading.
      */
-    @SuppressWarnings("deprecation")
     void onStopLoading()
     {
-      if (component.getClass().getAnnotation(AppPublics.SendLoadingIntentAnnotation.class) != null || component instanceof AppPublics.SendLoadingIntent)
+      if (component.getClass().getAnnotation(AppPublics.SendLoadingIntentAnnotation.class) != null)
       {
         // We indicate the activity which is loading, in order to filter the loading events
         AppPublics.LoadingBroadcastListener.broadcastLoading(activity, System.identityHashCode(activity), System.identityHashCode(component), false);

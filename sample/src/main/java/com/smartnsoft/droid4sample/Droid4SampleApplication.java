@@ -110,12 +110,6 @@ public final class Droid4SampleApplication
   }
 
   @Override
-  protected String getLogReportRecipient()
-  {
-    return Constants.REPORT_LOG_RECIPIENT_EMAIL;
-  }
-
-  @Override
   protected ActivityController.Redirector getActivityRedirector()
   {
     return new ActivityController.Redirector()
@@ -144,8 +138,6 @@ public final class Droid4SampleApplication
   {
     return super.getExceptionHandler();
   }
-
-
 
   @Override
   protected ActivityController.Interceptor getInterceptor()
