@@ -5,21 +5,21 @@ apply plugin: "maven-publish"
 
 ext
 {
-  appCompatVersion="25.4.0"
+  appCompatVersion="27.0.1"
 }
 
 android
 {
-  compileSdkVersion 25
-  buildToolsVersion "25.0.3"
+  compileSdkVersion 26
+  buildToolsVersion "26.0.2"
 
   defaultConfig
   {
-    minSdkVersion 9
-    targetSdkVersion 25
+    minSdkVersion 14
+    targetSdkVersion 26
 
-    versionCode 20
-    versionName "2.5.3"
+    versionCode 21
+    versionName "2.5.4"
   }
 
   buildTypes
@@ -36,11 +36,11 @@ android
 dependencies
 {
   //Android
-  compile("com.android.support:appcompat-v7:$appCompatVersion")
-  compile("com.android.support:preference-v7:$appCompatVersion")
+  implementation("com.android.support:appcompat-v7:$appCompatVersion")
+  implementation("com.android.support:preference-v7:$appCompatVersion")
 
-  testCompile("junit:junit:4.0")
-  testCompile("org.json:json:20090211")
+  testImplementation("junit:junit:4.0")
+  testImplementation("org.json:json:20090211")
 }
 
 task sourcesJar(type: Jar) {
@@ -139,7 +139,7 @@ bintray
     repo = "maven"
     name = "droid4me"
     userOrg = "smartnsoft"
-    licenses = ["LGPL-2.1"]
+    licenses = ["MIT"]
     vcsUrl = "https://github.com/smartnsoft/droid4me.git"
     publish = true
 

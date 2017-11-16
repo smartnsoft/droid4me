@@ -155,6 +155,7 @@ public class ActivityController
      * @return the desired service, or {@code null} if no service corresponding to the provided {@code name} is available nor exists
      * @see Activity#getSystemService(String)
      */
+    @Deprecated
     Object getSystemService(Activity activity, String name, Object defaultService);
 
   }
@@ -660,6 +661,7 @@ public class ActivityController
    * @return the service or {@code null} if the name does not exist
    * @see #registerSystemServiceProvider(ActivityController.SystemServiceProvider)
    */
+  @Deprecated
   public Object getSystemService(Activity activity, String name, Object defaultService)
   {
     if (systemServiceProvider != null)
