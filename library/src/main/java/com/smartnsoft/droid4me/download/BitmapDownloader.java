@@ -37,6 +37,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
+import com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions;
 import com.smartnsoft.droid4me.download.DownloadInstructions.BitmapableBitmap;
 import com.smartnsoft.droid4me.download.DownloadInstructions.HandlerableHander;
 import com.smartnsoft.droid4me.download.DownloadInstructions.ViewableView;
@@ -339,7 +340,7 @@ public class BitmapDownloader
   }
 
   public final void get(View view, String bitmapUid, Object imageSpecs, Handler handler,
-      DownloadInstructions.Instructions instructions)
+      Instructions instructions)
   {
     get(view != null ? new ViewableView(view) : null, bitmapUid, imageSpecs, handler != null ? new HandlerableHander(handler) : null, instructions);
   }

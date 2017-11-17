@@ -413,14 +413,14 @@ public class DownloadInstructions
     public void onBitmapReady(boolean allright, ViewableView view, BitmapableGif bitmap, String bitmapUid,
         Object imageSpecs)
     {
-
+      onGifReady(allright, view != null ? view.getView() : null, bitmap != null ? bitmap.gif : null, bitmapUid, imageSpecs);
     }
 
     @Override
     public boolean onBindBitmap(boolean downloaded, ViewableView view, BitmapableGif bitmap, String bitmapUid,
         Object imageSpecs)
     {
-      return true;
+      return onBindGif(downloaded, view != null ? view.getView() : null, bitmap != null ? bitmap.gif : null, bitmapUid, imageSpecs);
     }
 
     @Override
@@ -444,7 +444,7 @@ public class DownloadInstructions
     @Override
     public InputStream onInputStreamDownloaded(String imageUid, Object imageSpecs, String url, InputStream inputStream)
     {
-      return null;
+      return inputStream;
     }
 
     protected abstract Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs);
@@ -464,6 +464,97 @@ public class DownloadInstructions
     protected abstract void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs);
 
   }
+
+  public static class GifAbstractInstructions
+      extends GifInstructions
+  {
+
+    @Override
+    public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
+        throws IOException
+    {
+      final URL aURL = new URL(url);
+      final URLConnection connection = aURL.openConnection();
+      connection.connect();
+      final InputStream inputStream = connection.getInputStream();
+      return inputStream;
+    }
+
+    @Override
+    public BitmapableGif convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
+    {
+      final long start = System.currentTimeMillis();
+      final Gif theGif = convertInputStreamToGif(inputStream, url);
+      if (theGif != null)
+      {
+        if (CoreBitmapDownloader.IS_DEBUG_TRACE && CoreBitmapDownloader.log.isDebugEnabled())
+        {
+          final long stop = System.currentTimeMillis();
+          CoreBitmapDownloader.log.debug("The thread '" + Thread.currentThread().getName() + "' decoded in " + (stop - start) + " relative to the URL '" + url + "'");
+        }
+      }
+      return theGif == null ? null : new BitmapableGif(theGif);
+    }
+
+    @Override
+    protected Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs)
+    {
+      return null;
+    }
+
+    @Override
+    protected void onBindLocalGif(View view, Gif gif, String bitmapUid, Object imageSpecs)
+    {
+    }
+
+    @Override
+    protected Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs)
+    {
+      return null;
+    }
+
+    @Override
+    protected void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
+    {
+
+    }
+
+    @Override
+    protected void onGifReady(boolean allright, View view, Gif bitmap, String bitmapUid, Object imageSpecs)
+    {
+
+    }
+
+    @Override
+    protected boolean onBindGif(boolean downloaded, View view, Gif gif, String bitmapUid, Object imageSpecs)
+    {
+      final GifEngine engine = new GifEngine(((ImageView) (view)), gif);
+      if (VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB)
+      {
+        engine.animate();
+      }
+      else
+      {
+        if (log.isInfoEnabled() == true)
+        {
+          log.info("Gif animation is available from API 11");
+        }
+      }
+      return true;
+    }
+
+    @Override
+    protected void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs)
+    {
+
+    }
+
+    protected Gif convertInputStreamToGif(InputStream inputStream, String url)
+    {
+      return new Gif(inputStream, url);
+    }
+  }
+
 
   /**
    * An implementation of the {@link Instructions}, which returns the <code>bitmapUid</code> as an URL, and which does not present any temporary nor
@@ -601,97 +692,6 @@ public class DownloadInstructions
       return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
-  }
-
-
-  public static class GifAbstractInstructions
-      extends GifInstructions
-  {
-
-    @Override
-    public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
-        throws IOException
-    {
-      final URL aURL = new URL(url);
-      final URLConnection connection = aURL.openConnection();
-      connection.connect();
-      final InputStream inputStream = connection.getInputStream();
-      return inputStream;
-    }
-
-    @Override
-    public BitmapableGif convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
-    {
-      final long start = System.currentTimeMillis();
-      final Gif theGif = convertInputStreamToGif(inputStream, url);
-      if (theGif != null)
-      {
-        if (CoreBitmapDownloader.IS_DEBUG_TRACE && CoreBitmapDownloader.log.isDebugEnabled())
-        {
-          final long stop = System.currentTimeMillis();
-          CoreBitmapDownloader.log.debug("The thread '" + Thread.currentThread().getName() + "' decoded in " + (stop - start) + " relative to the URL '" + url + "'");
-        }
-      }
-      return theGif == null ? null : new BitmapableGif(theGif);
-    }
-
-    @Override
-    protected Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs)
-    {
-      return null;
-    }
-
-    @Override
-    protected void onBindLocalGif(View view, Gif gif, String bitmapUid, Object imageSpecs)
-    {
-    }
-
-    @Override
-    protected Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs)
-    {
-      return null;
-    }
-
-    @Override
-    protected void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
-    {
-
-    }
-
-    @Override
-    protected void onGifReady(boolean allright, View view, Gif bitmap, String bitmapUid, Object imageSpecs)
-    {
-
-    }
-
-    @Override
-    protected boolean onBindGif(boolean downloaded, View view, Gif gif, String bitmapUid, Object imageSpecs)
-    {
-      final GifEngine engine = new GifEngine(((ImageView) (view)), gif);
-      if (VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB)
-      {
-        engine.animate();
-      }
-      else
-      {
-        if (log.isInfoEnabled() == true)
-        {
-          log.info("Gif animation is available from API 11");
-        }
-      }
-      return true;
-    }
-
-    @Override
-    protected void onBitmapBound(boolean result, View view, String bitmapUid, Object imageSpecs)
-    {
-
-    }
-
-    protected Gif convertInputStreamToGif(InputStream inputStream, String url)
-    {
-      return new Gif(inputStream, url);
-    }
   }
 
   /**

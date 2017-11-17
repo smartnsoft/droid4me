@@ -404,6 +404,8 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     }
   }
 
+
+
   public synchronized void clear()
   {
     if (log.isInfoEnabled())
