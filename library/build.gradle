@@ -10,16 +10,15 @@ ext
 
 android
 {
-  compileSdkVersion 26
-  buildToolsVersion "26.0.2"
+  compileSdkVersion 27
 
   defaultConfig
   {
     minSdkVersion 14
-    targetSdkVersion 26
+    targetSdkVersion 27
 
     versionCode 21
-    versionName "2.5.4"
+    versionName "2.6.0"
   }
 
   buildTypes
