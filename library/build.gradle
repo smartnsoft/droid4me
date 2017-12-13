@@ -18,7 +18,7 @@ android
     targetSdkVersion 27
 
     versionCode 21
-    versionName "2.6.0"
+    versionName "2.6.0.002-SNAPSHOT"
   }
 
   buildTypes

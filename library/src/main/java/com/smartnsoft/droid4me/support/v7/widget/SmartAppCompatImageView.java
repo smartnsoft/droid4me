@@ -68,7 +68,7 @@ public class SmartAppCompatImageView
   {
     super(context, attrs, defStyle);
     initializeViewExtensionDelegateIfNecessary();
-    viewExtensionDelegate.setRatio(9f / 16f);
+    viewExtensionDelegate.setRatio(16f / 9f);
   }
 
   @Override
@@ -172,7 +172,7 @@ public class SmartAppCompatImageView
         else if (widthMode == MeasureSpec.EXACTLY)
         {
           finalWidth = originalWidth;
-          final float idealHeight = finalWidth * actualRatio;
+          final float idealHeight = finalWidth / actualRatio;
           if (heightMode == MeasureSpec.UNSPECIFIED)
           {
             finalHeight = (int) idealHeight;
@@ -185,7 +185,7 @@ public class SmartAppCompatImageView
         else if (heightMode == MeasureSpec.EXACTLY)
         {
           finalHeight = originalHeight;
-          final float idealWidth = finalHeight / actualRatio;
+          final float idealWidth = finalHeight * actualRatio;
           if (widthMode == MeasureSpec.UNSPECIFIED)
           {
             finalWidth = (int) idealWidth;
@@ -206,13 +206,13 @@ public class SmartAppCompatImageView
     else
     {
       super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-      if (ratio > 0f)
+      if (ratio < 0f)
       {
         final int measuredWidth = getMeasuredWidth();
         final int newHeight = (int) ((float) getMeasuredWidth() * ratio);
         setMeasuredDimension(measuredWidth, newHeight);
       }
-      else if (ratio < 0f)
+      else if (ratio > 0f)
       {
         final int measuredHeight = getMeasuredHeight();
         final int newWidth = (int) ((float) getMeasuredHeight() * ratio) * -1;
