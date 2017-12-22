@@ -1,5 +1,8 @@
 package com.smartnsoft.droid4me.download.gif;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.os.Build.VERSION_CODES;
@@ -17,20 +20,41 @@ import android.widget.ImageView;
  * @since 2017.10.18
  */
 
+@RequiresApi(api = VERSION_CODES.HONEYCOMB)
 public final class GifEngine
 {
+
+  private static volatile HashMap<Integer, GifEngine> map = new HashMap<>();
 
   private Gif gif;
 
   private ImageView imageView;
 
+  private ValueAnimator valueAnimator;
+
   public GifEngine(final ImageView imageView, final Gif gif)
   {
     this.imageView = imageView;
     this.gif = gif;
+
+    final int key = imageView.hashCode();
+    final GifEngine gifEngine = map.get(key);
+
+    if (gifEngine != null)
+    {
+      gifEngine.recycle();
+    }
+    map.put(key, this);
   }
 
-  @RequiresApi(api = VERSION_CODES.HONEYCOMB)
+  public void recycle()
+  {
+    if (valueAnimator != null && valueAnimator.isRunning())
+    {
+      valueAnimator.end();
+    }
+  }
+
   public void animate()
   {
     if (gif != null && gif.bitmaps.isEmpty() == false)
@@ -41,7 +65,7 @@ public final class GifEngine
         table[i] = i;
       }
 
-      final ValueAnimator valueAnimator = ValueAnimator.ofInt(table);
+      valueAnimator = ValueAnimator.ofInt(table);
       valueAnimator.setInterpolator(new LinearInterpolator());
       valueAnimator.setDuration(gif.getDuration());
       valueAnimator.setRepeatCount(ValueAnimator.INFINITE);

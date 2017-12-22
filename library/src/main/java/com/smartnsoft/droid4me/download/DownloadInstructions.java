@@ -470,6 +470,8 @@ public class DownloadInstructions
       extends GifInstructions
   {
 
+    private GifEngine gifEngine;
+
     @Override
     public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
         throws IOException
@@ -511,13 +513,18 @@ public class DownloadInstructions
     @Override
     protected Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs)
     {
+      if (imageSpecs instanceof DownloadSpecs.TemporaryImageSpecs)
+      {
+        final DownloadSpecs.TemporaryImageSpecs temporaryImageSpecs = (DownloadSpecs.TemporaryImageSpecs) imageSpecs;
+        return temporaryImageSpecs.imageResourceId != -1 ? BitmapFactory.decodeResource(view.getContext().getResources(), temporaryImageSpecs.imageResourceId) : null;
+      }
       return null;
     }
 
     @Override
     protected void onBindTemporaryBitmap(View view, Gif bitmap, String bitmapUid, Object imageSpecs)
     {
-
+      ((ImageView) view).setImageBitmap(bitmap.getBitmap(0));
     }
 
     @Override
@@ -527,12 +534,18 @@ public class DownloadInstructions
     }
 
     @Override
+    public void onOver(boolean aborted, ViewableView view, String bitmapUid, Object imageSpecs)
+    {
+      super.onOver(aborted, view, bitmapUid, imageSpecs);
+    }
+
+    @Override
     protected boolean onBindGif(boolean downloaded, View view, Gif gif, String bitmapUid, Object imageSpecs)
     {
-      final GifEngine engine = new GifEngine(((ImageView) (view)), gif);
       if (VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB)
       {
-        engine.animate();
+        gifEngine = new GifEngine(((ImageView) (view)), gif);
+        gifEngine.animate();
       }
       else
       {
