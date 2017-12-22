@@ -29,12 +29,12 @@ public final class Gif
 
   public Gif(InputStream inputStream, String url)
   {
-    this.bitmaps = new ArrayList<Bitmap>();
+    this.bitmaps = new ArrayList<>();
     final GifDecoder gifDecoder;
     {
       final long milliseconds = System.currentTimeMillis();
       gifDecoder = new GifDecoder();
-      if (gifDecoder.read(inputStream, 8192) != GifDecoder.STATUS_OK)
+      if (gifDecoder.read(inputStream, 2 * 8192) != GifDecoder.STATUS_OK)
       {
         if (log.isWarnEnabled())
         {

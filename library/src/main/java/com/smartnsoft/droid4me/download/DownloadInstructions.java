@@ -393,6 +393,7 @@ public class DownloadInstructions
     @Override
     public void onBindTemporaryBitmap(ViewableView view, BitmapableGif bitmap, String bitmapUid, Object imageSpecs)
     {
+      onBindTemporaryBitmap(view != null ? view.getView() : null, bitmap.gif, bitmapUid, imageSpecs);
     }
 
     @Override
@@ -453,7 +454,7 @@ public class DownloadInstructions
 
     protected abstract Bitmap hasTemporaryBitmap(View view, String bitmapUid, Object imageSpecs);
 
-    protected abstract void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs);
+    protected abstract void onBindTemporaryBitmap(View view, Gif bitmap, String bitmapUid, Object imageSpecs);
 
     protected abstract void onGifReady(boolean allright, View view, Gif bitmap, String bitmapUid,
         Object imageSpecs);
@@ -514,7 +515,7 @@ public class DownloadInstructions
     }
 
     @Override
-    protected void onBindTemporaryBitmap(View view, Bitmap bitmap, String bitmapUid, Object imageSpecs)
+    protected void onBindTemporaryBitmap(View view, Gif bitmap, String bitmapUid, Object imageSpecs)
     {
 
     }

@@ -196,7 +196,7 @@ public class BitmapDownloader
   /**
    * Indicates the default upper limit of memory that each cache is allowed to reach.
    */
-  public static final long DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 3l * 1024l * 1024l;
+  public static final long DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 5l * 1024l * 1024l;
 
   /**
    * Indicates the default lower limit of memory that each cache is allowed to reach.
