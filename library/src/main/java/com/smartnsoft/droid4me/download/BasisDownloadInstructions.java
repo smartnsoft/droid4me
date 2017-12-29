@@ -48,7 +48,8 @@ public class BasisDownloadInstructions
   public interface Instructions<BitmapClass extends Bitmapable, ViewClass extends Viewable>
   {
 
-    /**s
+    /**
+     * s
      * The method will be invoked, so as to known whether the bitmap could not be extracted locally, i.e. from the application .apk, or a static local
      * resource.
      * <p>

@@ -4,7 +4,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
+import android.widget.ImageView;
 
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -26,6 +29,8 @@ public final class Gif
   public final List<Bitmap> bitmaps;
 
   private int duration;
+
+  private GifEngine gifEngine;
 
   public Gif(InputStream inputStream, String url)
   {
@@ -70,6 +75,18 @@ public final class Gif
     }
   }
 
+  @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
+  public void startAnimation(@NonNull final ImageView imageView)
+  {
+    gifEngine = new GifEngine(imageView, this);
+    gifEngine.animate();
+  }
+
+  @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
+  public void endAnimation()
+  {
+    gifEngine.end();
+  }
 
   public int getHeight()
   {
@@ -95,4 +112,6 @@ public final class Gif
   {
     return duration;
   }
+
+
 }

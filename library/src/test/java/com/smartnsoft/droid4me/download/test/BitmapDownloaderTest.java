@@ -39,6 +39,7 @@ import com.smartnsoft.droid4me.download.CoreBitmapDownloader.CoreAnalyticsData;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
+import com.smartnsoft.droid4me.download.DownloadInstructions.BitmapableBitmap;
 import com.smartnsoft.droid4me.test.BasisTests;
 
 import junit.framework.Assert;
@@ -239,7 +240,7 @@ public final class BitmapDownloaderTest
     }
 
     @Override
-    public DummyBitmapable hasTemporaryBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
+    public BitmapableBitmap hasTemporaryBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
     {
       expectations.hasTemporaryBitmap++;
       return hasTemporaryBitmap == true ? new DummyBitmapable(200 * 1024) : null;
@@ -1227,7 +1228,7 @@ public final class BitmapDownloaderTest
     {
 
       @Override
-      public DummyBitmapable hasTemporaryBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
+      public BitmapableBitmap hasTemporaryBitmap(DummyViewable view, String bitmapUid, Object imageSpecs)
       {
         super.hasTemporaryBitmap(view, bitmapUid, imageSpecs);
         if (exception != null)

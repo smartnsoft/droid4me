@@ -35,6 +35,10 @@ import java.util.Map;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -42,11 +46,12 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.smartnsoft.droid4me.R;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
+import com.smartnsoft.droid4me.download.DownloadSpecs.TemporaryImageSpecs;
 import com.smartnsoft.droid4me.download.gif.Gif;
-import com.smartnsoft.droid4me.download.gif.GifEngine;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
@@ -131,9 +136,13 @@ public class DownloadInstructions
 
     private final Gif gif;
 
+    private final Bitmap bitmap;
+
+
     public BitmapableGif(Gif gif)
     {
       this.gif = gif;
+      bitmap = gif.getBitmap(0);
     }
 
     public int getSizeInBytes()
@@ -142,12 +151,18 @@ public class DownloadInstructions
       {
         return 0;
       }
-      return gif.getHeight() * gif.getWidth() * gif.getFramesCount();
+      else
+      {
+        return gif.getHeight() * gif.getWidth() * gif.getFramesCount();
+      }
     }
 
     public void recycle()
     {
-
+      if (gif != null)
+      {
+        gif.endAnimation();
+      }
     }
   }
 
@@ -370,24 +385,20 @@ public class DownloadInstructions
     @Override
     public BitmapableGif hasLocalBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
     {
-      return null;
+      final Bitmap bitmap = hasLocalBitmap(view.getView(), bitmapUid, imageSpecs);
+      return bitmap == null ? null : new BitmapableGif(null);
     }
 
     @Override
     public void onBindLocalBitmap(ViewableView view, BitmapableGif bitmap, String bitmapUid, Object imageSpecs)
     {
+      ((ImageView) view.getView()).setImageBitmap(bitmap.bitmap);
     }
 
     @Override
     public String computeUrl(String bitmapUid, Object imageSpecs)
     {
       return bitmapUid;
-    }
-
-    @Override
-    public BitmapableGif hasTemporaryBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
-    {
-      return null;
     }
 
     @Override
@@ -470,7 +481,12 @@ public class DownloadInstructions
       extends GifInstructions
   {
 
-    private GifEngine gifEngine;
+    @Override
+    public BitmapableGif hasTemporaryBitmap(ViewableView view, String bitmapUid, Object imageSpecs)
+    {
+      final Bitmap bitmap = hasLocalBitmap(view.getView(), bitmapUid, imageSpecs);
+      return bitmap == null ? null : new BitmapableGif(null);
+    }
 
     @Override
     public InputStream downloadInputStream(String bitmapUid, Object imageSpecs, String url)
@@ -502,6 +518,11 @@ public class DownloadInstructions
     @Override
     protected Bitmap hasLocalBitmap(View view, String bitmapUid, Object imageSpecs)
     {
+      if (imageSpecs instanceof DownloadSpecs.TemporaryImageSpecs)
+      {
+        final DownloadSpecs.TemporaryImageSpecs temporaryImageSpecs = (DownloadSpecs.TemporaryImageSpecs) imageSpecs;
+        return temporaryImageSpecs.imageResourceId != -1 ? BitmapFactory.decodeResource(view.getContext().getResources(), temporaryImageSpecs.imageResourceId) : null;
+      }
       return null;
     }
 
@@ -518,7 +539,10 @@ public class DownloadInstructions
         final DownloadSpecs.TemporaryImageSpecs temporaryImageSpecs = (DownloadSpecs.TemporaryImageSpecs) imageSpecs;
         return temporaryImageSpecs.imageResourceId != -1 ? BitmapFactory.decodeResource(view.getContext().getResources(), temporaryImageSpecs.imageResourceId) : null;
       }
-      return null;
+      else
+      {
+        return null;
+      }
     }
 
     @Override
@@ -544,8 +568,7 @@ public class DownloadInstructions
     {
       if (VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB)
       {
-        gifEngine = new GifEngine(((ImageView) (view)), gif);
-        gifEngine.animate();
+        gif.startAnimation((ImageView) view);
       }
       else
       {

@@ -23,10 +23,9 @@ import android.widget.ImageView;
 @RequiresApi(api = VERSION_CODES.HONEYCOMB)
 public final class GifEngine
 {
+  private Gif gif;
 
   private static volatile HashMap<Integer, GifEngine> map = new HashMap<>();
-
-  private Gif gif;
 
   private ImageView imageView;
 
@@ -48,6 +47,14 @@ public final class GifEngine
   }
 
   public void recycle()
+  {
+    if (valueAnimator != null && valueAnimator.isRunning())
+    {
+      valueAnimator.end();
+    }
+  }
+
+  public void end()
   {
     if (valueAnimator != null && valueAnimator.isRunning())
     {
