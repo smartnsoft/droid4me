@@ -34,7 +34,7 @@ public final class Gif
 
   public static final Logger log = LoggerFactory.getInstance("Gif");
 
-  public final List<Bitmap> bitmaps;
+  private final List<Bitmap> bitmaps;
 
   private int duration;
 
@@ -127,7 +127,7 @@ public final class Gif
   {
     if (bitmaps.isEmpty() == false)
     {
-      int[] table = new int[bitmaps.size()];
+      final int[] table = new int[bitmaps.size()];
       for (int i = 0; i < table.length; i++)
       {
         table[i] = i;
