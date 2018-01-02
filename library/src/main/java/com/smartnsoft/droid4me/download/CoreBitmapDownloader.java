@@ -38,6 +38,7 @@ import com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
+import com.smartnsoft.droid4me.download.DownloadInstructions.BitmapableGif;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
@@ -612,6 +613,10 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       @SuppressWarnings("unchecked") final UsedBitmap otherUsedBitmap = (UsedBitmap) view.getTag();
       if (otherUsedBitmap != null)
       {
+        if (otherUsedBitmap.getBitmap() instanceof BitmapableGif)
+        {
+          otherUsedBitmap.getBitmap().recycle();
+        }
         otherUsedBitmap.bindingCount--;
         if (IS_DEBUG_TRACE && log.isDebugEnabled())
         {

@@ -40,6 +40,7 @@ import com.smartnsoft.droid4me.download.BasisDownloadInstructions.InputStreamDow
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
+import com.smartnsoft.droid4me.download.DownloadInstructions.BitmapableGif;
 
 /**
  * An implementation of the {@link CoreBitmapDownloader} class, which is independent from the Android platform.

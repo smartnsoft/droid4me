@@ -489,6 +489,7 @@ public final class GifDecoder
         buffer.flush();
 
         read(buffer.toByteArray());
+        buffer.close();
       }
       catch (IOException e)
       {

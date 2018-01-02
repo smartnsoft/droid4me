@@ -4,9 +4,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.annotation.TargetApi;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.graphics.Bitmap;
+import android.os.Build.VERSION_CODES;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 
 import com.smartnsoft.droid4me.log.Logger;
@@ -19,9 +25,11 @@ import com.smartnsoft.droid4me.log.LoggerFactory;
  */
 
 /**
- * This class represents a Gif File.
+ * This class represents a Gif File and its display in an ImageView
  */
+@RequiresApi(api = VERSION_CODES.HONEYCOMB_MR1)
 public final class Gif
+    implements OnAttachStateChangeListener
 {
 
   public static final Logger log = LoggerFactory.getInstance("Gif");
@@ -30,11 +38,123 @@ public final class Gif
 
   private int duration;
 
-  private GifEngine gifEngine;
+  private ImageView imageView;
+
+  /**
+   * We are using a value animator for animating
+   * the gif in the ImageView
+   */
+  private ValueAnimator valueAnimator;
+
 
   public Gif(InputStream inputStream, String url)
   {
     this.bitmaps = new ArrayList<>();
+    decodeGif(inputStream, url);
+  }
+
+  @Override
+  public void onViewAttachedToWindow(View view)
+  {
+
+  }
+
+  /**
+   * We end the gif animation once the ImageView that plays the
+   * gif is detached from the current window.
+   * This will prevent multiple display of the same gif in a recycler view
+   * It will also free the memory preventing memory leak and OOM
+   *
+   * @param view
+   */
+  @Override
+  public void onViewDetachedFromWindow(View view)
+  {
+    end();
+  }
+
+  @RequiresApi(api = VERSION_CODES.HONEYCOMB_MR1)
+  public void startAnimation(@NonNull final ImageView imageView)
+  {
+    this.imageView = imageView;
+    this.imageView.addOnAttachStateChangeListener(this);
+    animate();
+  }
+
+  @RequiresApi(android.os.Build.VERSION_CODES.HONEYCOMB_MR1)
+  public void endAnimation()
+  {
+    end();
+  }
+
+
+  public int getHeight()
+  {
+    return bitmaps.size() < 1 ? 0 : bitmaps.get(0).getHeight();
+  }
+
+  public int getWidth()
+  {
+    return bitmaps.size() < 1 ? 0 : bitmaps.get(0).getWidth();
+  }
+
+  public int getFramesCount()
+  {
+    return bitmaps.size();
+  }
+
+  public Bitmap getBitmap(int index)
+  {
+    return bitmaps.get(index);
+  }
+
+  public int getDuration()
+  {
+    return duration;
+  }
+
+  private void end()
+  {
+    if (valueAnimator != null && valueAnimator.isRunning())
+    {
+      valueAnimator.cancel();
+      valueAnimator.end();
+      bitmaps.clear();
+    }
+  }
+
+  private void animate()
+  {
+    if (bitmaps.isEmpty() == false)
+    {
+      int[] table = new int[bitmaps.size()];
+      for (int i = 0; i < table.length; i++)
+      {
+        table[i] = i;
+      }
+
+      valueAnimator = ValueAnimator.ofInt(table);
+      valueAnimator.setInterpolator(new LinearInterpolator());
+      valueAnimator.setDuration(getDuration());
+      valueAnimator.setRepeatCount(ValueAnimator.INFINITE);
+      valueAnimator.addUpdateListener(new AnimatorUpdateListener()
+      {
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation)
+        {
+          if (valueAnimator.isRunning() && valueAnimator.isRunning())
+          {
+            imageView.setImageBitmap(bitmaps.get((Integer) animation.getAnimatedValue()));
+          }
+        }
+      });
+      valueAnimator.start();
+    }
+  }
+
+
+  private void decodeGif(final InputStream inputStream, final String url)
+  {
     final GifDecoder gifDecoder;
     {
       final long milliseconds = System.currentTimeMillis();
@@ -72,46 +192,7 @@ public final class Gif
       {
         log.info("Prepared the individual images belonging to the animated GIF with URL '" + url + "' in " + (System.currentTimeMillis() - milliseconds) + " ms");
       }
+      gifDecoder.clear();
     }
   }
-
-  @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
-  public void startAnimation(@NonNull final ImageView imageView)
-  {
-    gifEngine = new GifEngine(imageView, this);
-    gifEngine.animate();
-  }
-
-  @TargetApi(android.os.Build.VERSION_CODES.HONEYCOMB)
-  public void endAnimation()
-  {
-    gifEngine.end();
-  }
-
-  public int getHeight()
-  {
-    return bitmaps.size() < 1 ? 0 : bitmaps.get(0).getHeight();
-  }
-
-  public int getWidth()
-  {
-    return bitmaps.size() < 1 ? 0 : bitmaps.get(0).getWidth();
-  }
-
-  public int getFramesCount()
-  {
-    return bitmaps.size();
-  }
-
-  public Bitmap getBitmap(int index)
-  {
-    return bitmaps.get(index);
-  }
-
-  public int getDuration()
-  {
-    return duration;
-  }
-
-
 }
