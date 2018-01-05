@@ -59,7 +59,7 @@ public final class Droid4SampleSplashScreenActivity
   {
     try
     {
-      Thread.sleep(15000);
+      Thread.sleep(2000);
     }
     catch (InterruptedException exception)
     {

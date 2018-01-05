@@ -586,6 +586,7 @@ public final class Droid4mizer<AggregateClass, ComponentClass>
    * @return the service or {@code null} if the name does not exist
    * @see Context#getSystemService(String)
    */
+  @Deprecated
   public Object getSystemService(String name, Object defaultService)
   {
     return ActivityController.getInstance().getSystemService(activity, name, defaultService);

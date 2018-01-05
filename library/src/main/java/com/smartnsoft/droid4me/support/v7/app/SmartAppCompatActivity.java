@@ -22,14 +22,12 @@
 
 package com.smartnsoft.droid4me.support.v7.app;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -144,25 +142,6 @@ public abstract class SmartAppCompatActivity<AggregateClass>
     finally
     {
       super.onDestroy();
-    }
-  }
-
-  @Override
-  public LayoutInflater getLayoutInflater()
-  {
-    return (LayoutInflater) droid4mizer.getSystemService(Context.LAYOUT_INFLATER_SERVICE, super.getLayoutInflater());
-  }
-
-  @Override
-  public Object getSystemService(String name)
-  {
-    if (Context.LAYOUT_INFLATER_SERVICE.equals(name) == true && getWindow() != null)
-    {
-      return droid4mizer.getSystemService(name, getWindow().getLayoutInflater());
-    }
-    else
-    {
-      return droid4mizer.getSystemService(name, super.getSystemService(name));
     }
   }
 

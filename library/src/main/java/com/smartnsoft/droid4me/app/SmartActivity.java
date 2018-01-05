@@ -140,12 +140,6 @@ public abstract class SmartActivity<AggregateClass>
   }
 
   @Override
-  public Object getSystemService(String name)
-  {
-    return droid4mizer.getSystemService(name, super.getSystemService(name));
-  }
-
-  @Override
   public void onAttachedToWindow()
   {
     super.onAttachedToWindow();

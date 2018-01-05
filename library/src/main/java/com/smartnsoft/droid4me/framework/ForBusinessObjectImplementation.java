@@ -30,6 +30,7 @@ import com.smartnsoft.droid4me.LifeCycle;
  * @author Édouard Mercier
  * @since 2008.08.11
  */
+@Deprecated
 public abstract class ForBusinessObjectImplementation<BusinessObjectClass>
     implements BusinessObjectLifeCycle<BusinessObjectClass>
 {

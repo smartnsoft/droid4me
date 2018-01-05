@@ -28,6 +28,7 @@ import android.os.Bundle;
  * @author Édouard Mercier
  * @since 2012.06.21
  */
+@Deprecated
 public interface AndroidLifeCycle
 {
 

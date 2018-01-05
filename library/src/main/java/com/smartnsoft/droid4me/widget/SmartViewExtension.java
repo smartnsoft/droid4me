@@ -55,7 +55,7 @@ public interface SmartViewExtension<ViewClass extends View>
     private OnSizeChangedListener<ViewClass> onSizeChangedListener;
 
     /**
-     * Holds the widget current vertical/horizontal dimensions ratio;
+     * Holds the widget current horizontal/vertical dimensions ratio;
      */
     private float ratio = 0f;
 
@@ -211,7 +211,7 @@ public interface SmartViewExtension<ViewClass extends View>
           else if (originalWidthMode == MeasureSpec.EXACTLY)
           {
             finalWidth = originalWidth;
-            final float idealHeight = finalWidth * actualRatio;
+            final float idealHeight = finalWidth / actualRatio;
             if (originalHeightMode == MeasureSpec.UNSPECIFIED)
             {
               finalHeight = (int) idealHeight;
@@ -224,7 +224,7 @@ public interface SmartViewExtension<ViewClass extends View>
           else if (originalHeightMode == MeasureSpec.EXACTLY)
           {
             finalHeight = originalHeight;
-            final float idealWidth = finalHeight / actualRatio;
+            final float idealWidth = finalHeight * actualRatio;
             if (originalWidthMode == MeasureSpec.UNSPECIFIED)
             {
               finalWidth = (int) idealWidth;
@@ -256,11 +256,11 @@ public interface SmartViewExtension<ViewClass extends View>
           final float actualRatio = ratio > 0 ? ratio : -1f / ratio;
           final int originalWidth = MeasureSpec.getSize(widthMeasureSpec);
           final int originalHeight = MeasureSpec.getSize(heightMeasureSpec);
-          final int calculatedHeight = (int) ((float) originalWidth * actualRatio);
+          final int calculatedHeight = (int) ((float) originalWidth / actualRatio);
           final int finalWidth, finalHeight;
           if (originalHeight > 0 && calculatedHeight > originalHeight)
           {
-            finalWidth = (int) ((float) originalHeight / actualRatio);
+            finalWidth = (int) ((float) originalHeight * actualRatio);
             finalHeight = originalHeight;
           }
           else
@@ -295,18 +295,18 @@ public interface SmartViewExtension<ViewClass extends View>
   }
 
   /**
-   * @return the vertical/horizontal ratio ; when set to {@code 0}, no ratio is applied {@link #setRatio(float)}
+   * @return the horizontal/vertical ratio ; when set to {@code 0}, no ratio is applied {@link #setRatio(float)}
    * @see #setRatio(float)
    */
   float getRatio();
 
   /**
    * Sets the ratio between the width and the height of the image.
-   * More formally, the value of the ratio is equal to the height divided by the width. The default value is {@code 9 / 16}.
+   * More formally, the value of the ratio is equal to the width divided by the height. The default value is {@code 16 / 9}.
    * <p>
    * <ul>
-   * <li>When set to a positive value, the image width is taken as a reference to force the height.</li>
-   * <li>When set to a negative value, the image height is taken as a reference to force the width, and the {@code ratio} argument absolute value is
+   * <li>When set to a positive value, the image height is taken as a reference to force the width.</li>
+   * <li>When set to a negative value, the image width is taken as a reference to force the height, and the {@code ratio} argument absolute value is
    * taken.</li>
    * </ul>
    *
