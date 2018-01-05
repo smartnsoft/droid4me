@@ -35,10 +35,6 @@ import java.util.Map;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -46,11 +42,9 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.smartnsoft.droid4me.R;
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
-import com.smartnsoft.droid4me.download.DownloadSpecs.TemporaryImageSpecs;
 import com.smartnsoft.droid4me.download.gif.Gif;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
@@ -548,7 +542,10 @@ public class DownloadInstructions
     @Override
     protected void onBindTemporaryBitmap(View view, Gif bitmap, String bitmapUid, Object imageSpecs)
     {
-      ((ImageView) view).setImageBitmap(bitmap.getBitmap(0));
+      if (view instanceof ImageView)
+      {
+        ((ImageView) view).setImageBitmap(bitmap.getBitmap(0));
+      }
     }
 
     @Override
@@ -566,7 +563,7 @@ public class DownloadInstructions
     @Override
     protected boolean onBindGif(boolean downloaded, View view, Gif gif, String bitmapUid, Object imageSpecs)
     {
-      if (VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB)
+      if (VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB_MR1)
       {
         gif.startAnimation((ImageView) view);
       }
@@ -588,7 +585,18 @@ public class DownloadInstructions
 
     protected Gif convertInputStreamToGif(InputStream inputStream, String url)
     {
-      return new Gif(inputStream, url);
+      if (VERSION.SDK_INT >= VERSION_CODES.HONEYCOMB_MR1)
+      {
+        return new Gif(inputStream, url);
+      }
+      else
+      {
+        if (log.isWarnEnabled() == true)
+        {
+          log.warn("Gif support is available from API 12", new UnsupportedOperationException("Gif support is available from API 12"));
+        }
+        return null;
+      }
     }
   }
 

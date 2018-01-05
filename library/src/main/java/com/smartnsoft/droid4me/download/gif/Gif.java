@@ -142,7 +142,7 @@ public final class Gif
         @Override
         public void onAnimationUpdate(ValueAnimator animation)
         {
-          if (valueAnimator.isRunning() && valueAnimator.isRunning())
+          if (valueAnimator.isRunning())
           {
             imageView.setImageBitmap(bitmaps.get((Integer) animation.getAnimatedValue()));
           }
@@ -159,6 +159,7 @@ public final class Gif
     {
       final long milliseconds = System.currentTimeMillis();
       gifDecoder = new GifDecoder();
+
       if (gifDecoder.read(inputStream, 2 * 8192) != GifDecoder.STATUS_OK)
       {
         if (log.isWarnEnabled())
@@ -167,11 +168,13 @@ public final class Gif
         }
         return;
       }
+
       if (log.isInfoEnabled())
       {
         log.info("Parsed the animated GIF with URL '" + url + "' in " + (System.currentTimeMillis() - milliseconds) + " ms");
       }
     }
+
     final int framesCount = gifDecoder.getFrameCount();
     {
       final long milliseconds = System.currentTimeMillis();
@@ -192,6 +195,7 @@ public final class Gif
       {
         log.info("Prepared the individual images belonging to the animated GIF with URL '" + url + "' in " + (System.currentTimeMillis() - milliseconds) + " ms");
       }
+
       gifDecoder.clear();
     }
   }
