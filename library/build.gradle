@@ -17,8 +17,8 @@ android
     minSdkVersion 14
     targetSdkVersion 27
 
-    versionCode 21
-    versionName "2.6.0"
+    versionCode 22
+    versionName "2.7.0"
   }
 
   buildTypes
@@ -128,9 +128,6 @@ publishing.publications.all
 
 bintray
 {
-  user = bintrayUsername
-  key = bintrayKey
-
   publications = ["ReleasePublication"]
 
   pkg
