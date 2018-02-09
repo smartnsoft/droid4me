@@ -489,7 +489,7 @@ public class DownloadInstructions
 
   }
 
-  public static class GifAbstractAbstractInstructions
+  public static class GifInstructions
       extends GifAbstractInstructions
   {
 
