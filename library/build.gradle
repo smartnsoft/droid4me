@@ -5,7 +5,7 @@ apply plugin: "maven-publish"
 
 ext
 {
-  appCompatVersion="27.0.1"
+  appCompatVersion="27.0.2"
 }
 
 android
@@ -17,8 +17,8 @@ android
     minSdkVersion 14
     targetSdkVersion 27
 
-    versionCode 21
-    versionName "2.6.1"
+    versionCode 22
+    versionName "2.7.0"
   }
 
   buildTypes
@@ -128,9 +128,6 @@ publishing.publications.all
 
 bintray
 {
-  user = bintrayUsername
-  key = bintrayKey
-
   publications = ["ReleasePublication"]
 
   pkg
