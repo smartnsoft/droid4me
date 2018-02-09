@@ -615,8 +615,9 @@ public abstract class CoreBitmapDownloader<BitmapClass extends Bitmapable, ViewC
       {
         if (otherUsedBitmap.getBitmap() instanceof BitmapableGif)
         {
-          otherUsedBitmap.getBitmap().recycle();
+          ((BitmapableGif) otherUsedBitmap.getBitmap()).getGif().endAnimation();
         }
+
         otherUsedBitmap.bindingCount--;
         if (IS_DEBUG_TRACE && log.isDebugEnabled())
         {

@@ -139,6 +139,7 @@ public class DownloadInstructions
       bitmap = gif.getBitmap(0);
     }
 
+    @Override
     public int getSizeInBytes()
     {
       if (gif == null)
@@ -151,12 +152,29 @@ public class DownloadInstructions
       }
     }
 
+    @Override
     public void recycle()
+    {
+      if (gif != null && gif.getBitmaps().isEmpty() == false)
+      {
+        for (Bitmap bitmap : gif.getBitmaps())
+        {
+          bitmap.recycle();
+        }
+      }
+    }
+
+    public void endAnimation()
     {
       if (gif != null)
       {
         gif.endAnimation();
       }
+    }
+
+    public Gif getGif()
+    {
+      return gif;
     }
   }
 
@@ -372,7 +390,7 @@ public class DownloadInstructions
 
   }
 
-  public static abstract class GifInstructions
+  public static abstract class GifAbstractInstructions
       implements BasisDownloadInstructions.Instructions<DownloadInstructions.BitmapableGif, DownloadInstructions.ViewableView>
   {
 
@@ -471,8 +489,8 @@ public class DownloadInstructions
 
   }
 
-  public static class GifAbstractInstructions
-      extends GifInstructions
+  public static class GifAbstractAbstractInstructions
+      extends GifAbstractInstructions
   {
 
     @Override
@@ -496,15 +514,17 @@ public class DownloadInstructions
     @Override
     public BitmapableGif convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
     {
-      final long start = System.currentTimeMillis();
-      final Gif theGif = convertInputStreamToGif(inputStream, url);
-      if (theGif != null)
+      long start = 0L;
+      boolean isDebug = CoreBitmapDownloader.IS_DEBUG_TRACE && CoreBitmapDownloader.log.isDebugEnabled();
+      if (isDebug)
       {
-        if (CoreBitmapDownloader.IS_DEBUG_TRACE && CoreBitmapDownloader.log.isDebugEnabled())
-        {
-          final long stop = System.currentTimeMillis();
-          CoreBitmapDownloader.log.debug("The thread '" + Thread.currentThread().getName() + "' decoded in " + (stop - start) + " relative to the URL '" + url + "'");
-        }
+        start = System.currentTimeMillis();
+      }
+      final Gif theGif = convertInputStreamToGif(inputStream, url);
+      if (isDebug && theGif != null)
+      {
+        final long stop = System.currentTimeMillis();
+        CoreBitmapDownloader.log.debug("The thread '" + Thread.currentThread().getName() + "' decoded in " + (stop - start) + " relative to the URL '" + url + "'");
       }
       return theGif == null ? null : new BitmapableGif(theGif);
     }
@@ -552,12 +572,6 @@ public class DownloadInstructions
     protected void onGifReady(boolean allright, View view, Gif bitmap, String bitmapUid, Object imageSpecs)
     {
 
-    }
-
-    @Override
-    public void onOver(boolean aborted, ViewableView view, String bitmapUid, Object imageSpecs)
-    {
-      super.onOver(aborted, view, bitmapUid, imageSpecs);
     }
 
     @Override

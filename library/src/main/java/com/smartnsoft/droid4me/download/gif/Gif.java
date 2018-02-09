@@ -70,6 +70,7 @@ public final class Gif
   @Override
   public void onViewDetachedFromWindow(View view)
   {
+    this.imageView.removeOnAttachStateChangeListener(this);
     end();
   }
 
@@ -90,12 +91,12 @@ public final class Gif
 
   public int getHeight()
   {
-    return bitmaps.size() < 1 ? 0 : bitmaps.get(0).getHeight();
+    return bitmaps.isEmpty() ? 0 : bitmaps.get(0).getHeight();
   }
 
   public int getWidth()
   {
-    return bitmaps.size() < 1 ? 0 : bitmaps.get(0).getWidth();
+    return bitmaps.isEmpty() ? 0 : bitmaps.get(0).getWidth();
   }
 
   public int getFramesCount()
@@ -106,6 +107,11 @@ public final class Gif
   public Bitmap getBitmap(int index)
   {
     return bitmaps.get(index);
+  }
+
+  public List<Bitmap> getBitmaps()
+  {
+    return bitmaps;
   }
 
   public int getDuration()
@@ -157,7 +163,11 @@ public final class Gif
   {
     final GifDecoder gifDecoder;
     {
-      final long milliseconds = System.currentTimeMillis();
+      long milliseconds = 0L;
+      if (log.isInfoEnabled())
+      {
+        milliseconds = System.currentTimeMillis();
+      }
       gifDecoder = new GifDecoder();
 
       if (gifDecoder.read(inputStream, 2 * 8192) != GifDecoder.STATUS_OK)
