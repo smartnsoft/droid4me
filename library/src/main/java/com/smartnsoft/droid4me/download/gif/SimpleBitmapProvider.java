@@ -6,9 +6,6 @@ import android.support.annotation.NonNull;
 /**
  * @author Antoine Gerard
  * @since 2017.10.18
- */
-
-/**
  * Util class for creating a Bitmap
  */
 public final class SimpleBitmapProvider

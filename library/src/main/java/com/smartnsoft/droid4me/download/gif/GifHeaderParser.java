@@ -1,19 +1,20 @@
 package com.smartnsoft.droid4me.download.gif;
 
-import android.util.Log;
-
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+
+import android.util.Log;
+
 /**
  * @author Antoine Gerard
  * @since 2017.10.18
- */
-
-/**
+ * <p>
  * A class responsible for creating {@link GifHeader}s from data
  * representing animated gifs.
+ * <p>
+ * Source : https://github.com/bumptech/glide/blob/master/third_party/gif_decoder/src/main/java/com/bumptech/glide/gifdecoder/GifHeaderParser.java
  */
 public final class GifHeaderParser
 {
@@ -21,11 +22,11 @@ public final class GifHeaderParser
   public static final String TAG = "GifHeaderParser";
 
   // The minimum frame delay in hundredths of a second.
-  static final int MIN_FRAME_DELAY = 2;
+  private static final int MIN_FRAME_DELAY = 2;
 
   // The default frame delay in hundredths of a second for GIFs with frame delays less than the
   // minimum.
-  static final int DEFAULT_FRAME_DELAY = 10;
+  private static final int DEFAULT_FRAME_DELAY = 10;
 
   private static final int MAX_BLOCK_SIZE = 256;
 
@@ -81,13 +82,13 @@ public final class GifHeaderParser
     {
       throw new IllegalStateException("You must call setData() before parseHeader()");
     }
-    if (err())
+    if (error())
     {
       return header;
     }
 
     readHeader();
-    if (!err())
+    if (!error())
     {
       readContents();
       if (header.frameCount < 0)
@@ -106,7 +107,7 @@ public final class GifHeaderParser
   public boolean isAnimated()
   {
     readHeader();
-    if (!err())
+    if (!error())
     {
       readContents(2 /* maxFrames */);
     }
@@ -128,7 +129,7 @@ public final class GifHeaderParser
   {
     // Read GIF file content blocks.
     boolean done = false;
-    while (!(done || err() || header.frameCount > maxFrames))
+    while (!(done || error() || header.frameCount > maxFrames))
     {
       int code = read();
       switch (code)
@@ -253,12 +254,12 @@ public final class GifHeaderParser
     if (lctFlag)
     {
       // Read table.
-      header.currentFrame.lct = readColorTable(lctSize);
+      header.currentFrame.localColorTable = readColorTable(lctSize);
     }
     else
     {
       // No local color table.
-      header.currentFrame.lct = null;
+      header.currentFrame.localColorTable = null;
     }
 
     // Save this as the decoding position pointer.
@@ -267,7 +268,7 @@ public final class GifHeaderParser
     // False decode pixel data to advance buffer.
     skipImageData();
 
-    if (err())
+    if (error())
     {
       return;
     }
@@ -296,7 +297,7 @@ public final class GifHeaderParser
           header.loopCount = GifDecoder.LOOP_FOREVER;
         }
       }
-    } while ((blockSize > 0) && !err());
+    } while ((blockSize > 0) && !error());
   }
 
 
@@ -316,7 +317,7 @@ public final class GifHeaderParser
       return;
     }
     readLSD();
-    if (header.gctFlag && !err())
+    if (header.gctFlag && !error())
     {
       header.gct = readColorTable(header.gctSize);
       header.bgColor = header.gct[header.bgIndex];
@@ -477,7 +478,7 @@ public final class GifHeaderParser
     return rawData.getShort();
   }
 
-  private boolean err()
+  private boolean error()
   {
     return header.status != GifDecoder.STATUS_OK;
   }

@@ -126,31 +126,31 @@ publishing.publications.all
   }
 }
 
-//bintray
-//{
-//  user = bintrayUsername
-//  key = bintrayKey
-//
-//  publications = ["ReleasePublication"]
-//
-//  pkg
-//  {
-//    repo = "maven"
-//    name = "droid4me"
-//    userOrg = "smartnsoft"
-//    licenses = ["MIT"]
-//    vcsUrl = "https://github.com/smartnsoft/droid4me.git"
-//    publish = true
-//
-//    version
-//    {
-//      name = android.defaultConfig.versionName
-//      desc = "droid4me is a framework library dedicated to the development of Android applications"
-//      released = new Date()
-//      vcsTag = "droid4me-" + android.defaultConfig.versionName
-//    }
-//  }
-//}
+bintray
+{
+  user = bintrayUsername
+  key = bintrayKey
+
+  publications = ["ReleasePublication"]
+
+  pkg
+  {
+    repo = "maven"
+    name = "droid4me"
+    userOrg = "smartnsoft"
+    licenses = ["MIT"]
+    vcsUrl = "https://github.com/smartnsoft/droid4me.git"
+    publish = true
+
+    version
+    {
+      name = android.defaultConfig.versionName
+      desc = "droid4me is a framework library dedicated to the development of Android applications"
+      released = new Date()
+      vcsTag = "droid4me-" + android.defaultConfig.versionName
+    }
+  }
+}
 
 uploadArchives
 {

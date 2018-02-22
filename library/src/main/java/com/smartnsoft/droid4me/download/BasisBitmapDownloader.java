@@ -1321,7 +1321,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     /**
      * This method assumes that the provided <code>inputStream</code> is not {@code null}.
      *
-     * @param inputStream an input stream corresponding to a bitmap
+     * @param inputStream an input stream corresponding to a bitmap or a gif
      * @return {@code null} if the input stream could not be properly converted ; a valid bitmap otherwise
      */
     protected BitmapClass fromInputStreamToBitmapable(InputStream inputStream)

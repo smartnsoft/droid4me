@@ -1,17 +1,16 @@
 package com.smartnsoft.droid4me.download.gif;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * @author Antoine Gerard
  * @since 2017.10.18
- */
-
-import java.util.ArrayList;
-import java.util.List;
-
-/**
  * A header object containing the number of frames in an animated GIF image as well as basic
  * metadata like width and height that can be used to decode each individual frame of the GIF. Can
  * be shared by one or more {@link GifDecoder}s to play the same animated GIF in multiple views.
+ * <p>
+ * Source : https://github.com/bumptech/glide/blob/master/third_party/gif_decoder/src/main/java/com/bumptech/glide/gifdecoder/GifHeader.java
  */
 public final class GifHeader
 {

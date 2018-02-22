@@ -132,7 +132,6 @@ public class DownloadInstructions
 
     private final Bitmap bitmap;
 
-
     public BitmapableGif(Gif gif)
     {
       this.gif = gif;
@@ -429,7 +428,6 @@ public class DownloadInstructions
     @Override
     public BitmapableGif convert(InputStream inputStream, String bitmapUid, Object imageSpecs, String url)
     {
-
       return null;
     }
 
@@ -585,7 +583,7 @@ public class DownloadInstructions
       {
         if (log.isInfoEnabled() == true)
         {
-          log.info("Gif animation is available from API 11");
+          log.info("Gif animation is only available from API 11");
         }
       }
       return true;
@@ -751,20 +749,6 @@ public class DownloadInstructions
       return BitmapFactory.decodeStream(inputStream, null, options);
     }
 
-  }
-
-  /**
-   * Return the downloaded InputStream
-   *
-   * @param inputStream
-   * @param bitmaUid
-   * @param imageSpecs
-   * @param url
-   * @return
-   */
-  protected InputStream rawInputStream(InputStream inputStream, String bitmaUid, Object imageSpecs, String url)
-  {
-    return inputStream;
   }
 
   /**

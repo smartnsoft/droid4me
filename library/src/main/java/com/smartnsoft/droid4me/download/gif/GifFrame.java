@@ -3,14 +3,17 @@ package com.smartnsoft.droid4me.download.gif;
 /**
  * @author Antoine Gerard
  * @since 2017.10.18
+ * <p>
+ * Inner model class housing metadata for each frame.
+ * Taken From : https://gist.github.com/devunwired/4479231
  */
 
-/**
- * Inner model class housing metadata for each frame.
- */
 public final class GifFrame
 {
 
+  /**
+   * Size of the frame
+   */
   int ix, iy, iw, ih;
 
   /**
@@ -46,5 +49,5 @@ public final class GifFrame
   /**
    * Local Color Table.
    */
-  int[] lct;
+  int[] localColorTable;
 }

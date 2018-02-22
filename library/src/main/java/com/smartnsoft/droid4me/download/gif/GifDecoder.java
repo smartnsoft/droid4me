@@ -439,7 +439,7 @@ public final class GifDecoder
     }
 
     // Set the appropriate color table.
-    act = currentFrame.lct != null ? currentFrame.lct : header.gct;
+    act = currentFrame.localColorTable != null ? currentFrame.localColorTable : header.gct;
     if (act == null)
     {
       if (Log.isLoggable(TAG, Log.DEBUG))
@@ -645,7 +645,7 @@ public final class GifDecoder
         if (!currentFrame.transparency)
         {
           c = header.bgColor;
-          if (currentFrame.lct != null && header.bgIndex == currentFrame.transIndex)
+          if (currentFrame.localColorTable != null && header.bgIndex == currentFrame.transIndex)
           {
             c = 0;
           }

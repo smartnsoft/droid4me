@@ -18,7 +18,6 @@ import android.widget.ImageView;
 import com.smartnsoft.droid4me.log.Logger;
 import com.smartnsoft.droid4me.log.LoggerFactory;
 
-
 /**
  * @author Antoine Gerard
  * @since 2017.10.18
@@ -87,7 +86,6 @@ public final class Gif
   {
     end();
   }
-
 
   public int getHeight()
   {
@@ -186,27 +184,26 @@ public final class Gif
     }
 
     final int framesCount = gifDecoder.getFrameCount();
-    {
-      final long milliseconds = System.currentTimeMillis();
-      while (bitmaps.size() < framesCount)
-      {
-        gifDecoder.advance();
-        final Bitmap nextBitmap = gifDecoder.getNextFrame();
-        // We need to deep copy the bitmap
-        duration += gifDecoder.getDelay(gifDecoder.getCurrentFrameIndex());
-        final Bitmap bitmap = nextBitmap.copy(nextBitmap.getConfig(), true);
-        if (bitmap == null)
-        {
-          break;
-        }
-        bitmaps.add(bitmap);
-      }
-      if (log.isInfoEnabled())
-      {
-        log.info("Prepared the individual images belonging to the animated GIF with URL '" + url + "' in " + (System.currentTimeMillis() - milliseconds) + " ms");
-      }
 
-      gifDecoder.clear();
+    final long milliseconds = System.currentTimeMillis();
+    while (bitmaps.size() < framesCount)
+    {
+      gifDecoder.advance();
+      final Bitmap nextBitmap = gifDecoder.getNextFrame();
+      // We need to deep copy the bitmap
+      duration += gifDecoder.getDelay(gifDecoder.getCurrentFrameIndex());
+      final Bitmap bitmap = nextBitmap.copy(nextBitmap.getConfig(), true);
+      if (bitmap == null)
+      {
+        break;
+      }
+      bitmaps.add(bitmap);
     }
+    if (log.isInfoEnabled())
+    {
+      log.info("Prepared the individual images belonging to the animated GIF with URL '" + url + "' in " + (System.currentTimeMillis() - milliseconds) + " ms");
+    }
+
+    gifDecoder.clear();
   }
 }
