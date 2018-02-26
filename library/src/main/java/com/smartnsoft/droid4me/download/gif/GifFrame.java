@@ -3,7 +3,6 @@ package com.smartnsoft.droid4me.download.gif;
 /**
  * @author Antoine Gerard
  * @since 2017.10.18
- * <p>
  * Inner model class housing metadata for each frame.
  * Taken From : https://gist.github.com/devunwired/4479231
  */
