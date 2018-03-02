@@ -197,6 +197,7 @@ public abstract class URLConnectionWebServiceCaller
    * @param callType          the type of the HTTP method
    * @param postParameters    the body (as form-data fields) of the HTTP method when its a {@link CallType#Post} or a {@link CallType#Put} ; {@code null}
    *                          otherwise
+   * @param headers           the original headers of the request. They can be edited in order to manage some scenarios with tokens
    * @param body              the body (as form-data fields) of the HTTP method when its a {@link CallType#Post} or a {@link CallType#Put} ; {@code null}
    *                          otherwise
    * @param httpURLConnection the HttpURLConnection object
@@ -206,7 +207,8 @@ public abstract class URLConnectionWebServiceCaller
    * @return {@code true} if you want the request to be re-run if it has failed
    * @throws CallException if you want the call to be considered as not OK
    */
-  protected boolean onStatusCodeNotOk(String uri, CallType callType, Map<String, String> postParameters, String body,
+  protected boolean onStatusCodeNotOk(String uri, CallType callType, Map<String, String> postParameters,
+      Map<String, String> headers, String body,
       HttpURLConnection httpURLConnection, URL url, int statusCode, String statusMessage, int attemptsCount)
       throws CallException
   {
@@ -472,7 +474,8 @@ public abstract class URLConnectionWebServiceCaller
     return performHttpRequest(uri, callType, headers, parameters, body, files, 0);
   }
 
-  protected boolean shouldTryToConsumeErrorInputstream(int statusCode, String uri, CallType callType, Map<String, String> headers,
+  protected boolean shouldTryToConsumeErrorInputstream(int statusCode, String uri, CallType callType,
+      Map<String, String> headers,
       Map<String, String> parameters, String body, List<MultipartFile> files)
   {
     return false;
@@ -733,7 +736,7 @@ public abstract class URLConnectionWebServiceCaller
 
     if (!(responseCode >= HttpURLConnection.HTTP_OK && responseCode < HttpURLConnection.HTTP_MULT_CHOICE))
     {
-      if (onStatusCodeNotOk(uri, callType, paramaters, body, httpURLConnection, url, responseCode, responseMessage,
+      if (onStatusCodeNotOk(uri, callType, paramaters, headers, body, httpURLConnection, url, responseCode, responseMessage,
           attemptsCount + 1) == true)
       {
         return performHttpRequest(uri, callType, headers, paramaters, body, files, attemptsCount + 1);
