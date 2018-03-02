@@ -37,6 +37,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
+import com.smartnsoft.droid4me.download.BasisDownloadInstructions.Instructions;
 import com.smartnsoft.droid4me.download.DownloadInstructions.BitmapableBitmap;
 import com.smartnsoft.droid4me.download.DownloadInstructions.HandlerableHander;
 import com.smartnsoft.droid4me.download.DownloadInstructions.ViewableView;
@@ -195,12 +196,12 @@ public class BitmapDownloader
   /**
    * Indicates the default upper limit of memory that each cache is allowed to reach.
    */
-  public static final long DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 3l * 1024l * 1024l;
+  public static final long DEFAULT_HIGH_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 5L * 1024L * 1024L;
 
   /**
    * Indicates the default lower limit of memory that each cache is allowed to reach.
    */
-  public static final long DEFAULT_LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 1l * 1024l * 1024l;
+  public static final long DEFAULT_LOW_LEVEL_MEMORY_WATER_MARK_IN_BYTES = 1L * 1024L * 1024L;
 
   /**
    * The number of instances of {@link BitmapDownloader} that will be created. Defaults to {@code 1}.
@@ -339,7 +340,7 @@ public class BitmapDownloader
   }
 
   public final void get(View view, String bitmapUid, Object imageSpecs, Handler handler,
-      DownloadInstructions.Instructions instructions)
+      Instructions instructions)
   {
     get(view != null ? new ViewableView(view) : null, bitmapUid, imageSpecs, handler != null ? new HandlerableHander(handler) : null, instructions);
   }
