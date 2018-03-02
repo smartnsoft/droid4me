@@ -17,8 +17,8 @@ android
     minSdkVersion 14
     targetSdkVersion 27
 
-    versionCode 22
-    versionName "2.7-SNAPSHOT"
+    versionCode 23
+    versionName "2.8.0"
   }
 
   buildTypes
