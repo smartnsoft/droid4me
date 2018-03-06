@@ -5,7 +5,7 @@ apply plugin: "maven-publish"
 
 ext
 {
-  appCompatVersion="27.0.2"
+  appCompatVersion = "27.0.2"
 }
 
 android
@@ -17,8 +17,8 @@ android
     minSdkVersion 14
     targetSdkVersion 27
 
-    versionCode 22
-    versionName "2.7.0"
+    versionCode 23
+    versionName "2.8.0"
   }
 
   buildTypes
@@ -143,7 +143,7 @@ bintray
     {
       name = android.defaultConfig.versionName
       desc = "droid4me is a framework library dedicated to the development of Android applications"
-      released  = new Date()
+      released = new Date()
       vcsTag = "droid4me-" + android.defaultConfig.versionName
     }
   }

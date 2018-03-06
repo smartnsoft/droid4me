@@ -40,6 +40,7 @@ import com.smartnsoft.droid4me.download.BasisDownloadInstructions.InputStreamDow
 import com.smartnsoft.droid4me.download.DownloadContracts.Bitmapable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Handlerable;
 import com.smartnsoft.droid4me.download.DownloadContracts.Viewable;
+import com.smartnsoft.droid4me.download.DownloadInstructions.BitmapableGif;
 
 /**
  * An implementation of the {@link CoreBitmapDownloader} class, which is independent from the Android platform.
@@ -403,6 +404,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       preCommand.executeStart(true, isDownloadBlocking);
     }
   }
+
 
   public synchronized void clear()
   {
@@ -1081,7 +1083,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
         }
 
         // We attempt to convert the input stream into a bitmap
-        final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
+        final BitmapClass bitmap = fromInputStreamToBitmapable(inputStream);
         if (bitmap == null)
         {
           onBitmapReady(false, null);
@@ -1319,10 +1321,10 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
     /**
      * This method assumes that the provided <code>inputStream</code> is not {@code null}.
      *
-     * @param inputStream an input stream corresponding to a bitmap
+     * @param inputStream an input stream corresponding to a bitmap or a gif
      * @return {@code null} if the input stream could not be properly converted ; a valid bitmap otherwise
      */
-    protected BitmapClass fromInputStreamToBitmap(InputStream inputStream)
+    protected BitmapClass fromInputStreamToBitmapable(InputStream inputStream)
     {
       try
       {
@@ -1384,7 +1386,7 @@ public class BasisBitmapDownloader<BitmapClass extends Bitmapable, ViewClass ext
       }
       try
       {
-        final BitmapClass bitmap = fromInputStreamToBitmap(inputStream);
+        final BitmapClass bitmap = fromInputStreamToBitmapable(inputStream);
         if (downloadStartTimestamp >= 0)
         {
           final long stop = System.currentTimeMillis();
