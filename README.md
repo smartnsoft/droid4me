@@ -1,5 +1,3 @@
- <a href='https://twitter.com/#!/dr0id4me'><img src='http://smartnsoft.github.io/droid4me/images/ic_twitter_droid4me.png' /></a>
-
 # Welcome to the droid4me project
 
 droid4me is a framework library dedicated to the development of Android applications.
