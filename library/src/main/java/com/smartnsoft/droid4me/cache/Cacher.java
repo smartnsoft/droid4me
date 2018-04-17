@@ -243,7 +243,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     if (uriStreamParser instanceof Business.UriStreamParserSerializer<?, ?, ?, ?>)
     {
       final UriType uri = computeUri(parameter);
-      ioStreamer.writeInputStream(uri, new Business.InputAtom(info.timestamp, ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(parameter, info.value)), true);
+      ioStreamer.writeInputStream(uri, new Business.InputAtom(info.timestamp, ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(parameter, info.value), null), true);
     }
     else
     {
@@ -265,7 +265,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     if (atom != null)
     {
       // If the input stream is null but not the atom, we return a null business object
-      return new Values.Info<>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.headers, atom.inputStream), atom.timestamp, Business.Source.IOStreamer);
+      return new Values.Info<>(atom.inputStream == null ? null : uriStreamParser.parse(parameter, atom.headers, atom.inputStream != null ? atom.inputStream : atom.errorInputStream), atom.timestamp, Business.Source.IOStreamer);
     }
     return null;
   }
@@ -329,13 +329,13 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
         final Values.Info<BusinessObjectType> info = new Values.Info<>(businessObject, new Date(), Business.Source.IOStreamer);
         if (businessObject == null)
         {
-          ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), null), true);
+          ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), null, null), true);
           return info;
         }
         else if (uriStreamParser instanceof Business.UriStreamParserSerializer<?, ?, ?, ?>)
         {
           // In that case, we put the business object in the cache
-          ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(parameter, info.value)), true);
+          ioStreamer.writeInputStream(uri, new Business.InputAtom(new Date(), ((Business.UriStreamParserSerializer<BusinessObjectType, UriType, ParameterType, ParseExceptionType>) uriStreamParser).serialize(parameter, info.value), null), true);
           return info;
         }
         else
@@ -385,7 +385,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
       markableInputStream = null;
     }
     // We first parse the input stream, so as to make sure that it is valid before persisting it
-    final BusinessObjectType businessObject = uriStreamParser.parse(parameter, atom.headers, markableInputStream);
+    final BusinessObjectType businessObject = uriStreamParser.parse(parameter, atom.headers, markableInputStream != null ? markableInputStream : atom.errorInputStream);
     boolean invokeOnNewInputStream = true;
     if (markableInputStream != null)
     {
@@ -405,7 +405,7 @@ public class Cacher<BusinessObjectType, UriType, ParameterType, ParseExceptionTy
     if (invokeOnNewInputStream == true)
     {
       // Now, we can persist the input stream corresponding to the business object
-      onNewInputStream(parameter, uri, markableInputStream == null ? atom : new Business.InputAtom(atom.timestamp, markableInputStream, atom.context), false);
+      onNewInputStream(parameter, uri, markableInputStream == null ? atom : new Business.InputAtom(atom.timestamp, markableInputStream, null, atom.context), false);
     }
 
     // We notify the instructions that the business object has been read from the URI streamer

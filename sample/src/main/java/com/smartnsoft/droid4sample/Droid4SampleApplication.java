@@ -66,7 +66,7 @@ public final class Droid4SampleApplication
     @Override
     public InputStream onInputStreamDownloaded(String imageUid, Object imageSpecs, String url, InputStream inputStream)
     {
-      final InputAtom inputAtom = Persistence.getInstance(1).flushInputStream(url, new InputAtom(new Date(), inputStream));
+      final InputAtom inputAtom = Persistence.getInstance(1).flushInputStream(url, new InputAtom(new Date(), inputStream, null));
       return inputAtom == null ? null : inputAtom.inputStream;
     }
 

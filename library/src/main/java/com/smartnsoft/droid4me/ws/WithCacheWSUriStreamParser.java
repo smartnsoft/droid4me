@@ -182,7 +182,7 @@ public final class WithCacheWSUriStreamParser
       final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
       final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
       final HttpResponse httpResponse = webServiceClient.runRequest(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.headers, httpCallTypeAndBody.parameters, httpCallTypeAndBody.body, httpCallTypeAndBody.files);
-      return new Business.InputAtom(new Date(), httpResponse.headers, httpResponse.inputStream, null);
+      return new Business.InputAtom(new Date(), httpResponse.headers, httpResponse.inputStream, httpResponse.errorInputStream, null);
 
     }
 
@@ -218,7 +218,7 @@ public final class WithCacheWSUriStreamParser
         throws ParseExceptionType, WebServiceClient.CallException, Business.BusinessException
     {
       final InputAtom inputAtom = getInputStream(computeUri(parameter));
-      return parse(parameter, inputAtom.headers, inputAtom.inputStream);
+      return parse(parameter, inputAtom.headers, inputAtom.inputStream != null ? inputAtom.inputStream : inputAtom.errorInputStream);
     }
 
     public final BusinessObjectType getValue(ParameterType parameter)
@@ -226,8 +226,8 @@ public final class WithCacheWSUriStreamParser
     {
       try
       {
-        final InputAtom inputStream = getInputStream(computeUri(parameter));
-        return parse(parameter, inputStream.headers, inputStream.inputStream);
+        final InputAtom inputAtom = getInputStream(computeUri(parameter));
+        return parse(parameter, inputAtom.headers, inputAtom.inputStream != null ? inputAtom.inputStream : inputAtom.errorInputStream);
       }
       catch (Exception exception)
       {

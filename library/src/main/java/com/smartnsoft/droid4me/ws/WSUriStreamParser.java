@@ -195,7 +195,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
     final UriStreamerSourceKey<ParameterType> sourceLocator = uri.getSourceLocator(Business.Source.UriStreamer);
     final WebServiceClient.HttpCallTypeAndBody httpCallTypeAndBody = sourceLocator.computeUri(uri.getParameter());
     final HttpResponse httpResponse = webServiceClient.runRequest(httpCallTypeAndBody.url, httpCallTypeAndBody.callType, httpCallTypeAndBody.headers, httpCallTypeAndBody.parameters, httpCallTypeAndBody.body, httpCallTypeAndBody.files);
-    return new Business.InputAtom(new Date(), httpResponse.headers, httpResponse.inputStream, null);
+    return new Business.InputAtom(new Date(), httpResponse.headers, httpResponse.inputStream, httpResponse.errorInputStream, null);
   }
 
   // TODO: think on how to set that back
@@ -216,7 +216,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
       throws ParseExceptionType, WebServiceCaller.CallException
   {
     final InputAtom inputAtom = getInputStream(computeUri(parameter));
-    return parse(parameter, inputAtom.headers, inputAtom.inputStream);
+    return parse(parameter, inputAtom.headers, inputAtom.inputStream != null ? inputAtom.inputStream : inputAtom.errorInputStream);
   }
 
   public final BusinessObjectType getValue(ParameterType parameter)
@@ -225,7 +225,7 @@ public abstract class WSUriStreamParser<BusinessObjectType, ParameterType, Parse
     try
     {
       final InputAtom inputAtom = getInputStream(computeUri(parameter));
-      return parse(parameter, inputAtom.headers, inputAtom.inputStream);
+      return parse(parameter, inputAtom.headers, inputAtom.inputStream != null ? inputAtom.inputStream : inputAtom.errorInputStream);
     }
     catch (Exception exception)
     {

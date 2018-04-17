@@ -665,7 +665,7 @@ public final class DbPersistence
       {
         log.debug("Read from the table '" + tableName + "' the contents related to the URI '" + uri + "' in " + (System.currentTimeMillis() - start) + " ms");
       }
-      return new Business.InputAtom(timestamp, byteArrayInputStream, serializable);
+      return new Business.InputAtom(timestamp, byteArrayInputStream, null, serializable);
     }
     finally
     {
@@ -909,7 +909,7 @@ public final class DbPersistence
         }
       });
     }
-    return returnStream == false ? null : new Business.InputAtom(timestamp, newInputStream, context);
+    return returnStream == false ? null : new Business.InputAtom(timestamp, newInputStream, null, context);
   }
 
   private void updateDb(String uri, Date timestamp, Serializable context, byte[] bytes, long start,

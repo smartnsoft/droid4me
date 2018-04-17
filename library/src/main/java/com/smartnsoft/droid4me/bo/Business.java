@@ -245,23 +245,27 @@ public final class Business
 
     public final InputStream inputStream;
 
+    public final InputStream errorInputStream;
+
     public final Serializable context;
 
-    public InputAtom(Date timestamp, InputStream inputStream)
+    public InputAtom(Date timestamp, InputStream inputStream, InputStream errorInputStream)
     {
-      this(timestamp, inputStream, null);
+      this(timestamp, inputStream, errorInputStream, null);
     }
 
-    public InputAtom(Date timestamp, InputStream inputStream, Serializable context)
+    public InputAtom(Date timestamp, InputStream inputStream, InputStream errorInputStream, Serializable context)
     {
-      this(timestamp, null, inputStream, context);
+      this(timestamp, null, inputStream, errorInputStream, context);
     }
 
-    public InputAtom(Date timestamp, Map<String, List<String>> headers, InputStream inputStream, Serializable context)
+    public InputAtom(Date timestamp, Map<String, List<String>> headers, InputStream inputStream,
+        InputStream errorInputStream, Serializable context)
     {
       super(timestamp);
       this.headers = headers;
       this.inputStream = inputStream;
+      this.errorInputStream = errorInputStream;
       this.context = context;
     }
 

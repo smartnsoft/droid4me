@@ -239,7 +239,7 @@ public final class FilePersistence
         rememberUriUsed(uri);
         final File file = new File(uriUsage.storageFilePath);
         final long lastModified = file.lastModified();
-        return new Business.InputAtom(new Date(lastModified), new FileInputStream(file));
+        return new Business.InputAtom(new Date(lastModified), new FileInputStream(file), null);
       }
       catch (FileNotFoundException exception)
       {
@@ -388,7 +388,7 @@ public final class FilePersistence
       final InputStream newInputStream = FilePersistence.storeInputStreamToFile(filePath, inputAtom, closeInput);
       rememberUriUsed(uri);
       saveIndexFileIfNecessary();
-      return new Business.InputAtom(new Date(), newInputStream, inputAtom.context);
+      return new Business.InputAtom(new Date(), newInputStream, null, inputAtom.context);
     }
     finally
     {
