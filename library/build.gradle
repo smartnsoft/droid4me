@@ -3,11 +3,6 @@ apply plugin: "com.jfrog.bintray"
 apply plugin: "maven"
 apply plugin: "maven-publish"
 
-ext
-{
-  appCompatVersion = "27.0.2"
-}
-
 android
 {
   compileSdkVersion 27
@@ -17,8 +12,8 @@ android
     minSdkVersion 14
     targetSdkVersion 27
 
-    versionCode 23
-    versionName "2.8.0"
+    versionCode 24
+    versionName "2.9.0-SNAPSHOT"
   }
 
   buildTypes
@@ -35,8 +30,8 @@ android
 dependencies
 {
   //Android
-  implementation("com.android.support:appcompat-v7:$appCompatVersion")
-  implementation("com.android.support:preference-v7:$appCompatVersion")
+  implementation("com.android.support:appcompat-v7:27.1.1")
+  implementation("com.android.support:preference-v7:27.1.1")
 
   testImplementation("junit:junit:4.0")
   testImplementation("org.json:json:20090211")
