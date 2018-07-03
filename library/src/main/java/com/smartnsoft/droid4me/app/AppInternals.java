@@ -53,7 +53,7 @@ import com.smartnsoft.droid4me.support.v4.content.LocalBroadcastManager;
  * @author Édouard Mercier
  * @since 2010.01.05
  */
-final class AppInternals
+public final class AppInternals
 {
 
   /**
@@ -770,7 +770,7 @@ final class AppInternals
    *
    * @see SmartCommands#LOW_PRIORITY_THREAD_POOL
    */
-  final static SmartCommands.SmartThreadPoolExecutor THREAD_POOL = new SmartCommands.SmartThreadPoolExecutor(0, Integer.MAX_VALUE, 60l, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadFactory()
+  public static final SmartCommands.SmartThreadPoolExecutor THREAD_POOL = new SmartCommands.SmartThreadPoolExecutor(0, Integer.MAX_VALUE, 60l, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadFactory()
   {
 
     private final AtomicInteger threadsCount = new AtomicInteger(1);
