@@ -778,7 +778,7 @@ public final class AppPublics
    * Is invoked by the framework, at initialization time.
    * </p>
    */
-  static void initialize(Application application)
+  public static void initialize(Application application)
   {
     AppPublics.UI_LOAD_ACTION = application.getPackageName() + ".action.UI_LOADING";
     AppPublics.UPDATE_ACTION = application.getPackageName() + ".action.UPDATE";
