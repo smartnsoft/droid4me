@@ -75,7 +75,7 @@ public final class SmartCommands
    *
    * @since 2010.07.21
    */
-  static final class SmartUncaughtExceptionHandler
+  public static final class SmartUncaughtExceptionHandler
       implements Thread.UncaughtExceptionHandler
   {
 
