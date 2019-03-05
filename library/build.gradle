@@ -13,7 +13,7 @@ android
     targetSdkVersion 27
 
     versionCode 24
-    versionName "2.9.0.003-SNAPSHOT"
+    versionName "2.9.0"
   }
 
   buildTypes
